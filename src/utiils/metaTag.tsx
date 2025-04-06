@@ -1,7 +1,13 @@
 import React from "react";
 import { Helmet } from "react-helmet-async";
 
-export default function metaTag(props : any): React.ReactElement {
+export type metaProps = {
+    title: string,
+    description: string,
+    url: string
+}
+
+export default function metaTag(props : metaProps): React.ReactElement {
     return (
         <Helmet>
             <title>{props.title}</title>
@@ -10,6 +16,8 @@ export default function metaTag(props : any): React.ReactElement {
             <meta name="keywords" content='' /> //설명 추가
 
             <meta property="og:type" content="website" />
+
+
             <meta property="og:title" content={props.title} />
             <meta property="og:site_name" content={props.title} />
             <meta property="og:description" content={props.description} />
