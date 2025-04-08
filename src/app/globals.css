@@ -1,6 +1,13 @@
 @import "tailwindcss";
 @config "../../tailwind.config.js";
 
+@font-face {
+  font-family: 'SUIT-Medium';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Medium.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
 :root {
   --white: #ffffff;
   --black: #171717;
@@ -32,4 +39,18 @@ body {
 .dark {
   --background: var(--black);
   --foreground: var(--white);
+}
+
+body * {
+  font-family: "SUIT-Medium";
+  animation: fadeInUp 0.3s;
+}
+
+@keyframes fadeInUp {
+  0% {
+      opacity: 0;
+  }
+  to {
+      opacity: 1;
+  }
 }
