@@ -1,9 +1,16 @@
-import Image from "next/image";
+'use client'
+import * as React from "react";
+import Header from "./header/Header";
+import {Button} from "@heroui/react";
 
 export default function Home() {
   return (
-    <div>
-      page
-    </div>
+    <>
+      <Header/>
+      <div>
+        <p className="text-[100pt]">page</p>
+        <Button>Button</Button>
+      </div>
+    </>
   );
 }
