@@ -1,20 +1,31 @@
 import { configureStore } from "@reduxjs/toolkit";
+import { useMemo } from "react";
+import { Action } from "redux";
 
-type headerState = {
-
+export type headerState = {
+    isMenuOpen: boolean
 }
+
+type toggleAction = Action<"toggle-menu"> & {
+    isMenuOpen: boolean
+}
+
+export type stateActions = toggleAction;
 
 const initialHeaderState = {
-
+    isMenuOpen: false
 }
 
-function headerReducer(state: headerState = initialHeaderState, action: {type: string}) {
+function headerReducer(state: headerState = initialHeaderState, action: stateActions) {
     switch(action.type) {
-        //Actions
+        case "toggle-menu":
+            return {...state, isMenuOpen: action.isMenuOpen};
+        default: 
+            return state;
     }
-    return state;
 }
 
-let store = configureStore({ reducer: headerReducer });
-
-export function getStore() { return store; }
+export function getStore() {
+    const store = useMemo(() => configureStore({ reducer: headerReducer }), []);
+    return store;
+}
