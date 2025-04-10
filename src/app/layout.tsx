@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import dynamic from "next/dynamic";
 import ClientOnly from "./ClientOnly";
 import Providers from "./providers";
 
