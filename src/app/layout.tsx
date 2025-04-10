@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import dynamic from "next/dynamic";
 import ClientOnly from "./ClientOnly";
-import Providers from "./Providers";
+import Providers from "./providers";
 
 export const metadata: Metadata = {
   title: "화이트터스크",
