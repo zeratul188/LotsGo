@@ -1,18 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-
-import { Providers } from "./providers";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import dynamic from "next/dynamic";
+import ClientOnly from "./ClientOnly";
+import Providers from "./Providers";
 
 export const metadata: Metadata = {
   title: "화이트터스크",
@@ -26,13 +16,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body
-        suppressHydrationWarning={true}
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Providers>
-          {children}
-        </Providers>
+      <body>
+        <ClientOnly>
+          <Providers>
+            {children}
+          </Providers>
+        </ClientOnly>
       </body>
     </html>
   );

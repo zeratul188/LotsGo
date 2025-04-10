@@ -4,7 +4,7 @@ import { HelmetProvider } from 'react-helmet-async';
 
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
 
-export function Providers({children, ...props}: { children: React.ReactNode }) {
+function Providers({children, ...props}: { children: React.ReactNode }) {
   return (
     <NextThemesProvider attribute='class' defaultTheme='system' {...props}>
       <HelmetProvider>
@@ -15,3 +15,5 @@ export function Providers({children, ...props}: { children: React.ReactNode }) {
     </NextThemesProvider>
   )
 }
+
+export default Providers;
