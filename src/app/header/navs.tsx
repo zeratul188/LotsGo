@@ -63,8 +63,8 @@ export function ProfileContent(props: SwitchProps) {
     });
     return (
         <>
-            <NavbarItem className="hidden lg:flex">
-                <Link color="foreground" href="#">로그인</Link>
+            <NavbarItem className="hidden sm:flex">
+                <Link color="foreground" href="/login">로그인</Link>
             </NavbarItem>
             <NavbarItem>
                 <Tooltip showArrow content={theme === 'light' ? '다크 모드로 전환합니다.' : '라이트 모드로 전환합니다.'}>
