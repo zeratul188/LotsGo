@@ -12,12 +12,12 @@ export function NavBrand() {
             <Image 
                 src="title(L).png" 
                 width={200} 
-                className="dark:hidden"
+                className="dark:hidden cursor-pointer"
                 onClick={() => location.href = '/'}/>
             <Image 
                 src="title(D).png" 
                 width={200} 
-                className="hidden dark:block"
+                className="hidden dark:block cursor-pointer"
                 onClick={() => location.href = '/'}/>
         </>
     )
@@ -27,7 +27,7 @@ export function NavContents() {
     return (
         <>
             <NavbarItem>
-                <Link color="foreground" href="#">
+                <Link color="foreground" href="/checklist">
                     숙제 관리
                 </Link>
             </NavbarItem>

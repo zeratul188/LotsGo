@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import ClientOnly from "./ClientOnly";
 import Providers from "./providers";
+import Header from "./header/Header";
 
 export const metadata: Metadata = {
   title: "화이트터스크",
@@ -18,6 +19,7 @@ export default function RootLayout({
       <body>
         <ClientOnly>
           <Providers>
+            <Header/>
             {children}
           </Providers>
         </ClientOnly>
