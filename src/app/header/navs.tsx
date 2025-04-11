@@ -1,10 +1,45 @@
 import { useSelector } from "react-redux";
 import { headerState } from "./headerStore";
-import { Image, NavbarItem, Link, NavbarMenuToggle, Tooltip } from "@heroui/react";
+import { Image, NavbarItem, Link, NavbarMenuToggle, Tooltip, NavbarMenu, NavbarMenuItem } from "@heroui/react";
 import { useSwitch, VisuallyHidden, SwitchProps } from "@heroui/react";
 import { useTheme } from "next-themes";
 
 import { MoonIcon, SunIcon } from "@/Icons/themeicons";
+
+const menuItems: Array<{item: string, link: string}> = [
+    {
+        item: "숙제 관리",
+        link: '/checklist'
+    },
+    {
+        item: "파티 찾기",
+        link: '#'
+    },
+    {
+        item: "전투정보실실",
+        link: '#'
+    },
+    {
+        item: "로그인",
+        link: '/login'
+    }
+];
+
+export function NavMenu() {
+    return (
+        <NavbarMenu>
+            {menuItems.map((item, index) => (
+                <NavbarMenuItem key={`${item.item}-${index}`}>
+                    <Link 
+                        className="w-full" 
+                        href={item.link} 
+                        color={index === 3 ? 'primary' : 'foreground'}
+                        size="lg">{item.item}</Link>
+                </NavbarMenuItem>
+            ))}
+        </NavbarMenu>
+    )
+}
 
 export function NavBrand() {
     return (

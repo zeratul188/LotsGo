@@ -1,5 +1,5 @@
 import { Navbar, NavbarBrand, NavbarContent } from "@heroui/react";
-import { NavBrand, NavContents, NavToggle, ProfileContent } from "./navs";
+import { NavBrand, NavContents, NavToggle, ProfileContent, NavMenu } from "./navs";
 import { useDispatch } from "react-redux";
 
 export default function Nav() {
@@ -21,6 +21,7 @@ export default function Nav() {
             <NavbarContent className="gap-5" justify="end">
                 <ProfileContent/>
             </NavbarContent>
+            <NavMenu/>
         </Navbar>
     )
 }
