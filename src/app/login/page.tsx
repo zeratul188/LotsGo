@@ -1,5 +1,5 @@
 'use client'
-import { Image, Input, Divider, Button, Checkbox } from "@heroui/react";
+import { Image, Input, Divider, Button, Checkbox, Link } from "@heroui/react";
 import { useState } from "react";
 
 export default function Login() {
@@ -28,7 +28,7 @@ export default function Login() {
                     className="mt-5"
                     type="password"
                     label="비밀번호"
-                    size="lg"
+                    size="lg" 
                     variant="flat"/>
                 <Checkbox
                     size="sm"
@@ -44,6 +44,8 @@ export default function Login() {
                 <Button
                     fullWidth
                     size="lg"
+                    as={Link}
+                    href="/signup"
                     color="default"
                     className="mt-5">
                     회원가입
