@@ -2,20 +2,40 @@ import { useDispatch, useSelector } from "react-redux";
 import { signupState } from "./signupStore";
 import type { memberData } from "./signupStore";
 import { useCallback } from "react";
+import { ref, onValue, set } from "firebase/database";
+import type { DataSnapshot } from "firebase/database";
+import { database } from "@/utiils/firebase";
 
 //중복 확인 버튼 이벤트
-export function onClickDuplicateCheck() {
-    alert('clicked dup.');
+export function useOnClickDuplicateCheck() {
+    const mData = useSelector<signupState, memberData>((state) => state.memberData);
+    const membersRef = ref(database, '/members');
+    const memberIDs: Array<string> = [];
+    return () => {
+        onValue(membersRef, (snapshot: DataSnapshot) => {
+            snapshot.forEach((childSnapshot: DataSnapshot) => {
+                memberIDs.push(childSnapshot.child('id').val());
+            });
+            if (memberIDs.includes(mData.id)) alert('중복된 아이디가 존재합니다.');
+            else alert('중복된 아이디가 없습니다. 사용 가능합니다.');
+        }, {
+            onlyOnce: true
+        });
+    }
 }
 
 //원정대 확인 버튼 이벤트
-export function onClickExpeditionCheck() {
-    alert('clicked expedition.');
+export function useOnClickExpeditionCheck() {
+    return () => {
+
+    }
 }
 
 //최종 회원가입 버튼 이벤트
-export function onClickSignup() {
-
+export function useOnClickSignup() {
+    return () => {
+        
+    }
 }
 
 //값 수정 이벤트 핸들링 (회원 정보 수정)
