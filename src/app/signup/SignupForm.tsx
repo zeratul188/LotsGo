@@ -45,6 +45,9 @@ export function InputsComponent() {
                     size="lg"
                     placeholder="4~20글자 내로 아이디를 입력하세요."
                     className="grow"
+                    maxLength={20}
+                    isInvalid={duplicateChecked.isError}
+                    errorMessage="이미 중복된 아이디가 있습니다."
                     isDisabled={duplicateChecked.isDuplicateChecked}
                     value={mData.id}
                     onValueChange={onValueChangeID}/>
@@ -60,6 +63,8 @@ export function InputsComponent() {
                 <Input
                     size="lg" 
                     value={mData.character}
+                    isInvalid={expeditionChecked.isError}
+                    errorMessage="로스트아크 API로부터 데이터를 받아올 수 없습니다."
                     isDisabled={expeditionChecked.isExpeditionChecked}
                     onValueChange={onValueChangeCharacter}
                     placeholder="2~12글자 내로 대표 캐릭터 이름을 입력하세요."
