@@ -1,0 +1,93 @@
+import { Image, Button, Input } from "@heroui/react";
+import { useSelector } from "react-redux";
+import { signupState, duplicateChecked, expeditionChecked, memberData } from "./signupStore";
+import { onClickDuplicateCheck, onClickExpeditionCheck, onClickSignup } from "./signupFeat";
+import { useSignupHandlers } from "./signupFeat";
+
+//상단 로고 이미지
+export function LogoComponent() {
+    return (
+        <div className="w-full flex justify-center mt-5 sm:mt-20">
+            <Image 
+                src="title(L).png" 
+                width={340} 
+                className="dark:hidden cursor-pointer"
+                onClick={() => location.href = '/'}/>
+            <Image 
+                src="title(D).png" 
+                width={340} 
+                className="hidden dark:block cursor-pointer"
+                onClick={() => location.href = '/'}/>
+        </div>
+    )
+}
+
+//회원가입 시 필요한 데이터 입력하는 요소
+export function InputsComponent() {
+    const duplicateChecked = useSelector<signupState, duplicateChecked>((state) => state.duplicateChecked);
+    const expeditionChecked = useSelector<signupState, expeditionChecked>((state) => state.expeditionChecked);
+    const {
+        mData,
+        onValueChangeID,
+        onValueChangeCharacter,
+        onValueChangePassword,
+        onValueChangePasswordCheck
+    } = useSignupHandlers();
+
+    return (
+        <div>
+            <h3 className="text-lg">아이디 : {mData.id}</h3>
+            <div className="flex mt-1 gap-4">
+                <Input
+                    size="lg"
+                    placeholder="4~20글자 내로 아이디를 입력하세요."
+                    className="grow"
+                    value={mData.id}
+                    onValueChange={onValueChangeID}/>
+                <Button
+                    onPress={onClickDuplicateCheck}
+                    isLoading={duplicateChecked.isChecking}
+                    isDisabled={duplicateChecked.isDuplicateChecked}
+                    color="primary"
+                    size="lg">{duplicateChecked.isDuplicateChecked ? "사용 가능" : "중복 확인"}</Button>
+            </div>
+            <h3 className="mt-7 text-lg">대표 캐릭터 이름 : {mData.character}</h3>
+            <div className="flex mt-1 gap-4">
+                <Input
+                    size="lg" 
+                    value={mData.character}
+                    onValueChange={onValueChangeCharacter}
+                    placeholder="2~12글자 내로 대표 캐릭터 이름을 입력하세요."
+                    className="grow"/>
+                <Button
+                    onPress={onClickExpeditionCheck}
+                    isLoading={expeditionChecked.isChecking}
+                    isDisabled={expeditionChecked.isExpeditionChecked}
+                    color="primary"
+                    size="lg">{expeditionChecked.isExpeditionChecked ? "확인 완료" : "원정대 확인"}</Button>
+            </div>
+            <h3 className="mt-7 text-lg">비밀번호 : {mData.password}</h3>
+            <Input
+                size="lg" 
+                type="password"
+                className="mt-1"
+                value={mData.password}
+                onValueChange={onValueChangePassword}
+                placeholder="6~18글자 내로 비밀번호를 입력하세요."/>
+            <h3 className="mt-7 text-lg">비밀번호 확인 : {mData.passwordCheck}</h3>
+            <Input
+                size="lg" 
+                type="password"
+                className="mt-1"
+                value={mData.passwordCheck}
+                onValueChange={onValueChangePasswordCheck}
+                placeholder="6~18글자 내로 비밀번호를 입력하세요."/>
+            <Button
+                onPress={onClickSignup}
+                fullWidth
+                color="primary"
+                size="lg"
+                className="mt-10">회원가입</Button>
+        </div>
+    )
+}

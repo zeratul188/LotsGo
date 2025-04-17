@@ -1,10 +1,18 @@
 'use client'
+import { Provider } from "react-redux";
+import { LogoComponent, InputsComponent } from "./SignupForm"
+import { Divider } from "@heroui/react";
+import { getStore } from "./signupStore";
 
 export default function Signup() {
-   return (
-    <div className="min-h-[calc(100vh-65px)] flex justify-center items-center flex-col p-5 sm:p-0">
-        <p>helloworld</p>
-        <h1>heo12</h1>
-    </div>
-   ) 
+    const store = getStore();
+    return (
+        <Provider store={store}>
+            <div className="min-h-[calc(100vh-65px)] sm:max-w-[640px] w-full mx-auto px-4 box-border">
+                <LogoComponent/>
+                <Divider className="mt-10 mb-10"/>
+                <InputsComponent/>
+            </div>
+        </Provider>
+    ) 
 }
