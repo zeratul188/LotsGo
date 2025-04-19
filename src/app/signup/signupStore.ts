@@ -126,6 +126,7 @@ function signupReducer(state: signupState = initialHeaderState, action: stateAct
                     job: character.CharacterClassName
                 });
             });
+            characters.sort((a, b) => b.level - a.level);
             return {
                 ...state,
                 characters: characters

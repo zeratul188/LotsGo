@@ -1,8 +1,10 @@
 import { Image, Button, Input } from "@heroui/react";
+import {Table, TableHeader, TableColumn, TableBody, TableRow, TableCell} from "@heroui/react";
 import { useSelector } from "react-redux";
-import { signupState, duplicateChecked, expeditionChecked } from "./signupStore";
+import { signupState, duplicateChecked, expeditionChecked, character } from "./signupStore";
 import { useOnClickDuplicateCheck, useOnClickExpeditionCheck, useOnClickSignup } from "./signupFeat";
 import { useSignupHandlers } from "./signupFeat";
+import clsx from 'clsx';
 
 //상단 로고 이미지
 export function LogoComponent() {
@@ -19,6 +21,37 @@ export function LogoComponent() {
                 className="hidden dark:block cursor-pointer"
                 onClick={() => location.href = '/'}/>
         </div>
+    )
+}
+
+//원정대 목록 요소
+function ExpeditionComponent() {
+    const expedition = useSelector<signupState, Array<character>>((state) => state.characters);
+
+    return (
+        <Table
+            aria-label="lostark characters infomations"
+            className={clsx(
+                "mt-5 mb-5",
+                expedition.length !== 0 ? 'block' : 'hidden'
+            )}>
+            <TableHeader>
+                <TableColumn>이름</TableColumn>
+                <TableColumn>레벨</TableColumn>
+                <TableColumn>클래스</TableColumn>
+                <TableColumn>서버</TableColumn>
+            </TableHeader>
+            <TableBody>
+                {expedition.map((character, index) => (
+                    <TableRow key={index}>
+                        <TableCell>{character.nickname}</TableCell>
+                        <TableCell>{character.level}</TableCell>
+                        <TableCell>{character.job}</TableCell>
+                        <TableCell>{character.server}</TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
     )
 }
 
@@ -76,6 +109,7 @@ export function InputsComponent() {
                     color="primary"
                     size="lg">{expeditionChecked.isExpeditionChecked ? "확인 완료" : "원정대 확인"}</Button>
             </div>
+            <ExpeditionComponent/>
             <h3 className="mt-7 text-lg">비밀번호</h3>
             <Input
                 size="lg" 
@@ -89,6 +123,8 @@ export function InputsComponent() {
                 size="lg" 
                 type="password"
                 className="mt-1"
+                isInvalid={mData.password !== mData.passwordCheck}
+                errorMessage="입력한 비밀번호와 일치해야 합니다."
                 value={mData.passwordCheck}
                 onValueChange={onValueChangePasswordCheck}
                 placeholder="6~18글자 내로 비밀번호를 입력하세요."/>
@@ -97,7 +133,7 @@ export function InputsComponent() {
                 fullWidth
                 color="primary"
                 size="lg"
-                className="mt-10">회원가입</Button>
+                className="mt-10 mb-15">회원가입</Button>
         </div>
     )
 }

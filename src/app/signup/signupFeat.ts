@@ -30,7 +30,7 @@ export function useOnClickDuplicateCheck() {
                     description: '아이디 글자 수가 최소 4글자 이상이여야 합니다.',
                     color: "danger"
                 });
-            } else if (memberIDs.includes(mData.id) || mData.id.length < 4) {
+            } else if (memberIDs.includes(mData.id)) {
                 dispatch({
                     type: 'checked-duplicate',
                     isDuplicateChecked: false,
@@ -41,6 +41,11 @@ export function useOnClickDuplicateCheck() {
                     type: 'checked-duplicate',
                     isDuplicateChecked: true,
                     isError: false
+                });
+                addToast({
+                    title: "아이디 사용 가능",
+                    description: `해당 아이디는 사용이 가능합니다.`,
+                    color: "success"
                 });
             }
         }, {
@@ -96,13 +101,6 @@ export function useOnClickExpeditionCheck() {
     }
 }
 
-//최종 회원가입 버튼 이벤트
-export function useOnClickSignup() {
-    return () => {
-        
-    }
-}
-
 //값 수정 이벤트 핸들링 (회원 정보 수정)
 export function useSignupHandlers() {
     const dispatch = useDispatch();
@@ -124,5 +122,12 @@ export function useSignupHandlers() {
         onValueChangeCharacter: (value: string) => updateMemberData({ character: value }),
         onValueChangePassword: (value: string) => updateMemberData({ password: value }),
         onValueChangePasswordCheck: (value: string) => updateMemberData({ passwordCheck: value })
+    }
+}
+
+//최종 회원가입 버튼 이벤트
+export function useOnClickSignup() {
+    return () => {
+        
     }
 }
