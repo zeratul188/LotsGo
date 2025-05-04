@@ -112,7 +112,7 @@ function signupReducer(state: signupState = initialHeaderState, action: stateAct
                     isError: action.isError
                 }
             }
-        case 'input-member':
+        case 'input-member': 
             //회원 정보 입력 이벤트 코드
             return {...state, memberData: action.memberData};
         case 'save-expedition':

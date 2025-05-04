@@ -19,7 +19,18 @@ export function useOnClickDuplicateCheck() {
             snapshot.forEach((childSnapshot: DataSnapshot) => {
                 memberIDs.push(childSnapshot.child('id').val());
             });
-            if (mData.id.length < 4) {
+            if (mData.id.includes(' ')) {
+                dispatch({
+                    type: 'checked-duplicate',
+                    isDuplicateChecked: false,
+                    isError: false
+                });
+                addToast({
+                    title: "아이디 입력 문제",
+                    description: '입력값에 공백이 있으면 안됩니다. 공백을 제거하고 다시 시도해주세요.',
+                    color: "danger"
+                });
+            } else if (mData.id.length < 4) {
                 dispatch({
                     type: 'checked-duplicate',
                     isDuplicateChecked: false,
@@ -121,13 +132,53 @@ export function useSignupHandlers() {
         onValueChangeID: (value: string) => updateMemberData({ id: value }),
         onValueChangeCharacter: (value: string) => updateMemberData({ character: value }),
         onValueChangePassword: (value: string) => updateMemberData({ password: value }),
-        onValueChangePasswordCheck: (value: string) => updateMemberData({ passwordCheck: value })
+        onValueChangePasswordCheck: (value: string) => updateMemberData({ passwordCheck : value })
     }
 }
 
 //최종 회원가입 버튼 이벤트
 export function useOnClickSignup() {
+    const mData = useSelector<signupState, memberData>((state) => state.memberData);
+    const isDuplicateChecked = useSelector<signupState, Boolean>((state) => state.duplicateChecked.isDuplicateChecked);
+    const isExpeditionChecked = useSelector<signupState, Boolean>((state) => state.expeditionChecked.isExpeditionChecked);
+
     return () => {
-        
-    }
+        if (!mData.id.trim()) {
+            addToast({
+                title: "입력값이 비어있음",
+                description: `\"아이디\"의 입력란이 비어있습니다. 입력하시고 중복 확인하시고 진행해주세요.`,
+                color: "danger"
+            });
+            return;
+        } else if (!isDuplicateChecked) {
+            addToast({
+                title: "아이디 중복 확인 불가",
+                description: `아이디의 중복 확인을 하지 않았습니다. 확인 후 다시 시도해주세요.`,
+                color: "danger"
+            });
+            return;
+        } else if (!isExpeditionChecked) {
+            addToast({
+                title: "원정대 확인 불가",
+                description: `원정대 정보를 확인할 수 없습니다. 확인 체크를 하거나 로스트아크 점검 시간인지 확인해주시기 바랍니다.`,
+                color: "danger"
+            });
+            return;
+        } else if (!mData.password.trim() || !mData.passwordCheck.trim()) {
+            addToast({
+                title: "입력값이 비어있음음",
+                description: `\"비밀번호\" 혹은 \"비밀번호 확인\"의 입력란이 비어있습니다.`,
+                color: "danger"
+            });
+            return;
+        } else if (mData.password !== mData.passwordCheck) {
+            addToast({
+                title: "원정대 확인 불가",
+                description: `원정대 정보를 확인할 수 없습니다. 확인 체크를 하거나 로스트아크 점검 시간인지 확인해주시기 바랍니다.`,
+                color: "danger"
+            });
+            return;
+        }
+        alert('end2');
+    }   
 }
