@@ -1,7 +1,4 @@
-import { useDispatch, useSelector } from "react-redux";
-import { signupState } from "./signupStore";
-import type { character, memberData } from "./signupStore";
-import { useCallback } from "react";
+import React, { useCallback } from "react";
 import { ref, onValue, set, get } from "firebase/database";
 import type { DataSnapshot } from "firebase/database";
 import { database } from "@/utiils/firebase";
@@ -9,22 +6,57 @@ import { addToast } from "@heroui/react";
 import { hashValue } from "@/utiils/bcrypt";
 import { useRouter } from "next/navigation";
 
+export type Character = {
+    nickname: string,
+    level: number,
+    server: string,
+    job: string
+}
+export type Member = {
+    id: string,
+    character: string,
+    password: string,
+    passwordCheck: string
+}
+export type DuplicateChecked = {
+    isDuplicateChecked: boolean, 
+    isChecking: boolean, 
+    isError: boolean
+}
+export type ExpeditionChecked = {
+    isExpeditionChecked: boolean, 
+    isChecking: boolean, 
+    isError: boolean
+}
+
+type SetStateFn<T> = React.Dispatch<React.SetStateAction<T>>;
+
 // 중복 확인 버튼 이벤트
-export function useOnClickDuplicateCheck() {
-    const dispatch = useDispatch();
-    const mData = useSelector<signupState, memberData>((state) => state.memberData);
+export function useOnClickDuplicateCheck(
+    member: Member, 
+    setDuplicationChecked: SetStateFn<DuplicateChecked>
+) {
     const membersRef = ref(database, '/members');
     const memberIDs: Array<string> = [];
+
+    function containsForbiddenChars(str: string): boolean {
+        return /[.#$\[\]]/.test(str);
+    }
+
     return () => {
-        dispatch({ type: 'check-duplicate' });
+        setDuplicationChecked(prev => ({
+            ...prev,
+            isChecking: true,
+            isError: false
+        }));
         onValue(membersRef, (snapshot: DataSnapshot) => {
             snapshot.forEach((childSnapshot: DataSnapshot) => {
                 memberIDs.push(childSnapshot.child('id').val());
             });
-            if (mData.id.includes(' ')) {
-                dispatch({
-                    type: 'checked-duplicate',
+            if (member.id.includes(' ')) {
+                setDuplicationChecked({
                     isDuplicateChecked: false,
+                    isChecking: false,
                     isError: false
                 });
                 addToast({
@@ -32,10 +64,10 @@ export function useOnClickDuplicateCheck() {
                     description: '입력값에 공백이 있으면 안됩니다. 공백을 제거하고 다시 시도해주세요.',
                     color: "danger"
                 });
-            } else if (mData.id.length < 4) {
-                dispatch({
-                    type: 'checked-duplicate',
+            } else if (member.id.length < 4) {
+                setDuplicationChecked({
                     isDuplicateChecked: false,
+                    isChecking: false,
                     isError: false
                 });
                 addToast({
@@ -43,16 +75,27 @@ export function useOnClickDuplicateCheck() {
                     description: '아이디 글자 수가 최소 4글자 이상이여야 합니다.',
                     color: "danger"
                 });
-            } else if (memberIDs.includes(mData.id)) {
-                dispatch({
-                    type: 'checked-duplicate',
+            } else if (memberIDs.includes(member.id)) {
+                setDuplicationChecked({
                     isDuplicateChecked: false,
+                    isChecking: false,
                     isError: true
                 });
+            } else if (containsForbiddenChars(member.id)) {
+                setDuplicationChecked({
+                    isDuplicateChecked: false,
+                    isChecking: false,
+                    isError: false
+                });
+                addToast({
+                    title: "아이디 사용 불가",
+                    description: '아이디에 사용할 수 없는 문자(\".\", \"#\", \"$\", \"[\", \"]\")가 포함되어 있습니다.',
+                    color: "danger"
+                });
             } else {
-                dispatch({
-                    type: 'checked-duplicate',
+                setDuplicationChecked({
                     isDuplicateChecked: true,
+                    isChecking: false,
                     isError: false
                 });
                 addToast({
@@ -68,26 +111,32 @@ export function useOnClickDuplicateCheck() {
 }
 
 // 원정대 확인 버튼 이벤트
-export function useOnClickExpeditionCheck() {
-    const mData = useSelector<signupState, memberData>((state) => state.memberData);
-    const dispatch = useDispatch();
+export function useOnClickExpeditionCheck(
+    member: Member,
+    setExpeditionChecked: SetStateFn<ExpeditionChecked>,
+    setExpedition: SetStateFn<Character[]>
+) {
     return async () => {
-        dispatch({ type: 'check-expedition' });
-        const lostarkRes = await fetch(`/api/lostark?value=${mData.character}&code=0`);
+        setExpeditionChecked(prev => ({
+            ...prev,
+            isChecking: true,
+            isError: false
+        }));
+        const lostarkRes = await fetch(`/api/lostark?value=${member.character}&code=0`);
         if (!lostarkRes.ok) {
             const text = await lostarkRes.text(); // ← JSON이 아닐 수도 있으니까
-            dispatch({
-                type: "checked-expedition",
+            setExpeditionChecked({
                 isExpeditionChecked: false,
+                isChecking: false,
                 isError: true
             });
             throw new Error('API 실패');
         }
-        const data = await lostarkRes.json();
+        const data: Array<any> = await lostarkRes.json();
         if (data.length === 0) {
-            dispatch({
-                type: "checked-expedition",
+            setExpeditionChecked({
                 isExpeditionChecked: false,
+                isChecking: false,
                 isError: false
             });
             addToast({
@@ -96,18 +145,25 @@ export function useOnClickExpeditionCheck() {
                 color: "danger"
             });
         } else {
-            dispatch({
-                type: "checked-expedition",
+            setExpeditionChecked({
                 isExpeditionChecked: true,
+                isChecking: false,
                 isError: false
             });
-            dispatch({
-                type: "save-expedition",
-                data: data
+            const characters: Array<Character> = [];
+            data.forEach((character) => {
+                characters.push({
+                    nickname: character.CharacterName,
+                    level: Number(character.ItemAvgLevel.replaceAll(',', '')),
+                    server: character.ServerName,
+                    job: character.CharacterClassName
+                });
             });
+            characters.sort((a, b) => b.level - a.level);
+            setExpedition(characters);
             addToast({
                 title: "원정대 저장 완료",
-                description: `\"${mData.character}\"의 원정대 정보를 불러오는데 성공했습니다.`,
+                description: `\"${member.character}\"의 원정대 정보를 불러오는데 성공했습니다.`,
                 color: "success"
             });
         }
@@ -115,35 +171,29 @@ export function useOnClickExpeditionCheck() {
 }
 
 // 개인정보 수집 동의 여부 체크 이벤트
-export function useOnValueChangePrivacy() {
-    const dispatch = useDispatch();
-    const isPrivacyPolicyAgreed = useSelector<signupState, boolean>((state) => state.isPrivacyPolicyAgreed);
-
+export function useOnValueChangePrivacy(
+    isPrivacyPolicyAgreed: boolean,
+    setPrivacyPolicyAgreed: SetStateFn<boolean>
+) {
     return () => {
-        dispatch({
-            type: "agreed-privacy",
-            isPrivacyPolicyAgreed: !isPrivacyPolicyAgreed
-        });
+        setPrivacyPolicyAgreed(!isPrivacyPolicyAgreed);
     }
 }
 
 // 값 수정 이벤트 핸들링 (회원 정보 수정)
-export function useSignupHandlers() {
-    const dispatch = useDispatch();
-    const mData = useSelector<signupState, memberData>((state) => state.memberData);
+export function useSignupHandlers(
+    member: Member,
+    setMember: SetStateFn<Member>
+) {
 
-    const updateMemberData = useCallback((updated: Partial<memberData>) => {
-        dispatch({
-            type: "input-member",
-            memberData: {
-                ...mData,
-                ...updated
-            }
-        });
-    }, [dispatch, mData]);
+    const updateMemberData = useCallback((updated: Partial<Member>) => {
+        setMember(prev => ({
+            ...prev,
+            ...updated
+        }));
+    }, [setMember]);
 
     return {
-        mData,
         onValueChangeID: (value: string) => updateMemberData({ id: value }),
         onValueChangeCharacter: (value: string) => updateMemberData({ character: value }),
         onValueChangePassword: (value: string) => updateMemberData({ password: value }),
@@ -152,19 +202,19 @@ export function useSignupHandlers() {
 }
 
 // 최종 회원가입 버튼 이벤트
-export function useOnClickSignup() {
-    const mData = useSelector<signupState, memberData>((state) => state.memberData);
-    const characters = useSelector<signupState, Array<character>>((state) => state.characters);
-    const isDuplicateChecked = useSelector<signupState, boolean>((state) => state.duplicateChecked.isDuplicateChecked);
-    const isExpeditionChecked = useSelector<signupState, boolean>((state) => state.expeditionChecked.isExpeditionChecked);
-    const isPrivacyPolicyAgreed = useSelector<signupState, boolean>((state) => state.isPrivacyPolicyAgreed);
-
+export function useOnClickSignup(
+    member: Member,
+    isDuplicateChecked: boolean,
+    isExpeditionChecked: boolean,
+    isPrivacyPolicyAgreed: boolean,
+    expedition: Character[]
+) {
     const router = useRouter();
 
     // 회원가입 클릭 시 입력 조건 여부 반환
     // true = 실패, false = 통과
     const isInputValid = (): boolean => {
-        if (!mData.id.trim()) {
+        if (!member.id.trim()) {
             addToast({
                 title: "입력값이 비어있음",
                 description: `\"아이디\"의 입력란이 비어있습니다. 입력하시고 중복 확인하시고 진행해주세요.`,
@@ -188,7 +238,7 @@ export function useOnClickSignup() {
             });
             return true;
         } 
-        if (!mData.password.trim() || !mData.passwordCheck.trim()) {
+        if (!member.password.trim() || !member.passwordCheck.trim()) {
             addToast({
                 title: "입력값이 비어있음",
                 description: `\"비밀번호\" 혹은 \"비밀번호 확인\"의 입력란이 비어있습니다.`,
@@ -196,7 +246,7 @@ export function useOnClickSignup() {
             });
             return true;
         } 
-        if (mData.password.trim().length < 6 || mData.password.trim().length > 18) {
+        if (member.password.trim().length < 6 || member.password.trim().length > 18) {
             addToast({
                 title: "입력값 조건 미충족족",
                 description: `비밀번호의 글자수가 6글자 미만이거나 18글자를 초과하였습니다.`,
@@ -204,7 +254,7 @@ export function useOnClickSignup() {
             });
             return true;
         }
-        if (mData.password !== mData.passwordCheck) {
+        if (member.password !== member.passwordCheck) {
             addToast({
                 title: "비밀번호 입력 문제",
                 description: `비밀번호와 비밀번호 확인 입력값이 서로 다릅니다.`,
@@ -227,9 +277,9 @@ export function useOnClickSignup() {
         // 입력 시 조건 확인 여부
         if (isInputValid()) { return; }
 
-        const memberRef = ref(database, `/members/${mData.id}`);
+        const memberRef = ref(database, `/members/${member.id}`);
         const snapshot = await get(memberRef);
-        const hashedPassword = await hashValue(mData.password);
+        const hashedPassword = await hashValue(member.password);
 
         if (snapshot.exists()) {
             addToast({
@@ -241,10 +291,10 @@ export function useOnClickSignup() {
         }
 
         set(memberRef, {
-            id: mData.id,
-            character: mData.character,
+            id: member.id,
+            character: member.character,
             password: hashedPassword,
-            expeditions: characters
+            expeditions: expedition
         });
         addToast({
             title: "회원가입 완료",

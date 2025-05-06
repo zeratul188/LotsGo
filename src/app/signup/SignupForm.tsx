@@ -1,10 +1,28 @@
 import { Image, Button, Input } from "@heroui/react";
+import { useState } from "react";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Checkbox } from "@heroui/react";
-import { useSelector } from "react-redux";
-import { signupState, duplicateChecked, expeditionChecked, character } from "./signupStore";
+import { signupState, character } from "./signupStore";
 import { useOnClickDuplicateCheck, useOnClickExpeditionCheck, useOnClickSignup, useOnValueChangePrivacy } from "./signupFeat";
 import { useSignupHandlers } from "./signupFeat";
+import type { Character, Member, DuplicateChecked, ExpeditionChecked } from "./signupFeat";
 import clsx from 'clsx';
+
+// state 관리
+export function useSignupForm() {
+    const [expedition, setExpedition] = useState<Character[]>([]);
+    const [member, setMember] = useState<Member>({ id: '', character: '', password: '', passwordCheck: '' });
+    const [duplicateChecked, setDuplicateChecked] = useState<DuplicateChecked>({ isDuplicateChecked: false, isChecking: false, isError: false });
+    const [expeditionChecked, setExpeditionChecked] = useState<ExpeditionChecked>({ isExpeditionChecked: false, isChecking: false, isError: false });
+    const [isPrivacyPolicyAgreed, setPrivacyPolicyAgreed] = useState<boolean>(false);
+
+    return {
+        expedition, setExpedition,
+        member, setMember,
+        duplicateChecked, setDuplicateChecked,
+        expeditionChecked, setExpeditionChecked,
+        isPrivacyPolicyAgreed, setPrivacyPolicyAgreed
+    };
+}
 
 // 상단 로고 이미지
 export function LogoComponent() {
@@ -25,9 +43,7 @@ export function LogoComponent() {
 }
 
 // 원정대 목록 요소
-function ExpeditionComponent() {
-    const expedition = useSelector<signupState, Array<character>>((state) => state.characters);
-
+function ExpeditionComponent({ expedition }: {expedition: Character[]}) {
     return (
         <Table
             aria-label="lostark characters infomations"
@@ -56,21 +72,29 @@ function ExpeditionComponent() {
 }
 
 // 회원가입 시 필요한 데이터 입력하는 요소
-export function InputsComponent() {
-    const duplicateChecked = useSelector<signupState, duplicateChecked>((state) => state.duplicateChecked);
-    const expeditionChecked = useSelector<signupState, expeditionChecked>((state) => state.expeditionChecked);
-    const isPrivacyPolicyAgreed = useSelector<signupState, boolean>((state) => state.isPrivacyPolicyAgreed);
+export function InputsComponent({
+    expedition, setExpedition,
+    member, setMember,
+    duplicateChecked, setDuplicateChecked,
+    expeditionChecked, setExpeditionChecked,
+    isPrivacyPolicyAgreed, setPrivacyPolicyAgreed
+}: ReturnType<typeof useSignupForm>) {
     const {
-        mData,
         onValueChangeID,
         onValueChangeCharacter,
         onValueChangePassword,
         onValueChangePasswordCheck
-    } = useSignupHandlers();
-    const onClickDuplicateCheck = useOnClickDuplicateCheck();
-    const onClickExpeditionCheck = useOnClickExpeditionCheck();
-    const onClickSignup = useOnClickSignup();
-    const onValueChangePrivacy = useOnValueChangePrivacy();
+    } = useSignupHandlers(member, setMember);
+    const onClickDuplicateCheck = useOnClickDuplicateCheck(member, setDuplicateChecked);
+    const onClickExpeditionCheck = useOnClickExpeditionCheck(member, setExpeditionChecked, setExpedition);
+    const onClickSignup = useOnClickSignup(
+        member, 
+        duplicateChecked.isDuplicateChecked,
+        expeditionChecked.isExpeditionChecked,
+        isPrivacyPolicyAgreed,
+        expedition
+    );
+    const onValueChangePrivacy = useOnValueChangePrivacy(isPrivacyPolicyAgreed, setPrivacyPolicyAgreed);
 
     return (
         <div>
@@ -84,7 +108,7 @@ export function InputsComponent() {
                     isInvalid={duplicateChecked.isError}
                     errorMessage="이미 중복된 아이디가 있습니다."
                     isDisabled={duplicateChecked.isDuplicateChecked}
-                    value={mData.id}
+                    value={member.id}
                     onValueChange={onValueChangeID}/>
                 <Button
                     onPress={onClickDuplicateCheck}
@@ -97,7 +121,7 @@ export function InputsComponent() {
             <div className="flex mt-1 gap-4">
                 <Input
                     size="lg" 
-                    value={mData.character}
+                    value={member.character}
                     isInvalid={expeditionChecked.isError}
                     errorMessage="로스트아크 API로부터 데이터를 받아올 수 없습니다."
                     isDisabled={expeditionChecked.isExpeditionChecked}
@@ -111,13 +135,13 @@ export function InputsComponent() {
                     color="primary"
                     size="lg">{expeditionChecked.isExpeditionChecked ? "확인 완료" : "원정대 확인"}</Button>
             </div>
-            <ExpeditionComponent/>
+            <ExpeditionComponent expedition={expedition}/>
             <h3 className="mt-7 text-lg">비밀번호</h3>
             <Input
                 size="lg" 
                 type="password"
                 className="mt-1"
-                value={mData.password}
+                value={member.password}
                 onValueChange={onValueChangePassword}
                 placeholder="6~18글자 내로 비밀번호를 입력하세요."/>
             <h3 className="mt-7 text-lg">비밀번호 확인</h3>
@@ -125,9 +149,9 @@ export function InputsComponent() {
                 size="lg" 
                 type="password"
                 className="mt-1"
-                isInvalid={mData.password !== mData.passwordCheck}
+                isInvalid={member.password !== member.passwordCheck}
                 errorMessage="입력한 비밀번호와 일치해야 합니다."
-                value={mData.passwordCheck}
+                value={member.passwordCheck}
                 onValueChange={onValueChangePasswordCheck}
                 placeholder="6~18글자 내로 비밀번호를 입력하세요."/>
             <Checkbox
