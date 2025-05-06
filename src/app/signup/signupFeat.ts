@@ -1,11 +1,13 @@
 import { useDispatch, useSelector } from "react-redux";
 import { signupState } from "./signupStore";
-import type { memberData } from "./signupStore";
+import type { character, memberData } from "./signupStore";
 import { useCallback } from "react";
-import { ref, onValue, set } from "firebase/database";
+import { ref, onValue, set, get } from "firebase/database";
 import type { DataSnapshot } from "firebase/database";
 import { database } from "@/utiils/firebase";
 import { addToast } from "@heroui/react";
+import { hashValue } from "@/utiils/bcrypt";
+import { useRouter } from "next/navigation";
 
 // 중복 확인 버튼 이벤트
 export function useOnClickDuplicateCheck() {
@@ -152,9 +154,12 @@ export function useSignupHandlers() {
 // 최종 회원가입 버튼 이벤트
 export function useOnClickSignup() {
     const mData = useSelector<signupState, memberData>((state) => state.memberData);
+    const characters = useSelector<signupState, Array<character>>((state) => state.characters);
     const isDuplicateChecked = useSelector<signupState, boolean>((state) => state.duplicateChecked.isDuplicateChecked);
     const isExpeditionChecked = useSelector<signupState, boolean>((state) => state.expeditionChecked.isExpeditionChecked);
     const isPrivacyPolicyAgreed = useSelector<signupState, boolean>((state) => state.isPrivacyPolicyAgreed);
+
+    const router = useRouter();
 
     // 회원가입 클릭 시 입력 조건 여부 반환
     // true = 실패, false = 통과
@@ -191,6 +196,14 @@ export function useOnClickSignup() {
             });
             return true;
         } 
+        if (mData.password.trim().length < 6 || mData.password.trim().length > 18) {
+            addToast({
+                title: "입력값 조건 미충족족",
+                description: `비밀번호의 글자수가 6글자 미만이거나 18글자를 초과하였습니다.`,
+                color: "danger"
+            });
+            return true;
+        }
         if (mData.password !== mData.passwordCheck) {
             addToast({
                 title: "비밀번호 입력 문제",
@@ -210,9 +223,35 @@ export function useOnClickSignup() {
         return false;
     }
 
-    return () => {
+    return async () => {
+        // 입력 시 조건 확인 여부
         if (isInputValid()) { return; }
 
-        
+        const memberRef = ref(database, `/members/${mData.id}`);
+        const snapshot = await get(memberRef);
+        const hashedPassword = await hashValue(mData.password);
+
+        if (snapshot.exists()) {
+            addToast({
+                title: "중복된 회원 아이디",
+                description: `이미 해당 아이디로 가입된 회원이 있습니다.`,
+                color: "danger"
+            });
+            return;
+        }
+
+        set(memberRef, {
+            id: mData.id,
+            character: mData.character,
+            password: hashedPassword,
+            expeditions: characters
+        });
+        addToast({
+            title: "회원가입 완료",
+            description: `회원가입하는데 성공하였습니다. 로그인을 진행하시면 됩니다.`,
+            color: "success"
+        });
+
+        router.push('/login');
     }   
 }
