@@ -33,26 +33,17 @@ export type signupState = {
     isPrivacyPolicyAgreed: boolean
 }
 
-type nothingAction = Action<"check-duplicate"> | Action<"check-expedition">;
-type memberDataInputAction = Action<"input-member"> & {
-    memberData: memberData
-}
-type duplicateCheckAction = Action<"checked-duplicate"> & {
-    isDuplicateChecked: boolean,
-    isError: boolean
-}
-type expeditionCheckAction = Action<"checked-expedition"> & {
-    isExpeditionChecked: boolean,
-    isError: boolean
-}
-type expeditionSaveAction = Action<"save-expedition"> & {
-    data: Array<any>
-}
-type agreedPrivacyAction = Action<"agreed-privacy"> & {
-    isPrivacyPolicyAgreed: boolean
-}
+type AppAction<T extends string, P = undefined> = P extends undefined ? Action<T> : Action<T> & P;
 
-export type stateActions = agreedPrivacyAction | expeditionSaveAction | nothingAction | duplicateCheckAction | expeditionCheckAction | memberDataInputAction;
+export type stateActions = 
+    | AppAction<"check-duplicate">
+    | AppAction<"check-expedition">
+    | AppAction<"input-member", { memberData: memberData }>
+    | AppAction<"checked-duplicate", { isDuplicateChecked: boolean, isError: boolean }>
+    | AppAction<"checked-expedition", { isExpeditionChecked: boolean, isError: boolean }>
+    | AppAction<"save-expedition", { data: Array<any> }>
+    | AppAction<"agreed-privacy", { isPrivacyPolicyAgreed: boolean }>
+
 
 const initialHeaderState = {
     duplicateChecked: {
