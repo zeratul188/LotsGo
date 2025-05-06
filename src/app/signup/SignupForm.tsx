@@ -1,12 +1,12 @@
 import { Image, Button, Input } from "@heroui/react";
-import {Table, TableHeader, TableColumn, TableBody, TableRow, TableCell} from "@heroui/react";
+import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Checkbox } from "@heroui/react";
 import { useSelector } from "react-redux";
 import { signupState, duplicateChecked, expeditionChecked, character } from "./signupStore";
-import { useOnClickDuplicateCheck, useOnClickExpeditionCheck, useOnClickSignup } from "./signupFeat";
+import { useOnClickDuplicateCheck, useOnClickExpeditionCheck, useOnClickSignup, useOnValueChangePrivacy } from "./signupFeat";
 import { useSignupHandlers } from "./signupFeat";
 import clsx from 'clsx';
 
-//상단 로고 이미지
+// 상단 로고 이미지
 export function LogoComponent() {
     return (
         <div className="w-full flex justify-center mt-5 sm:mt-20">
@@ -24,7 +24,7 @@ export function LogoComponent() {
     )
 }
 
-//원정대 목록 요소
+// 원정대 목록 요소
 function ExpeditionComponent() {
     const expedition = useSelector<signupState, Array<character>>((state) => state.characters);
 
@@ -55,10 +55,11 @@ function ExpeditionComponent() {
     )
 }
 
-//회원가입 시 필요한 데이터 입력하는 요소
+// 회원가입 시 필요한 데이터 입력하는 요소
 export function InputsComponent() {
     const duplicateChecked = useSelector<signupState, duplicateChecked>((state) => state.duplicateChecked);
     const expeditionChecked = useSelector<signupState, expeditionChecked>((state) => state.expeditionChecked);
+    const isPrivacyPolicyAgreed = useSelector<signupState, boolean>((state) => state.isPrivacyPolicyAgreed);
     const {
         mData,
         onValueChangeID,
@@ -69,6 +70,7 @@ export function InputsComponent() {
     const onClickDuplicateCheck = useOnClickDuplicateCheck();
     const onClickExpeditionCheck = useOnClickExpeditionCheck();
     const onClickSignup = useOnClickSignup();
+    const onValueChangePrivacy = useOnValueChangePrivacy();
 
     return (
         <div>
@@ -128,6 +130,11 @@ export function InputsComponent() {
                 value={mData.passwordCheck}
                 onValueChange={onValueChangePasswordCheck}
                 placeholder="6~18글자 내로 비밀번호를 입력하세요."/>
+            <Checkbox
+                size="lg"
+                isSelected={isPrivacyPolicyAgreed}
+                onValueChange={onValueChangePrivacy}
+                className="mt-2">개인정보 수집 및 이용에 동의합니다.</Checkbox>
             <Button
                 onPress={onClickSignup}
                 fullWidth

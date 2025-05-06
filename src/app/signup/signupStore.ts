@@ -29,7 +29,8 @@ export type signupState = {
     duplicateChecked: duplicateChecked,
     expeditionChecked: expeditionChecked,
     memberData: memberData,
-    characters: Array<character>
+    characters: Array<character>,
+    isPrivacyPolicyAgreed: boolean
 }
 
 type nothingAction = Action<"check-duplicate"> | Action<"check-expedition">;
@@ -47,8 +48,11 @@ type expeditionCheckAction = Action<"checked-expedition"> & {
 type expeditionSaveAction = Action<"save-expedition"> & {
     data: Array<any>
 }
+type agreedPrivacyAction = Action<"agreed-privacy"> & {
+    isPrivacyPolicyAgreed: boolean
+}
 
-export type stateActions = expeditionSaveAction | nothingAction | duplicateCheckAction | expeditionCheckAction | memberDataInputAction;
+export type stateActions = agreedPrivacyAction | expeditionSaveAction | nothingAction | duplicateCheckAction | expeditionCheckAction | memberDataInputAction;
 
 const initialHeaderState = {
     duplicateChecked: {
@@ -67,7 +71,8 @@ const initialHeaderState = {
         password: '',
         passwordCheck: ''
     },
-    characters: []
+    characters: [],
+    isPrivacyPolicyAgreed: false
 }
 
 function signupReducer(state: signupState = initialHeaderState, action: stateActions) {
@@ -131,6 +136,9 @@ function signupReducer(state: signupState = initialHeaderState, action: stateAct
                 ...state,
                 characters: characters
             }
+        case 'agreed-privacy':
+            //개인정보 수집 동의 여부 코드
+            return {...state, isPrivacyPolicyAgreed: action.isPrivacyPolicyAgreed};
         default: 
             return state;
     }
