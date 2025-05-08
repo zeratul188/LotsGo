@@ -37,6 +37,26 @@ export function useLoginHandler(
 
     return async () => {
         setLoading(true);
+
+        if (user.id.trim() === '') {
+            addToast({
+                title: "아이디 비어있음",
+                description: `아이디 입력란이 비어있습니다.`,
+                color: "danger"
+            });
+            setLoading(false);
+            return;
+        }
+        if (user.password.trim() === '') {
+            addToast({
+                title: "비밀번호 비어있음",
+                description: `비밀번호 입력란이 비어있습니다.`,
+                color: "danger"
+            });
+            setLoading(false);
+            return;
+        }
+
         const res = await fetch('/api/login', {
             method: 'POST',
             body: JSON.stringify({ id: user.id, password: user.password })
