@@ -37,17 +37,24 @@ export function useOnClickDuplicateCheck(
 ) {
     const membersRef = ref(database, '/members');
     const memberIDs: Array<string> = [];
+    const administratorRef = ref(database, `/administrator`);
 
     function containsForbiddenChars(str: string): boolean {
         return /[.#$\[\]]/.test(str);
     }
 
-    return () => {
+    return async () => {
         setDuplicationChecked(prev => ({
             ...prev,
             isChecking: true,
             isError: false
         }));
+        const administratorSnapshot = await get(administratorRef);
+        const administrator = {
+            id: administratorSnapshot.child('id').val(),
+            password: administratorSnapshot.child('password').val()
+        }
+        console.log(administrator);
         onValue(membersRef, (snapshot: DataSnapshot) => {
             snapshot.forEach((childSnapshot: DataSnapshot) => {
                 memberIDs.push(childSnapshot.child('id').val());
@@ -89,6 +96,17 @@ export function useOnClickDuplicateCheck(
                 addToast({
                     title: "아이디 사용 불가",
                     description: '아이디에 사용할 수 없는 문자(\".\", \"#\", \"$\", \"[\", \"]\")가 포함되어 있습니다.',
+                    color: "danger"
+                });
+            } else if (administrator.id === member.id) {
+                setDuplicationChecked({
+                    isDuplicateChecked: false,
+                    isChecking: false,
+                    isError: false
+                });
+                addToast({
+                    title: "아이디 사용 불가",
+                    description: '사용이 불가능한 아이디입니다. 다른 아이디로 시도해주세요.',
                     color: "danger"
                 });
             } else {
