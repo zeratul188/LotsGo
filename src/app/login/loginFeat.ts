@@ -78,12 +78,13 @@ export function useLoginHandler(
 
         // 로그인 성공 시시
         const { token, expedition } = await res.json();
-        localStorage.setItem('token', token);
         const loginUser: LoginUser = {
             id: user.id,
             expedition: expedition
         }
         dispatch(logined(loginUser));
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(loginUser));
 
         setLoading(false);
         setIdDuplicated(false);

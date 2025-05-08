@@ -3,6 +3,7 @@ import "./globals.css";
 import ClientOnly from "./ClientOnly";
 import Providers from "./providers";
 import Header from "./header/Header";
+import StoreClient from "./StoreClient";
 
 export const metadata: Metadata = {
   title: "화이트터스크",
@@ -18,10 +19,12 @@ export default function RootLayout({
     <html lang="ko">
       <body>
         <ClientOnly>
-          <Providers>
-            <Header/>
-            {children}
-          </Providers>
+          <StoreClient>
+            <Providers>
+              <Header/>
+              {children}
+            </Providers>
+          </StoreClient>
         </ClientOnly>
       </body>
     </html>
