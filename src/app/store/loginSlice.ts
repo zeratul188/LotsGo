@@ -6,23 +6,28 @@ export type Character = {
     server: string,
     job: string
 }
-type LoginState = {
+export type LoginUser = {
     id: string,
     expedition: Array<Character>
 }
+type LoginState = {
+    user: LoginUser
+}
 
 const initialState: LoginState = {
-    id: '',
-    expedition: []
+    user: {
+        id: '',
+        expedition: []
+    }
 }
 
 const loginSlice = createSlice({
     name: 'login',
     initialState,
     reducers: {
-        logined(state, action: PayloadAction<{ id: string, expedition: Array<Character> }>) {
-            state.id = action.payload.id;
-            state.expedition = action.payload.expedition
+        logined(state, action: PayloadAction<LoginUser>) {
+            state.user.id = action.payload.id;
+            state.user.expedition = action.payload.expedition
         }
     }
 })

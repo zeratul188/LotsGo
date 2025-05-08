@@ -3,6 +3,9 @@ import { useRouter } from "next/navigation";
 import type { SetStateFn } from "@/utiils/utils";
 import type { User } from "./LoginForm";
 import { addToast } from "@heroui/react";
+import { logined, LoginUser } from "../store/loginSlice";
+import type { AppDispatch } from "../store/store";
+import { useDispatch } from "react-redux";
 
 // 값 수정 이벤트 핸들링
 export function useLoginHandlers(
@@ -30,6 +33,7 @@ export function useLoginHandler(
     setPasswordNotMatch: SetStateFn<boolean>
 ) {
     const router = useRouter();
+    const dispatch = useDispatch<AppDispatch>();
 
     return async () => {
         setLoading(true);
@@ -53,8 +57,13 @@ export function useLoginHandler(
         }
 
         // 로그인 성공 시시
-        const { token } = await res.json();
+        const { token, expedition } = await res.json();
         localStorage.setItem('token', token);
+        const loginUser: LoginUser = {
+            id: user.id,
+            expedition: expedition
+        }
+        dispatch(logined(loginUser));
 
         setLoading(false);
         setIdDuplicated(false);
