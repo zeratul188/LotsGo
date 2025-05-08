@@ -1,7 +1,6 @@
 import { Image, Button, Input } from "@heroui/react";
 import { useState } from "react";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Checkbox } from "@heroui/react";
-import { signupState, character } from "./signupStore";
 import { useOnClickDuplicateCheck, useOnClickExpeditionCheck, useOnClickSignup, useOnValueChangePrivacy } from "./signupFeat";
 import { useSignupHandlers } from "./signupFeat";
 import type { Character, Member, DuplicateChecked, ExpeditionChecked } from "./signupFeat";

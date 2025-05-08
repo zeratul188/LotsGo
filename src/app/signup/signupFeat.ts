@@ -1,10 +1,11 @@
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 import { ref, onValue, set, get } from "firebase/database";
 import type { DataSnapshot } from "firebase/database";
 import { database } from "@/utiils/firebase";
 import { addToast } from "@heroui/react";
 import { hashValue } from "@/utiils/bcrypt";
 import { useRouter } from "next/navigation";
+import type { SetStateFn } from "@/utiils/utils";
 
 export type Character = {
     nickname: string,
@@ -28,8 +29,6 @@ export type ExpeditionChecked = {
     isChecking: boolean, 
     isError: boolean
 }
-
-type SetStateFn<T> = React.Dispatch<React.SetStateAction<T>>;
 
 // 중복 확인 버튼 이벤트
 export function useOnClickDuplicateCheck(
