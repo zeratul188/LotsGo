@@ -1,5 +1,5 @@
 'use client'
-import { HeroUIProvider } from '@heroui/react'
+import { HeroUIProvider, ToastProvider } from '@heroui/react'
 import { HelmetProvider } from 'react-helmet-async';
 
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
@@ -9,6 +9,7 @@ function Providers({children, ...props}: { children: React.ReactNode }) {
     <NextThemesProvider attribute='class' defaultTheme='system' {...props}>
       <HelmetProvider>
         <HeroUIProvider>
+          <ToastProvider/>
           {children}
         </HeroUIProvider>
       </HelmetProvider>

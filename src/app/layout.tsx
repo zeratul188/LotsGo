@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import dynamic from "next/dynamic";
 import ClientOnly from "./ClientOnly";
 import Providers from "./providers";
+import Header from "./header/Header";
+import StoreClient from "./StoreClient";
 
 export const metadata: Metadata = {
   title: "화이트터스크",
@@ -18,9 +19,12 @@ export default function RootLayout({
     <html lang="ko">
       <body>
         <ClientOnly>
-          <Providers>
-            {children}
-          </Providers>
+          <StoreClient>
+            <Providers>
+              <Header/>
+              {children}
+            </Providers>
+          </StoreClient>
         </ClientOnly>
       </body>
     </html>
