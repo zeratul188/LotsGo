@@ -38,8 +38,9 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: '비밀번호가 일치하지 않습니다.' }, { status: 401 });
         }
         result.isAdministrator = true;
+        const isAdministrator = result.isAdministrator;
         const token = jwt.sign({ result }, process.env.NEXT_PUBLIC_LOSTARK_JWT_SECRET!, { expiresIn: '1d' });
-        return NextResponse.json({ token, expedition });
+        return NextResponse.json({ token, expedition, isAdministrator });
     }
 
     if (!snapshot.exists()) {
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: '비밀번호가 일치하지 않습니다.' }, { status: 401 });
     }
 
+    const isAdministrator = result.isAdministrator;
     const token = jwt.sign({ result }, process.env.NEXT_PUBLIC_LOSTARK_JWT_SECRET!, { expiresIn: '3d' });
-    return NextResponse.json({ token, expedition });
+    return NextResponse.json({ token, expedition, isAdministrator });
 }

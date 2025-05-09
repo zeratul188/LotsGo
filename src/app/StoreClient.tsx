@@ -43,7 +43,6 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
             if (res.ok) {
                 const data = await res.json();
                 const decoded = data.result;
-                console.log(decoded);
                 if (decoded.result.isAdministrator) {
                     dispatch(switchAdministrator(true));
                     addToast({

@@ -1,11 +1,20 @@
-import { useSelector } from "react-redux";
-import { headerState } from "./headerStore";
-import { Image, NavbarItem, Link, NavbarMenuToggle, Tooltip, NavbarMenu, NavbarMenuItem } from "@heroui/react";
-import { useSwitch, VisuallyHidden, SwitchProps } from "@heroui/react";
+import { Image, NavbarItem, Link, NavbarMenuToggle, Tooltip, NavbarMenu, NavbarMenuItem, Button } from "@heroui/react";
+import { 
+    useSwitch, 
+    VisuallyHidden, 
+    SwitchProps,
+    Dropdown,
+    DropdownTrigger,
+    DropdownMenu,
+    DropdownItem
+} from "@heroui/react";
 import { useTheme } from "next-themes";
-
 import { MoonIcon, SunIcon } from "@/Icons/themeicons";
+import { useSelector } from "react-redux";
+import { RootState } from "../store/store";
+import { useOnActionProfile } from "./headerFeat";
 
+// 헤더 메뉴뉴
 const menuItems: Array<{item: string, link: string}> = [
     {
         item: "숙제 관리",
@@ -16,7 +25,7 @@ const menuItems: Array<{item: string, link: string}> = [
         link: '#'
     },
     {
-        item: "전투정보실실",
+        item: "전투정보실",
         link: '#'
     },
     {
@@ -25,6 +34,7 @@ const menuItems: Array<{item: string, link: string}> = [
     }
 ];
 
+// 메뉴 카테고리 목록 요소 (모바일 전용)
 export function NavMenu() {
     return (
         <NavbarMenu>
@@ -41,6 +51,7 @@ export function NavMenu() {
     )
 }
 
+// 헤더 로고 요소
 export function NavBrand() {
     return (
         <>
@@ -58,6 +69,7 @@ export function NavBrand() {
     )
 }
 
+// 헤더 카테고리 메뉴 요소
 export function NavContents() {
     return (
         <>
@@ -80,8 +92,11 @@ export function NavContents() {
     )
 }
 
-export function NavToggle() {
-    const isMenuOpen = useSelector<headerState, boolean>((state) => state.isMenuOpen);
+// 헤더 메뉴 버튼 요소 (모바일 전용)
+type NavToggleProps = {
+    isMenuOpen: boolean
+}
+export function NavToggle({ isMenuOpen }: NavToggleProps) {
     return (
         <NavbarMenuToggle
             aria-label={isMenuOpen ? "Close menu" : "Open menu"}
@@ -90,6 +105,37 @@ export function NavToggle() {
     )
 }
 
+// 로그인 버튼 혹은 프로필 버튼 요소
+function ProfileButton() {
+    const id = useSelector((state: RootState) => state.login.user.id);
+    const isAdministrator = useSelector((state: RootState) => state.login.isAdministrator);
+    const onActionProfile = useOnActionProfile();
+
+    if (id === '') {
+        return <Link color="foreground" href="/login">로그인</Link>
+    } else {
+        return (
+            <Dropdown>
+                <DropdownTrigger>
+                    <Button variant="light">{isAdministrator ? '관리자' : id}님</Button>
+                </DropdownTrigger>
+                <DropdownMenu aria-label="logined-profile" onAction={onActionProfile}>
+                    {isAdministrator ? (
+                        <DropdownItem key="administrator" color="secondary">관리자 페이지 이동</DropdownItem>
+                    ) : (
+                        <>
+                            <DropdownItem key="profile">내 정보 수정</DropdownItem>
+                            <DropdownItem key="setting">설정</DropdownItem>
+                        </>
+                    )}
+                    <DropdownItem key="logout" color="danger" className="text-danger">로그아웃</DropdownItem>
+                </DropdownMenu>
+            </Dropdown>
+        )
+    }
+}
+
+// 헤더의 프로필 관련 요소
 export function ProfileContent(props: SwitchProps) {
     const {theme, setTheme} = useTheme();
     const {Component, slots, isSelected, getBaseProps, getInputProps, getWrapperProps } = useSwitch({
@@ -99,7 +145,7 @@ export function ProfileContent(props: SwitchProps) {
     return (
         <>
             <NavbarItem className="hidden sm:flex">
-                <Link color="foreground" href="/login">로그인</Link>
+                <ProfileButton/>
             </NavbarItem>
             <NavbarItem>
                 <Tooltip showArrow content={theme === 'light' ? '다크 모드로 전환합니다.' : '라이트 모드로 전환합니다.'}>
