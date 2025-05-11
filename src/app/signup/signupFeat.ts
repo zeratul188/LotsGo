@@ -1,7 +1,7 @@
 import { useCallback } from "react";
-import { ref, onValue, set, get } from "firebase/database";
-import type { DataSnapshot } from "firebase/database";
-import { database } from "@/utiils/firebase";
+import { ref, get } from "firebase/database";
+import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
+import { database, firestore } from "@/utiils/firebase";
 import { addToast } from "@heroui/react";
 import { hashValue } from "@/utiils/bcrypt";
 import { useRouter } from "next/navigation";
@@ -35,8 +35,6 @@ export function useOnClickDuplicateCheck(
     member: Member, 
     setDuplicationChecked: SetStateFn<DuplicateChecked>
 ) {
-    const membersRef = ref(database, '/members');
-    const memberIDs: Array<string> = [];
     const administratorRef = ref(database, `/administrator`);
 
     function containsForbiddenChars(str: string): boolean {
@@ -54,76 +52,72 @@ export function useOnClickDuplicateCheck(
             id: administratorSnapshot.child('id').val(),
             password: administratorSnapshot.child('password').val()
         }
-        console.log(administrator);
-        onValue(membersRef, (snapshot: DataSnapshot) => {
-            snapshot.forEach((childSnapshot: DataSnapshot) => {
-                memberIDs.push(childSnapshot.child('id').val());
+        const snapshot = await getDocs(collection(firestore, `members`));
+        const idList: string[] = snapshot.docs
+            .map(doc => doc.data().id)
+            .filter((id): id is string => typeof id === 'string');
+        if (member.id.includes(' ')) {
+            setDuplicationChecked({
+                isDuplicateChecked: false,
+                isChecking: false,
+                isError: false
             });
-            if (member.id.includes(' ')) {
-                setDuplicationChecked({
-                    isDuplicateChecked: false,
-                    isChecking: false,
-                    isError: false
-                });
-                addToast({
-                    title: "아이디 입력 문제",
-                    description: '입력값에 공백이 있으면 안됩니다. 공백을 제거하고 다시 시도해주세요.',
-                    color: "danger"
-                });
-            } else if (member.id.length < 4) {
-                setDuplicationChecked({
-                    isDuplicateChecked: false,
-                    isChecking: false,
-                    isError: false
-                });
-                addToast({
-                    title: "아이디 입력 문제",
-                    description: '아이디 글자 수가 최소 4글자 이상이여야 합니다.',
-                    color: "danger"
-                });
-            } else if (memberIDs.includes(member.id)) {
-                setDuplicationChecked({
-                    isDuplicateChecked: false,
-                    isChecking: false,
-                    isError: true
-                });
-            } else if (containsForbiddenChars(member.id)) {
-                setDuplicationChecked({
-                    isDuplicateChecked: false,
-                    isChecking: false,
-                    isError: false
-                });
-                addToast({
-                    title: "아이디 사용 불가",
-                    description: '아이디에 사용할 수 없는 문자(\".\", \"#\", \"$\", \"[\", \"]\")가 포함되어 있습니다.',
-                    color: "danger"
-                });
-            } else if (administrator.id === member.id) {
-                setDuplicationChecked({
-                    isDuplicateChecked: false,
-                    isChecking: false,
-                    isError: false
-                });
-                addToast({
-                    title: "아이디 사용 불가",
-                    description: '사용이 불가능한 아이디입니다. 다른 아이디로 시도해주세요.',
-                    color: "danger"
-                });
-            } else {
-                setDuplicationChecked({
-                    isDuplicateChecked: true,
-                    isChecking: false,
-                    isError: false
-                });
-                addToast({
-                    title: "아이디 사용 가능",
-                    description: `해당 아이디는 사용이 가능합니다.`,
-                    color: "success"
-                });
-            }
-        }, {
-            onlyOnce: true
-        });
+            addToast({
+                title: "아이디 입력 문제",
+                description: '입력값에 공백이 있으면 안됩니다. 공백을 제거하고 다시 시도해주세요.',
+                color: "danger"
+            });
+        } else if (member.id.length < 4) {
+            setDuplicationChecked({
+                isDuplicateChecked: false,
+                isChecking: false,
+                isError: false
+            });
+            addToast({
+                title: "아이디 입력 문제",
+                description: '아이디 글자 수가 최소 4글자 이상이여야 합니다.',
+                color: "danger"
+            });
+        } else if (idList.includes(member.id)) {
+            setDuplicationChecked({
+                isDuplicateChecked: false,
+                isChecking: false,
+                isError: true
+            });
+        } else if (containsForbiddenChars(member.id)) {
+            setDuplicationChecked({
+                isDuplicateChecked: false,
+                isChecking: false,
+                isError: false
+            });
+            addToast({
+                title: "아이디 사용 불가",
+                description: '아이디에 사용할 수 없는 문자(\".\", \"#\", \"$\", \"[\", \"]\")가 포함되어 있습니다.',
+                color: "danger"
+            });
+        } else if (administrator.id === member.id) {
+            setDuplicationChecked({
+                isDuplicateChecked: false,
+                isChecking: false,
+                isError: false
+            });
+            addToast({
+                title: "아이디 사용 불가",
+                description: '사용이 불가능한 아이디입니다. 다른 아이디로 시도해주세요.',
+                color: "danger"
+            });
+        } else {
+            setDuplicationChecked({
+                isDuplicateChecked: true,
+                isChecking: false,
+                isError: false
+            });
+            addToast({
+                title: "아이디 사용 가능",
+                description: `해당 아이디는 사용이 가능합니다.`,
+                color: "success"
+            });
+        }
     }
 }
 
@@ -294,11 +288,11 @@ export function useOnClickSignup(
         // 입력 시 조건 확인 여부
         if (isInputValid()) { return; }
 
-        const memberRef = ref(database, `/members/${member.id}`);
-        const snapshot = await get(memberRef);
         const hashedPassword = await hashValue(member.password);
+        const q = query(collection(firestore, 'members'), where("id", '==', member.id));
+        const snapshot = await getDocs(q);
 
-        if (snapshot.exists()) {
+        if (!snapshot.empty) {
             addToast({
                 title: "중복된 회원 아이디",
                 description: `이미 해당 아이디로 가입된 회원이 있습니다.`,
@@ -307,7 +301,7 @@ export function useOnClickSignup(
             return;
         }
 
-        set(memberRef, {
+        await addDoc(collection(firestore, 'members'), {
             id: member.id,
             character: member.character,
             password: hashedPassword,
