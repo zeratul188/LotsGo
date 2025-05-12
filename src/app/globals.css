@@ -44,7 +44,6 @@ body {
 
 body * {
   font-family: "SUIT-Medium";
-  animation: fadeInUp 0.3s;
 }
 
 @keyframes fadeInUp {
@@ -54,4 +53,26 @@ body * {
   to {
       opacity: 1;
   }
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE & Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari, Opera */
+}
+
+@-moz-keyframes spin {
+  from { -moz-transform: rotate(0deg); }
+  to { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+  from { -webkit-transform: rotate(0deg); }
+  to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+  from {transform:rotate(0deg);}
+  to {transform:rotate(360deg);}
 }

@@ -31,8 +31,7 @@ export function useOnActionProfile() {
                 router.push('/');
                 break;
             case "administrator":
-                alert('관리자 페이지 이동');
-                // router.push('/administrator');
+                router.push('/administrator');
                 break;
         }
     }
