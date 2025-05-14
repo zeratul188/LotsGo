@@ -1,8 +1,11 @@
 'use client'
-import { Tabs, Tab } from "@heroui/react";
-import { ReactNode } from "react";
+import { Tabs, Tab, addToast } from "@heroui/react";
+import { useRouter } from "next/navigation";
+import { ReactNode, useEffect } from "react";
 import Checklist from "./Checklist";
 import { useMobileQuery } from "@/utiils/utils";
+import type { RootState } from "../store/store";
+import { useSelector } from "react-redux";
 
 type TabMenu = {
     key: string,
@@ -12,6 +15,8 @@ type TabMenu = {
 
 export default function Administrator() {
     const isMobile = useMobileQuery();
+    const router = useRouter();
+    const isAdministrator = useSelector((state: RootState) => state.login.isAdministrator);
     const menus: Array<TabMenu> = [
         {
             key: 'checklist',
@@ -24,6 +29,18 @@ export default function Administrator() {
             component: null
         },
     ]
+
+    useEffect(() => {
+        if (!isAdministrator) {
+            addToast({
+                title: "권한 없음",
+                description: `관리자 권한이 없습니다.`,
+                color: "danger"
+            });
+            router.push('/');
+        }
+    }, []);
+
     return (
         <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
             <Tabs 

@@ -11,7 +11,6 @@ export function useOnActionProfile() {
     const dispatch = useDispatch<AppDispatch>();
 
     return (key: Key) => {
-        console.log(key);
         switch(key) {
             case "profile":
                 // router.puth('/profile');
