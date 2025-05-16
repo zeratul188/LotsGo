@@ -1,34 +1,29 @@
 'use client'
 import { 
-    Tabs, 
-    Tab, 
+    Tabs, Tab, 
     addToast, 
-    Card, 
-    CardBody, 
-    CardFooter, 
+    Card, CardBody, CardFooter, 
     Button,
-    Modal,
-    ModalContent,
-    ModalHeader,
-    ModalBody,
-    ModalFooter,
-    useDisclosure,
+    Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure,
     Divider,
     Input,
     NumberInput,
     Switch,
     CardHeader,
-    Table, 
-    TableHeader, 
-    TableColumn, 
-    TableBody, 
-    TableRow, 
-    TableCell
+    Table, TableHeader, TableColumn, TableBody, TableRow, TableCell
  } from "@heroui/react";
 import { ReactNode, useEffect, useState } from "react";
 import { EmptyComponent, LoadingComponent } from "../UtilsCompnents";
 import type { Difficulty, Boss } from "../api/checklist/boss/route";
-import { useClearData, useInputHandlers, useOnAddData, useOnAddInput } from "./bossFeat";
+import { 
+    useClearData, 
+    useInputHandlers, 
+    useOnAddData, 
+    useOnAddInput, 
+    onClickEdit, 
+    useOnRemoveDifficulty, 
+    onClickRemove 
+} from "./bossFeat";
 
 type TabMenu = {
     key: string,
@@ -104,9 +99,9 @@ function BossComponent() {
                                             {item.difficulty.map((difficulty: Difficulty, idx: number) => (
                                                 <TableRow key={idx}>
                                                     <TableCell>{difficulty.difficulty}</TableCell>
-                                                    <TableCell>{difficulty.level.toLocaleString()}</TableCell>
-                                                    <TableCell>{difficulty.gold.toLocaleString()}</TableCell>
-                                                    <TableCell>{difficulty.isBiweekly ? '○' : '✕'}</TableCell>
+                                              <TableCell>{difficulty.gold.toLocaleString()}</TableCell>
+                                                <TableCell>{difficulty.level.toLocaleString()}</TableCell>
+                                                              <TableCell>{difficulty.isBiweekly ? '○' : '✕'}</TableCell>
                                                 </TableRow>
                                             ))}
                                         </TableBody>
@@ -116,8 +111,8 @@ function BossComponent() {
                                 <CardFooter>
                                     <div className="w-full flex gap-4">
                                         <div className="grow-1"/>
-                                        <Button color="danger">삭제</Button>
-                                        <Button color="primary">수정</Button>
+                                        <Button color="danger" onPress={async () => await onClickRemove(index, boss, setBoss)}>삭제</Button>
+                                        <Button color="primary" onPress={() => onClickEdit(index, setEditMode, setEditIndex, onOpen, boss[index], setInputName, setInputs)}>수정</Button>
                                     </div>
                                 </CardFooter>
                             </Card>
@@ -146,7 +141,12 @@ function BossComponent() {
                                 <div className="max-h-[500px] overflow-y-auto">
                                     {inputs.map((input: Difficulty, index: number) => (
                                         <div key={index} className="mt-4">
-                                            <span className="text-md font-bold">{index+1}번 항목</span>
+                                            <div className="flex gap-2">
+                                                <span className="text-md font-bold grow-1">{index+1}번 항목</span>
+                                                <span 
+                                                    className="text-red-500 underline hover:text-red-800 cursor-pointer"
+                                                    onClick={() => useOnRemoveDifficulty(index, inputs, setInputs)}>삭제하기</span>
+                                            </div>
                                             <div className="grid grid-cols-2 gap-3 items-center mt-2">
                                                 <Input
                                                     label="난이도"
@@ -189,7 +189,7 @@ function BossComponent() {
                             <Divider/>
                             <ModalFooter>
                                 <Button color="default" variant="light" onPress={onClose}>취소</Button>
-                                <Button color="primary" onPress={async () => await useOnAddData(inputName, inputs, onClose, boss, setBoss)}>{isEditMode ? '수정' : '추가'}</Button>
+                                <Button color="primary" onPress={async () => await useOnAddData(inputName, inputs, onClose, boss, setBoss, isEditMode, editIndex)}>{isEditMode ? '수정' : '추가'}</Button>
                             </ModalFooter>
                         </>
                     )}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { firestore } from "@/utiils/firebase";
-import { addDoc, collection, getDocs } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore';
 
 export type Difficulty = {
     difficulty: string,
@@ -9,14 +9,16 @@ export type Difficulty = {
     gold: number
 }
 export type Boss = {
+    id: string,
     name: string,
-    difficulty: Array<Difficulty>
+    difficulty: Difficulty[]
 }
 
 export async function GET(_req: NextRequest) {
     try {
         const snapshot = await getDocs(collection(firestore, 'boss'));
         const bosses: Boss[] = snapshot.docs.map(doc => ({
+            id: doc.id,
             name: doc.data().name,
             difficulty: doc.data().difficulty
         }));
@@ -29,8 +31,7 @@ export async function GET(_req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     const body = await req.json();
-
-    const boss: Boss = {
+    const boss = {
         name: body.inputName,
         difficulty: body.inputs
     }
@@ -38,8 +39,22 @@ export async function POST(req: NextRequest) {
     try {
         switch(body.type) {
             case "add":
-                await addDoc(collection(firestore, 'boss'), boss);
-                return NextResponse.json({ message: '데이터가 정상적으로 처리도었습니다.' }, { status: 200 });
+                const addRef = await addDoc(collection(firestore, 'boss'), boss);
+                return NextResponse.json({ message: '데이터 추가가 정상적으로 처리도었습니다.', id: addRef.id }, { status: 200 });
+            case "edit":
+                if (!body.id) {
+                    return NextResponse.json({ error: "문서 ID가 존재하지 않습니다." }, { status: 400 });
+                }
+                const docRef = doc(firestore, "boss", body.id);
+                await updateDoc(docRef, boss);
+                return NextResponse.json({ message: '데이터 수정이 정상적으로 처리도었습니다.' }, { status: 200 });
+            case 'remove':
+                if (!body.id) {
+                    return NextResponse.json({ error: "문서 ID가 존재하지 않습니다." }, { status: 400 });
+                }
+                const removeRef = doc(firestore, "boss", body.id);
+                await deleteDoc(removeRef);
+                return NextResponse.json({ message: '데이터 삭제가 정상적으로 처리도었습니다.' }, { status: 200 });
             default:
                 return NextResponse.json({ error: '처리 방식에 오류가 발생하였습니다.' }, { status: 500 });
         }
