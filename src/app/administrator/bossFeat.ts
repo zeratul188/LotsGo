@@ -67,7 +67,7 @@ function isEmptyValue(inputs: Difficulty[]) {
     return isEmpty;
 }
 
-// 데이터 추가 또는 수정정 이벤트
+// 데이터 추가 또는 수정 이벤트
 export async function useOnAddData(
     inputName: string, 
     inputs: Difficulty[],
