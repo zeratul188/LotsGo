@@ -1,9 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
 import loginReducer from './loginSlice';
+import checklistReducer from './checklistSlice';
 
 export const store = configureStore({
     reducer: {
-        login: loginReducer
+        login: loginReducer,
+        checklist: checklistReducer
     }
 })
 
