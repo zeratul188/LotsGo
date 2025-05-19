@@ -99,9 +99,9 @@ function BossComponent() {
                                             {item.difficulty.map((difficulty: Difficulty, idx: number) => (
                                                 <TableRow key={idx}>
                                                     <TableCell>{difficulty.difficulty}</TableCell>
-                                              <TableCell>{difficulty.gold.toLocaleString()}</TableCell>
-                                                <TableCell>{difficulty.level.toLocaleString()}</TableCell>
-                                                              <TableCell>{difficulty.isBiweekly ? '○' : '✕'}</TableCell>
+                                                    <TableCell>{difficulty.level.toLocaleString()}</TableCell>
+                                                    <TableCell>{difficulty.gold.toLocaleString()}</TableCell>
+                                                    <TableCell>{difficulty.isBiweekly ? '○' : '✕'}</TableCell>
                                                 </TableRow>
                                             ))}
                                         </TableBody>
@@ -169,7 +169,7 @@ function BossComponent() {
                                                     placeholder="0 ~ 9999999"
                                                     minValue={0}
                                                     maxValue={9999999}
-                                                    step={500}
+                                                    step={10}
                                                     value={input.gold}
                                                     onValueChange={(value: number) => onValueChangeGold(value, index)}/>
                                                 <Switch 
