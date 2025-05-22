@@ -2,7 +2,7 @@
 import { useChecklistForm } from "./ChecklistForm"
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
-import { checkLogin, loadChecklist } from "./checklistFeat";
+import { checkLogin, getBosses, loadChecklist } from "./checklistFeat";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -17,10 +17,18 @@ export default function Checklist() {
     
     useEffect(() => {
         if (!expedition || expedition.length === 0) return;
-        if (checkLogin(router)) {
-            loadChecklist(checklistForm.setLoading, dispatch, expedition);
+        if (checkLogin(router) && checklistForm.bosses.length !== 0) {
+            loadChecklist(checklistForm.setLoading, dispatch, expedition, checklistForm.bosses);
         }
-    }, [expedition]);
+    }, [checklistForm.bosses, expedition]);
+
+    useEffect(() => {
+        const loadBosses = async () => {
+            const data = await getBosses();
+            checklistForm.setBosses(data);
+        }
+        loadBosses();
+    }, []);
 
     if (checklistForm.isLoading) {
         return <LoadingComponent heightStyle="min-h-[calc(100vh-65px)]"/>

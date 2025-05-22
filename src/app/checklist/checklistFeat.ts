@@ -28,7 +28,8 @@ export function checkLogin(router: AppRouterInstance): boolean {
 export async function loadChecklist(
     setLoading: SetStateFn<boolean>, 
     dispatch: AppDispatch,
-    expedition: Character[]
+    expedition: Character[],
+    bosses: Boss[]
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
@@ -51,18 +52,6 @@ export async function loadChecklist(
         dispatch(saveData(checklist));
         setLoading(false);
     } else {
-        const bossRes = await fetch('/api/checklist/boss');
-
-        if (!bossRes.ok) {
-            addToast({
-                title: "데이터 로드 오류 (콘텐츠)",
-                description: `데이터를 가져오는데 문제가 발생하였습니다.`,
-                color: "danger"
-            });
-            return;
-        }
-
-        const bosses: Boss[] = await bossRes.json();
         const top6: Character[] = expedition.slice().sort((a, b) => b.level - a.level).slice(0, 6);
         for (const character of top6) {
             const checkCharacter: CheckCharacter = {
@@ -80,7 +69,8 @@ export async function loadChecklist(
                 },
                 checklist: initialWeekContents(character.level, bosses),
                 daylist: [],
-                weeklist: []
+                weeklist: [],
+                cube: 0
             }
             checklist.push(checkCharacter);
         }
@@ -141,4 +131,21 @@ function initialWeekContents(level: number, bosses: Boss[]): Checklist[] {
         if (count === 3) break;
     }
     return checklist;
+}
+
+// 콘텐츠 정보 가져오는 항수
+export async function getBosses(): Promise<Boss[]> {
+    const bossRes = await fetch('/api/checklist/boss');
+
+    if (!bossRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        return [];
+    }
+
+    const bosses: Boss[] = await bossRes.json();
+    return bosses;
 }
