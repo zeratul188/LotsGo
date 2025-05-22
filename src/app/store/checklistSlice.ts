@@ -1,6 +1,6 @@
-import { createSlice } from "@reduxjs/toolkit"
+import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 
-export type DayList = {
+export type Day = {
     dungeon: number,
     dungeonBouus: number,
     boss: number,
@@ -8,21 +8,29 @@ export type DayList = {
     quest: number,
     questBonus: number
 }
+export type OtherList = {
+    name: string,
+    isCheck: boolean
+}
 export type Checklist = {
     name: string,
     difficulty: string,
     isCheck: boolean,
-    isDisable: boolean
+    isDisable: boolean,
+    isGold: boolean
 }
 export type CheckCharacter = {
     nickname: string,
     level: number,
     job: string,
     server: string,
-    checklist: Checklist[]
+    day: Day
+    daylist: OtherList[],
+    checklist: Checklist[],
+    weeklist: OtherList[]
 }
 type ChecklistState = {
-    checklist: Checklist[]
+    checklist: CheckCharacter[]
 }
 
 const initialState: ChecklistState = {
@@ -33,9 +41,11 @@ const checklistSlice = createSlice({
     name: 'checklist',
     initialState,
     reducers: {
-
+        saveData(state, action: PayloadAction<CheckCharacter[]>) {
+            state.checklist = action.payload;
+        }
     }
 })
 
-export const {  } = checklistSlice.actions;
+export const { saveData } = checklistSlice.actions;
 export default checklistSlice.reducer;

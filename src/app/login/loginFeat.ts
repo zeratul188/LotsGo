@@ -86,6 +86,7 @@ export function useLoginHandler(
         dispatch(switchAdministrator(isAdministrator));
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(loginUser));
+        localStorage.setItem('isAdministrator', isAdministrator);
 
         setLoading(false);
         setIdDuplicated(false);
