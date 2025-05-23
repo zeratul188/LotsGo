@@ -28,7 +28,9 @@ export type CheckCharacter = {
     daylist: OtherList[],
     checklist: Checklist[],
     weeklist: OtherList[],
-    cube: number
+    cube: number,
+    isGold: boolean,
+    otherGold: number
 }
 type ChecklistState = {
     checklist: CheckCharacter[]

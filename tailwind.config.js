@@ -16,6 +16,9 @@ module.exports = {
   theme: {
     extend: {
         animation: ['group-hover'],
+        screens: {
+          'md840': '840px'
+        }
     },
   },
   darkMode: 'class',

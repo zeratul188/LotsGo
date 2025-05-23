@@ -1,5 +1,5 @@
 import { AppDispatch } from "../store/store";
-import type { Day, CheckCharacter, Checklist } from "../store/checklistSlice";
+import type { CheckCharacter, Checklist } from "../store/checklistSlice";
 import { saveData } from "../store/checklistSlice";
 import { SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
@@ -70,7 +70,9 @@ export async function loadChecklist(
                 checklist: initialWeekContents(character.level, bosses),
                 daylist: [],
                 weeklist: [],
-                cube: 0
+                cube: 0,
+                isGold: true,
+                otherGold: 0
             }
             checklist.push(checkCharacter);
         }
@@ -148,4 +150,65 @@ export async function getBosses(): Promise<Boss[]> {
 
     const bosses: Boss[] = await bossRes.json();
     return bosses;
+}
+
+// 숙제 완료한 캐릭 수 반환 함수
+export function getCompleteChecklist(checklist: CheckCharacter[]): number {
+    return checklist.reduce((total, character) => {
+        const countFromChecklist = character.checklist
+            .filter(item => item.isCheck)
+            .reduce((sum) => sum++, 0);
+        return total + countFromChecklist;
+    }, 0);
+}
+
+// 숙제 총 개수 반환 함수
+export function getAllCountChecklist(checklist: CheckCharacter[]): number {
+    return checklist.reduce((total, character) => total + character.checklist.length, 0);
+}
+
+// 총 주간 수익 골드량 측정 함수
+export function getAllGolds(
+    bosses: Boss[],
+    checklist: CheckCharacter[]
+): number {
+    return checklist.reduce((total, character) => {
+        const goldFromChecklist = character.checklist
+            .filter(item => item.isGold)
+            .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.difficulty), 0);
+        return total + character.otherGold + goldFromChecklist;
+    }, 0);
+}
+
+// 주간 완료된 수익 골드량 측정 함수수
+export function getHaveGolds(
+    bosses: Boss[],
+    checklist: CheckCharacter[]
+): number {
+    return checklist.reduce((total, character) => {
+        const goldFromChecklist = character.checklist
+            .filter(item => item.isGold && item.isCheck)
+            .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.difficulty), 0);
+        return total + character.otherGold + goldFromChecklist;
+    }, 0);
+}
+
+// 특정 콘텐츠 골드 획득량 가져오는 함수수
+export function getBossGold(
+    bosses: Boss[],
+    name: string,
+    difficulty: string
+): number {
+    let gold: number = 0;
+    for (const boss of bosses) {
+        if (boss.name === name) {
+            for (const diff of boss.difficulty) {
+                if (diff.difficulty === difficulty) {
+                    gold = diff.gold;
+                    break;
+                }
+            }
+        }
+    }
+    return gold;
 }
