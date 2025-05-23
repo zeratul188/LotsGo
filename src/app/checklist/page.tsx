@@ -1,5 +1,5 @@
 'use client'
-import { ChecklistStatue, useChecklistForm } from "./ChecklistForm"
+import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer } from "./ChecklistForm"
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
 import { checkLogin, getBosses, loadChecklist } from "./checklistFeat";
@@ -38,6 +38,11 @@ export default function Checklist() {
         return (
             <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
                 <ChecklistStatue checklist={checklist} bosses={checklistForm.bosses}/>
+                <SelectServer 
+                    checklist={checklist} 
+                    server={checklistForm.server}
+                    setServer={checklistForm.setServer}/>
+                <ChecklistComponent checklist={checklist}/>
             </div>
         )
     }

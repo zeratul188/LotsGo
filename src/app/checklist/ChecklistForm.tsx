@@ -1,25 +1,32 @@
 import { useState } from "react";
 import { Boss } from "../api/checklist/boss/route";
 import { CheckCharacter } from "../store/checklistSlice";
-import { Button, Card, CardBody, Divider, Progress } from "@heroui/react";
+import { 
+    Button, 
+    Card, CardBody, 
+    Divider, 
+    Progress, 
+    RadioProps, RadioGroup, Radio, cn,
+    Tooltip 
+} from "@heroui/react";
 import Image from "next/image";
-import { getAllCountChecklist, getAllGolds, getCompleteChecklist, getHaveGolds } from "./checklistFeat";
-import { useMobileQuery } from "@/utiils/utils";
+import { getAllCountChecklist, getAllGolds, getCompleteChecklist, getHaveGolds, getServerList } from "./checklistFeat";
+import { SetStateFn, useMobileQuery } from "@/utiils/utils";
 
 // state 관리
 export function useChecklistForm() {
     const [isLoading, setLoading] = useState(true);
-    const [isEmpty, setEmpty] = useState(false);
     const [bosses, setBosses] = useState<Boss[]>([]);
+    const [server, setServer] = useState('전체');
 
     return {
         isLoading, setLoading,
-        isEmpty, setEmpty,
-        bosses, setBosses
+        bosses, setBosses,
+        server, setServer
     }
 }
 
-// 체크리스트 현황 컴포넌트트
+// 체크리스트 현황 컴포넌트
 type ChecklistStatueProps = {
     checklist: CheckCharacter[],
     bosses: Boss[]
@@ -67,12 +74,71 @@ export function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
                     </div>
                     <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
                     <div className="grow-1 flex justify-end items-center">
-                        <Button
-                            color="primary"
-                            className="w-full md840:w-[140px]">캐릭터 갱신하기</Button>
+                        <Tooltip 
+                            showArrow
+                            placement="left"
+                            content="캐릭터 정보만 수정되며, 체크리스트는 영향을 주지 않습니다.">
+                            <Button
+                                color="primary"
+                                className="w-full md840:w-[140px]">캐릭터 갱신하기</Button>
+                        </Tooltip>
                     </div>
                 </div>
             </CardBody>
         </Card>
+    )
+}
+
+// 서버 선택 컴포넌트
+type SelectServerProps = {
+    checklist: CheckCharacter[],
+    server: string,
+    setServer: SetStateFn<string>
+}
+export function SelectServer({ checklist, server, setServer }: SelectServerProps) {
+    return (
+        <RadioGroup
+            description="서버를 선택하면 해당 서버인 캐릭터만 조회됩니다." 
+            label="서버 선택"
+            orientation="horizontal"
+            value={server}
+            onValueChange={setServer}
+            className="mt-6">
+            <CustomRadio key={0} value="전체">전체</CustomRadio>
+            {getServerList(checklist).map((server, index) => (
+                <CustomRadio key={index+1} value={server}>{server}</CustomRadio>
+            ))}
+        </RadioGroup>
+    )
+}
+
+// 커스텀 라디오 요소
+function CustomRadio(props: RadioProps) {
+    const { children, ...otherProps } = props;
+    return (
+        <Radio
+            {...otherProps}
+            classNames={{
+                base: cn(
+                    "inline-flex m-0 bg-content1 hover:bg-content2 items-center justify-between",
+                    "flex-row-reverse max-w-[200px] cursor-pointer rounded-md gap-4 p-2 border-2 border-transparent",
+                    "data-[selected=true]:border-primary",
+                ),
+            }}>
+            {children}
+        </Radio>
+    )
+}
+
+// 체크리스트 컴포넌트
+type ChecklistProps = {
+    checklist: CheckCharacter[]
+}
+export function ChecklistComponent({ checklist }: ChecklistProps) {
+
+    return (
+        <div className="mt-5">
+            checklist
+        </div>
     )
 }

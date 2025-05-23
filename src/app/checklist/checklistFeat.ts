@@ -212,3 +212,9 @@ export function getBossGold(
     }
     return gold;
 }
+
+// 가지고 있는 서버 목록 반환 함수
+export function getServerList(checklist: CheckCharacter[]): string[] {
+    const list: string[] = Array.from(new Set(checklist.map((item) => item.server)));
+    return list;
+}
