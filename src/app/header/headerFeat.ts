@@ -21,13 +21,14 @@ export function useOnActionProfile() {
             case "logout":
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
+                localStorage.removeItem('isAdministrator');
                 dispatch(logout());
                 addToast({
                     title: "로그아웃 완료",
                     description: `로그아웃되었습니다.`,
                     color: "success"
                 });
-                router.push('/');
+                location.href = '/';
                 break;
             case "administrator":
                 router.push('/administrator');

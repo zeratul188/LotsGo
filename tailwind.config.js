@@ -17,7 +17,7 @@ module.exports = {
     extend: {
         animation: ['group-hover'],
         screens: {
-          'md840': '840px'
+          'md960': '960px'
         }
     },
   },

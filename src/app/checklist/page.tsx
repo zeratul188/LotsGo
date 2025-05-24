@@ -9,6 +9,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { CheckCharacter } from "../store/checklistSlice";
 import { Character } from "../store/loginSlice";
+import { addToast } from "@heroui/react";
 
 export default function Checklist() {
     const checklistForm = useChecklistForm();
@@ -19,7 +20,7 @@ export default function Checklist() {
     
     useEffect(() => {
         if (!expedition || expedition.length === 0) return;
-        if (checkLogin(router) && checklistForm.bosses.length !== 0) {
+        if (checkLogin() && checklistForm.bosses.length !== 0) {
             loadChecklist(checklistForm.setLoading, dispatch, expedition, checklistForm.bosses);
         }
     }, [checklistForm.bosses, expedition]);
@@ -30,6 +31,23 @@ export default function Checklist() {
             checklistForm.setBosses(data);
         }
         loadBosses();
+        if (!checkLogin()) {
+            addToast({
+                title: "이용 불가",
+                description: `로그인을 해야만 이용 가능합니다.`,
+                color: "danger"
+            });
+            router.push('/login');
+        }
+        const isAdministrator = localStorage.getItem('isAdministrator');
+        if (isAdministrator === 'true') {
+            addToast({
+                title: "관리자 이용 불가",
+                description: "관리자 계정은 해당 기능을 이용하실 수 없습니다.",
+                color: "danger"
+            });
+            router.push('/');
+        }
     }, []);
 
     if (checklistForm.isLoading) {
@@ -42,7 +60,11 @@ export default function Checklist() {
                     checklist={checklist} 
                     server={checklistForm.server}
                     setServer={checklistForm.setServer}/>
-                <ChecklistComponent checklist={checklist}/>
+                <ChecklistComponent 
+                    checklist={checklist} 
+                    server={checklistForm.server}
+                    bosses={checklistForm.bosses}
+                    dispatch={dispatch}/>
             </div>
         )
     }

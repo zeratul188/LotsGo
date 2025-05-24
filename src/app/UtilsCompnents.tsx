@@ -4,6 +4,7 @@ type LoadingComponentProps = {
     heightStyle: string;
 }
 
+// 로딩 중인 컴포넌넌트
 export function LoadingComponent({heightStyle}: LoadingComponentProps) {
     return (
         <div className={`flex justify-center items-center flex-col p-5 sm:p-0 w-full ${heightStyle}`}>
@@ -13,6 +14,7 @@ export function LoadingComponent({heightStyle}: LoadingComponentProps) {
     )
 }
 
+// 비어있을 경우 표현할 컨포넌트
 export function EmptyComponent({heightStyle}: LoadingComponentProps) {
     return (
         <div className={`flex justify-center items-center flex-col p-5 sm:p-0 w-full ${heightStyle}`}>

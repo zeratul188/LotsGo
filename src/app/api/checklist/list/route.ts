@@ -1,3 +1,4 @@
+import { CheckCharacter, Day } from "@/app/store/checklistSlice";
 import { firestore } from "@/utiils/firebase";
 import { collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
@@ -27,6 +28,8 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     const body = await req.json();
     const id = body.id;
+    const checklist: CheckCharacter[] = body.checklist;
+    const updatedChecklist = [...checklist];
 
     try {
         const q = query(collection(firestore, 'members'), where("id", "==", id));
@@ -41,11 +44,31 @@ export async function POST(req: NextRequest) {
         
         switch(body.type) {
             case 'init':
-                const checklist = body.checklist;
                 await updateDoc(docRef, {
                     checklist: checklist
                 });
                 return NextResponse.json({ message: '데이터 추가가 정상적으로 처리도었습니다.' }, { status: 200 });
+            case 'edit-day':
+                const day: Day = body.day;
+                const nickname = body.nickname;
+                const index = findIndexByNickname(checklist, nickname);
+                updatedChecklist[index] = {
+                    ...updatedChecklist[index],
+                    day: day
+                }
+                await updateDoc(docRef, {
+                    checklist: updatedChecklist
+                });
+                return NextResponse.json({ message: '데이터 수정이 정상적으로 처리도었습니다.' }, { status: 200 });
+            case 'check-week':
+                const characterIndex = body.characterIndex;
+                const checklistIndex = body.checklistIndex;
+                const checklistItem = body.checklistItem;
+                updatedChecklist[characterIndex].checklist[checklistIndex] = checklistItem;
+                await updateDoc(docRef, {
+                    checklist: updatedChecklist
+                });
+                return NextResponse.json({ message: '데이터 수정이 정상적으로 처리도었습니다.' }, { status: 200 });
             default: 
                 return NextResponse.json({ message: '처리 종류를 선택하지 않았습니다.' }, { status: 400 });
         }
@@ -53,4 +76,11 @@ export async function POST(req: NextRequest) {
         console.error(error);
         return NextResponse.json({ error: 'Failed load Database.' }, { status: 500 });
     }
+}
+
+function findIndexByNickname(
+    characters: CheckCharacter[], 
+    nickname: string
+): number {
+    return characters.findIndex((item) => item.nickname === nickname);
 }
