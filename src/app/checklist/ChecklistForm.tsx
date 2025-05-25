@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Boss } from "../api/checklist/boss/route";
-import { CheckCharacter } from "../store/checklistSlice";
+import { CheckCharacter, Checklist } from "../store/checklistSlice";
 import { 
     Button, 
     Card, CardBody, CardHeader,
@@ -14,10 +14,33 @@ import {
     Modal, ModalContent,
     ModalHeader,
     ModalBody,
-    Table, TableHeader, TableColumn, TableBody, TableRow, TableCell
+    Table, TableHeader, TableColumn, TableBody, TableRow, TableCell,
+    Select, SelectItem, Selection
 } from "@heroui/react";
 import Image from "next/image";
-import { DayValue, getAllCountChecklist, getAllGoldCharacter, getAllGolds, getCompleteChecklist, getCompleteGoldCharacter, getDayName, getHaveGolds, getMaxRestValue, getServerList, getTypeDayValue, useOnClickDayCheck, useOnClickRemoveItem, useOnClickWeekCheck } from "./checklistFeat";
+import { 
+    DayValue, 
+    getAllCountChecklist, 
+    getAllGoldCharacter, 
+    getAllGolds, 
+    getBossesById, 
+    getCompleteChecklist, 
+    getCompleteGoldCharacter, 
+    getDayName, 
+    getHaveGolds, 
+    getMaxRestValue, 
+    getServerList, 
+    getTakeGold, 
+    getTypeDayValue, 
+    getWeekContents, 
+    getWeekDifficultys, 
+    isBiweeklyContent, 
+    isCheckBiweeklyContent, 
+    useOnClickAddItem, 
+    useOnClickDayCheck, 
+    useOnClickRemoveItem, 
+    useOnClickWeekCheck 
+} from "./checklistFeat";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
 import { SettingIcon } from "../icons/SettingIcon";
 import clsx from "clsx";
@@ -368,9 +391,10 @@ type ChecklistModalProps = {
     modalData: ModalData,
     onOpenChange: () => void,
     checklist: CheckCharacter[],
-    dispatch: AppDispatch
+    dispatch: AppDispatch,
+    bosses: Boss[]
 }
-export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dispatch }: ChecklistModalProps) {
+export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dispatch, bosses }: ChecklistModalProps) {
     if (modalData.characterIndex !== -1) {
         return (
             <Modal
@@ -378,13 +402,20 @@ export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dis
                 isOpen={isOpen}
                 onOpenChange={onOpenChange}>
                 <ModalContent>
-                    {(onCLose) => (
+                    {(onClose) => (
                         <>
                             <ModalHeader>
                                 <span>{checklist[modalData.characterIndex].nickname} 콘텐츠 관리</span>
                             </ModalHeader>
                             <ModalBody>
-                                {modalData.type === 'day' ? <DayModalContent/> : <WeekModalContent checklist={checklist} index={modalData.characterIndex} dispatch={dispatch}/>}
+                                {modalData.type === 'day' ? 
+                                    <DayModalContent/> : 
+                                    <WeekModalContent 
+                                        checklist={checklist} 
+                                        index={modalData.characterIndex} 
+                                        dispatch={dispatch}
+                                        bosses={bosses}
+                                        onClose={onClose}/>}
                             </ModalBody>
                         </>
                     )}
@@ -405,9 +436,57 @@ function DayModalContent() {
 type WeekModalContentProps = {
     checklist: CheckCharacter[],
     index: number,
-    dispatch: AppDispatch
+    dispatch: AppDispatch,
+    bosses: Boss[],
+    onClose: () => void
 }
-function WeekModalContent({ checklist, index, dispatch }: WeekModalContentProps) {
+function WeekModalContent({ checklist, index, dispatch, bosses, onClose }: WeekModalContentProps) {
+    const [content, setContent] = useState<Selection>(new Set([]));
+    const [difficulty, setDifficulty] = useState<Selection>(new Set([]));
+    const [isGold, setGold] = useState(false);
+    const [isDisableGold, setDisableGold] = useState(false);
+    const [isLoadingAdd, setLoadingAdd] = useState(false);
+
+    useEffect(() => {
+        if (getTakeGold(checklist[index].checklist) >= 3) {
+            if (Array.from(content)[0] && Array.from(difficulty)[0]) {
+                if (isBiweeklyContent(
+                        checklist[index].checklist, 
+                        Array.from(content)[0].toString(), 
+                        Number(Array.from(difficulty)[0].toString()), 
+                        bosses)
+                ) {
+                    setGold(true);
+                    setDisableGold(false);
+                } else {
+                    setGold(false);
+                    setDisableGold(true);
+                }
+            } else {
+                setGold(false);
+                setDisableGold(true);
+            }
+        } else {
+            if (Array.from(content)[0] && Array.from(difficulty)[0]) {
+                if (isCheckBiweeklyContent(
+                        checklist[index].checklist, 
+                        Array.from(content)[0].toString(), 
+                        Number(Array.from(difficulty)[0].toString()), 
+                        bosses)
+                ) {
+                    setGold(false);
+                    setDisableGold(true);
+                } else {
+                    setGold(true);
+                    setDisableGold(false);
+                }
+            } else {
+                setGold(true);
+                setDisableGold(false);
+            }
+        }
+    }, [difficulty]);
+
     return (
         <div className="w-full">
             <Table aria-label="checklist-table" removeWrapper>
@@ -432,6 +511,80 @@ function WeekModalContent({ checklist, index, dispatch }: WeekModalContentProps)
                     ))}
                 </TableBody>
             </Table>
+            <Divider className="mt-4"/>
+            <div className="mt-4 pb-4">
+                <div className="flex gap-1 items-center">
+                    <span className="grow text-xl">콘텐츠 추가</span>
+                    <Tooltip showArrow content="골드를 획득하는 콘텐츠는 총 3회까지만 인정됩니다. 단, 격주로 가능한 4관같은 경우에는 인정됩니다.">
+                        <Image 
+                            src="/icons/gold.png" 
+                            width={18} 
+                            height={18} 
+                            alt="goldicon"
+                            className="w-[18px] h-[18px]"/>
+                    </Tooltip>
+                    <span className="text-md">({getTakeGold(checklist[index].checklist)}/3)</span>
+                </div>
+                <Select
+                    placeholder="주간 콘텐츠 선택"
+                    label="주간 콘텐츠"
+                    variant="underlined"
+                    selectedKeys={content}
+                    onSelectionChange={setContent}
+                    className="mt-2">
+                    {getWeekContents(bosses).map((item) => (
+                        <SelectItem key={item.key}>{item.name}</SelectItem>
+                    ))}
+                </Select>
+                <Select
+                    placeholder="난이도 선택"
+                    label="난이도"
+                    variant="underlined"
+                    selectedKeys={difficulty}
+                    onSelectionChange={setDifficulty}
+                    className={clsx(
+                        "mt-2",
+                        Array.from(content)[0] ? 'block' : "hidden"
+                    )}>
+                    {Array.from(content)[0] ? getWeekDifficultys(bosses, Array.from(content)[0].toString()).map((item) => (
+                        <SelectItem key={item.key}>{item.name}</SelectItem>
+                    )) : <></>}
+                </Select>
+                <div className={clsx(
+                    "mt-3",
+                    Array.from(difficulty)[0] ? 'block' : "hidden"
+                )}>
+                    <Checkbox
+                        color="warning"
+                        isDisabled={isDisableGold}
+                        isSelected={isGold}
+                        onValueChange={setGold}>골드 체크</Checkbox>
+                </div>
+                <Button 
+                    fullWidth
+                    color="primary"
+                    isLoading={isLoadingAdd}
+                    onPress={async () => {
+                        if (Array.from(content)[0] && Array.from(difficulty)[0]) {
+                            setLoadingAdd(true);
+                            const name: string = getBossesById(bosses, Array.from(content)[0].toString())?.name ?? '';
+                            const diff: string = getBossesById(bosses, Array.from(content)[0].toString())?.difficulty[Number(Array.from(difficulty)[0].toString())].difficulty ?? '';
+                            const addItem: Checklist = {
+                                name: name,
+                                difficulty: diff,
+                                isCheck: false,
+                                isGold: isGold,
+                                isDisable: false
+                            }
+                            await useOnClickAddItem(checklist, index, addItem, dispatch, setLoadingAdd, onClose);
+                        }
+                        
+                    }}
+                    className={clsx(
+                        "mt-4",
+                        Array.from(difficulty)[0] ? 'block' : "hidden"
+                    )}>추가</Button>
+            </div>
         </div>
     )
 }

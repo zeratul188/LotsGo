@@ -3,7 +3,7 @@ import type { CheckCharacter, Checklist, Day } from "../store/checklistSlice";
 import { checkWeek, editDay, removeWeek, saveData } from "../store/checklistSlice";
 import { SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
-import { Boss } from "../api/checklist/boss/route";
+import { Boss, Difficulty } from "../api/checklist/boss/route";
 import { Character, LoginUser } from "../store/loginSlice";
 
 // 로그인 여부 확인 함수
@@ -441,7 +441,6 @@ export async function useOnClickRemoveItem(
     const id = storedUser.id;
     const prevChecklist = checklist[characterIndex].checklist;
     const newChecklist = prevChecklist.filter((_, i) => i !== checklistIndex);
-    console.log(newChecklist);
     dispatch(removeWeek({
         characterIndex: characterIndex,
         checklist: newChecklist
@@ -463,10 +462,141 @@ export async function useOnClickRemoveItem(
             description: `데이터를 가져오는데 문제가 발생하였습니다.`,
             color: "danger"
         });
-    dispatch(removeWeek({
-        characterIndex: characterIndex,
-        checklist: prevChecklist
-    }));
+        dispatch(removeWeek({
+            characterIndex: characterIndex,
+            checklist: prevChecklist
+        }));
         return;
     }
+}
+
+// 주간 콘텐츠 추가 이벤트 함수
+export async function useOnClickAddItem(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    addChecklist: Checklist,
+    dispatch: AppDispatch,
+    setLoadingAdd: SetStateFn<boolean>,
+    onClose: () => void
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const prevChecklist = checklist[characterIndex].checklist;
+    const newChecklist = [...checklist[characterIndex].checklist];
+    newChecklist.push(addChecklist);
+    dispatch(removeWeek({
+        characterIndex: characterIndex,
+        checklist: newChecklist
+    }));
+    const addRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'remove-week-item',
+            characterIndex: characterIndex,
+            weekChecklist: newChecklist
+        })
+    });
+    if (!addRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        dispatch(removeWeek({
+            characterIndex: characterIndex,
+            checklist: prevChecklist
+        }));
+        return;
+    }
+    setLoadingAdd(false);
+    onClose();
+}
+
+// 골드 받는 콘텐츠 개수 반환 함수
+export function getTakeGold(checklist: Checklist[]): number {
+    return checklist.filter(item => item.isGold).length;
+}
+
+// 콘텐츠 목록 가져오는 함수
+export type WeekContent = {
+    key: string,
+    name: string
+}
+export function getWeekContents(bosses: Boss[]): WeekContent[] {
+    const contents: WeekContent[] = [];
+    for (const boss of bosses) {
+        contents.push({
+            key: boss.id,
+            name: boss.name
+        });
+    }
+    return contents;
+}
+
+// 콘텐츠의 난이도 목록을 가져오는 함수
+export function getWeekDifficultys(bosses: Boss[], key: string): WeekContent[] {
+    const boss = getBossesById(bosses, key);
+    const difficultys: WeekContent[] = [];
+    let taskKey = 0;
+    if (boss) {
+        for (const difficulty of boss.difficulty) {
+            difficultys.push({
+                key: taskKey.toString(),
+                name: difficulty.difficulty
+            });
+            taskKey++;
+        }
+        return difficultys;
+    }
+    return [];
+}
+
+// id로 콘텐츠 Boss 반환하는 함수
+export function getBossesById(bosses: Boss[], id: string): Boss | undefined {
+    return bosses.find(item => item.id === id);
+}
+
+// index로 Boss의 난이도를 반환하는 함수
+export function getDifficultyByIndex(boss: Boss, index: number): Difficulty {
+    return boss.difficulty[index];
+}
+
+// 격주 관련 골드 체크 포함 여부 확인 함수
+export function isBiweeklyContent(
+    checklist: Checklist[], 
+    contentKey: string, 
+    difficultyIndex: number,
+    bosses: Boss[]
+): boolean {
+    let isIncludes = false;
+    const findBoss = getBossesById(bosses, contentKey);
+    if (findBoss) {
+        const isIncludeBoss = checklist.some(item => item.name === findBoss.name);
+        if (isIncludeBoss && findBoss.difficulty[difficultyIndex].isBiweekly) {
+            isIncludes = true;
+        }
+    }
+    return isIncludes;
+}
+
+// 격주 관련 격주가 아닌 콘텐츠에서 격주 콘텐츠 추가할 경우 확인 함수
+export function isCheckBiweeklyContent(
+    checklist: Checklist[], 
+    contentKey: string, 
+    difficultyIndex: number,
+    bosses: Boss[]
+): boolean {
+    let isIncludes = false;
+    const findBoss = getBossesById(bosses, contentKey);
+    if (findBoss) {
+        const isIncludeBoss = checklist.some(item => item.name === findBoss.name);
+        if (!isIncludeBoss && findBoss.difficulty[difficultyIndex].isBiweekly) {
+            isIncludes = true;
+        }
+    }
+    return isIncludes;
 }

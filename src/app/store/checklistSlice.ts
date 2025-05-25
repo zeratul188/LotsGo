@@ -80,10 +80,10 @@ const checklistSlice = createSlice({
         checkWeek(state, action: PayloadAction<CheckWeek>) {
             state.checklist[action.payload.characterIndex].checklist[action.payload.checklistIndex] = action.payload.checklist;
         },
-        // 주간 콘텐츠 삭제
+        // 주간 콘텐츠 삭제 (+추가)
         removeWeek(state, action: PayloadAction<RemoveWeek>) {
             state.checklist[action.payload.characterIndex].checklist = action.payload.checklist;
-        }
+        },
     }
 })
 

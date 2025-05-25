@@ -72,7 +72,8 @@ export default function Checklist() {
                     modalData={checklistForm.modalData}
                     onOpenChange={checklistForm.onOpenChange}
                     checklist={checklist}
-                    dispatch={dispatch}/>
+                    dispatch={dispatch}
+                    bosses={checklistForm.bosses}/>
             </div>
         )
     }
