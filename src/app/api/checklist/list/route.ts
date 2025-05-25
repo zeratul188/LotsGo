@@ -41,6 +41,8 @@ export async function POST(req: NextRequest) {
 
         const targetDoc = snapshot.docs[0];
         const docRef = doc(firestore, "members", targetDoc.id);
+
+        let characterIndex = -1, checklistIndex = -1;
         
         switch(body.type) {
             case 'init':
@@ -61,14 +63,23 @@ export async function POST(req: NextRequest) {
                 });
                 return NextResponse.json({ message: '데이터 수정이 정상적으로 처리도었습니다.' }, { status: 200 });
             case 'check-week':
-                const characterIndex = body.characterIndex;
-                const checklistIndex = body.checklistIndex;
+                characterIndex = body.characterIndex;
+                checklistIndex = body.checklistIndex;
                 const checklistItem = body.checklistItem;
                 updatedChecklist[characterIndex].checklist[checklistIndex] = checklistItem;
                 await updateDoc(docRef, {
                     checklist: updatedChecklist
                 });
                 return NextResponse.json({ message: '데이터 수정이 정상적으로 처리도었습니다.' }, { status: 200 });
+            case 'remove-week-item':
+                characterIndex = body.characterIndex;
+                const weekChecklist = body.weekChecklist;
+                console.log(weekChecklist);
+                updatedChecklist[characterIndex].checklist = weekChecklist;
+                await updateDoc(docRef, {
+                    checklist: updatedChecklist
+                });
+                return NextResponse.json({ message: '데이터 삭제가 정상적으로 처리도었습니다.' }, { status: 200 });
             default: 
                 return NextResponse.json({ message: '처리 종류를 선택하지 않았습니다.' }, { status: 400 });
         }

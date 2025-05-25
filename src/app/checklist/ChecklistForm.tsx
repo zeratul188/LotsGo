@@ -9,10 +9,15 @@ import {
     RadioProps, RadioGroup, Radio, cn,
     Tooltip,
     Chip,
-    Checkbox
+    Checkbox,
+    useDisclosure,
+    Modal, ModalContent,
+    ModalHeader,
+    ModalBody,
+    Table, TableHeader, TableColumn, TableBody, TableRow, TableCell
 } from "@heroui/react";
 import Image from "next/image";
-import { DayValue, getAllCountChecklist, getAllGoldCharacter, getAllGolds, getCompleteChecklist, getCompleteGoldCharacter, getDayName, getHaveGolds, getMaxRestValue, getServerList, getTypeDayValue, useOnClickDayCheck, useOnClickWeekCheck } from "./checklistFeat";
+import { DayValue, getAllCountChecklist, getAllGoldCharacter, getAllGolds, getCompleteChecklist, getCompleteGoldCharacter, getDayName, getHaveGolds, getMaxRestValue, getServerList, getTypeDayValue, useOnClickDayCheck, useOnClickRemoveItem, useOnClickWeekCheck } from "./checklistFeat";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
 import { SettingIcon } from "../icons/SettingIcon";
 import clsx from "clsx";
@@ -20,15 +25,26 @@ import { AppDispatch } from "../store/store";
 import AddIcon from "../icons/AddIcon";
 
 // state 관리
+export type ModalData = {
+    characterIndex: number,
+    type: string
+}
 export function useChecklistForm() {
     const [isLoading, setLoading] = useState(true);
     const [bosses, setBosses] = useState<Boss[]>([]);
     const [server, setServer] = useState('전체');
+    const {isOpen, onOpen, onOpenChange} = useDisclosure();
+    const [modalData, setModalData] = useState<ModalData>({
+        characterIndex: -1,
+        type: 'null'
+    });
 
     return {
         isLoading, setLoading,
         bosses, setBosses,
-        server, setServer
+        server, setServer,
+        isOpen, onOpen, onOpenChange,
+        modalData, setModalData
     }
 }
 
@@ -149,9 +165,11 @@ type ChecklistProps = {
     checklist: CheckCharacter[],
     server: string,
     bosses: Boss[],
-    dispatch: AppDispatch
+    dispatch: AppDispatch,
+    onOpen: () => void,
+    setModalData: SetStateFn<ModalData>
 }
-export function ChecklistComponent({ checklist, server, bosses, dispatch }: ChecklistProps) {
+export function ChecklistComponent({ checklist, server, bosses, dispatch, onOpen, setModalData }: ChecklistProps) {
     return (
         <div className="mt-5 grid grid-cols-1 md960:grid-cols-2 gap-4">
             {checklist
@@ -217,7 +235,14 @@ export function ChecklistComponent({ checklist, server, bosses, dispatch }: Chec
                                         fullWidth 
                                         size="sm" 
                                         startContent={<AddIcon size={16}/>}
-                                        className="mt-2">추가</Button>
+                                        className="mt-2"
+                                        onPress={() => {
+                                            setModalData({
+                                                characterIndex: index,
+                                                type: 'day'
+                                            });
+                                            onOpen();
+                                        }}>추가</Button>
                                 </div>
                                 <Divider className="block md960:hidden"/>
                                 <Divider orientation="vertical" className="hidden md960:block"/>
@@ -256,7 +281,14 @@ export function ChecklistComponent({ checklist, server, bosses, dispatch }: Chec
                                         fullWidth 
                                         size="sm" 
                                         startContent={<AddIcon size={16}/>}
-                                        className="mt-2">추가</Button>
+                                        className="mt-2"
+                                        onPress={() => {
+                                            setModalData({
+                                                characterIndex: index,
+                                                type: 'week'
+                                            });
+                                            onOpen();
+                                        }}>추가</Button>
                                 </div>
                             </div>
                         </CardBody>
@@ -326,6 +358,80 @@ function RestComponent({ restValue, type }: RestComponentProps) {
                     )}/>
                 </div>
             ))}
+        </div>
+    )
+}
+
+// 숙제 추가 및 삭제 Modal
+type ChecklistModalProps = {
+    isOpen: boolean,
+    modalData: ModalData,
+    onOpenChange: () => void,
+    checklist: CheckCharacter[],
+    dispatch: AppDispatch
+}
+export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dispatch }: ChecklistModalProps) {
+    if (modalData.characterIndex !== -1) {
+        return (
+            <Modal
+                isDismissable={false}
+                isOpen={isOpen}
+                onOpenChange={onOpenChange}>
+                <ModalContent>
+                    {(onCLose) => (
+                        <>
+                            <ModalHeader>
+                                <span>{checklist[modalData.characterIndex].nickname} 콘텐츠 관리</span>
+                            </ModalHeader>
+                            <ModalBody>
+                                {modalData.type === 'day' ? <DayModalContent/> : <WeekModalContent checklist={checklist} index={modalData.characterIndex} dispatch={dispatch}/>}
+                            </ModalBody>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+        )
+    } else {
+        return <></>;
+    }
+}
+
+// 일일 콘텐츠 추가 및 삭제 컴포넌트
+function DayModalContent() {
+    return <div>day</div>
+}
+
+// 주간 콘텐츠 추가 및 삭제 컴포넌트
+type WeekModalContentProps = {
+    checklist: CheckCharacter[],
+    index: number,
+    dispatch: AppDispatch
+}
+function WeekModalContent({ checklist, index, dispatch }: WeekModalContentProps) {
+    return (
+        <div className="w-full">
+            <Table aria-label="checklist-table" removeWrapper>
+                <TableHeader>
+                    <TableColumn>콘텐츠명</TableColumn>
+                    <TableColumn>난이도</TableColumn>
+                    <TableColumn>삭제</TableColumn>
+                </TableHeader>
+                <TableBody>
+                    {checklist[index].checklist.map((item, idx) => (
+                        <TableRow key={idx}>
+                            <TableCell>{item.name}</TableCell>
+                            <TableCell>{item.difficulty}</TableCell>
+                            <TableCell>
+                                <button className="underline redbutton" onClick={async () => {
+                                    if (confirm('해당 콘텐츠를 삭제하시겠습니까? 삭제 후 되돌릴 수 없습니다.')) {
+                                        await useOnClickRemoveItem(checklist, index, idx, dispatch);
+                                    }
+                                }}>삭제</button>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
         </div>
     )
 }

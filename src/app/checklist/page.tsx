@@ -1,5 +1,5 @@
 'use client'
-import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer } from "./ChecklistForm"
+import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal } from "./ChecklistForm"
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
 import { checkLogin, getBosses, loadChecklist } from "./checklistFeat";
@@ -64,6 +64,14 @@ export default function Checklist() {
                     checklist={checklist} 
                     server={checklistForm.server}
                     bosses={checklistForm.bosses}
+                    dispatch={dispatch}
+                    onOpen={checklistForm.onOpen}
+                    setModalData={checklistForm.setModalData}/>
+                <ChecklistModal
+                    isOpen={checklistForm.isOpen}
+                    modalData={checklistForm.modalData}
+                    onOpenChange={checklistForm.onOpenChange}
+                    checklist={checklist}
                     dispatch={dispatch}/>
             </div>
         )

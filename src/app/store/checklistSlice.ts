@@ -59,6 +59,10 @@ export type CheckWeek = {
     checklistIndex: number,
     checklist: Checklist
 }
+export type RemoveWeek = {
+    characterIndex: number,
+    checklist: Checklist[]
+}
 
 const checklistSlice = createSlice({
     name: 'checklist',
@@ -75,9 +79,13 @@ const checklistSlice = createSlice({
         // 주간 콘텐츠 체크
         checkWeek(state, action: PayloadAction<CheckWeek>) {
             state.checklist[action.payload.characterIndex].checklist[action.payload.checklistIndex] = action.payload.checklist;
+        },
+        // 주간 콘텐츠 삭제
+        removeWeek(state, action: PayloadAction<RemoveWeek>) {
+            state.checklist[action.payload.characterIndex].checklist = action.payload.checklist;
         }
     }
 })
 
-export const { saveData, editDay, checkWeek } = checklistSlice.actions;
+export const { saveData, editDay, checkWeek, removeWeek } = checklistSlice.actions;
 export default checklistSlice.reducer;

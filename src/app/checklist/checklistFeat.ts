@@ -1,6 +1,6 @@
 import { AppDispatch } from "../store/store";
 import type { CheckCharacter, Checklist, Day } from "../store/checklistSlice";
-import { checkWeek, editDay, saveData } from "../store/checklistSlice";
+import { checkWeek, editDay, removeWeek, saveData } from "../store/checklistSlice";
 import { SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
 import { Boss } from "../api/checklist/boss/route";
@@ -167,7 +167,7 @@ export function getCompleteChecklist(checklist: CheckCharacter[]): number {
     return checklist.reduce((total, character) => {
         const countFromChecklist = character.checklist
             .filter(item => item.isCheck)
-            .reduce((sum) => sum++, 0);
+            .reduce((sum) => sum+1, 0);
         return total + countFromChecklist;
     }, 0);
 }
@@ -312,6 +312,7 @@ export function useOnClickDayCheck(
     const id = storedUser.id;
     return async () => {
         const updatedDay = { ...day };
+        const prevDay = {...day};
         switch(type) {
             case "전선":
                 if (updatedDay.dungeon === max) {
@@ -353,6 +354,10 @@ export function useOnClickDayCheck(
                 }
                 break;
         }
+        dispatch(editDay({
+            nickname: nickname,
+            day: updatedDay
+        }));
         const editRes = await fetch(`/api/checklist/list`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -370,12 +375,12 @@ export function useOnClickDayCheck(
                 description: `데이터를 가져오는데 문제가 발생하였습니다.`,
                 color: "danger"
             });
+            dispatch(editDay({
+                nickname: nickname,
+                day: prevDay
+            }));
             return;
         }
-        dispatch(editDay({
-            nickname: nickname,
-            day: updatedDay
-        }));
     }
 }
 
@@ -390,7 +395,13 @@ export async function useOnClickWeekCheck(
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser.id;
     const updatedChecklist = {...checklist[characterIndex].checklist[checklistIndex]};
+    const prevChecklist = {...updatedChecklist};
     updatedChecklist.isCheck = !updatedChecklist.isCheck;
+    dispatch(checkWeek({
+        characterIndex: characterIndex,
+        checklistIndex: checklistIndex,
+        checklist: updatedChecklist
+    }));
     const editRes = await fetch(`/api/checklist/list`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -409,11 +420,53 @@ export async function useOnClickWeekCheck(
             description: `데이터를 가져오는데 문제가 발생하였습니다.`,
             color: "danger"
         });
+        dispatch(checkWeek({
+            characterIndex: characterIndex,
+            checklistIndex: checklistIndex,
+            checklist: prevChecklist
+        }));
         return;
     }
-    dispatch(checkWeek({
+}
+
+// 주간 콘텐츠 항목 제거 이벤트 함수
+export async function useOnClickRemoveItem(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    checklistIndex: number,
+    dispatch: AppDispatch
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const prevChecklist = checklist[characterIndex].checklist;
+    const newChecklist = prevChecklist.filter((_, i) => i !== checklistIndex);
+    console.log(newChecklist);
+    dispatch(removeWeek({
         characterIndex: characterIndex,
-        checklistIndex: checklistIndex,
-        checklist: updatedChecklist
+        checklist: newChecklist
     }));
+    const removeRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'remove-week-item',
+            characterIndex: characterIndex,
+            weekChecklist: newChecklist
+        })
+    });
+    if (!removeRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+    dispatch(removeWeek({
+        characterIndex: characterIndex,
+        checklist: prevChecklist
+    }));
+        return;
+    }
 }

@@ -80,3 +80,7 @@ body * {
 .fadedtext {
   @apply text-gray-500
 }
+
+.redbutton {
+  @apply cursor-pointer text-red-600 dark:text-red-400 hover:text-red-800 hover:dark:text-red-300
+}
