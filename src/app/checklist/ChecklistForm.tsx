@@ -37,10 +37,13 @@ import {
     getTypeDayValue, 
     getWeekContents, 
     getWeekDifficultys, 
+    handleDayListCheck, 
+    handleRemoveDayList, 
     handleRemoveWeekList, 
     handleWeekListCheck, 
     isBiweeklyContent, 
     isCheckBiweeklyContent, 
+    useOnClickAddDayList, 
     useOnClickAddItem, 
     useOnClickAddWeekList, 
     useOnClickDayCheck, 
@@ -260,6 +263,20 @@ export function ChecklistComponent({ checklist, server, bosses, dispatch, onOpen
                                     <RestCheckButton checklist={checklist} character={character} type="전선" dispatch={dispatch}/>
                                     <RestCheckButton checklist={checklist} character={character} type="가디언" dispatch={dispatch}/>
                                     <RestCheckButton checklist={checklist} character={character} type="에포나" dispatch={dispatch}/>
+                                    {character.daylist.map((item, idx) => (
+                                        <div key={idx}>
+                                            <Checkbox
+                                                lineThrough
+                                                aria-label={`checklist-${item.name}-${idx}`}
+                                                size="sm"
+                                                color="secondary"
+                                                radius="full"
+                                                isSelected={item.isCheck}
+                                                className="max-w-full mt-1"
+                                                onChange={async () => await handleDayListCheck(checklist, index, idx, dispatch)}>
+                                                {item.name}</Checkbox>
+                                        </div>
+                                    ))}
                                     <Button 
                                         color="primary" 
                                         variant="light" 
@@ -474,10 +491,70 @@ function DayModalContent({ checklist, index, dispatch, onClose }: DayModalConten
                         onClose={onClose}/>
                 </Tab>
                 <Tab key="other" title="기타">
-                    
+                    <DayListComponent
+                        checklist={checklist}
+                        dispatch={dispatch}
+                        index={index}
+                        onClose={onClose}/>
                 </Tab>
             </Tabs>
         </div>
+    )
+}
+
+// 일일 기타 숙제 관리 컴포넌트
+type DayListComponentProps = {
+    checklist: CheckCharacter[],
+    index: number,
+    dispatch: AppDispatch,
+    onClose: () => void
+}
+function DayListComponent({ checklist, index, dispatch, onClose }: DayListComponentProps) {
+    const [isLoadingAdd, setLoadingAdd] = useState(false);
+    const [inputValue, setInputValue] = useState('');
+    const otherItem: OtherList = {
+        name: inputValue,
+        isCheck: false
+    }
+    const onClickAddDayList = useOnClickAddDayList(checklist, index, dispatch, otherItem, setLoadingAdd, setInputValue);
+    return (
+        <>
+            <Input
+                fullWidth
+                isRequired
+                label="숙제"
+                placeholder="2~15자 안으로 작성하세요."
+                maxLength={15}
+                value={inputValue}
+                onValueChange={setInputValue}/>
+            <Button
+                fullWidth
+                isLoading={isLoadingAdd}
+                isDisabled={inputValue.trim() === ''}
+                color="primary"
+                className="mt-4"
+                onPress={onClickAddDayList}>추가</Button>
+            <Divider className="mt-6"/>
+            <Table aria-label="week-list-table" removeWrapper className="mt-6">
+                <TableHeader>
+                    <TableColumn>숙제명</TableColumn>
+                    <TableColumn>삭제</TableColumn>
+                </TableHeader>
+                <TableBody emptyContent={"설정된 콘텐츠가 없습니다."}>
+                    {checklist[index].daylist.map((item, idx) => (
+                        <TableRow key={idx}>
+                            <TableCell>{item.name}</TableCell>
+                            <TableCell>
+                                <button className="underline redbutton" onClick={async () => {
+                                    if (confirm('해당 숙제를 삭제하시겠습니까? 삭제 후 되돌릴 수 없습니다.')) {
+                                        await handleRemoveDayList(checklist, index, idx, dispatch);
+                                    }
+                                }}>삭제</button></TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </>
     )
 }
 
@@ -707,19 +784,14 @@ type WeekListComponentProps = {
     dispatch: AppDispatch,
     onClose: () => void
 }
-function WeekListComponent({
-    checklist,
-    index,
-    dispatch,
-    onClose
-}: WeekListComponentProps) {
+function WeekListComponent({ checklist, index, dispatch, onClose }: WeekListComponentProps) {
     const [isLoadingAdd, setLoadingAdd] = useState(false);
     const [inputValue, setInputValue] = useState('');
     const otherItem: OtherList = {
         name: inputValue,
         isCheck: false
     }
-    const onClickAddItem = useOnClickAddWeekList(checklist, index, dispatch, otherItem, setLoadingAdd, onClose);
+    const onClickAddItem = useOnClickAddWeekList(checklist, index, dispatch, otherItem, setLoadingAdd, setInputValue);
     return (
         <>
             <Input

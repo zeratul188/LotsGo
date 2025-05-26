@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
         const targetDoc = snapshot.docs[0];
         const docRef = doc(firestore, "members", targetDoc.id);
 
-        let characterIndex = -1, checklistIndex = -1;
+        let characterIndex = -1, checklistIndex = -1, listIndex = -1;
         
         switch(body.type) {
             case 'init':
@@ -73,13 +73,22 @@ export async function POST(req: NextRequest) {
                 return NextResponse.json({ message: '데이터 수정이 정상적으로 처리도었습니다.' }, { status: 200 });
             case 'check-week-list':
                 characterIndex = body.characterIndex;
-                const listIndex = body.listIndex;
+                listIndex = body.listIndex;
                 const weekListItem = body.listItem;
                 updatedChecklist[characterIndex].weeklist[listIndex] = weekListItem;
                 await updateDoc(docRef, {
                     checklist: updatedChecklist
                 });
                 return NextResponse.json({ message: '데이터 수정이 정상적으로 처리도었습니다.' }, { status: 200 });
+            case 'check-day-list':
+                characterIndex = body.characterIndex;
+                listIndex = body.listIndex;
+                const dayListItem = body.listItem;
+                updatedChecklist[characterIndex].daylist[listIndex] = dayListItem;
+                await updateDoc(docRef, {
+                    checklist: updatedChecklist
+                });
+                return NextResponse.json({ message: '데이터 삭제 또는 추가가 정상적으로 처리도었습니다.' }, { status: 200 });
             case 'remove-week-item':
                 characterIndex = body.characterIndex;
                 const weekChecklist = body.weekChecklist;
@@ -104,6 +113,14 @@ export async function POST(req: NextRequest) {
                     checklist: updatedChecklist
                 });
                 return NextResponse.json({ message: '휴식 게이지 저장이 정상적으로 처리도었습니다.' }, { status: 200 });
+            case 'edit-day-list-item':
+                characterIndex = body.characterIndex;
+                const dayList = body.daylist;
+                updatedChecklist[characterIndex].daylist = dayList;
+                await updateDoc(docRef, {
+                    checklist: updatedChecklist
+                });
+                return NextResponse.json({ message: '데이터 삭제 또는 추가가 정상적으로 처리도었습니다.' }, { status: 200 });
             default: 
                 return NextResponse.json({ message: '처리 종류를 선택하지 않았습니다.' }, { status: 400 });
         }

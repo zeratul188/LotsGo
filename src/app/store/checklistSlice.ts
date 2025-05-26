@@ -72,9 +72,18 @@ export type CheckWeekList = {
     listIndex: number,
     weeklist: OtherList
 }
+export type CheckDayList = {
+    characterIndex: number,
+    listIndex: number,
+    daylist: OtherList
+}
 export type RestStatue = {
     characterIndex: number,
     day: Day
+}
+export type EditDayList = {
+    characterIndex: number,
+    daylist: OtherList[]
 }
 
 const checklistSlice = createSlice({
@@ -115,6 +124,17 @@ const checklistSlice = createSlice({
         saveRest(state, action:PayloadAction<RestStatue>) {
             const characterIndex = action.payload.characterIndex;
             state.checklist[characterIndex].day = action.payload.day;
+        },
+        // 일일 목록 추가 및 삭제
+        editDayList(state, action: PayloadAction<EditDayList>) {
+            const characterIndex = action.payload.characterIndex;
+            state.checklist[characterIndex].daylist = action.payload.daylist;
+        },
+        // 일일 목록 체크
+        checkDayList(state, action: PayloadAction<CheckDayList>) {
+            const characterIndex = action.payload.characterIndex;
+            const listIndex = action.payload.listIndex;
+            state.checklist[characterIndex].daylist[listIndex] = action.payload.daylist;
         }
     }
 })
@@ -126,6 +146,8 @@ export const {
     removeWeek,
     editWeekList,
     checkWeekList,
-    saveRest
+    saveRest,
+    editDayList,
+    checkDayList
 } = checklistSlice.actions;
 export default checklistSlice.reducer;

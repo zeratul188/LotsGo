@@ -1,6 +1,6 @@
 import { AppDispatch } from "../store/store";
 import type { CheckCharacter, Checklist, Day, OtherList } from "../store/checklistSlice";
-import { checkWeek, checkWeekList, editDay, editWeekList, removeWeek, saveData, saveRest } from "../store/checklistSlice";
+import { checkDayList, checkWeek, checkWeekList, editDay, editDayList, editWeekList, removeWeek, saveData, saveRest } from "../store/checklistSlice";
 import { SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
 import { Boss, Difficulty } from "../api/checklist/boss/route";
@@ -429,6 +429,51 @@ export async function useOnClickWeekCheck(
     }
 }
 
+// 일일 숙제 체크 이벤트 함수
+export async function handleDayListCheck(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    listIndex: number,
+    dispatch: AppDispatch
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const updatedList = {...checklist[characterIndex].daylist[listIndex]};
+    const prevList = {...updatedList};
+    updatedList.isCheck = !updatedList.isCheck;
+    dispatch(checkDayList({
+        characterIndex: characterIndex,
+        listIndex: listIndex,
+        daylist: updatedList
+    }));
+    const editRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'check-day-list',
+            characterIndex: characterIndex,
+            listIndex: listIndex,
+            listItem: updatedList
+        })
+    });
+    if (!editRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        dispatch(checkDayList({
+            characterIndex: characterIndex,
+            listIndex: listIndex,
+            daylist: prevList
+        }));
+        return;
+    }
+}
+
 // 주간 숙제 체크 이벤트 함수
 export async function handleWeekListCheck(
     checklist: CheckCharacter[],
@@ -474,6 +519,54 @@ export async function handleWeekListCheck(
     }
 }
 
+// 일일 숙제 목록 추가 이벤트 함수
+export function useOnClickAddDayList(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    dispatch: AppDispatch,
+    addListItem: OtherList,
+    setLoadingAdd: SetStateFn<boolean>,
+    setInputValue: SetStateFn<string>
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const prevList = checklist[characterIndex].daylist;
+    const newList = [...checklist[characterIndex].daylist];
+    return async () => {
+        setLoadingAdd(true);
+        newList.push(addListItem);
+        dispatch(editDayList({
+            characterIndex: characterIndex,
+            daylist: newList
+        }));
+        const addRes = await fetch(`/api/checklist/list`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: id,
+                checklist: checklist,
+                type: 'edit-day-list-item',
+                characterIndex: characterIndex,
+                daylist: newList
+            })
+        });
+        if (!addRes.ok) {
+            addToast({
+                title: "데이터 로드 오류 (콘텐츠)",
+                description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+                color: "danger"
+            });
+            dispatch(editDayList({
+                characterIndex: characterIndex,
+                daylist: prevList
+            }));
+        }
+        setLoadingAdd(false);
+        setInputValue('');
+    }
+}
+
 // 주간 숙제 목록 추가 이벤트 함수
 export function useOnClickAddWeekList(
     checklist: CheckCharacter[],
@@ -481,7 +574,7 @@ export function useOnClickAddWeekList(
     dispatch: AppDispatch,
     addListItem: OtherList,
     setLoadingAdd: SetStateFn<boolean>,
-    onClose: () => void
+    setInputValue: SetStateFn<string>
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
@@ -519,7 +612,7 @@ export function useOnClickAddWeekList(
                 }));
             }
             setLoadingAdd(false);
-            onClose();
+            setInputValue('');
         }
     )
 }
@@ -623,6 +716,46 @@ export async function handleRemoveWeekList(
         dispatch(editWeekList({
             characterIndex: characterIndex,
             weeklist: prevList
+        }));
+    }
+}
+
+// 일일 숙제 목록 삭제 이벤트 함수
+export async function handleRemoveDayList(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    listIndex: number,
+    dispatch: AppDispatch,
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const prevList = checklist[characterIndex].daylist;
+    const newList = prevList.filter((_, i) => i !== listIndex);
+    dispatch(editDayList({
+        characterIndex: characterIndex,
+        daylist: newList
+    }));
+    const removeRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'edit-day-list-item',
+            characterIndex: characterIndex,
+            daylist: newList
+        })
+    });
+    if (!removeRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        dispatch(editDayList({
+            characterIndex: characterIndex,
+            daylist: prevList
         }));
     }
 }
