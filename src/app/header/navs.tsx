@@ -163,8 +163,16 @@ export function ProfileContent(props: SwitchProps) {
                                 ],
                             })}
                             onClick={() => {
-                                if (isSelected) setTheme('dark');
-                                else setTheme('light');
+                                const root = document.documentElement;
+                                if (isSelected) {
+                                    root.classList.add('dark');
+                                    setTheme('dark');
+                                    localStorage.setItem('theme', 'dark');
+                                } else {
+                                    setTheme('light');
+                                    root.classList.remove('dark');
+                                    localStorage.setItem('theme', 'light');
+                                }
                             }}>
                             {isSelected ? <SunIcon /> : <MoonIcon />}
                         </div>
