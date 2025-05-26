@@ -63,6 +63,15 @@ export type RemoveWeek = {
     characterIndex: number,
     checklist: Checklist[]
 }
+export type EditWeekList = {
+    characterIndex: number,
+    weeklist: OtherList[]
+}
+export type CheckWeekList = {
+    characterIndex: number,
+    listIndex: number,
+    weeklist: OtherList
+}
 
 const checklistSlice = createSlice({
     name: 'checklist',
@@ -78,14 +87,34 @@ const checklistSlice = createSlice({
         },
         // 주간 콘텐츠 체크
         checkWeek(state, action: PayloadAction<CheckWeek>) {
-            state.checklist[action.payload.characterIndex].checklist[action.payload.checklistIndex] = action.payload.checklist;
+            const characterIndex = action.payload.characterIndex;
+            const checklistIndex = action.payload.checklistIndex;
+            state.checklist[characterIndex].checklist[checklistIndex] = action.payload.checklist;
         },
         // 주간 콘텐츠 삭제 (+추가)
         removeWeek(state, action: PayloadAction<RemoveWeek>) {
-            state.checklist[action.payload.characterIndex].checklist = action.payload.checklist;
+            const characterIndex = action.payload.characterIndex;
+            state.checklist[characterIndex].checklist = action.payload.checklist;
         },
+        // 주간 목록 추가 및 삭제
+        editWeekList(state, action:PayloadAction<EditWeekList>) {
+            const characterIndex = action.payload.characterIndex;
+            state.checklist[characterIndex].weeklist = action.payload.weeklist;
+        },
+        checkWeekList(state, action:PayloadAction<CheckWeekList>) {
+            const characterIndex = action.payload.characterIndex;
+            const listIndex = action.payload.listIndex;
+            state.checklist[characterIndex].weeklist[listIndex] = action.payload.weeklist;
+        }
     }
 })
 
-export const { saveData, editDay, checkWeek, removeWeek } = checklistSlice.actions;
+export const { 
+    saveData, 
+    editDay, 
+    checkWeek, 
+    removeWeek,
+    editWeekList,
+    checkWeekList
+} = checklistSlice.actions;
 export default checklistSlice.reducer;

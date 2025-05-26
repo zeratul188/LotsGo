@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Boss } from "../api/checklist/boss/route";
-import { CheckCharacter, Checklist } from "../store/checklistSlice";
+import { CheckCharacter, Checklist, OtherList } from "../store/checklistSlice";
 import { 
     Button, 
     Card, CardBody, CardHeader,
@@ -15,7 +15,10 @@ import {
     ModalHeader,
     ModalBody,
     Table, TableHeader, TableColumn, TableBody, TableRow, TableCell,
-    Select, SelectItem, Selection
+    Select, SelectItem, Selection,
+    Tabs,
+    Tab,
+    Input
 } from "@heroui/react";
 import Image from "next/image";
 import { 
@@ -34,9 +37,12 @@ import {
     getTypeDayValue, 
     getWeekContents, 
     getWeekDifficultys, 
+    handleRemoveWeekList, 
+    handleWeekListCheck, 
     isBiweeklyContent, 
     isCheckBiweeklyContent, 
     useOnClickAddItem, 
+    useOnClickAddWeekList, 
     useOnClickDayCheck, 
     useOnClickRemoveItem, 
     useOnClickWeekCheck 
@@ -298,6 +304,19 @@ export function ChecklistComponent({ checklist, server, bosses, dispatch, onOpen
                                             </Checkbox>
                                         </div>
                                     ))}
+                                    {character.weeklist.map((item, idx) => (
+                                        <div key={idx}>
+                                            <Checkbox
+                                                lineThrough
+                                                aria-label={`checklist-${item.name}-${idx}`}
+                                                size="sm"
+                                                color="secondary"
+                                                isSelected={item.isCheck}
+                                                className="max-w-full mt-1"
+                                                onChange={async () => await handleWeekListCheck(checklist, index, idx, dispatch)}>
+                                                {item.name}</Checkbox>
+                                        </div>
+                                    ))}
                                     <Button 
                                         color="primary" 
                                         variant="light" 
@@ -445,7 +464,6 @@ function WeekModalContent({ checklist, index, dispatch, bosses, onClose }: WeekM
     const [difficulty, setDifficulty] = useState<Selection>(new Set([]));
     const [isGold, setGold] = useState(false);
     const [isDisableGold, setDisableGold] = useState(false);
-    const [isLoadingAdd, setLoadingAdd] = useState(false);
 
     useEffect(() => {
         if (getTakeGold(checklist[index].checklist) >= 3) {
@@ -489,6 +507,124 @@ function WeekModalContent({ checklist, index, dispatch, bosses, onClose }: WeekM
 
     return (
         <div className="w-full">
+            <Tabs fullWidth aria-label="week-modal">
+                <Tab key="content" title="콘텐츠">
+                    <WeekContentComponent
+                        checklist={checklist}
+                        index={index}
+                        dispatch={dispatch}
+                        bosses={bosses}
+                        onClose={onClose}
+                        content={content}
+                        difficulty={difficulty}
+                        setContent={setContent}
+                        setDifficulty={setDifficulty}
+                        isGold={isGold}
+                        setGold={setGold}
+                        isDisableGold={isDisableGold}/>
+                </Tab>
+                <Tab key="list" title="기타">
+                    <WeekListComponent
+                        checklist={checklist}
+                        index={index}
+                        dispatch={dispatch}
+                        onClose={onClose}/>
+                </Tab>
+            </Tabs>
+        </div>
+    )
+}
+
+// 주간 숙제 관리 컴포넌트
+type WeekListComponentProps = {
+    checklist: CheckCharacter[],
+    index: number,
+    dispatch: AppDispatch,
+    onClose: () => void
+}
+function WeekListComponent({
+    checklist,
+    index,
+    dispatch,
+    onClose
+}: WeekListComponentProps) {
+    const [isLoadingAdd, setLoadingAdd] = useState(false);
+    const [inputValue, setInputValue] = useState('');
+    const otherItem: OtherList = {
+        name: inputValue,
+        isCheck: false
+    }
+    const onClickAddItem = useOnClickAddWeekList(checklist, index, dispatch, otherItem, setLoadingAdd, onClose);
+    return (
+        <>
+            <Input
+                fullWidth
+                isRequired
+                label="숙제"
+                placeholder="2~15자 안으로 작성하세요."
+                maxLength={15}
+                value={inputValue}
+                onValueChange={setInputValue}/>
+            <Button
+                fullWidth
+                isLoading={isLoadingAdd}
+                isDisabled={inputValue.trim() === ''}
+                color="primary"
+                className="mt-4"
+                onPress={onClickAddItem}>추가</Button>
+            <Divider className="mt-6"/>
+            <Table aria-label="week-list-table" removeWrapper className="mt-6">
+                <TableHeader>
+                    <TableColumn>숙제명</TableColumn>
+                    <TableColumn>삭제</TableColumn>
+                </TableHeader>
+                <TableBody>
+                    {checklist[index].weeklist.map((item, idx) => (
+                        <TableRow key={idx}>
+                            <TableCell>{item.name}</TableCell>
+                            <TableCell>
+                                <button className="underline redbutton" onClick={async () => {
+                                    if (confirm('해당 숙제를 삭제하시겠습니까? 삭제 후 되돌릴 수 없습니다.')) {
+                                        await handleRemoveWeekList(checklist, index, idx, dispatch);
+                                    }
+                                }}>삭제</button></TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </>
+    )
+}
+
+// 주간 콘텐츠 관리 컴포넌트
+type WeekContentComponentProps = {
+    checklist: CheckCharacter[],
+    index: number,
+    dispatch: AppDispatch,
+    bosses: Boss[],
+    onClose: () => void,
+    content: Selection,
+    difficulty: Selection,
+    setContent: SetStateFn<Selection>,
+    setDifficulty : SetStateFn<Selection>,
+    isGold: boolean,
+    setGold: SetStateFn<boolean>,
+    isDisableGold: boolean
+}
+function WeekContentComponent({
+    checklist,
+    index,
+    dispatch,
+    bosses,
+    onClose,
+    content, setContent,
+    difficulty, setDifficulty,
+    isGold, setGold,
+    isDisableGold
+}: WeekContentComponentProps) {
+    const [isLoadingAdd, setLoadingAdd] = useState(false);
+    return (
+        <>
             <Table aria-label="checklist-table" removeWrapper>
                 <TableHeader>
                     <TableColumn>콘텐츠명</TableColumn>
@@ -508,7 +644,7 @@ function WeekModalContent({ checklist, index, dispatch, bosses, onClose }: WeekM
                                 }}>삭제</button>
                             </TableCell>
                         </TableRow>
-                    ))}
+                        ))}
                 </TableBody>
             </Table>
             <Divider className="mt-4"/>
@@ -585,6 +721,6 @@ function WeekModalContent({ checklist, index, dispatch, bosses, onClose }: WeekM
                         Array.from(difficulty)[0] ? 'block' : "hidden"
                     )}>추가</Button>
             </div>
-        </div>
+        </>
     )
 }

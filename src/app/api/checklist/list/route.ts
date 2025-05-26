@@ -71,10 +71,27 @@ export async function POST(req: NextRequest) {
                     checklist: updatedChecklist
                 });
                 return NextResponse.json({ message: '데이터 수정이 정상적으로 처리도었습니다.' }, { status: 200 });
+            case 'check-week-list':
+                characterIndex = body.characterIndex;
+                const listIndex = body.listIndex;
+                const weekListItem = body.listItem;
+                updatedChecklist[characterIndex].weeklist[listIndex] = weekListItem;
+                await updateDoc(docRef, {
+                    checklist: updatedChecklist
+                });
+                return NextResponse.json({ message: '데이터 수정이 정상적으로 처리도었습니다.' }, { status: 200 });
             case 'remove-week-item':
                 characterIndex = body.characterIndex;
                 const weekChecklist = body.weekChecklist;
                 updatedChecklist[characterIndex].checklist = weekChecklist;
+                await updateDoc(docRef, {
+                    checklist: updatedChecklist
+                });
+                return NextResponse.json({ message: '데이터 삭제 또는 추가가 정상적으로 처리도었습니다.' }, { status: 200 });
+            case 'edit-week-list-item':
+                characterIndex = body.characterIndex;
+                const weekList = body.weekList;
+                updatedChecklist[characterIndex].weeklist = weekList;
                 await updateDoc(docRef, {
                     checklist: updatedChecklist
                 });
