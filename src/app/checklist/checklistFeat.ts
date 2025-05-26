@@ -125,7 +125,8 @@ function initialWeekContents(level: number, bosses: Boss[]): Checklist[] {
                     difficulty: difficulty.difficulty,
                     isCheck: false,
                     isDisable: false,
-                    isGold: true
+                    isGold: true,
+                    isBiweekly: difficulty.isBiweekly
                 });
                 isImport = true;
                 count++;
@@ -136,7 +137,8 @@ function initialWeekContents(level: number, bosses: Boss[]): Checklist[] {
                     difficulty: difficulty.difficulty,
                     isCheck: false,
                     isDisable: false,
-                    isGold: true
+                    isGold: true,
+                    isBiweekly: difficulty.isBiweekly
                 });
             }
         }

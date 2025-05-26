@@ -20,7 +20,8 @@ export type Checklist = {
     difficulty: string,
     isCheck: boolean,
     isDisable: boolean,
-    isGold: boolean
+    isGold: boolean,
+    isBiweekly: boolean
 }
 export type CheckCharacter = {
     nickname: string,

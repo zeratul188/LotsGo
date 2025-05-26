@@ -942,12 +942,14 @@ function WeekContentComponent({
                             setLoadingAdd(true);
                             const name: string = getBossesById(bosses, Array.from(content)[0].toString())?.name ?? '';
                             const diff: string = getBossesById(bosses, Array.from(content)[0].toString())?.difficulty[Number(Array.from(difficulty)[0].toString())].difficulty ?? '';
+                            const isBiweekly: boolean = getBossesById(bosses, Array.from(content)[0].toString())?.difficulty[Number(Array.from(difficulty)[0].toString())].isBiweekly ?? false;
                             const addItem: Checklist = {
                                 name: name,
                                 difficulty: diff,
                                 isCheck: false,
                                 isGold: isGold,
-                                isDisable: false
+                                isDisable: false,
+                                isBiweekly: isBiweekly
                             }
                             await useOnClickAddItem(checklist, index, addItem, dispatch, setLoadingAdd, onClose);
                         }
