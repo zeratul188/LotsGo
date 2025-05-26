@@ -45,6 +45,7 @@ import {
     useOnClickAddWeekList, 
     useOnClickDayCheck, 
     useOnClickRemoveItem, 
+    useOnClickSaveRestValue, 
     useOnClickWeekCheck 
 } from "./checklistFeat";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
@@ -52,6 +53,7 @@ import { SettingIcon } from "../icons/SettingIcon";
 import clsx from "clsx";
 import { AppDispatch } from "../store/store";
 import AddIcon from "../icons/AddIcon";
+import { title } from "process";
 
 // state 관리
 export type ModalData = {
@@ -288,6 +290,7 @@ export function ChecklistComponent({ checklist, server, bosses, dispatch, onOpen
                                                 lineThrough
                                                 aria-label={`checklist-${item.name}-${idx}`}
                                                 size="sm"
+                                                radius="full"
                                                 isDisabled={item.isDisable}
                                                 isSelected={item.isCheck}
                                                 className="max-w-full mt-1"
@@ -311,6 +314,7 @@ export function ChecklistComponent({ checklist, server, bosses, dispatch, onOpen
                                                 aria-label={`checklist-${item.name}-${idx}`}
                                                 size="sm"
                                                 color="secondary"
+                                                radius="full"
                                                 isSelected={item.isCheck}
                                                 className="max-w-full mt-1"
                                                 onChange={async () => await handleWeekListCheck(checklist, index, idx, dispatch)}>
@@ -365,6 +369,7 @@ function RestCheckButton({ checklist, character, type, dispatch }: RestCheckButt
                 aria-label={`${character.nickname}'s ${type}`}
                 size="sm"
                 lineThrough
+                radius="full"
                 isSelected={type === '에포나' ? dayValue.value === 3 : dayValue.value === 1}
                 onChange={onClickDayCheck}>
                 {getDayName(type)} ({dayValue.value}/{type === '에포나' ? 3 : 1})
@@ -428,7 +433,11 @@ export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dis
                             </ModalHeader>
                             <ModalBody>
                                 {modalData.type === 'day' ? 
-                                    <DayModalContent/> : 
+                                    <DayModalContent
+                                        checklist={checklist}
+                                        index={modalData.characterIndex}
+                                        dispatch={dispatch}
+                                        onClose={onClose}/> : 
                                     <WeekModalContent 
                                         checklist={checklist} 
                                         index={modalData.characterIndex} 
@@ -447,8 +456,164 @@ export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dis
 }
 
 // 일일 콘텐츠 추가 및 삭제 컴포넌트
-function DayModalContent() {
-    return <div>day</div>
+type DayModalContentProps = {
+    checklist: CheckCharacter[],
+    index: number,
+    dispatch: AppDispatch,
+    onClose: () => void
+}
+function DayModalContent({ checklist, index, dispatch, onClose }: DayModalContentProps) {
+    return (
+        <div className="w-full">
+            <Tabs aria-label="day-tab" fullWidth>
+                <Tab key="rest" title="휴식 게이지">
+                    <RestStatueComponent
+                        checklist={checklist}
+                        dispatch={dispatch}
+                        index={index}
+                        onClose={onClose}/>
+                </Tab>
+                <Tab key="other" title="기타">
+                    
+                </Tab>
+            </Tabs>
+        </div>
+    )
+}
+
+// 휴식 게이지 관리 컴포넌트
+type RestStatueComponentProps = {
+    checklist: CheckCharacter[],
+    dispatch: AppDispatch,
+    index: number,
+    onClose: () => void
+}
+function RestStatueComponent({ checklist, dispatch, index, onClose }: RestStatueComponentProps) {
+    const initialRestValue = {
+        dungeon: checklist[index].day.dungeonBouus,
+        boss: checklist[index].day.bossBonus,
+        quest: checklist[index].day.questBonus
+    }
+    const [dungeon, setDungeon] = useState(initialRestValue.dungeon);
+    const [boss, setBoss] = useState(initialRestValue.boss);
+    const [quest, setQeust] = useState(initialRestValue.quest);
+    const [isLoadingSave, setLoadingSave] = useState(false);
+    const onClickSaveRest = useOnClickSaveRestValue(checklist, index, dispatch, setLoadingSave, dungeon, boss, quest, onClose);
+    return (
+        <div className="w-full">
+            <Progress
+                color="success"
+                radius="sm"
+                value={dungeon}
+                maxValue={getMaxRestValue('전선')}
+                label={<RestLabel value={dungeon} maxValue={getMaxRestValue('전선')} title="쿠르잔 전선"/>}/>
+            <div className="w-full gap-4 flex mt-4">
+                <Button
+                    color="danger"
+                    size="sm"
+                    isDisabled={dungeon <= 0}
+                    className="grow"
+                    onPress={() => {
+                        const max = getMaxRestValue('전선')
+                        let value = dungeon - max/10;
+                        if (value < 0) value = 0;
+                        setDungeon(value);
+                    }}>감소</Button>
+                <Button
+                    color="success"
+                    size="sm"
+                    isDisabled={dungeon >= getMaxRestValue('전선')}
+                    className="grow"
+                    onPress={() => {
+                        const max = getMaxRestValue('전선')
+                        let value = dungeon + max/10;
+                        if (value > max) value = max;
+                        setDungeon(value);
+                    }}>증가</Button>
+            </div>
+            <Progress
+                color="success"
+                radius="sm"
+                value={boss}
+                maxValue={getMaxRestValue('가디언')}
+                className="mt-6"
+                label={<RestLabel value={boss} maxValue={getMaxRestValue('가디언')} title="가디언 토벌"/>}/>
+            <div className="w-full gap-4 flex mt-4">
+                <Button
+                    color="danger"
+                    size="sm"
+                    isDisabled={boss <= 0}
+                    className="grow"
+                    onPress={() => {
+                        const max = getMaxRestValue('가디언')
+                        let value = boss - max/10;
+                        if (value < 0) value = 0;
+                        setBoss(value);
+                    }}>감소</Button>
+                <Button
+                    color="success"
+                    size="sm"
+                    isDisabled={boss >= getMaxRestValue('가디언')}
+                    className="grow"
+                    onPress={() => {
+                        const max = getMaxRestValue('가디언')
+                        let value = boss + max/10;
+                        if (value > max) value = max;
+                        setBoss(value);
+                    }}>증가</Button>
+            </div>
+            <Progress
+                color="success"
+                radius="sm"
+                value={quest}
+                className="mt-6"
+                maxValue={getMaxRestValue('에포나')}
+                label={<RestLabel value={quest} maxValue={getMaxRestValue('에포나')} title="에포나 의뢰"/>}/>
+            <div className="w-full gap-4 flex mt-4">
+                <Button
+                    color="danger"
+                    size="sm"
+                    isDisabled={quest <= 0}
+                    className="grow"
+                    onPress={() => {
+                        const max = getMaxRestValue('에포나')
+                        let value = quest - max/10;
+                        if (value < 0) value = 0;
+                        setQeust(value);
+                    }}>감소</Button>
+                <Button
+                    color="success"
+                    size="sm"
+                    isDisabled={quest >= getMaxRestValue('에포나')}
+                    className="grow"
+                    onPress={() => {
+                        const max = getMaxRestValue('에포나')
+                        let value = quest + max/10;
+                        if (value > max) value = max;
+                        setQeust(value);
+                    }}>증가</Button>
+            </div>
+            <Divider className="mt-6"/>
+            <div className="font-bold mb-1 mt-6">주의사항</div>
+            <p>휴식 게이지를 저장할 경우 사용된 휴식 게이지는 초기화됩니다. 체크 해제 시 사용된 휴식 게이지는 초기화되어 환급을 받지 못합니다.</p>
+            <Button
+                fullWidth
+                color="primary"
+                isLoading={isLoadingSave}
+                className="mt-4"
+                onPress={onClickSaveRest}>저장</Button>
+        </div>
+    )
+}
+
+// 휴식 게이지 프로그레스바 라벨
+type RestLabelProps = {
+    value: number,
+    maxValue : number,
+    title: string
+}
+function RestLabel({ value, maxValue, title }: RestLabelProps) {
+    return <span className="w-full">{title} : {value} / {maxValue}</span>;
 }
 
 // 주간 콘텐츠 추가 및 삭제 컴포넌트
@@ -578,7 +743,7 @@ function WeekListComponent({
                     <TableColumn>숙제명</TableColumn>
                     <TableColumn>삭제</TableColumn>
                 </TableHeader>
-                <TableBody>
+                <TableBody emptyContent={"설정된 콘텐츠가 없습니다."}>
                     {checklist[index].weeklist.map((item, idx) => (
                         <TableRow key={idx}>
                             <TableCell>{item.name}</TableCell>
@@ -631,7 +796,7 @@ function WeekContentComponent({
                     <TableColumn>난이도</TableColumn>
                     <TableColumn>삭제</TableColumn>
                 </TableHeader>
-                <TableBody>
+                <TableBody emptyContent={"설정된 콘텐츠가 없습니다."}>
                     {checklist[index].checklist.map((item, idx) => (
                         <TableRow key={idx}>
                             <TableCell>{item.name}</TableCell>

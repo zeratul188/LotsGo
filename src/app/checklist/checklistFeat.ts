@@ -1,6 +1,6 @@
 import { AppDispatch } from "../store/store";
 import type { CheckCharacter, Checklist, Day, OtherList } from "../store/checklistSlice";
-import { checkWeek, checkWeekList, editDay, editWeekList, removeWeek, saveData } from "../store/checklistSlice";
+import { checkWeek, checkWeekList, editDay, editWeekList, removeWeek, saveData, saveRest } from "../store/checklistSlice";
 import { SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
 import { Boss, Difficulty } from "../api/checklist/boss/route";
@@ -517,12 +517,74 @@ export function useOnClickAddWeekList(
                     characterIndex: characterIndex,
                     weeklist: prevList
                 }));
-                return;
             }
             setLoadingAdd(false);
             onClose();
         }
     )
+}
+
+// 휴식 게이지 관리 이벤트 함수
+export function useOnClickSaveRestValue(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    dispatch: AppDispatch,
+    setLoadingSave: SetStateFn<boolean>,
+    dungeon: number,
+    boss: number,
+    quest: number,
+    onClose: () => void
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const prevDay = {...checklist[characterIndex].day};
+    const newDay: Day = {
+        ...checklist[characterIndex].day,
+        dungeonBouus: dungeon,
+        dungeonUsing: 0,
+        bossBonus: boss,
+        bossUsing: 0,
+        questBonus: quest,
+        questUsing: 0
+    }
+    return async () => {
+        setLoadingSave(true);
+        dispatch(saveRest({
+            characterIndex: characterIndex,
+            day: newDay
+        }));
+        const saveRes = await fetch(`/api/checklist/list`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: id,
+                checklist: checklist,
+                type: 'save-rest',
+                characterIndex: characterIndex,
+                day: newDay
+            })
+        });
+        if (!saveRes.ok) {
+            addToast({
+                title: "데이터 로드 오류 (콘텐츠)",
+                description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+                color: "danger"
+            });
+            dispatch(saveRest({
+                characterIndex: characterIndex,
+                day: prevDay
+            }));
+        } else {
+            addToast({
+                title: "수정 완료",
+                description: `휴식 게이지가 정상적으로 저장되었습니다.`,
+                color: "success"
+            });
+        }
+        setLoadingSave(false);
+        onClose();
+    }
 }
 
 // 주간 숙제 목록 삭제 이벤트 함수
@@ -562,7 +624,6 @@ export async function handleRemoveWeekList(
             characterIndex: characterIndex,
             weeklist: prevList
         }));
-        return;
     }
 }
 
@@ -647,7 +708,6 @@ export async function useOnClickAddItem(
             characterIndex: characterIndex,
             checklist: prevChecklist
         }));
-        return;
     }
     setLoadingAdd(false);
     onClose();
