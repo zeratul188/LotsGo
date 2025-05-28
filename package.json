@@ -2,6 +2,7 @@
   "name": "whitetusk",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -9,19 +10,34 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@emotion/css": "^11.13.5",
+    "@emotion/react": "^11.14.0",
+    "@heroui/react": "^2.8.0-beta.4",
+    "@reduxjs/toolkit": "^2.8.0",
+    "autoprefixer": "^10.4.21",
+    "axios": "^1.8.4",
+    "bcryptjs": "^3.0.2",
+    "clsx": "^2.1.1",
+    "dotenv": "^16.5.0",
+    "firebase": "^11.6.0",
+    "framer-motion": "^12.6.3",
+    "jsonwebtoken": "^9.0.2",
     "next": "15.2.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "next-themes": "^0.4.6",
+    "postcss": "^8.5.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-helmet-async": "^2.0.5",
     "react-redux": "^9.2.0",
     "redux": "^5.0.1"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "^4.1.3",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.1.3",
     "typescript": "^5"
   }
 }
