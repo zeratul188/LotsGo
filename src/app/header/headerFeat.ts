@@ -11,7 +11,6 @@ export function useOnActionProfile() {
     const dispatch = useDispatch<AppDispatch>();
 
     return (key: Key) => {
-        console.log(key);
         switch(key) {
             case "profile":
                 // router.puth('/profile');
@@ -22,17 +21,17 @@ export function useOnActionProfile() {
             case "logout":
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
+                localStorage.removeItem('isAdministrator');
                 dispatch(logout());
                 addToast({
                     title: "로그아웃 완료",
                     description: `로그아웃되었습니다.`,
                     color: "success"
                 });
-                router.push('/');
+                location.href = '/';
                 break;
             case "administrator":
-                alert('관리자 페이지 이동');
-                // router.push('/administrator');
+                router.push('/administrator');
                 break;
         }
     }

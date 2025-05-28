@@ -8,6 +8,13 @@ export default function ClientOnly({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     setMounted(true);
+    const theme = localStorage.getItem('theme');
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
   }, []);
 
   if (!mounted) return null;

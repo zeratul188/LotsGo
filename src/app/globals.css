@@ -23,13 +23,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   min-height: 100vh;
   background: var(--background);
@@ -44,7 +37,6 @@ body {
 
 body * {
   font-family: "SUIT-Medium";
-  animation: fadeInUp 0.3s;
 }
 
 @keyframes fadeInUp {
@@ -54,4 +46,34 @@ body * {
   to {
       opacity: 1;
   }
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;  /* IE & Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;             /* Chrome, Safari, Opera */
+}
+
+@-moz-keyframes spin {
+  from { -moz-transform: rotate(0deg); }
+  to { -moz-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+  from { -webkit-transform: rotate(0deg); }
+  to { -webkit-transform: rotate(360deg); }
+}
+@keyframes spin {
+  from {transform:rotate(0deg);}
+  to {transform:rotate(360deg);}
+}
+
+.fadedtext {
+  @apply text-gray-500
+}
+
+.redbutton {
+  @apply cursor-pointer text-red-600 dark:text-red-400 hover:text-red-800 hover:dark:text-red-300
 }
