@@ -52,6 +52,7 @@ import {
     handleWeekListCheck, 
     isBiweeklyContent, 
     isCheckBiweeklyContent, 
+    useClickUpdatedCharacters, 
     useOnClickAddDayList, 
     useOnClickAddItem, 
     useOnClickAddWeekList, 
@@ -97,71 +98,97 @@ export function useChecklistForm() {
 // 체크리스트 현황 컴포넌트
 type ChecklistStatueProps = {
     checklist: CheckCharacter[],
-    bosses: Boss[]
+    bosses: Boss[],
+    dispatch: AppDispatch
 }
-export function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
+export function ChecklistStatue({ checklist, bosses, dispatch }: ChecklistStatueProps) {
     const isMobile = useMobileQuery();
+    const [isLoading, setLoading] = useState(false);
+    const {isOpen, onOpen, onOpenChange} = useDisclosure();
+    const onClickUpdatedCharacters = useClickUpdatedCharacters(checklist, dispatch, setLoading);
     return (
-        <Card fullWidth radius="sm">
-            <CardBody>
-                <div className="w-full flex flex-col md960:flex-row gap-4">
-                    <div className="w-full md960:w-[400px]">
-                        <Progress 
-                            aria-label="all-gold"
-                            size="md"
-                            color="warning"
-                            label={(
-                                <div className="flex items-center">
-                                    <Image 
-                                        src="/icons/gold.png" 
-                                        width={19} 
-                                        height={19} 
-                                        alt="goldicon"
-                                        className="w-[19px] h-[19px]"/>
-                                    <span className="ml-1 text-md">주간 수익 골드량 : {getHaveGolds(bosses, checklist).toLocaleString()} / {getAllGolds(bosses, checklist).toLocaleString()}</span>
-                                </div>
-                            )}
-                            showValueLabel={true}
-                            radius="sm"
-                            value={getHaveGolds(bosses, checklist)}
-                            maxValue={getAllGolds(bosses, checklist)}
-                            className="w-full"/>
-                    </div>
-                    <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
-                    <div className="w-full md960:w-[400px]">
-                        <Progress 
-                            aria-label="all-gold"
-                            size="md"
-                            color="success"
-                            label={`📃 숙제 진행 상황 : ${getCompleteChecklist(checklist)} / ${getAllCountChecklist(checklist)}`}
-                            showValueLabel={true}
-                            radius="sm"
-                            value={getCompleteChecklist(checklist)}
-                            maxValue={getAllCountChecklist(checklist)}
-                            className="w-full"/>
-                    </div>
-                    <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
-                    <div className="grow-1 flex flex-col md960:flex-row justify-end items-center gap-2">
-                        <Tooltip 
-                            showArrow
-                            content="가입된 원정대 캐릭터 한에서만 선택 가능합니다.">
-                            <Button
+        <>
+            <Card fullWidth radius="sm">
+                <CardBody>
+                    <div className="w-full flex flex-col md960:flex-row gap-4">
+                        <div className="w-full md960:w-[400px]">
+                            <Progress 
+                                aria-label="all-gold"
+                                size="md"
+                                color="warning"
+                                label={(
+                                    <div className="flex items-center">
+                                        <Image 
+                                            src="/icons/gold.png" 
+                                            width={19} 
+                                            height={19} 
+                                            alt="goldicon"
+                                            className="w-[19px] h-[19px]"/>
+                                        <span className="ml-1 text-md">주간 수익 골드량 : {getHaveGolds(bosses, checklist).toLocaleString()} / {getAllGolds(bosses, checklist).toLocaleString()}</span>
+                                    </div>
+                                )}
+                                showValueLabel={true}
+                                radius="sm"
+                                value={getHaveGolds(bosses, checklist)}
+                                maxValue={getAllGolds(bosses, checklist)}
+                                className="w-full"/>
+                        </div>
+                        <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
+                        <div className="w-full md960:w-[400px]">
+                            <Progress 
+                                aria-label="all-gold"
+                                size="md"
                                 color="success"
-                                variant="flat"
-                                className="w-full md960:w-[100px]">캐릭터 추가</Button>
-                        </Tooltip>
-                        <Tooltip 
-                            showArrow
-                            placement="left"
-                            content="캐릭터 정보만 수정되며, 체크리스트는 영향을 주지 않습니다.">
-                            <Button
-                                color="primary"
-                                className="w-full md960:w-[140px]">캐릭터 갱신하기</Button>
-                        </Tooltip>
+                                label={`📃 숙제 진행 상황 : ${getCompleteChecklist(checklist)} / ${getAllCountChecklist(checklist)}`}
+                                showValueLabel={true}
+                                radius="sm"
+                                value={getCompleteChecklist(checklist)}
+                                maxValue={getAllCountChecklist(checklist)}
+                                className="w-full"/>
+                        </div>
+                        <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
+                        <div className="grow-1 flex flex-col md960:flex-row justify-end items-center gap-2">
+                            <Tooltip 
+                                showArrow
+                                content="가입된 원정대 캐릭터 한에서만 선택 가능합니다.">
+                                <Button
+                                    color="success"
+                                    variant="flat"
+                                    className="w-full md960:w-[100px]"
+                                    onPress={onOpen}>캐릭터 추가</Button>
+                            </Tooltip>
+                            <Tooltip 
+                                showArrow
+                                placement="left"
+                                content="캐릭터 정보만 수정되며, 체크리스트는 영향을 주지 않습니다.">
+                                <Button
+                                    color="primary"
+                                    isLoading={isLoading}
+                                    className="w-full md960:w-[140px]"
+                                    onPress={onClickUpdatedCharacters}>캐릭터 갱신하기</Button>
+                            </Tooltip>
+                        </div>
                     </div>
-                </div>
-            </CardBody>
-        </Card>
+                </CardBody>
+            </Card>
+            <Modal
+                isDismissable={false}
+                isOpen={isOpen}
+                onOpenChange={onOpenChange}>
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader>캐릭터 추가</ModalHeader>
+                            <ModalBody>
+                                <div className="w-full">
+                                    
+                                </div>
+                            </ModalBody>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+        </>
     )
 }
 

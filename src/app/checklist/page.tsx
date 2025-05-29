@@ -60,7 +60,10 @@ export default function Checklist() {
     } else {
         return (
             <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
-                <ChecklistStatue checklist={checklist} bosses={checklistForm.bosses}/>
+                <ChecklistStatue 
+                    checklist={checklist} 
+                    bosses={checklistForm.bosses}
+                    dispatch={dispatch}/>
                 <SelectServer 
                     checklist={checklist} 
                     server={checklistForm.server}

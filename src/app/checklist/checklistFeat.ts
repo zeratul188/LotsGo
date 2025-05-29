@@ -1147,3 +1147,57 @@ export async function handleRemoveCharacter(
         });
     }
 }
+
+// 캐릭터 갱신하기
+export function useClickUpdatedCharacters(
+    checklist: CheckCharacter[],
+    dispatch: AppDispatch,
+    setLoading: SetStateFn<boolean>
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const newChecklist = checklist.map(item => ({ ...item }));
+    const prevChecklist = checklist.map(item => ({ ...item }));
+    return async () => {
+        setLoading(true);
+        for (const character of newChecklist) {
+            const lostarkRes = await fetch(`/api/lostark?value=${character.nickname}&code=1`);
+            if (lostarkRes.ok) {
+                const data = await lostarkRes.json();
+                character.server = data.ServerName;
+                character.job = data.CharacterClassName;
+                character.level = Number(data.ItemAvgLevel.replaceAll(',', ''));
+            } else {
+                console.log(`Unable to load ${character.nickname}'s character data. (Error Status : ${lostarkRes.status})`);
+            }
+        }
+        dispatch(removeCharacter(newChecklist));
+        const updatedRes = await fetch(`/api/checklist/list`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: id,
+                checklist: checklist,
+                type: 'updated-checklist',
+                newChecklist: newChecklist
+            })
+        });
+        if (!updatedRes.ok) {
+            addToast({
+                title: "데이터 로드 오류 (콘텐츠)",
+                description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+                color: "danger"
+            });
+            dispatch(removeCharacter(prevChecklist));
+            return;
+        } else {
+            addToast({
+                title: "갱신 완료",
+                description: `캐릭터들의 상태를 최신 상태로 갱신하였습니다.`,
+                color: "success"
+            });
+        }
+        setLoading(false);
+    }
+}

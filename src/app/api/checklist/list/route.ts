@@ -144,6 +144,12 @@ export async function POST(req: NextRequest) {
                     checklist: removedList
                 });
                 return NextResponse.json({ message: '데이터 삭제가 정상적으로 처리도었습니다.' }, { status: 200 });
+            case 'updated-checklist':
+                const newChecklist = body.newChecklist;
+                await updateDoc(docRef, {
+                    checklist: newChecklist
+                });
+                return NextResponse.json({ message: '데이터 삭제 또는 추가가 정상적으로 처리도었습니다.' }, { status: 200 });
             default: 
                 return NextResponse.json({ message: '처리 종류를 선택하지 않았습니다.' }, { status: 400 });
         }
