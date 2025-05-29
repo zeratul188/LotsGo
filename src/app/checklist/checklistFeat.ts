@@ -1,6 +1,6 @@
 import { AppDispatch } from "../store/store";
 import type { CheckCharacter, Checklist, CubeList, Day, OtherList } from "../store/checklistSlice";
-import { checkDayList, checkWeek, checkWeekList, editCube, editDay, editDayList, editWeekList, removeWeek, saveData, saveRest } from "../store/checklistSlice";
+import { checkDayList, checkGold, checkWeek, checkWeekList, editCube, editDay, editDayList, editWeekList, removeCharacter, removeWeek, saveData, saveRest } from "../store/checklistSlice";
 import { SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
 import { Boss, Difficulty } from "../api/checklist/boss/route";
@@ -46,6 +46,19 @@ export async function loadChecklist(
     }
 
     const checklist: CheckCharacter[] = await res.json();
+    checklist.sort((a, b) => {
+        if (a.isGold && !b.isGold) return -1;
+        if (!a.isGold && b.isGold) return 1;
+        return 0;
+    });
+    for (const character of checklist) {
+        const sortedChecklist = character.checklist.sort((a, b) => {
+            if (a.isGold && !b.isGold) return -1;
+            if (!a.isGold && b.isGold) return 1;
+            return 0;
+        });
+        character.checklist = sortedChecklist;
+    }
 
     if (checklist.length !== 0) {
         dispatch(saveData(checklist));
@@ -226,7 +239,9 @@ export function getAllGolds(
     bosses: Boss[],
     checklist: CheckCharacter[]
 ): number {
-    return checklist.reduce((total, character) => {
+    return checklist
+        .filter(character => character.isGold)
+        .reduce((total, character) => {
         const goldFromChecklist = character.checklist
             .filter(item => item.isGold)
             .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.difficulty), 0);
@@ -239,7 +254,9 @@ export function getHaveGolds(
     bosses: Boss[],
     checklist: CheckCharacter[]
 ): number {
-    return checklist.reduce((total, character) => {
+    return checklist
+        .filter(character => character.isGold)
+        .reduce((total, character) => {
         const goldFromChecklist = character.checklist
             .filter(item => item.isGold && item.isCheck)
             .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.difficulty), 0);
@@ -979,7 +996,6 @@ export function getCubeList(level: number, cubes: Cube[]): Cube[] {
 // 해당 큐브의 보유 중인 큐브 개수 반환 함수
 export function getCountCube(cubelist: CubeList[], cubeID: string): number {
     const item: CubeList | undefined = cubelist.find(item => item.id === cubeID);
-    console.log(item);
     if (item) {
         return item.count;
     } else {
@@ -1035,5 +1051,85 @@ export async function handleControlCube(
             cublist: prevCubelist
         }));
         return;
+    }
+}
+
+// 골드 획득 지정 여부 함수
+export async function handleCheckGold(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    isGold: boolean,
+    dispatch: AppDispatch
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const prevIsGold = checklist[characterIndex].isGold;
+    dispatch(checkGold({
+        characterIndex: characterIndex,
+        isGold: isGold
+    }));
+    const editRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'check-gold',
+            characterIndex: characterIndex,
+            isGold: isGold
+        })
+    });
+    if (!editRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        dispatch(checkGold({
+            characterIndex: characterIndex,
+            isGold: prevIsGold
+        }));
+        return;
+    }
+}
+
+// 캐릭터 삭제 함수
+export async function handleRemoveCharacter(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    dispatch: AppDispatch
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const removedCharacterName = checklist[characterIndex].nickname;
+    const removedList = checklist.filter((_, index) => index !== characterIndex);
+    const prevList = checklist.map(item => ({ ...item }));
+    dispatch(removeCharacter(removedList));
+    const removeRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'remove-character',
+            characterIndex: characterIndex
+        })
+    });
+    if (!removeRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        dispatch(removeCharacter(prevList));
+        return;
+    } else {
+        addToast({
+            title: "캐릭터 삭제 완료",
+            description: `\"${removedCharacterName}\"의 캐릭터를 삭제하였습니다`,
+            color: "success"
+        });
     }
 }

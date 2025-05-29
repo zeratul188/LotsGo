@@ -20,7 +20,8 @@ import {
     Tab,
     Input,
     CardFooter,
-    Accordion, AccordionItem
+    Accordion, AccordionItem,
+    Dropdown, DropdownTrigger, DropdownMenu, DropdownItem
 } from "@heroui/react";
 import Image from "next/image";
 import { 
@@ -42,8 +43,10 @@ import {
     getTypeDayValue, 
     getWeekContents, 
     getWeekDifficultys, 
+    handleCheckGold, 
     handleControlCube, 
     handleDayListCheck, 
+    handleRemoveCharacter, 
     handleRemoveDayList, 
     handleRemoveWeekList, 
     handleWeekListCheck, 
@@ -62,7 +65,7 @@ import { SettingIcon } from "../icons/SettingIcon";
 import clsx from "clsx";
 import { AppDispatch } from "../store/store";
 import AddIcon from "../icons/AddIcon";
-import { title } from "process";
+import DeleteIcon from "../icons/DeleteIcon";
 import { Cube } from "../api/checklist/cube/route";
 
 // state 관리
@@ -233,10 +236,22 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         </div>
                                         <div className="flex gap-2 items-center">
                                             <span className="text-xl">{character.nickname}</span>
-                                            <div className="hidden md960:block"><SettingButton size={16} character={character}/></div>
+                                            <div className="hidden md960:block">
+                                                <SettingButton 
+                                                    size={16} 
+                                                    checklist={checklist} 
+                                                    characterIndex={index}
+                                                    dispatch={dispatch}/>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="block md960:hidden"><SettingButton size={26} character={character}/></div>
+                                    <div className="block md960:hidden">
+                                        <SettingButton 
+                                            size={26} 
+                                            checklist={checklist} 
+                                            characterIndex={index}
+                                            dispatch={dispatch}/>
+                                    </div>
                                 </div>
                                 <Progress 
                                     aria-label="all-gold"
@@ -257,7 +272,10 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                     radius="sm"
                                     value={getCompleteGoldCharacter(bosses, character)}
                                     maxValue={getAllGoldCharacter(bosses, character)}
-                                    className="w-full md960:w-[330px]"/>
+                                    className={clsx(
+                                        "w-full md960:w-[330px]",
+                                        character.isGold ? 'block' : 'hidden'
+                                    )}/>
                             </div>
                         </CardHeader>
                         <Divider/>
@@ -427,10 +445,45 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
 // 설정 버튼 요소
 type SettingButtonProps = {
     size: number,
-    character: CheckCharacter
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    dispatch: AppDispatch
 }
-function SettingButton({ size, character }: SettingButtonProps) {
-    return <SettingIcon size={size} className="text-gray-500 hover:text-gray-800 cursor-pointer" />;
+function SettingButton({ size, checklist, characterIndex, dispatch }: SettingButtonProps) {
+    return (
+        <Dropdown>
+            <DropdownTrigger>
+                <Button isIconOnly variant="light"><SettingIcon size={size} className="text-gray-500 hover:text-gray-800 cursor-pointer" /></Button>
+            </DropdownTrigger>
+            <DropdownMenu>
+                <DropdownItem 
+                    key="gold"
+                    startContent={
+                        <Image 
+                            src="/icons/gold.png" 
+                            width={16} 
+                            height={16} 
+                            alt="goldicon"
+                            className="w-[16px] h-[16px]"/>
+                    }
+                    onPress={async () => {
+                        await handleCheckGold(checklist, characterIndex, !checklist[characterIndex].isGold, dispatch);
+                    }}>{checklist[characterIndex].isGold ? "골드 지정 해제" : "골드 지정"}</DropdownItem>
+                <DropdownItem 
+                    key="delete"
+                    color="danger"
+                    className="text-danger"
+                    startContent={
+                        <DeleteIcon/>
+                    }
+                    onPress={async () => {
+                        if (confirm(`\"${checklist[characterIndex].nickname}\"의 캐릭터를 삭제하시겠습니까? 삭제하시면 다시 복구하실 수 없습니다.`)) {
+                            await handleRemoveCharacter(checklist, characterIndex, dispatch);
+                        }
+                    }}>캐릭터 삭제</DropdownItem>
+            </DropdownMenu>
+        </Dropdown>
+    );
 }
 
 // 휴식 전용 체크 버튼 요소 (쿠르잔 전선, 가디언 토벌, 에포나 의뢰)

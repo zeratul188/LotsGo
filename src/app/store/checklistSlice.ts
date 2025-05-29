@@ -95,6 +95,10 @@ export type EditCube = {
     characterIndex: number,
     cublist: CubeList[]
 }
+export type CheckGold = {
+    characterIndex: number,
+    isGold: boolean
+}
 
 const checklistSlice = createSlice({
     name: 'checklist',
@@ -152,8 +156,18 @@ const checklistSlice = createSlice({
         },
         // 큐브 항목 수정
         editCube(state, action: PayloadAction<EditCube>) {
-            const charaacterIndex = action.payload.characterIndex;
-            state.checklist[charaacterIndex].cubelist = action.payload.cublist;
+            const characterIndex = action.payload.characterIndex;
+            state.checklist[characterIndex].cubelist = action.payload.cublist;
+        },
+        // 골드 지정
+        checkGold(state, action: PayloadAction<CheckGold>) {
+            const characterIndex = action.payload.characterIndex;
+            state.checklist[characterIndex].isGold = action.payload.isGold;
+        },
+        // 캐릭터 삭제
+        removeCharacter(state, action: PayloadAction<CheckCharacter[]>) {
+            const removedChecklist = action.payload;
+            state.checklist = removedChecklist;
         }
     }
 })
@@ -168,6 +182,8 @@ export const {
     saveRest,
     editDayList,
     checkDayList,
-    editCube
+    editCube,
+    checkGold,
+    removeCharacter
 } = checklistSlice.actions;
 export default checklistSlice.reducer;
