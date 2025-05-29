@@ -99,6 +99,10 @@ export type CheckGold = {
     characterIndex: number,
     isGold: boolean
 }
+export type CalculateOtherGold = {
+    characterIndex: number,
+    otherGold: number
+}
 
 const checklistSlice = createSlice({
     name: 'checklist',
@@ -168,6 +172,11 @@ const checklistSlice = createSlice({
         removeCharacter(state, action: PayloadAction<CheckCharacter[]>) {
             const removedChecklist = action.payload;
             state.checklist = removedChecklist;
+        },
+        // 부수입 계산
+        calculateOtherGold(state, action: PayloadAction<CalculateOtherGold>) {
+            const characterIndex = action.payload.characterIndex;
+            state.checklist[characterIndex].otherGold = action.payload.otherGold;
         }
     }
 })
@@ -184,6 +193,7 @@ export const {
     checkDayList,
     editCube,
     checkGold,
-    removeCharacter
+    removeCharacter,
+    calculateOtherGold
 } = checklistSlice.actions;
 export default checklistSlice.reducer;
