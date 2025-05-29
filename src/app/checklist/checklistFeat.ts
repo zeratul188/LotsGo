@@ -1,6 +1,19 @@
 import { AppDispatch } from "../store/store";
 import type { CheckCharacter, Checklist, CubeList, Day, OtherList } from "../store/checklistSlice";
-import { checkDayList, checkGold, checkWeek, checkWeekList, editCube, editDay, editDayList, editWeekList, removeCharacter, removeWeek, saveData, saveRest } from "../store/checklistSlice";
+import { 
+    checkDayList, 
+    checkGold, 
+    checkWeek, 
+    checkWeekList, 
+    editCube, 
+    editDay, 
+    editDayList, 
+    editWeekList, 
+    removeCharacter, 
+    removeWeek, 
+    saveData, 
+    saveRest 
+} from "../store/checklistSlice";
 import { SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
 import { Boss, Difficulty } from "../api/checklist/boss/route";
@@ -46,6 +59,7 @@ export async function loadChecklist(
     }
 
     const checklist: CheckCharacter[] = await res.json();
+    checklist.sort((a, b) => b.level - a.level);
     checklist.sort((a, b) => {
         if (a.isGold && !b.isGold) return -1;
         if (!a.isGold && b.isGold) return 1;
