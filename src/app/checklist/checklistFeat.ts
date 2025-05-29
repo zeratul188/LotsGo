@@ -1,6 +1,7 @@
 import { AppDispatch } from "../store/store";
 import type { CheckCharacter, Checklist, CubeList, Day, OtherList } from "../store/checklistSlice";
 import { 
+    calculateOtherGold,
     checkDayList, 
     checkGold, 
     checkWeek, 
@@ -253,14 +254,19 @@ export function getAllGolds(
     bosses: Boss[],
     checklist: CheckCharacter[]
 ): number {
-    return checklist
+    let sum = 0;
+    sum = checklist
         .filter(character => character.isGold)
         .reduce((total, character) => {
         const goldFromChecklist = character.checklist
             .filter(item => item.isGold)
             .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.difficulty), 0);
-        return total + character.otherGold + goldFromChecklist;
+        return total + goldFromChecklist;
     }, 0);
+    for (const character of checklist) {
+        sum += character.otherGold;
+    }
+    return sum;
 }
 
 // 주간 완료된 수익 골드량 측정 함수
@@ -268,14 +274,19 @@ export function getHaveGolds(
     bosses: Boss[],
     checklist: CheckCharacter[]
 ): number {
-    return checklist
+    let sum = 0;
+    sum = checklist
         .filter(character => character.isGold)
         .reduce((total, character) => {
         const goldFromChecklist = character.checklist
             .filter(item => item.isGold && item.isCheck)
             .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.difficulty), 0);
-        return total + character.otherGold + goldFromChecklist;
+        return total + goldFromChecklist;
     }, 0);
+    for (const character of checklist) {
+        sum += character.otherGold;
+    }
+    return sum;
 }
 
 // 특정 콘텐츠 골드 획득량 가져오는 함수
@@ -1370,4 +1381,57 @@ export async function handleAddCharacter(
     }  
     setLoadingAdd(false);
     onClose();
+}
+
+// 부수입 계산
+export async function handleCalculateOtherGold(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    type: string,
+    otherGold: number,
+    dispatch: AppDispatch
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const prevOtherGold = checklist[characterIndex].otherGold;
+    let resultOtherGold = prevOtherGold;
+    switch (type) {
+        case 'apply':
+            resultOtherGold = otherGold;
+            break;
+        case 'add':
+            resultOtherGold += otherGold;
+            break;
+        case 'minus':
+            resultOtherGold -= otherGold;
+            break;
+    }
+    dispatch(calculateOtherGold({
+        characterIndex: characterIndex,
+        otherGold: resultOtherGold
+    }));
+    const editRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'caculate-other-gold',
+            characterIndex: characterIndex,
+            otherGold: resultOtherGold
+        })
+    });
+    if (!editRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        dispatch(calculateOtherGold({
+            characterIndex: characterIndex,
+            otherGold: prevOtherGold
+        }));
+        return;
+    }
 }

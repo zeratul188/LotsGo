@@ -150,6 +150,14 @@ export async function POST(req: NextRequest) {
                     checklist: newChecklist
                 });
                 return NextResponse.json({ message: '데이터 삭제 또는 추가가 정상적으로 처리도었습니다.' }, { status: 200 });
+            case 'caculate-other-gold':
+                characterIndex = body.characterIndex;
+                const otherGold = body.otherGold;
+                updatedChecklist[characterIndex].otherGold = otherGold;
+                await updateDoc(docRef, {
+                    checklist: updatedChecklist
+                });
+                return NextResponse.json({ message: '데이터 수정이 정상적으로 처리도었습니다.' }, { status: 200 });
             default: 
                 return NextResponse.json({ message: '처리 종류를 선택하지 않았습니다.' }, { status: 400 });
         }
