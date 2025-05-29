@@ -21,7 +21,11 @@ import {
     Input,
     CardFooter,
     Accordion, AccordionItem,
-    Dropdown, DropdownTrigger, DropdownMenu, DropdownItem
+    Dropdown, DropdownTrigger, DropdownMenu, DropdownItem,
+    Popover,
+    PopoverTrigger,
+    PopoverContent,
+    NumberInput
 } from "@heroui/react";
 import Image from "next/image";
 import { 
@@ -45,6 +49,7 @@ import {
     getWeekContents, 
     getWeekDifficultys, 
     handleAddCharacter, 
+    handleCalculateOtherGold, 
     handleCheckGold, 
     handleControlCube, 
     handleDayListCheck, 
@@ -329,6 +334,7 @@ type ChecklistProps = {
     setModalData: SetStateFn<ModalData>
 }
 export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch, onOpen, setModalData }: ChecklistProps) {
+    const [inputOtherGold, setInputOtherGold] = useState(0);
     return (
         <div className="mt-5 grid grid-cols-1 md960:grid-cols-2 gap-4">
             {checklist
@@ -365,29 +371,117 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                             dispatch={dispatch}/>
                                     </div>
                                 </div>
-                                <Progress 
-                                    aria-label="all-gold"
-                                    size="sm"
-                                    color="warning"
-                                    label={(
-                                        <div className="flex items-center">
-                                            <Image 
-                                                src="/icons/gold.png" 
-                                                width={14} 
-                                                height={14} 
-                                                alt="goldicon"
-                                                className="w-[16px] h-[16px]"/>
-                                            <span className="ml-1 text-md">{getCompleteGoldCharacter(bosses, character).toLocaleString()} / {getAllGoldCharacter(bosses, character).toLocaleString()}</span>
+                                <Popover 
+                                    showArrow
+                                    onClose={() => {
+                                        setInputOtherGold(0);
+                                    }}>
+                                    <PopoverTrigger>
+                                        <Progress 
+                                            aria-label="all-gold"
+                                            size="sm"
+                                            color="warning"
+                                            label={(
+                                                <div className="flex items-center">
+                                                    <Image 
+                                                        src="/icons/gold.png" 
+                                                        width={14} 
+                                                        height={14} 
+                                                        alt="goldicon"
+                                                        className="w-[16px] h-[16px]"/>
+                                                    <span className="ml-1 text-md">{(getCompleteGoldCharacter(bosses, character)+character.otherGold).toLocaleString()} / {(getAllGoldCharacter(bosses, character)+character.otherGold).toLocaleString()}</span>
+                                                </div>
+                                            )}
+                                            showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
+                                            radius="sm"
+                                            value={getCompleteGoldCharacter(bosses, character)+character.otherGold}
+                                            maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
+                                            className="w-full md960:w-[330px] cursor-pointer"/>
+                                    </PopoverTrigger>
+                                    <PopoverContent>
+                                        <div className="w-full sm300:w-[300px] pt-2">
+                                            <span className="text-sm fadedtext">콘텐츠 골드 획득량</span>
+                                            <Progress 
+                                                aria-label="all-gold"
+                                                size="sm"
+                                                color="primary"
+                                                label={(
+                                                    <div className="flex items-center">
+                                                        <Image 
+                                                            src="/icons/gold.png" 
+                                                            width={14} 
+                                                            height={14} 
+                                                            alt="goldicon"
+                                                            className="w-[16px] h-[16px]"/>
+                                                        <span className="ml-1 text-md">{getCompleteGoldCharacter(bosses, character).toLocaleString()} / {(getAllGoldCharacter(bosses, character)+character.otherGold).toLocaleString()}</span>
+                                                    </div>
+                                                )}
+                                                showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
+                                                radius="sm"
+                                                value={getCompleteGoldCharacter(bosses, character)}
+                                                maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
+                                                className="w-full mb-2"/>
+                                            <span className="text-sm fadedtext">부수입</span>
+                                            <Progress 
+                                                aria-label="all-gold"
+                                                size="sm"
+                                                color="secondary"
+                                                label={(
+                                                    <div className="flex items-center">
+                                                        <Image 
+                                                            src="/icons/gold.png" 
+                                                            width={14} 
+                                                            height={14} 
+                                                            alt="goldicon"
+                                                            className="w-[16px] h-[16px]"/>
+                                                        <span className="ml-1 text-md">{character.otherGold.toLocaleString()} / {(getAllGoldCharacter(bosses, character)+character.otherGold).toLocaleString()}</span>
+                                                    </div>
+                                                )}
+                                                showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
+                                                radius="sm"
+                                                value={character.otherGold}
+                                                maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
+                                                className="w-full mb-4"/>
+                                            <Divider className="mb-8"/>
+                                            <NumberInput
+                                                fullWidth
+                                                label={`부수입 : ${character.otherGold} 골드`}
+                                                labelPlacement="outside"
+                                                placeholder="0 ~ 999999999"
+                                                maxValue={999999999}
+                                                value={inputOtherGold}
+                                                size="sm"
+                                                onValueChange={setInputOtherGold}
+                                                className="mb-4"/>
+                                            <div className="flex gap-2 mt-2 mb-2">
+                                                <Button
+                                                    variant="flat"
+                                                    color="primary"
+                                                    size="sm"
+                                                    className="grow"
+                                                    onPress={async () => {
+                                                        await handleCalculateOtherGold(checklist, index, 'apply', inputOtherGold, dispatch);
+                                                    }}>적용</Button>
+                                                <Button
+                                                    variant="flat"
+                                                    color="danger"
+                                                    size="sm"
+                                                    className="grow"
+                                                    onPress={async () => {
+                                                        await handleCalculateOtherGold(checklist, index, 'minus', inputOtherGold, dispatch);
+                                                    }}>빼기</Button>
+                                                <Button
+                                                    variant="flat"
+                                                    color="success"
+                                                    size="sm"
+                                                    className="grow"
+                                                    onPress={async () => {
+                                                        await handleCalculateOtherGold(checklist, index, 'add', inputOtherGold, dispatch);
+                                                    }}>더하기</Button>
+                                            </div>
                                         </div>
-                                    )}
-                                    showValueLabel={true}
-                                    radius="sm"
-                                    value={getCompleteGoldCharacter(bosses, character)}
-                                    maxValue={getAllGoldCharacter(bosses, character)}
-                                    className={clsx(
-                                        "w-full md960:w-[330px]",
-                                        character.isGold ? 'block' : 'hidden'
-                                    )}/>
+                                    </PopoverContent>
+                                </Popover>
                             </div>
                         </CardHeader>
                         <Divider/>
