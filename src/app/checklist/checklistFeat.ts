@@ -1165,9 +1165,11 @@ export function useClickUpdatedCharacters(
             const lostarkRes = await fetch(`/api/lostark?value=${character.nickname}&code=1`);
             if (lostarkRes.ok) {
                 const data = await lostarkRes.json();
-                character.server = data.ServerName;
-                character.job = data.CharacterClassName;
-                character.level = Number(data.ItemAvgLevel.replaceAll(',', ''));
+                if (data !== null && data !== undefined) {
+                    character.server = data.ServerName;
+                    character.job = data.CharacterClassName;
+                    character.level = Number(data.ItemAvgLevel.replaceAll(',', ''));
+                }
             } else {
                 console.log(`Unable to load ${character.nickname}'s character data. (Error Status : ${lostarkRes.status})`);
             }
