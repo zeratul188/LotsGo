@@ -1,10 +1,24 @@
 import { AppDispatch } from "../store/store";
-import type { CheckCharacter, Checklist, Day, OtherList } from "../store/checklistSlice";
-import { checkDayList, checkWeek, checkWeekList, editDay, editDayList, editWeekList, removeWeek, saveData, saveRest } from "../store/checklistSlice";
+import type { CheckCharacter, Checklist, CubeList, Day, OtherList } from "../store/checklistSlice";
+import { 
+    checkDayList, 
+    checkGold, 
+    checkWeek, 
+    checkWeekList, 
+    editCube, 
+    editDay, 
+    editDayList, 
+    editWeekList, 
+    removeCharacter, 
+    removeWeek, 
+    saveData, 
+    saveRest 
+} from "../store/checklistSlice";
 import { SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
 import { Boss, Difficulty } from "../api/checklist/boss/route";
 import { Character, LoginUser } from "../store/loginSlice";
+import { Cube } from "../api/checklist/cube/route";
 
 // 로그인 여부 확인 함수
 export function checkLogin(): boolean {
@@ -45,6 +59,20 @@ export async function loadChecklist(
     }
 
     const checklist: CheckCharacter[] = await res.json();
+    checklist.sort((a, b) => b.level - a.level);
+    checklist.sort((a, b) => {
+        if (a.isGold && !b.isGold) return -1;
+        if (!a.isGold && b.isGold) return 1;
+        return 0;
+    });
+    for (const character of checklist) {
+        const sortedChecklist = character.checklist.sort((a, b) => {
+            if (a.isGold && !b.isGold) return -1;
+            if (!a.isGold && b.isGold) return 1;
+            return 0;
+        });
+        character.checklist = sortedChecklist;
+    }
 
     if (checklist.length !== 0) {
         dispatch(saveData(checklist));
@@ -69,6 +97,7 @@ export async function loadChecklist(
                     questUsing: 0
                 },
                 checklist: initialWeekContents(character.level, bosses),
+                cubelist: [],
                 daylist: [],
                 weeklist: [],
                 cube: 0,
@@ -88,7 +117,7 @@ export async function loadChecklist(
         });
         if (!inputRes.ok) {
             addToast({
-                title: `데이터 저장 오류 (${res.status})`,
+                title: `데이터 저장 오류 (${inputRes.status})`,
                 description: `데이터를 저장하는데 문제가 발생하였습니다.`,
                 color: "danger"
             });
@@ -119,27 +148,29 @@ function initialWeekContents(level: number, bosses: Boss[]): Checklist[] {
         let isImport = false;
         boss.difficulty.sort((a, b) => b.level - a.level);
         for (const difficulty of boss.difficulty) {
-            if (!isImport && level >= difficulty.level && !difficulty.isBiweekly) {
-                checklist.push({
-                    name: boss.name,
-                    difficulty: difficulty.difficulty,
-                    isCheck: false,
-                    isDisable: false,
-                    isGold: true,
-                    isBiweekly: difficulty.isBiweekly
-                });
-                isImport = true;
-                count++;
-            }
-            if (isImport && level >= difficulty.level && difficulty.isBiweekly) {
-                checklist.push({
-                    name: boss.name,
-                    difficulty: difficulty.difficulty,
-                    isCheck: false,
-                    isDisable: false,
-                    isGold: true,
-                    isBiweekly: difficulty.isBiweekly
-                });
+            if (!difficulty.difficulty.includes('싱글')) {
+                if (!isImport && level >= difficulty.level && !difficulty.isBiweekly) {
+                    checklist.push({
+                        name: boss.name,
+                        difficulty: difficulty.difficulty,
+                        isCheck: false,
+                        isDisable: false,
+                        isGold: true,
+                        isBiweekly: difficulty.isBiweekly
+                    });
+                    isImport = true;
+                    count++;
+                }
+                if (isImport && level >= difficulty.level && difficulty.isBiweekly) {
+                    checklist.push({
+                        name: boss.name,
+                        difficulty: difficulty.difficulty,
+                        isCheck: false,
+                        isDisable: false,
+                        isGold: true,
+                        isBiweekly: difficulty.isBiweekly
+                    });
+                }
             }
         }
         if (count === 3) break;
@@ -162,6 +193,22 @@ export async function getBosses(): Promise<Boss[]> {
 
     const bosses: Boss[] = await bossRes.json();
     return bosses;
+}
+
+// 큐브 정보 가져오는 함수
+export async function getCubes(): Promise<Cube[]> {
+    const cubeRes = await fetch('/api/checklist/cube');
+    if (!cubeRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        return [];
+    }
+    const cubes: Cube[] = await cubeRes.json();
+    cubes.sort((a, b) => a.level - b.level);
+    return cubes;
 }
 
 // 숙제 완료한 캐릭 수 반환 함수
@@ -206,7 +253,9 @@ export function getAllGolds(
     bosses: Boss[],
     checklist: CheckCharacter[]
 ): number {
-    return checklist.reduce((total, character) => {
+    return checklist
+        .filter(character => character.isGold)
+        .reduce((total, character) => {
         const goldFromChecklist = character.checklist
             .filter(item => item.isGold)
             .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.difficulty), 0);
@@ -219,7 +268,9 @@ export function getHaveGolds(
     bosses: Boss[],
     checklist: CheckCharacter[]
 ): number {
-    return checklist.reduce((total, character) => {
+    return checklist
+        .filter(character => character.isGold)
+        .reduce((total, character) => {
         const goldFromChecklist = character.checklist
             .filter(item => item.isGold && item.isCheck)
             .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.difficulty), 0);
@@ -866,6 +917,7 @@ export function getWeekContents(bosses: Boss[]): WeekContent[] {
             name: boss.name
         });
     }
+    contents.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
     return contents;
 }
 
@@ -931,4 +983,391 @@ export function isCheckBiweeklyContent(
         }
     }
     return isIncludes;
+}
+
+// 큐브 총합 반환 함수
+export function getAllCubeCount(
+    character: CheckCharacter
+): number {
+    let sum = 0;
+    for (const cube of character.cubelist) {
+        sum += cube.count;
+    }
+    return sum;
+}
+
+// 캐릭터 레벨에 맞는 큐브 리스트 반환 함수
+export function getCubeList(level: number, cubes: Cube[]): Cube[] {
+    const returnCubes: Cube[] = [];
+    for (const cube of cubes) {
+        if (cube.level <= level) {
+            returnCubes.push(cube);
+        }
+    }
+    return returnCubes;
+}
+
+// 해당 큐브의 보유 중인 큐브 개수 반환 함수
+export function getCountCube(cubelist: CubeList[], cubeID: string): number {
+    const item: CubeList | undefined = cubelist.find(item => item.id === cubeID);
+    if (item) {
+        return item.count;
+    } else {
+        return 0;
+    }
+}
+
+// 큐브 개수 조절
+export async function handleControlCube(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    cubeID: string,
+    dispatch: AppDispatch,
+    isAdd: boolean
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const cubelist = checklist[characterIndex].cubelist.map(item => ({ ...item }));
+    const prevCubelist = checklist[characterIndex].cubelist.map(item => ({ ...item }));
+    const findIndex = cubelist.findIndex(item => item.id === cubeID);
+    if (findIndex !== -1) {
+        cubelist[findIndex].count += isAdd ? 1 : cubelist[findIndex].count <= 0 ? 0 : -1;
+    } else {
+        cubelist.push({
+            id: cubeID,
+            count: isAdd ? 1 : 0
+        });
+    }
+    dispatch(editCube({
+        characterIndex: characterIndex,
+        cublist: cubelist
+    }));
+    const editRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'edit-cube',
+            characterIndex: characterIndex,
+            cubelist: cubelist
+        })
+    });
+    if (!editRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        dispatch(editCube({
+            characterIndex: characterIndex,
+            cublist: prevCubelist
+        }));
+        return;
+    }
+}
+
+// 골드 획득 지정 여부 함수
+export async function handleCheckGold(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    isGold: boolean,
+    dispatch: AppDispatch
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const prevIsGold = checklist[characterIndex].isGold;
+    dispatch(checkGold({
+        characterIndex: characterIndex,
+        isGold: isGold
+    }));
+    const editRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'check-gold',
+            characterIndex: characterIndex,
+            isGold: isGold
+        })
+    });
+    if (!editRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        dispatch(checkGold({
+            characterIndex: characterIndex,
+            isGold: prevIsGold
+        }));
+        return;
+    }
+}
+
+// 캐릭터 삭제 함수
+export async function handleRemoveCharacter(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    dispatch: AppDispatch
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const removedCharacterName = checklist[characterIndex].nickname;
+    const removedList = checklist.filter((_, index) => index !== characterIndex);
+    const prevList = checklist.map(item => ({ ...item }));
+    dispatch(removeCharacter(removedList));
+    const removeRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'remove-character',
+            characterIndex: characterIndex
+        })
+    });
+    if (!removeRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        dispatch(removeCharacter(prevList));
+        return;
+    } else {
+        addToast({
+            title: "캐릭터 삭제 완료",
+            description: `\"${removedCharacterName}\"의 캐릭터를 삭제하였습니다`,
+            color: "success"
+        });
+    }
+}
+
+// 캐릭터 갱신하기
+export function useClickUpdatedCharacters(
+    checklist: CheckCharacter[],
+    dispatch: AppDispatch,
+    setLoading: SetStateFn<boolean>
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const newChecklist = checklist.map(item => ({ ...item }));
+    const prevChecklist = checklist.map(item => ({ ...item }));
+    return async () => {
+        setLoading(true);
+        for (const character of newChecklist) {
+            const lostarkRes = await fetch(`/api/lostark?value=${character.nickname}&code=1`);
+            if (lostarkRes.ok) {
+                const data = await lostarkRes.json();
+                if (data !== null && data !== undefined) {
+                    character.server = data.ServerName;
+                    character.job = data.CharacterClassName;
+                    character.level = Number(data.ItemAvgLevel.replaceAll(',', ''));
+                }
+            } else {
+                console.log(`Unable to load ${character.nickname}'s character data. (Error Status : ${lostarkRes.status})`);
+            }
+        }
+        dispatch(removeCharacter(newChecklist));
+        const updatedRes = await fetch(`/api/checklist/list`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: id,
+                checklist: checklist,
+                type: 'updated-checklist',
+                newChecklist: newChecklist
+            })
+        });
+        if (!updatedRes.ok) {
+            addToast({
+                title: "데이터 로드 오류 (콘텐츠)",
+                description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+                color: "danger"
+            });
+            dispatch(removeCharacter(prevChecklist));
+            return;
+        } else {
+            addToast({
+                title: "갱신 완료",
+                description: `캐릭터들의 상태를 최신 상태로 갱신하였습니다.`,
+                color: "success"
+            });
+        }
+        setLoading(false);
+    }
+}
+
+// 캐릭터 추가에서 캐릭터 조회 기능 함수
+export type SearchCharacter = {
+    nickname: string,
+    server: string,
+    level: number,
+    job: string,
+    isCheck: boolean
+}
+export function useClickLoadCharacters(
+    value: string,
+    setResult: SetStateFn<SearchCharacter[]>,
+    setLoadingSearch: SetStateFn<boolean>
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    return async () => {
+        if (value.trim().length < 2) {
+            addToast({
+                title: "입력 오류",
+                description: '입력한 값이 2글자 미만입니다.',
+                color: "danger"
+            });
+            return;
+        }
+        value = value.trim();
+        setLoadingSearch(true);
+        const lostarkRes = await fetch(`/api/lostark?value=${value}&code=0`);
+        if (!lostarkRes.ok) {
+            console.log(`Unable to load ${value}'s character data. (Error Status : ${lostarkRes.status})`);
+            return;
+        }
+        const data: Array<any> = await lostarkRes.json();
+        if (data.length === 0) {
+            addToast({
+                title: "결과 없음",
+                description: '해당 캐릭터 이름으로 검색된 결과가 없습니다.',
+                color: "danger"
+            });
+            setResult([]);
+        } else {
+            const characters: SearchCharacter[] = [];
+            for (const item of data) {
+                characters.push({
+                    nickname: item.CharacterName,
+                    server: item.ServerName,
+                    level: Number(item.ItemAvgLevel.replaceAll(',', '')),
+                    job: item.CharacterClassName,
+                    isCheck: false
+                });
+            }
+            characters.sort((a, b) => b.level - a.level);
+            addToast({
+                title: "조회 완료",
+                description: '캐릭터 조회를 완료하였습니다.',
+                color: "success"
+            });
+            setResult(characters);
+        }
+        setLoadingSearch(false);
+    }
+}
+
+// 조회된 캐릭터 선택 이벤트 함수
+export function handleSelectCharacter(
+    isSelected: boolean,
+    index: number,
+    result: SearchCharacter[],
+    setResult: SetStateFn<SearchCharacter[]>
+) {
+    const newResult = result.map(item => ({ ...item }));
+    newResult[index].isCheck = isSelected;
+    setResult(newResult);
+}
+
+// 조회된 캐릭터의 체크 갯수
+export function getCheckedResult(result: SearchCharacter[]): number {
+    let sum = 0;
+    for (const item of result) {
+        if (item.isCheck) {
+            sum++;
+        }
+    }
+    return sum;
+}
+
+// 조회 Modal에서 닫을 경우 이벤트 함수
+export function useCloseModal(
+    setResult: SetStateFn<SearchCharacter[]>,
+    setInputValue: SetStateFn<string>
+) {
+    return () => {
+        setResult([]);
+        setInputValue('');
+    }
+}
+
+// 캐릭터 추가 함수
+export async function handleAddCharacter(
+    checklist: CheckCharacter[],
+    result: SearchCharacter[],
+    dispatch: AppDispatch,
+    onClose: () => void,
+    setLoadingAdd: SetStateFn<boolean>,
+    isGold: boolean,
+    bosses: Boss[]
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const newChecklist = checklist.map(item => ({ ...item }));
+    setLoadingAdd(true);
+    for (const item of result) {
+        if (item.isCheck) {
+            const checkCharacter: CheckCharacter = {
+                nickname: item.nickname,
+                level: item.level,
+                job: item.job,
+                server: item.server,
+                day: {
+                    dungeon: 0,
+                    dungeonBouus: 0,
+                    dungeonUsing: 0,
+                    boss: 0,
+                    bossBonus: 0,
+                    bossUsing: 0,
+                    quest: 0,
+                    questBonus: 0,
+                    questUsing: 0
+                },
+                checklist: initialWeekContents(item.level, bosses),
+                cubelist: [],
+                daylist: [],
+                weeklist: [],
+                cube: 0,
+                isGold: isGold,
+                otherGold: 0
+            }
+            newChecklist.push(checkCharacter);
+        }
+    }
+    const inputRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: newChecklist,
+            type: 'init'
+        })
+    });
+    if (!inputRes.ok) {
+        addToast({
+            title: `데이터 저장 오류 (${inputRes.status})`,
+            description: `데이터를 저장하는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+    } else {
+        addToast({
+            title: "캐릭터터 추가",
+            description: `캐랙터 추가가 완료되었습니다.`,
+            color: "success"
+        });
+        dispatch(saveData(newChecklist));
+    }  
+    setLoadingAdd(false);
+    onClose();
 }

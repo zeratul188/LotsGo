@@ -18,17 +18,24 @@ import {
     Select, SelectItem, Selection,
     Tabs,
     Tab,
-    Input
+    Input,
+    CardFooter,
+    Accordion, AccordionItem,
+    Dropdown, DropdownTrigger, DropdownMenu, DropdownItem
 } from "@heroui/react";
 import Image from "next/image";
 import { 
     DayValue, 
     getAllCountChecklist, 
+    getAllCubeCount, 
     getAllGoldCharacter, 
     getAllGolds, 
     getBossesById, 
+    getCheckedResult, 
     getCompleteChecklist, 
     getCompleteGoldCharacter, 
+    getCountCube, 
+    getCubeList, 
     getDayName, 
     getHaveGolds, 
     getMaxRestValue, 
@@ -37,12 +44,21 @@ import {
     getTypeDayValue, 
     getWeekContents, 
     getWeekDifficultys, 
+    handleAddCharacter, 
+    handleCheckGold, 
+    handleControlCube, 
     handleDayListCheck, 
+    handleRemoveCharacter, 
     handleRemoveDayList, 
     handleRemoveWeekList, 
+    handleSelectCharacter, 
     handleWeekListCheck, 
     isBiweeklyContent, 
     isCheckBiweeklyContent, 
+    SearchCharacter, 
+    useClickLoadCharacters, 
+    useClickUpdatedCharacters, 
+    useCloseModal, 
     useOnClickAddDayList, 
     useOnClickAddItem, 
     useOnClickAddWeekList, 
@@ -56,7 +72,9 @@ import { SettingIcon } from "../icons/SettingIcon";
 import clsx from "clsx";
 import { AppDispatch } from "../store/store";
 import AddIcon from "../icons/AddIcon";
-import { title } from "process";
+import DeleteIcon from "../icons/DeleteIcon";
+import { Cube } from "../api/checklist/cube/route";
+import { MAX_CHARACTER_COUNT } from "@/utiils/constants";
 
 // state 관리
 export type ModalData = {
@@ -72,84 +90,190 @@ export function useChecklistForm() {
         characterIndex: -1,
         type: 'null'
     });
+    const [cubes, setCubes] = useState<Cube[]>([]);
 
     return {
         isLoading, setLoading,
         bosses, setBosses,
         server, setServer,
         isOpen, onOpen, onOpenChange,
-        modalData, setModalData
+        modalData, setModalData,
+        cubes, setCubes
     }
 }
 
 // 체크리스트 현황 컴포넌트
 type ChecklistStatueProps = {
     checklist: CheckCharacter[],
-    bosses: Boss[]
+    bosses: Boss[],
+    dispatch: AppDispatch
 }
-export function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
+export function ChecklistStatue({ checklist, bosses, dispatch }: ChecklistStatueProps) {
     const isMobile = useMobileQuery();
+    const [isLoading, setLoading] = useState(false);
+    const [inputValue, setInputValue] = useState('');
+    const [result, setResult] = useState<SearchCharacter[]>([]);
+    const [isLoadingSearch, setLoadingSearch] = useState(false);
+    const [isLoadingAdd, setLoadingAdd] = useState(false);
+    const {isOpen, onOpen, onOpenChange} = useDisclosure();
+    const [isGold, setGold] = useState(false);
+    const onClickUpdatedCharacters = useClickUpdatedCharacters(checklist, dispatch, setLoading);
+    const onClickLoadCharacters = useClickLoadCharacters(inputValue, setResult, setLoadingSearch);
+    const onCloseModal = useCloseModal(setResult, setInputValue);
     return (
-        <Card fullWidth radius="sm">
-            <CardBody>
-                <div className="w-full flex flex-col md960:flex-row gap-4">
-                    <div className="w-full md960:w-[400px]">
-                        <Progress 
-                            aria-label="all-gold"
-                            size="md"
-                            color="warning"
-                            label={(
-                                <div className="flex items-center">
-                                    <Image 
-                                        src="/icons/gold.png" 
-                                        width={19} 
-                                        height={19} 
-                                        alt="goldicon"
-                                        className="w-[19px] h-[19px]"/>
-                                    <span className="ml-1 text-md">주간 수익 골드량 : {getHaveGolds(bosses, checklist).toLocaleString()} / {getAllGolds(bosses, checklist).toLocaleString()}</span>
-                                </div>
-                            )}
-                            showValueLabel={true}
-                            radius="sm"
-                            value={getHaveGolds(bosses, checklist)}
-                            maxValue={getAllGolds(bosses, checklist)}
-                            className="w-full"/>
-                    </div>
-                    <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
-                    <div className="w-full md960:w-[400px]">
-                        <Progress 
-                            aria-label="all-gold"
-                            size="md"
-                            color="success"
-                            label={`📃 숙제 진행 상황 : ${getCompleteChecklist(checklist)} / ${getAllCountChecklist(checklist)}`}
-                            showValueLabel={true}
-                            radius="sm"
-                            value={getCompleteChecklist(checklist)}
-                            maxValue={getAllCountChecklist(checklist)}
-                            className="w-full"/>
-                    </div>
-                    <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
-                    <div className="grow-1 flex flex-col md960:flex-row justify-end items-center gap-2">
-                        <Tooltip 
-                            showArrow
-                            content="가입된 원정대 캐릭터 한에서만 선택 가능합니다.">
-                            <Button
+        <>
+            <Card fullWidth radius="sm">
+                <CardBody>
+                    <div className="w-full flex flex-col md960:flex-row gap-4">
+                        <div className="w-full md960:w-[400px]">
+                            <Progress 
+                                aria-label="all-gold"
+                                size="md"
+                                color="warning"
+                                label={(
+                                    <div className="flex items-center">
+                                        <Image 
+                                            src="/icons/gold.png" 
+                                            width={19} 
+                                            height={19} 
+                                            alt="goldicon"
+                                            className="w-[19px] h-[19px]"/>
+                                        <span className="ml-1 text-md">주간 수익 골드량 : {getHaveGolds(bosses, checklist).toLocaleString()} / {getAllGolds(bosses, checklist).toLocaleString()}</span>
+                                    </div>
+                                )}
+                                showValueLabel={true}
+                                radius="sm"
+                                value={getHaveGolds(bosses, checklist)}
+                                maxValue={getAllGolds(bosses, checklist)}
+                                className="w-full"/>
+                        </div>
+                        <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
+                        <div className="w-full md960:w-[400px]">
+                            <Progress 
+                                aria-label="all-gold"
+                                size="md"
                                 color="success"
-                                variant="flat"
-                                className="w-full md960:w-[100px]">캐릭터 추가</Button>
-                        </Tooltip>
-                        <Tooltip 
-                            showArrow
-                            placement="left"
-                            content="캐릭터 정보만 수정되며, 체크리스트는 영향을 주지 않습니다.">
-                            <Button
-                                color="primary"
-                                className="w-full md960:w-[140px]">캐릭터 갱신하기</Button>
-                        </Tooltip>
+                                label={`📃 숙제 진행 상황 : ${getCompleteChecklist(checklist)} / ${getAllCountChecklist(checklist)}`}
+                                showValueLabel={true}
+                                radius="sm"
+                                value={getCompleteChecklist(checklist)}
+                                maxValue={getAllCountChecklist(checklist)}
+                                className="w-full"/>
+                        </div>
+                        <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
+                        <div className="grow-1 flex flex-col md960:flex-row justify-end items-center gap-2">
+                            <Tooltip 
+                                showArrow
+                                content="가입된 원정대 캐릭터 한에서만 선택 가능합니다.">
+                                <Button
+                                    color="success"
+                                    variant="flat"
+                                    className="w-full md960:w-[100px]"
+                                    onPress={onOpen}>캐릭터 추가</Button>
+                            </Tooltip>
+                            <Tooltip 
+                                showArrow
+                                placement="left"
+                                content="캐릭터 정보만 수정되며, 체크리스트는 영향을 주지 않습니다.">
+                                <Button
+                                    color="primary"
+                                    isLoading={isLoading}
+                                    className="w-full md960:w-[140px]"
+                                    onPress={onClickUpdatedCharacters}>캐릭터 갱신하기</Button>
+                            </Tooltip>
+                        </div>
                     </div>
-                </div>
-            </CardBody>
-        </Card>
+                </CardBody>
+            </Card>
+            <Modal
+                isDismissable={false}
+                isOpen={isOpen}
+                onOpenChange={onOpenChange}
+                onClose={onCloseModal}>
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader>캐릭터 추가</ModalHeader>
+                            <ModalBody>
+                                <div className="w-full">
+                                    <div className="flex gap-2 mb-4">
+                                        <Input
+                                            label="대표 캐릭터 이름"
+                                            placeholder="2~12 글자"
+                                            maxLength={12}
+                                            size="sm"
+                                            value={inputValue}
+                                            onValueChange={setInputValue}
+                                            className="grow"/>
+                                        <Button
+                                            size="lg"
+                                            radius="sm"
+                                            isLoading={isLoadingSearch}
+                                            color="primary"
+                                            onPress={onClickLoadCharacters}>조회</Button>
+                                    </div>
+                                    <div className="mb-4 max-h-[400px] overflow-y-auto overflow-x-hidden">
+                                        {result.map((item, index) => (
+                                            <div key={index} className="w-full min-h-[64px] mb-1">
+                                                <Checkbox
+                                                    aria-label={item.nickname}
+                                                    isDisabled={(MAX_CHARACTER_COUNT <= checklist.length + getCheckedResult(result)) && !item.isCheck}
+                                                    classNames={{
+                                                        base: cn(
+                                                            "w-full max-w-full bg-content1",
+                                                            "hover:bg-content2",
+                                                            "cursor-pointer rounded-lg gap-2 border-2 border-transparent m-auto box-border",
+                                                            "data-[selected=true]:border-primary"
+                                                        ),
+                                                        label: "w-full",
+                                                    }}
+                                                    isSelected={item.isCheck}
+                                                    onValueChange={(isSelected) => {
+                                                        handleSelectCharacter(isSelected, index, result, setResult);
+                                                    }}>
+                                                    <div className="w-full flex flex-col">
+                                                        <span className="fadedtext text-sm">@{item.server} · {item.job} · Lv.{item.level}</span>
+                                                        <span className="text-md">{item.nickname}</span>
+                                                    </div>
+                                                </Checkbox>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className={clsx(
+                                        "flex gap-2 mb-4",
+                                        result.length !== 0 ? 'block' : 'hidden'
+                                    )}>
+                                        <div className="grow">
+                                            <Tooltip showArrow content="선택된 캐릭터들이 생성될 때 골드 지정 캐릭터로 지정할 것인지 확인합니다.">
+                                                <Checkbox
+                                                    color="warning"
+                                                    isSelected={isGold}
+                                                    onValueChange={setGold}>골드 지정</Checkbox>
+                                            </Tooltip>
+                                        </div>
+                                        <Tooltip showArrow content="기존에 등록된 캐릭터 수 + 체크한 캐릭터 갯수">
+                                            <span>({getCheckedResult(result)+checklist.length}/{MAX_CHARACTER_COUNT})</span>
+                                        </Tooltip>
+                                    </div>
+                                    <Button
+                                        fullWidth
+                                        isDisabled={getCheckedResult(result) === 0}
+                                        isLoading={isLoadingAdd}
+                                        color="primary"
+                                        className={clsx(
+                                            "mb-4",
+                                            result.length !== 0 ? 'block' : 'hidden'
+                                        )}
+                                        onPress={async () => {
+                                            await handleAddCharacter(checklist, result, dispatch, onClose, setLoadingAdd, isGold, bosses);
+                                        }}>추가</Button>
+                                </div>
+                            </ModalBody>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+        </>
     )
 }
 
@@ -199,11 +323,12 @@ type ChecklistProps = {
     checklist: CheckCharacter[],
     server: string,
     bosses: Boss[],
+    cubes: Cube[],
     dispatch: AppDispatch,
     onOpen: () => void,
     setModalData: SetStateFn<ModalData>
 }
-export function ChecklistComponent({ checklist, server, bosses, dispatch, onOpen, setModalData }: ChecklistProps) {
+export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch, onOpen, setModalData }: ChecklistProps) {
     return (
         <div className="mt-5 grid grid-cols-1 md960:grid-cols-2 gap-4">
             {checklist
@@ -223,10 +348,22 @@ export function ChecklistComponent({ checklist, server, bosses, dispatch, onOpen
                                         </div>
                                         <div className="flex gap-2 items-center">
                                             <span className="text-xl">{character.nickname}</span>
-                                            <div className="hidden md960:block"><SettingButton size={16} character={character}/></div>
+                                            <div className="hidden md960:block">
+                                                <SettingButton 
+                                                    size={16} 
+                                                    checklist={checklist} 
+                                                    characterIndex={index}
+                                                    dispatch={dispatch}/>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="block md960:hidden"><SettingButton size={26} character={character}/></div>
+                                    <div className="block md960:hidden">
+                                        <SettingButton 
+                                            size={26} 
+                                            checklist={checklist} 
+                                            characterIndex={index}
+                                            dispatch={dispatch}/>
+                                    </div>
                                 </div>
                                 <Progress 
                                     aria-label="all-gold"
@@ -247,7 +384,10 @@ export function ChecklistComponent({ checklist, server, bosses, dispatch, onOpen
                                     radius="sm"
                                     value={getCompleteGoldCharacter(bosses, character)}
                                     maxValue={getAllGoldCharacter(bosses, character)}
-                                    className="w-full md960:w-[330px]"/>
+                                    className={clsx(
+                                        "w-full md960:w-[330px]",
+                                        character.isGold ? 'block' : 'hidden'
+                                    )}/>
                             </div>
                         </CardHeader>
                         <Divider/>
@@ -355,6 +495,59 @@ export function ChecklistComponent({ checklist, server, bosses, dispatch, onOpen
                                 </div>
                             </div>
                         </CardBody>
+                        <Divider/>
+                        <CardFooter className="pt-0 pb-0">
+                            <Accordion>
+                                <AccordionItem key="0" title={<span className="flex gap-2 items-center">
+                                    <Image 
+                                        src="/icons/cube.png" 
+                                        width={18} 
+                                        height={18} 
+                                        alt="cubeicon"
+                                        className="w-[18px] h-[18px]"/>
+                                    <span>큐브 - 총합 {getAllCubeCount(character)}장</span>
+                                </span>}>
+                                    <Table removeWrapper>
+                                        <TableHeader>
+                                            <TableColumn>큐브명</TableColumn>
+                                            <TableColumn>개수</TableColumn>
+                                            <TableColumn className="w-[10px]">관리</TableColumn>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {getCubeList(character.level, cubes).map((cube, idx) => (
+                                                <TableRow key={idx}>
+                                                    <TableCell>{cube.name}</TableCell>
+                                                    <TableCell>{getCountCube(character.cubelist, cube.id).toLocaleString()}장</TableCell>
+                                                    <TableCell>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="flat"
+                                                                color="danger"
+                                                                isDisabled={getCountCube(character.cubelist, cube.id) <= 0}
+                                                                onPress={async () => {
+                                                                    await handleControlCube(checklist, index, cube.id, dispatch, false);
+                                                                }}>감소</Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="flat"
+                                                                color="success"
+                                                                isDisabled={getCountCube(character.cubelist, cube.id) >= 9999}
+                                                                onPress={async () => {
+                                                                    await handleControlCube(checklist, index, cube.id, dispatch, true);
+                                                                }}>증가</Button>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </AccordionItem>
+                            </Accordion>
+                            <div>
+                                
+                            </div>
+                        </CardFooter>
                     </Card>
                 ))}
         </div>
@@ -364,10 +557,45 @@ export function ChecklistComponent({ checklist, server, bosses, dispatch, onOpen
 // 설정 버튼 요소
 type SettingButtonProps = {
     size: number,
-    character: CheckCharacter
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    dispatch: AppDispatch
 }
-function SettingButton({ size, character }: SettingButtonProps) {
-    return <SettingIcon size={size} className="text-gray-500 hover:text-gray-800 cursor-pointer" />;
+function SettingButton({ size, checklist, characterIndex, dispatch }: SettingButtonProps) {
+    return (
+        <Dropdown>
+            <DropdownTrigger>
+                <Button isIconOnly variant="light"><SettingIcon size={size} className="text-gray-500 hover:text-gray-800 cursor-pointer" /></Button>
+            </DropdownTrigger>
+            <DropdownMenu>
+                <DropdownItem 
+                    key="gold"
+                    startContent={
+                        <Image 
+                            src="/icons/gold.png" 
+                            width={16} 
+                            height={16} 
+                            alt="goldicon"
+                            className="w-[16px] h-[16px]"/>
+                    }
+                    onPress={async () => {
+                        await handleCheckGold(checklist, characterIndex, !checklist[characterIndex].isGold, dispatch);
+                    }}>{checklist[characterIndex].isGold ? "골드 지정 해제" : "골드 지정"}</DropdownItem>
+                <DropdownItem 
+                    key="delete"
+                    color="danger"
+                    className="text-danger"
+                    startContent={
+                        <DeleteIcon/>
+                    }
+                    onPress={async () => {
+                        if (confirm(`\"${checklist[characterIndex].nickname}\"의 캐릭터를 삭제하시겠습니까? 삭제하시면 다시 복구하실 수 없습니다.`)) {
+                            await handleRemoveCharacter(checklist, characterIndex, dispatch);
+                        }
+                    }}>캐릭터 삭제</DropdownItem>
+            </DropdownMenu>
+        </Dropdown>
+    );
 }
 
 // 휴식 전용 체크 버튼 요소 (쿠르잔 전선, 가디언 토벌, 에포나 의뢰)

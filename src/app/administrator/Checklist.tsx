@@ -24,11 +24,97 @@ import {
     useOnRemoveDifficulty, 
     onClickRemove 
 } from "./bossFeat";
+import { Cube } from "../api/checklist/cube/route";
+import { handleRemoveCube, useOnAddCube } from "./CubeFeat";
 
 type TabMenu = {
     key: string,
     title: string,
     component: ReactNode
+}
+
+// 숙제 관리 - 큐브 관리 컴포넌트
+function CubeComponent() {
+    const [cubes, setCubes] = useState<Cube[]>([]);
+    const [isLoading, setLoading] = useState(true);
+    const [inputName, setInputName] = useState('');
+    const [inputLevel, setInputLevel] = useState(0);
+
+    const onClickAddCube = useOnAddCube(inputName, inputLevel, cubes, setCubes, setInputName, setInputLevel);
+
+    useEffect(() => {
+        const fetchCube = async () => {
+            const cubeRes = await fetch(`/api/checklist/cube`);
+            if (!cubeRes.ok) {
+                addToast({
+                    title: "데이터 로딩 오류",
+                    description: '알 수 없는 오류로 인해 데이터를 불러올 수 없습니다.',
+                    color: "danger"
+                });
+            } else {
+                const data: Cube[] = await cubeRes.json();
+                data.sort((a, b) => a.level - b.level);
+                setCubes(data);
+                setLoading(false);
+            }
+        }
+        fetchCube();
+    }, []);
+
+    return (
+        <div className="w-full">
+            {isLoading ? <LoadingComponent heightStyle={'h-[calc(100vh-105px)]'}/> : (
+                <div className="w-full min-h-[calc(100vh-105px)]">
+                    <div className="w-full flex gap-3 flex-col sm:flex-row items-center">
+                        <Input
+                            isRequired
+                            label="큐브 명"
+                            placeholder="ex) 제 1 해금"
+                            value={inputName}
+                            onValueChange={setInputName}
+                            className="grow"/>
+                        <NumberInput
+                            isRequired
+                            label="권장 아이템 레벨"
+                            placeholder="0 ~ 9999"
+                            minValue={0}
+                            maxValue={9999}
+                            step={5}
+                            value={inputLevel}
+                            onValueChange={setInputLevel}
+                            className="grow"/>
+                        <Button
+                            color="primary"
+                            size="lg"
+                            className="w-full sm:w-[200px]"
+                            onPress={onClickAddCube}>추가</Button>
+                    </div>
+                    <Table removeWrapper className="mt-6">
+                        <TableHeader>
+                            <TableColumn>큐브명</TableColumn>
+                            <TableColumn>권장 아이템 레벨</TableColumn>
+                            <TableColumn>관리</TableColumn>
+                        </TableHeader>
+                        <TableBody emptyContent={"데이터가 존재하지 않습니다."}>
+                            {cubes.map((cube, index) => (
+                                <TableRow key={index}>
+                                    <TableCell>{cube.name}</TableCell>
+                                    <TableCell>{cube.level}</TableCell>
+                                    <TableCell>
+                                        <button 
+                                            className="underline redbutton"
+                                            onClick={async () => { 
+                                                await handleRemoveCube(index, cubes, setCubes)
+                                            }}>삭제</button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            )}
+        </div>
+    )
 }
 
 // 숙제 관리 - 콘텐츠 관리 컴포넌트
@@ -208,9 +294,9 @@ export default function Checklist() {
             component: <BossComponent/>
         },
         {
-            key: 'gold',
-            title: '골드 관리',
-            component: null
+            key: 'cube',
+            title: '큐브 관리',
+            component: <CubeComponent/>
         }
     ]
 
