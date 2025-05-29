@@ -31,6 +31,7 @@ import {
     getAllGoldCharacter, 
     getAllGolds, 
     getBossesById, 
+    getCheckedResult, 
     getCompleteChecklist, 
     getCompleteGoldCharacter, 
     getCountCube, 
@@ -43,16 +44,21 @@ import {
     getTypeDayValue, 
     getWeekContents, 
     getWeekDifficultys, 
+    handleAddCharacter, 
     handleCheckGold, 
     handleControlCube, 
     handleDayListCheck, 
     handleRemoveCharacter, 
     handleRemoveDayList, 
     handleRemoveWeekList, 
+    handleSelectCharacter, 
     handleWeekListCheck, 
     isBiweeklyContent, 
     isCheckBiweeklyContent, 
+    SearchCharacter, 
+    useClickLoadCharacters, 
     useClickUpdatedCharacters, 
+    useCloseModal, 
     useOnClickAddDayList, 
     useOnClickAddItem, 
     useOnClickAddWeekList, 
@@ -68,6 +74,7 @@ import { AppDispatch } from "../store/store";
 import AddIcon from "../icons/AddIcon";
 import DeleteIcon from "../icons/DeleteIcon";
 import { Cube } from "../api/checklist/cube/route";
+import { MAX_CHARACTER_COUNT } from "@/utiils/constants";
 
 // state 관리
 export type ModalData = {
@@ -104,8 +111,15 @@ type ChecklistStatueProps = {
 export function ChecklistStatue({ checklist, bosses, dispatch }: ChecklistStatueProps) {
     const isMobile = useMobileQuery();
     const [isLoading, setLoading] = useState(false);
+    const [inputValue, setInputValue] = useState('');
+    const [result, setResult] = useState<SearchCharacter[]>([]);
+    const [isLoadingSearch, setLoadingSearch] = useState(false);
+    const [isLoadingAdd, setLoadingAdd] = useState(false);
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
+    const [isGold, setGold] = useState(false);
     const onClickUpdatedCharacters = useClickUpdatedCharacters(checklist, dispatch, setLoading);
+    const onClickLoadCharacters = useClickLoadCharacters(inputValue, setResult, setLoadingSearch);
+    const onCloseModal = useCloseModal(setResult, setInputValue);
     return (
         <>
             <Card fullWidth radius="sm">
@@ -174,14 +188,85 @@ export function ChecklistStatue({ checklist, bosses, dispatch }: ChecklistStatue
             <Modal
                 isDismissable={false}
                 isOpen={isOpen}
-                onOpenChange={onOpenChange}>
+                onOpenChange={onOpenChange}
+                onClose={onCloseModal}>
                 <ModalContent>
                     {(onClose) => (
                         <>
                             <ModalHeader>캐릭터 추가</ModalHeader>
                             <ModalBody>
                                 <div className="w-full">
-                                    
+                                    <div className="flex gap-2 mb-4">
+                                        <Input
+                                            label="대표 캐릭터 이름"
+                                            placeholder="2~12 글자"
+                                            maxLength={12}
+                                            size="sm"
+                                            value={inputValue}
+                                            onValueChange={setInputValue}
+                                            className="grow"/>
+                                        <Button
+                                            size="lg"
+                                            radius="sm"
+                                            isLoading={isLoadingSearch}
+                                            color="primary"
+                                            onPress={onClickLoadCharacters}>조회</Button>
+                                    </div>
+                                    <div className="mb-4 max-h-[400px] overflow-y-auto overflow-x-hidden">
+                                        {result.map((item, index) => (
+                                            <div key={index} className="w-full min-h-[64px] mb-1">
+                                                <Checkbox
+                                                    aria-label={item.nickname}
+                                                    isDisabled={(MAX_CHARACTER_COUNT <= checklist.length + getCheckedResult(result)) && !item.isCheck}
+                                                    classNames={{
+                                                        base: cn(
+                                                            "w-full max-w-full bg-content1",
+                                                            "hover:bg-content2",
+                                                            "cursor-pointer rounded-lg gap-2 border-2 border-transparent m-auto box-border",
+                                                            "data-[selected=true]:border-primary"
+                                                        ),
+                                                        label: "w-full",
+                                                    }}
+                                                    isSelected={item.isCheck}
+                                                    onValueChange={(isSelected) => {
+                                                        handleSelectCharacter(isSelected, index, result, setResult);
+                                                    }}>
+                                                    <div className="w-full flex flex-col">
+                                                        <span className="fadedtext text-sm">@{item.server} · {item.job} · Lv.{item.level}</span>
+                                                        <span className="text-md">{item.nickname}</span>
+                                                    </div>
+                                                </Checkbox>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className={clsx(
+                                        "flex gap-2 mb-4",
+                                        result.length !== 0 ? 'block' : 'hidden'
+                                    )}>
+                                        <div className="grow">
+                                            <Tooltip showArrow content="선택된 캐릭터들이 생성될 때 골드 지정 캐릭터로 지정할 것인지 확인합니다.">
+                                                <Checkbox
+                                                    color="warning"
+                                                    isSelected={isGold}
+                                                    onValueChange={setGold}>골드 지정</Checkbox>
+                                            </Tooltip>
+                                        </div>
+                                        <Tooltip showArrow content="기존에 등록된 캐릭터 수 + 체크한 캐릭터 갯수">
+                                            <span>({getCheckedResult(result)+checklist.length}/{MAX_CHARACTER_COUNT})</span>
+                                        </Tooltip>
+                                    </div>
+                                    <Button
+                                        fullWidth
+                                        isDisabled={getCheckedResult(result) === 0}
+                                        isLoading={isLoadingAdd}
+                                        color="primary"
+                                        className={clsx(
+                                            "mb-4",
+                                            result.length !== 0 ? 'block' : 'hidden'
+                                        )}
+                                        onPress={async () => {
+                                            await handleAddCharacter(checklist, result, dispatch, onClose, setLoadingAdd, isGold, bosses);
+                                        }}>추가</Button>
                                 </div>
                             </ModalBody>
                         </>
