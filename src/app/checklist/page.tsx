@@ -2,7 +2,7 @@
 import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal } from "./ChecklistForm"
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
-import { checkLogin, getBosses, loadChecklist } from "./checklistFeat";
+import { checkLogin, getBosses, getCubes, loadChecklist } from "./checklistFeat";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -31,6 +31,11 @@ export default function Checklist() {
             checklistForm.setBosses(data);
         }
         loadBosses();
+        const loadCubes = async () => {
+            const data = await getCubes();
+            checklistForm.setCubes(data);
+        }
+        loadCubes();
         if (!checkLogin()) {
             addToast({
                 title: "이용 불가",
@@ -64,6 +69,7 @@ export default function Checklist() {
                     checklist={checklist} 
                     server={checklistForm.server}
                     bosses={checklistForm.bosses}
+                    cubes={checklistForm.cubes}
                     dispatch={dispatch}
                     onOpen={checklistForm.onOpen}
                     setModalData={checklistForm.setModalData}/>

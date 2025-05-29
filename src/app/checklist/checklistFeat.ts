@@ -1,10 +1,11 @@
 import { AppDispatch } from "../store/store";
-import type { CheckCharacter, Checklist, Day, OtherList } from "../store/checklistSlice";
-import { checkDayList, checkWeek, checkWeekList, editDay, editDayList, editWeekList, removeWeek, saveData, saveRest } from "../store/checklistSlice";
+import type { CheckCharacter, Checklist, CubeList, Day, OtherList } from "../store/checklistSlice";
+import { checkDayList, checkWeek, checkWeekList, editCube, editDay, editDayList, editWeekList, removeWeek, saveData, saveRest } from "../store/checklistSlice";
 import { SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
 import { Boss, Difficulty } from "../api/checklist/boss/route";
 import { Character, LoginUser } from "../store/loginSlice";
+import { Cube } from "../api/checklist/cube/route";
 
 // 로그인 여부 확인 함수
 export function checkLogin(): boolean {
@@ -69,6 +70,7 @@ export async function loadChecklist(
                     questUsing: 0
                 },
                 checklist: initialWeekContents(character.level, bosses),
+                cubelist: [],
                 daylist: [],
                 weeklist: [],
                 cube: 0,
@@ -119,27 +121,29 @@ function initialWeekContents(level: number, bosses: Boss[]): Checklist[] {
         let isImport = false;
         boss.difficulty.sort((a, b) => b.level - a.level);
         for (const difficulty of boss.difficulty) {
-            if (!isImport && level >= difficulty.level && !difficulty.isBiweekly) {
-                checklist.push({
-                    name: boss.name,
-                    difficulty: difficulty.difficulty,
-                    isCheck: false,
-                    isDisable: false,
-                    isGold: true,
-                    isBiweekly: difficulty.isBiweekly
-                });
-                isImport = true;
-                count++;
-            }
-            if (isImport && level >= difficulty.level && difficulty.isBiweekly) {
-                checklist.push({
-                    name: boss.name,
-                    difficulty: difficulty.difficulty,
-                    isCheck: false,
-                    isDisable: false,
-                    isGold: true,
-                    isBiweekly: difficulty.isBiweekly
-                });
+            if (!difficulty.difficulty.includes('싱글')) {
+                if (!isImport && level >= difficulty.level && !difficulty.isBiweekly) {
+                    checklist.push({
+                        name: boss.name,
+                        difficulty: difficulty.difficulty,
+                        isCheck: false,
+                        isDisable: false,
+                        isGold: true,
+                        isBiweekly: difficulty.isBiweekly
+                    });
+                    isImport = true;
+                    count++;
+                }
+                if (isImport && level >= difficulty.level && difficulty.isBiweekly) {
+                    checklist.push({
+                        name: boss.name,
+                        difficulty: difficulty.difficulty,
+                        isCheck: false,
+                        isDisable: false,
+                        isGold: true,
+                        isBiweekly: difficulty.isBiweekly
+                    });
+                }
             }
         }
         if (count === 3) break;
@@ -162,6 +166,22 @@ export async function getBosses(): Promise<Boss[]> {
 
     const bosses: Boss[] = await bossRes.json();
     return bosses;
+}
+
+// 큐브 정보 가져오는 함수
+export async function getCubes(): Promise<Cube[]> {
+    const cubeRes = await fetch('/api/checklist/cube');
+    if (!cubeRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        return [];
+    }
+    const cubes: Cube[] = await cubeRes.json();
+    cubes.sort((a, b) => a.level - b.level);
+    return cubes;
 }
 
 // 숙제 완료한 캐릭 수 반환 함수
@@ -866,6 +886,7 @@ export function getWeekContents(bosses: Boss[]): WeekContent[] {
             name: boss.name
         });
     }
+    contents.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
     return contents;
 }
 
@@ -931,4 +952,88 @@ export function isCheckBiweeklyContent(
         }
     }
     return isIncludes;
+}
+
+// 큐브 총합 반환 함수
+export function getAllCubeCount(
+    character: CheckCharacter
+): number {
+    let sum = 0;
+    for (const cube of character.cubelist) {
+        sum += cube.count;
+    }
+    return sum;
+}
+
+// 캐릭터 레벨에 맞는 큐브 리스트 반환 함수
+export function getCubeList(level: number, cubes: Cube[]): Cube[] {
+    const returnCubes: Cube[] = [];
+    for (const cube of cubes) {
+        if (cube.level <= level) {
+            returnCubes.push(cube);
+        }
+    }
+    return returnCubes;
+}
+
+// 해당 큐브의 보유 중인 큐브 개수 반환 함수
+export function getCountCube(cubelist: CubeList[], cubeID: string): number {
+    const item: CubeList | undefined = cubelist.find(item => item.id === cubeID);
+    console.log(item);
+    if (item) {
+        return item.count;
+    } else {
+        return 0;
+    }
+}
+
+// 큐브 개수 조절
+export async function handleControlCube(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    cubeID: string,
+    dispatch: AppDispatch,
+    isAdd: boolean
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const cubelist = checklist[characterIndex].cubelist.map(item => ({ ...item }));
+    const prevCubelist = checklist[characterIndex].cubelist.map(item => ({ ...item }));
+    const findIndex = cubelist.findIndex(item => item.id === cubeID);
+    if (findIndex !== -1) {
+        cubelist[findIndex].count += isAdd ? 1 : cubelist[findIndex].count <= 0 ? 0 : -1;
+    } else {
+        cubelist.push({
+            id: cubeID,
+            count: isAdd ? 1 : 0
+        });
+    }
+    dispatch(editCube({
+        characterIndex: characterIndex,
+        cublist: cubelist
+    }));
+    const editRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'edit-cube',
+            characterIndex: characterIndex,
+            cubelist: cubelist
+        })
+    });
+    if (!editRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        dispatch(editCube({
+            characterIndex: characterIndex,
+            cublist: prevCubelist
+        }));
+        return;
+    }
 }

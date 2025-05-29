@@ -23,6 +23,10 @@ export type Checklist = {
     isGold: boolean,
     isBiweekly: boolean
 }
+export type CubeList = {
+    id: string,
+    count: number
+}
 export type CheckCharacter = {
     nickname: string,
     level: number,
@@ -33,6 +37,7 @@ export type CheckCharacter = {
     checklist: Checklist[],
     weeklist: OtherList[],
     cube: number,
+    cubelist: CubeList[],
     isGold: boolean,
     otherGold: number
 }
@@ -86,6 +91,10 @@ export type EditDayList = {
     characterIndex: number,
     daylist: OtherList[]
 }
+export type EditCube = {
+    characterIndex: number,
+    cublist: CubeList[]
+}
 
 const checklistSlice = createSlice({
     name: 'checklist',
@@ -93,7 +102,11 @@ const checklistSlice = createSlice({
     reducers: {
         // 데이터 저장
         saveData(state, action: PayloadAction<CheckCharacter[]>) {
-            state.checklist = action.payload;
+            const newChecklist = (action.payload ?? []).map((charaacter: any) => ({
+                ...charaacter,
+                cubelist: charaacter.cubelist ?? []
+            }));
+            state.checklist = newChecklist;
         },
         // 일일 콘텐츠 수정
         editDay(state, action: PayloadAction<EditDay>) {
@@ -136,6 +149,11 @@ const checklistSlice = createSlice({
             const characterIndex = action.payload.characterIndex;
             const listIndex = action.payload.listIndex;
             state.checklist[characterIndex].daylist[listIndex] = action.payload.daylist;
+        },
+        // 큐브 항목 수정
+        editCube(state, action: PayloadAction<EditCube>) {
+            const charaacterIndex = action.payload.characterIndex;
+            state.checklist[charaacterIndex].cubelist = action.payload.cublist;
         }
     }
 })
@@ -149,6 +167,7 @@ export const {
     checkWeekList,
     saveRest,
     editDayList,
-    checkDayList
+    checkDayList,
+    editCube
 } = checklistSlice.actions;
 export default checklistSlice.reducer;

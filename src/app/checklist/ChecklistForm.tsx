@@ -18,17 +18,22 @@ import {
     Select, SelectItem, Selection,
     Tabs,
     Tab,
-    Input
+    Input,
+    CardFooter,
+    Accordion, AccordionItem
 } from "@heroui/react";
 import Image from "next/image";
 import { 
     DayValue, 
     getAllCountChecklist, 
+    getAllCubeCount, 
     getAllGoldCharacter, 
     getAllGolds, 
     getBossesById, 
     getCompleteChecklist, 
     getCompleteGoldCharacter, 
+    getCountCube, 
+    getCubeList, 
     getDayName, 
     getHaveGolds, 
     getMaxRestValue, 
@@ -37,6 +42,7 @@ import {
     getTypeDayValue, 
     getWeekContents, 
     getWeekDifficultys, 
+    handleControlCube, 
     handleDayListCheck, 
     handleRemoveDayList, 
     handleRemoveWeekList, 
@@ -57,6 +63,7 @@ import clsx from "clsx";
 import { AppDispatch } from "../store/store";
 import AddIcon from "../icons/AddIcon";
 import { title } from "process";
+import { Cube } from "../api/checklist/cube/route";
 
 // state 관리
 export type ModalData = {
@@ -72,13 +79,15 @@ export function useChecklistForm() {
         characterIndex: -1,
         type: 'null'
     });
+    const [cubes, setCubes] = useState<Cube[]>([]);
 
     return {
         isLoading, setLoading,
         bosses, setBosses,
         server, setServer,
         isOpen, onOpen, onOpenChange,
-        modalData, setModalData
+        modalData, setModalData,
+        cubes, setCubes
     }
 }
 
@@ -199,11 +208,12 @@ type ChecklistProps = {
     checklist: CheckCharacter[],
     server: string,
     bosses: Boss[],
+    cubes: Cube[],
     dispatch: AppDispatch,
     onOpen: () => void,
     setModalData: SetStateFn<ModalData>
 }
-export function ChecklistComponent({ checklist, server, bosses, dispatch, onOpen, setModalData }: ChecklistProps) {
+export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch, onOpen, setModalData }: ChecklistProps) {
     return (
         <div className="mt-5 grid grid-cols-1 md960:grid-cols-2 gap-4">
             {checklist
@@ -355,6 +365,59 @@ export function ChecklistComponent({ checklist, server, bosses, dispatch, onOpen
                                 </div>
                             </div>
                         </CardBody>
+                        <Divider/>
+                        <CardFooter className="pt-0 pb-0">
+                            <Accordion>
+                                <AccordionItem key="0" title={<span className="flex gap-2 items-center">
+                                    <Image 
+                                        src="/icons/cube.png" 
+                                        width={18} 
+                                        height={18} 
+                                        alt="cubeicon"
+                                        className="w-[18px] h-[18px]"/>
+                                    <span>큐브 - 총합 {getAllCubeCount(character)}장</span>
+                                </span>}>
+                                    <Table removeWrapper>
+                                        <TableHeader>
+                                            <TableColumn>큐브명</TableColumn>
+                                            <TableColumn>개수</TableColumn>
+                                            <TableColumn className="w-[10px]">관리</TableColumn>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {getCubeList(character.level, cubes).map((cube, idx) => (
+                                                <TableRow key={idx}>
+                                                    <TableCell>{cube.name}</TableCell>
+                                                    <TableCell>{getCountCube(character.cubelist, cube.id).toLocaleString()}장</TableCell>
+                                                    <TableCell>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="flat"
+                                                                color="danger"
+                                                                isDisabled={getCountCube(character.cubelist, cube.id) <= 0}
+                                                                onPress={async () => {
+                                                                    await handleControlCube(checklist, index, cube.id, dispatch, false);
+                                                                }}>감소</Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="flat"
+                                                                color="success"
+                                                                isDisabled={getCountCube(character.cubelist, cube.id) >= 9999}
+                                                                onPress={async () => {
+                                                                    await handleControlCube(checklist, index, cube.id, dispatch, true);
+                                                                }}>증가</Button>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </AccordionItem>
+                            </Accordion>
+                            <div>
+                                
+                            </div>
+                        </CardFooter>
                     </Card>
                 ))}
         </div>
