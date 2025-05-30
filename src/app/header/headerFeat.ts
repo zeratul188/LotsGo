@@ -39,3 +39,21 @@ export function useOnActionProfile() {
         }
     }
 }
+
+export function useLogout() {
+    const router = useRouter();
+    const dispatch = useDispatch<AppDispatch>();
+    return () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('isAdministrator');
+        dispatch(logout());
+        signOut(auth);
+        addToast({
+            title: "로그아웃 완료",
+            description: `로그아웃되었습니다.`,
+            color: "success"
+        });
+        location.href = '/';
+    }
+}
