@@ -2,6 +2,32 @@ import type { SetStateFn } from "@/utiils/utils";
 import type { Boss, Difficulty } from "../api/checklist/boss/route";
 import { useCallback } from "react";
 import { addToast } from "@heroui/react";
+import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from "firebase/firestore";
+import { firestore } from "@/utiils/firebase";
+
+// 콘텐츠 데이터 로딩 함수
+export async function loadBoss(
+    setLoading: SetStateFn<boolean>,
+    setBoss: SetStateFn<Boss[]>
+) {
+    try {
+        const snapshot = await getDocs(collection(firestore, 'boss'));
+        const bosses: Boss[] = snapshot.docs.map(doc => ({
+            id: doc.id,
+            name: doc.data().name,
+            difficulty: doc.data().difficulty
+        }));
+        setBoss(bosses);
+        setLoading(false);
+    } catch(err) {
+        addToast({
+            title: "데이터 로딩 오류",
+            description: '알 수 없는 오류로 인해 데이터를 불러올 수 없습니다.',
+            color: "danger"
+        });
+        console.error(err);
+    }
+}
 
 // 콘텐츠 추가의 Modal에서 "난이도 추가" 버튼 클릭 시 데이터 추가 이벤트
 export function useOnAddInput(setInputs: SetStateFn<Difficulty[]>) {
@@ -93,25 +119,14 @@ export async function useOnAddData(
         return;
     }
 
+    const inputBoss = {
+        name: inputName,
+        difficulty: inputs
+    }
     if (isEditMode) {
-        const res = await fetch(`/api/checklist/boss`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                inputName: inputName,
-                inputs: inputs,
-                type: 'edit',
-                id: boss[editIndex].id
-            })
-        });
-
-        if (!res.ok) {
-            addToast({
-                title: `데이터 수정 오류 (${res.status})`,
-                description: `데이터를 수정하는데 문제가 발생하였습니다.`,
-                color: "danger"
-            });
-        } else {
+        try {
+            const docRef = doc(firestore, "boss", boss[editIndex].id);
+            await updateDoc(docRef, inputBoss);
             addToast({
                 title: "데이터 수정 완료",
                 description: `\"${inputName}\" 콘텐츠의 데이터를 수정하는데 성공하였습니다.`,
@@ -121,26 +136,17 @@ export async function useOnAddData(
             editBoss[editIndex].name = inputName;
             editBoss[editIndex].difficulty = inputs;
             setBoss(editBoss);
-        }
-    } else {
-        const res = await fetch(`/api/checklist/boss`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                inputName: inputName,
-                inputs: inputs,
-                type: 'add'
-            })
-        });
-
-        if (!res.ok) {
+        } catch(err) {
             addToast({
-                title: `데이터 저장 오류 (${res.status})`,
-                description: `데이터를 저장하는데 문제가 발생하였습니다.`,
+                title: `데이터 수정 오류`,
+                description: `데이터를 수정하는데 문제가 발생하였습니다.`,
                 color: "danger"
             });
-        } else {
-            const data = await res.json();
+            console.error(err);
+        }
+    } else {
+        try {
+            const addRef = await addDoc(collection(firestore, 'boss'), inputBoss);
             addToast({
                 title: "데이터 저장 완료",
                 description: `\"${inputName}\" 콘텐츠의 데이터를 저장하는데 성공하였습니다.`,
@@ -149,12 +155,18 @@ export async function useOnAddData(
             const newBoss: Boss = {
                 name: inputName,
                 difficulty: inputs,
-                id: data.id
+                id: addRef.id
             }
             setBoss([...(boss || []), newBoss]);
+        } catch(err) {
+            addToast({
+                title: `데이터 저장 오류`,
+                description: `데이터를 저장하는데 문제가 발생하였습니다.`,
+                color: "danger"
+            });
+            console.error(err);
         }
     }
-    
     onClose();
 }
 
@@ -182,24 +194,9 @@ export async function onClickRemove(
     setBoss: SetStateFn<Boss[]>,
 ) {
     if (confirm('데이터를 삭제하면 되돌릴 수 없습니다. 정말 데이터를 삭제하시겠습니까?')) {
-        const res = await fetch(`/api/checklist/boss`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                inputName: "",
-                inputs: [],
-                type: 'remove',
-                id: boss[removeIndex].id
-            })
-        });
-
-        if (!res.ok) {
-            addToast({
-                title: `데이터 삭제 오류 (${res.status})`,
-                description: `데이터를 삭제하는데 문제가 발생하였습니다.`,
-                color: "danger"
-            });
-        } else {
+        try {
+            const removeRef = doc(firestore, "boss", boss[removeIndex].id);
+            await deleteDoc(removeRef);
             addToast({
                 title: "데이터 삭제 완료",
                 description: `\"${boss[removeIndex].name}\" 콘텐츠의 데이터를 저장하는데 성공하였습니다.`,
@@ -207,6 +204,13 @@ export async function onClickRemove(
             });
             const removedBoss = boss.filter((_, index) => index !== removeIndex);
             setBoss(removedBoss);
+        } catch(err) {
+            addToast({
+                title: `데이터 삭제 오류`,
+                description: `데이터를 삭제하는데 문제가 발생하였습니다.`,
+                color: "danger"
+            });
+            console.error(err);
         }
     }
 }
