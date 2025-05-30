@@ -1,7 +1,8 @@
 import { useCallback } from "react";
 import { ref, get } from "firebase/database";
 import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
-import { database, firestore } from "@/utiils/firebase";
+import { database, firestore, auth } from "@/utiils/firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { addToast } from "@heroui/react";
 import { hashValue } from "@/utiils/bcrypt";
 import { useRouter } from "next/navigation";
@@ -301,18 +302,31 @@ export function useOnClickSignup(
             return;
         }
 
-        await addDoc(collection(firestore, 'members'), {
-            id: member.id,
-            character: member.character,
-            password: hashedPassword,
-            expeditions: expedition
-        });
-        addToast({
-            title: "회원가입 완료",
-            description: `회원가입하는데 성공하였습니다. 로그인을 진행하시면 됩니다.`,
-            color: "success"
-        });
+        const fakeEmail = `${member.id.trim()}@whitetusk.com`;
+        createUserWithEmailAndPassword(auth, fakeEmail, member.password.trim())
+            .then(async (userCredential) => {
+                const user = userCredential.user;
+                await addDoc(collection(firestore, 'members'), {
+                    uid: user.uid,
+                    id: member.id,
+                    character: member.character,
+                    password: hashedPassword,
+                    expeditions: expedition
+                });
+                addToast({
+                    title: "회원가입 완료",
+                    description: `회원가입하는데 성공하였습니다. 로그인을 진행하시면 됩니다.`,
+                    color: "success"
+                });
 
-        router.push('/login');
+                router.push('/login');
+            })
+            .catch((error) => {
+                addToast({
+                    title: "회원가입 오류",
+                    description: `회원가입하는데 문제가 발생하였습니다.`,
+                    color: "danger"
+                });
+            })        
     }   
 }

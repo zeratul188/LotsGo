@@ -6,6 +6,9 @@ import { addToast } from "@heroui/react";
 import { logined, LoginUser, switchAdministrator } from "../store/loginSlice";
 import type { AppDispatch } from "../store/store";
 import { useDispatch } from "react-redux";
+import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import { auth, firestore } from "@/utiils/firebase";
+import { collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
 
 // 값 수정 이벤트 핸들링
 export function useLoginHandlers(
@@ -65,38 +68,81 @@ export function useLoginHandler(
         // 아이디 없음 또는 비밀번호 일치하지 않을 경우
         if (!res.ok) {
             const { message } = await res.json();
-            if (message === '아이디가 존재하지 않습니다.') {
-                setIdDuplicated(true);
-                setPasswordNotMatch(false);
-            } else if (message === '비밀번호가 일치하지 않습니다.') {
-                setIdDuplicated(false);
-                setPasswordNotMatch(true);
+            try {
+                const msg = message ? JSON.parse(message).message : '';
+                if (msg === '아이디가 존재하지 않습니다.') {
+                    setIdDuplicated(true);
+                    setPasswordNotMatch(false);
+                } else if (msg === '비밀번호가 일치하지 않습니다.') {
+                    setIdDuplicated(false);
+                    setPasswordNotMatch(true);
+                }
+                setLoading(false);
+                return;
+            } catch (e) {
+                console.warn("JSON 파싱 실패", e);
             }
-            setLoading(false);
-            return;
         }
 
-        // 로그인 성공 시시
+        // 로그인 성공 시
         const { token, expedition, isAdministrator } = await res.json();
-        const loginUser: LoginUser = {
-            id: user.id,
-            expedition: expedition
-        }
-        dispatch(logined(loginUser));
-        dispatch(switchAdministrator(isAdministrator));
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(loginUser));
-        localStorage.setItem('isAdministrator', isAdministrator);
+        const fakeEmail = `${user.id.trim()}@whitetusk.com`;
+        await signInWithEmailAndPassword(auth, fakeEmail, user.password.trim())
+            .then(() => {
+                onAuthStateChanged(auth, (userState) => {
+                    if (userState) {
+                        const loginUser: LoginUser = {
+                            id: user.id,
+                            expedition: expedition
+                        }
+                        dispatch(logined(loginUser));
+                        dispatch(switchAdministrator(isAdministrator));
+                        localStorage.setItem('token', token);
+                        localStorage.setItem('user', JSON.stringify(loginUser));
+                        localStorage.setItem('isAdministrator', isAdministrator);
 
-        setLoading(false);
-        setIdDuplicated(false);
-        setPasswordNotMatch(false);
+                        setLoading(false);
+                        setIdDuplicated(false);
+                        setPasswordNotMatch(false);
 
-        addToast({
-            title: "로그인 성공",
-            description: `로그인에 성공하였습니다. 3일 후에 자동으로 로그아웃됩니다.`,
-            color: "success"
-        });
-        router.push('/');
+                        addToast({
+                            title: "로그인 성공",
+                            description: `로그인에 성공하였습니다. 7일 후에 자동으로 로그아웃됩니다.`,
+                            color: "success"
+                        });
+                        router.push('/');
+                    } else {
+                        addToast({
+                            title: "인증 오류",
+                            description: `인증하는데 문제가 발생하였습니다.`,
+                            color: "danger"
+                        });
+                    }
+                })
+            })
+            .catch((error) => {
+                addToast({
+                    title: "재인증",
+                    description: `인증된 사용자 데이터가 없어 재인증을 진행합니다.`,
+                    color: "warning"
+                });
+                createUserWithEmailAndPassword(auth, fakeEmail, user.password.trim())
+                    .then(async (userCredential) => {
+                        const uid = userCredential.user.uid;
+                        const q = query(collection(firestore, 'members'), where("id", "==", user.id));
+                        const snapshot = await getDocs(q);
+                        const targetDoc = snapshot.docs[0];
+                        const docRef = doc(firestore, "members", targetDoc.id);
+                        await updateDoc(docRef, {
+                            uid: uid
+                        });
+                        addToast({
+                            title: "인증 완료",
+                            description: `인증 데이터 생성에 성공하였습니다. 다시 로그인해주시기 바랍니다.`,
+                            color: "success"
+                        });
+                    })
+                setLoading(false);
+            })
     }
 }

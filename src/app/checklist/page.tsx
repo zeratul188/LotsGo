@@ -10,6 +10,7 @@ import { AppDispatch, RootState } from "../store/store";
 import { CheckCharacter } from "../store/checklistSlice";
 import { Character } from "../store/loginSlice";
 import { addToast } from "@heroui/react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default function Checklist() {
     const checklistForm = useChecklistForm();
@@ -26,16 +27,19 @@ export default function Checklist() {
     }, [checklistForm.bosses, expedition]);
 
     useEffect(() => {
-        const loadBosses = async () => {
-            const data = await getBosses();
-            checklistForm.setBosses(data);
-        }
-        loadBosses();
-        const loadCubes = async () => {
-            const data = await getCubes();
-            checklistForm.setCubes(data);
-        }
-        loadCubes();
+        const auth = getAuth();
+        onAuthStateChanged(auth, async (user) => {
+            const loadCubes = async () => {
+                const token = await user?.getIdToken();
+                if (token) {
+                    const cubeData = await getCubes();
+                    checklistForm.setCubes(cubeData);
+                    const bossData = await getBosses();
+                    checklistForm.setBosses(bossData);
+                }
+            }
+            loadCubes();
+        })
         if (!checkLogin()) {
             addToast({
                 title: "이용 불가",

@@ -1,6 +1,33 @@
 import { SetStateFn } from "@/utiils/utils";
 import { Cube } from "../api/checklist/cube/route";
 import { addToast } from "@heroui/react";
+import { addDoc, collection, deleteDoc, doc, getDocs } from "firebase/firestore";
+import { firestore } from "@/utiils/firebase";
+
+// 큐브 데이터 불러오기
+export async function loadCubes(
+    setCubes: SetStateFn<Cube[]>,
+    setLoading: SetStateFn<boolean>
+) {
+    try {
+        const snapshot = await getDocs(collection(firestore, 'cube'));
+        const cubes: Cube[] = snapshot.docs.map(doc => ({
+            id: doc.id,
+            name: doc.data().name,
+            level: Number(doc.data().level)
+        }));
+        cubes.sort((a, b) => a.level - b.level);
+        setCubes(cubes);
+        setLoading(false);
+    } catch(err) {
+        addToast({
+            title: "데이터 로딩 오류",
+            description: '알 수 없는 오류로 인해 데이터를 불러올 수 없습니다.',
+            color: "danger"
+        });
+        console.error(err);
+    }
+}
 
 // 큐브 추가
 export function useOnAddCube(
@@ -20,36 +47,32 @@ export function useOnAddCube(
             });
             return;
         }
-        const res = await fetch(`/api/checklist/cube`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+        try {
+            const cube = {
                 name: inputName,
-                level: inputLevel,
-                type: 'add'
-            })
-        });
-        if (!res.ok) {
-            addToast({
-                title: `데이터 저장 오류 (${res.status})`,
-                description: `데이터를 저장하는데 문제가 발생하였습니다.`,
-                color: "danger"
-            });
-        } else {
-            const data = await res.json();
+                level: inputLevel
+            }
+            const addRef = await addDoc(collection(firestore, 'cube'), cube);
             addToast({
                 title: "데이터 저장 완료",
                 description: `\"${inputName}\" 콘텐츠의 데이터를 저장하는데 성공하였습니다.`,
                 color: "success"
             });
             const newCube: Cube = {
-                id: data.id,
+                id: addRef.id,
                 name: inputName,
                 level: inputLevel
             }
             const newCubes: Cube[] = [...(cubes || []), newCube];
             newCubes.sort((a, b) => a.level - b.level);
             setCubes(newCubes);
+        } catch(err) {
+            addToast({
+                title: `데이터 저장 오류`,
+                description: `데이터를 저장하는데 문제가 발생하였습니다.`,
+                color: "danger"
+            });
+            console.error(err);
         }
         setInputName('');
         setInputLevel(0);
@@ -67,26 +90,21 @@ export async function handleRemoveCube(
     const removedCubes = cubes.filter((_, idx) => idx !== index);
     setCubes(removedCubes);
 
-    const removeRes = await fetch(`/api/checklist/cube`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            id: removeID,
-            type: 'remove'
-        })
-    });
-    if (!removeRes.ok) {
-        addToast({
-            title: `데이터 삭제 오류 (${removeRes.status})`,
-            description: `데이터를 삭제제하는데 문제가 발생하였습니다.`,
-            color: "danger"
-        });
-        setCubes(prevCubes);
-    } else {
+    try {
+        const removeRef = doc(firestore, 'cube', removeID);
+        await deleteDoc(removeRef);
         addToast({
             title: "데이터 삭제 완료",
             description: `데이터를 삭제하는데 성공하였습니다.`,
             color: "success"
         });
+    } catch(err) {
+        addToast({
+            title: `데이터 삭제 오류`,
+            description: `데이터를 삭제제하는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        setCubes(prevCubes);
+        console.error(err);
     }
 }
