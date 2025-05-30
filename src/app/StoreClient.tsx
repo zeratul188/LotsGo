@@ -5,6 +5,8 @@ import type { AppDispatch } from "./store/store";
 import { logined, logout, switchAdministrator } from "./store/loginSlice";
 import { useRouter } from 'next/navigation';
 import { addToast } from "@heroui/react";
+import { signOut } from 'firebase/auth';
+import { auth } from '@/utiils/firebase';
 
 export default function StoreClient({children}: { children: React.ReactNode }) {
     const dispatch = useDispatch<AppDispatch>();
@@ -32,6 +34,7 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 dispatch(logout());
+                await signOut(auth);
                 addToast({
                     title: "유효 기간 만료",
                     description: `아이디의 유효 기간이 만료되었습니다. 다시 로그인해주시기 바랍니다.`,

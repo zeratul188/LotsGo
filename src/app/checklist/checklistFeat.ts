@@ -20,6 +20,8 @@ import { addToast } from "@heroui/react";
 import { Boss, Difficulty } from "../api/checklist/boss/route";
 import { Character, LoginUser } from "../store/loginSlice";
 import { Cube } from "../api/checklist/cube/route";
+import { collection, getDocs } from "firebase/firestore";
+import { firestore } from "@/utiils/firebase";
 
 // 로그인 여부 확인 함수
 export function checkLogin(): boolean {
@@ -181,33 +183,23 @@ function initialWeekContents(level: number, bosses: Boss[]): Checklist[] {
 
 // 콘텐츠 정보 가져오는 항수
 export async function getBosses(): Promise<Boss[]> {
-    const bossRes = await fetch('/api/checklist/boss');
-
-    if (!bossRes.ok) {
-        addToast({
-            title: "데이터 로드 오류 (콘텐츠)",
-            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
-            color: "danger"
-        });
-        return [];
-    }
-
-    const bosses: Boss[] = await bossRes.json();
+    const snapshot = await getDocs(collection(firestore, 'boss'));
+    const bosses: Boss[] = snapshot.docs.map(doc => ({
+        id: doc.id,
+        name: doc.data().name,
+        difficulty: doc.data().difficulty
+    }));
     return bosses;
 }
 
 // 큐브 정보 가져오는 함수
 export async function getCubes(): Promise<Cube[]> {
-    const cubeRes = await fetch('/api/checklist/cube');
-    if (!cubeRes.ok) {
-        addToast({
-            title: "데이터 로드 오류 (콘텐츠)",
-            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
-            color: "danger"
-        });
-        return [];
-    }
-    const cubes: Cube[] = await cubeRes.json();
+    const snapshot = await getDocs(collection(firestore, 'cube'));
+    const cubes: Cube[] = snapshot.docs.map(doc => ({
+        id: doc.id,
+        name: doc.data().name,
+        level: Number(doc.data().level)
+    }));
     cubes.sort((a, b) => a.level - b.level);
     return cubes;
 }

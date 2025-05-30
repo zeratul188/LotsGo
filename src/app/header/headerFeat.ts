@@ -3,6 +3,8 @@ import { addToast } from "@heroui/react";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "../store/store";
 import { logout } from "../store/loginSlice";
+import { signOut } from "firebase/auth";
+import { auth } from "@/utiils/firebase";
 
 type Key = string | number;
 
@@ -23,6 +25,7 @@ export function useOnActionProfile() {
                 localStorage.removeItem('user');
                 localStorage.removeItem('isAdministrator');
                 dispatch(logout());
+                signOut(auth);
                 addToast({
                     title: "로그아웃 완료",
                     description: `로그아웃되었습니다.`,

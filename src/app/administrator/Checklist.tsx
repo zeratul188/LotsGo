@@ -22,10 +22,11 @@ import {
     useOnAddInput, 
     onClickEdit, 
     useOnRemoveDifficulty, 
-    onClickRemove 
+    onClickRemove, 
+    loadBoss
 } from "./bossFeat";
 import { Cube } from "../api/checklist/cube/route";
-import { handleRemoveCube, useOnAddCube } from "./CubeFeat";
+import { handleRemoveCube, loadCubes, useOnAddCube } from "./CubeFeat";
 
 type TabMenu = {
     key: string,
@@ -44,19 +45,7 @@ function CubeComponent() {
 
     useEffect(() => {
         const fetchCube = async () => {
-            const cubeRes = await fetch(`/api/checklist/cube`);
-            if (!cubeRes.ok) {
-                addToast({
-                    title: "데이터 로딩 오류",
-                    description: '알 수 없는 오류로 인해 데이터를 불러올 수 없습니다.',
-                    color: "danger"
-                });
-            } else {
-                const data: Cube[] = await cubeRes.json();
-                data.sort((a, b) => a.level - b.level);
-                setCubes(data);
-                setLoading(false);
-            }
+            await loadCubes(setCubes, setLoading);
         }
         fetchCube();
     }, []);
@@ -138,18 +127,7 @@ function BossComponent() {
 
     useEffect(() => {
         const fetchBoss = async () => {
-            const bossRes = await fetch(`/api/checklist/boss`);
-            if (!bossRes.ok) {
-                addToast({
-                    title: "데이터 로딩 오류",
-                    description: '알 수 없는 오류로 인해 데이터를 불러올 수 없습니다.',
-                    color: "danger"
-                });
-            } else {
-                const data: Boss[] = await bossRes.json();
-                setBoss(data);
-                setLoading(false);
-            }
+            await loadBoss(setLoading, setBoss);
         }
         fetchBoss();
     }, []);
