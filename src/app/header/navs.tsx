@@ -1,4 +1,4 @@
-import { Image, NavbarItem, Link, NavbarMenuToggle, Tooltip, NavbarMenu, NavbarMenuItem, Button } from "@heroui/react";
+import { Image, NavbarItem, Link, NavbarMenuToggle, Tooltip, NavbarMenu, NavbarMenuItem, Button, Divider } from "@heroui/react";
 import { 
     useSwitch, 
     VisuallyHidden, 
@@ -12,9 +12,9 @@ import { useTheme } from "next-themes";
 import { MoonIcon, SunIcon } from "@/Icons/themeicons";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
-import { useOnActionProfile } from "./headerFeat";
+import { useLogout, useOnActionProfile } from "./headerFeat";
 
-// 헤더 메뉴뉴
+// 헤더 메뉴
 const menuItems: Array<{item: string, link: string}> = [
     {
         item: "숙제 관리",
@@ -27,15 +27,25 @@ const menuItems: Array<{item: string, link: string}> = [
     {
         item: "전투정보실",
         link: '#'
+    }
+];
+// 헤더 메뉴 - 로그인한 상태태
+const loginedMenuItems: Array<{item: string, link: string}> = [
+    {
+        item: "내 정보 수정",
+        link: '#'
     },
     {
-        item: "로그인",
-        link: '/login'
+        item: "설정",
+        link: '#'
     }
 ];
 
 // 메뉴 카테고리 목록 요소 (모바일 전용)
 export function NavMenu() {
+    const id = useSelector((state: RootState) => state.login.user.id);
+    const isAdministrator = useSelector((state: RootState) => state.login.isAdministrator);
+    const onClickLogout = useLogout();
     return (
         <NavbarMenu>
             {menuItems.map((item, index) => (
@@ -47,6 +57,33 @@ export function NavMenu() {
                         size="lg">{item.item}</Link>
                 </NavbarMenuItem>
             ))}
+            <Divider/>
+            {id !== '' ? (
+                <>
+                    {loginedMenuItems.map((item, index) => (
+                        <NavbarMenuItem key={`${item.item}-${index}`}>
+                            <Link 
+                                className="w-full" 
+                                href={item.link} 
+                                color={index === 3 ? 'primary' : 'foreground'}
+                                size="lg">{item.item}</Link>
+                        </NavbarMenuItem>
+                    ))}
+                    <NavbarMenuItem 
+                        key="logout"
+                        onClick={onClickLogout}>
+                        <span className="text-red-500">로그아웃</span>
+                    </NavbarMenuItem>
+                </>
+            ) : (
+                <NavbarMenuItem key="login">
+                    <Link 
+                        className="w-full" 
+                        href="/login"
+                        color="primary"
+                        size="lg">로그인</Link>
+                </NavbarMenuItem>
+            )}
         </NavbarMenu>
     )
 }
@@ -107,10 +144,9 @@ export function NavToggle({ isMenuOpen }: NavToggleProps) {
 
 // 로그인 버튼 혹은 프로필 버튼 요소
 function ProfileButton() {
+    const onActionProfile = useOnActionProfile();
     const id = useSelector((state: RootState) => state.login.user.id);
     const isAdministrator = useSelector((state: RootState) => state.login.isAdministrator);
-    const onActionProfile = useOnActionProfile();
-
     if (id === '') {
         return <Link color="foreground" href="/login">로그인</Link>
     } else {
