@@ -377,26 +377,30 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         setInputOtherGold(0);
                                     }}>
                                     <PopoverTrigger>
-                                        <Progress 
-                                            aria-label="all-gold"
-                                            size="sm"
-                                            color="warning"
-                                            label={(
-                                                <div className="flex items-center">
-                                                    <Image 
-                                                        src="/icons/gold.png" 
-                                                        width={14} 
-                                                        height={14} 
-                                                        alt="goldicon"
-                                                        className="w-[16px] h-[16px]"/>
-                                                    <span className="ml-1 text-md">{(getCompleteGoldCharacter(bosses, character)+character.otherGold).toLocaleString()} / {(getAllGoldCharacter(bosses, character)+character.otherGold).toLocaleString()}</span>
-                                                </div>
-                                            )}
-                                            showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
-                                            radius="sm"
-                                            value={getCompleteGoldCharacter(bosses, character)+character.otherGold}
-                                            maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
-                                            className="w-full md960:w-[330px] cursor-pointer"/>
+                                        <div className="w-full md960:w-[330px]">
+                                            <Tooltip showArrow content="클릭하면 부수입을 설정하실 수 있습니다.">
+                                                <Progress 
+                                                    aria-label="all-gold"
+                                                    size="sm"
+                                                    color="warning"
+                                                    label={(
+                                                        <div className="flex items-center">
+                                                            <Image 
+                                                                src="/icons/gold.png" 
+                                                                width={14} 
+                                                                height={14} 
+                                                                alt="goldicon"
+                                                                className="w-[16px] h-[16px]"/>
+                                                            <span className="ml-1 text-md">{(getCompleteGoldCharacter(bosses, character)+character.otherGold).toLocaleString()} / {(getAllGoldCharacter(bosses, character)+character.otherGold).toLocaleString()}</span>
+                                                        </div>
+                                                    )}
+                                                    showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
+                                                    radius="sm"
+                                                    value={getCompleteGoldCharacter(bosses, character)+character.otherGold}
+                                                    maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
+                                                    className="w-full cursor-pointer"/>
+                                            </Tooltip>
+                                        </div>
                                     </PopoverTrigger>
                                     <PopoverContent>
                                         <div className="w-full sm300:w-[300px] pt-2">
