@@ -596,7 +596,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                         <Divider/>
                         <CardFooter className="pt-0 pb-0">
                             <Accordion>
-                                <AccordionItem key="0" title={<span className="flex gap-2 items-center">
+                                <AccordionItem key="0" title={<span className="flex gap-2 items-center cursor-pointer">
                                     <Image 
                                         src="/icons/cube.png" 
                                         width={18} 
