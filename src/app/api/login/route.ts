@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
             }
             result.isAdministrator = true;
             const isAdministrator = result.isAdministrator;
-            const token = jwt.sign({ result }, process.env.NEXT_PUBLIC_LOSTARK_JWT_SECRET!);
+            const token = jwt.sign({ result }, process.env.NEXT_PUBLIC_LOSTARK_JWT_SECRET!, { expiresIn: '1d' });
             return NextResponse.json({ token, expedition, isAdministrator });
         }
 
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
         }
 
         const isAdministrator = result.isAdministrator;
-        const token = jwt.sign({ result }, process.env.NEXT_PUBLIC_LOSTARK_JWT_SECRET!);
+        const token = jwt.sign({ result }, process.env.NEXT_PUBLIC_LOSTARK_JWT_SECRET!, { expiresIn: '7d' });
         return NextResponse.json({ token, expedition, isAdministrator });
     } catch(error) {
         console.error(error);
