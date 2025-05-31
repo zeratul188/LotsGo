@@ -39,7 +39,8 @@ export type CheckCharacter = {
     cube: number,
     cubelist: CubeList[],
     isGold: boolean,
-    otherGold: number
+    otherGold: number,
+    position: number,
 }
 type ChecklistState = {
     checklist: CheckCharacter[]
@@ -112,7 +113,8 @@ const checklistSlice = createSlice({
         saveData(state, action: PayloadAction<CheckCharacter[]>) {
             const newChecklist = (action.payload ?? []).map((charaacter: any) => ({
                 ...charaacter,
-                cubelist: charaacter.cubelist ?? []
+                cubelist: charaacter.cubelist ?? [],
+                position: charaacter.position ?? 9999
             }));
             state.checklist = newChecklist;
         },

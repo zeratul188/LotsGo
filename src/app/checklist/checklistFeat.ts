@@ -23,6 +23,11 @@ import { Cube } from "../api/checklist/cube/route";
 import { collection, getDocs } from "firebase/firestore";
 import { firestore } from "@/utiils/firebase";
 
+// 닉네임으로 index 찾기 함수
+export function getIndexByNickname(checklist: CheckCharacter[], nickname: string): number {
+    return checklist.findIndex(character => character.nickname === nickname);
+}
+
 // 로그인 여부 확인 함수
 export function checkLogin(): boolean {
     const userStr = localStorage.getItem('user');
@@ -68,6 +73,7 @@ export async function loadChecklist(
         if (!a.isGold && b.isGold) return 1;
         return 0;
     });
+    checklist.sort((a, b) => a.position - b.position);
     for (const character of checklist) {
         const sortedChecklist = character.checklist.sort((a, b) => {
             if (a.isGold && !b.isGold) return -1;
@@ -105,7 +111,8 @@ export async function loadChecklist(
                 weeklist: [],
                 cube: 0,
                 isGold: true,
-                otherGold: 0
+                otherGold: 0,
+                position: 9999
             }
             checklist.push(checkCharacter);
         }
@@ -1343,7 +1350,8 @@ export async function handleAddCharacter(
                 weeklist: [],
                 cube: 0,
                 isGold: isGold,
-                otherGold: 0
+                otherGold: 0,
+                position: 9999
             }
             newChecklist.push(checkCharacter);
         }
@@ -1425,5 +1433,64 @@ export async function handleCalculateOtherGold(
             otherGold: prevOtherGold
         }));
         return;
+    }
+}
+
+// 순서 변경 드래그 이벤트 함수
+export function handleOnDragEnd(
+    positions: CheckCharacter[],
+    setPositions: SetStateFn<CheckCharacter[]>
+) {
+    return (result: any) => {
+        if (!result.destination) return;
+
+        const items = Array.from(positions);
+        const [reorderedItem] = items.splice(result.source.index, 1);
+        items.splice(result.destination.index, 0, reorderedItem);
+
+        const updatedPositions = items.map((char, index) => ({
+            ...char,
+            position: index
+        }));
+
+        setPositions(updatedPositions);
+    }
+}
+
+// 캐릭터 순서 적용
+export async function handleApplyPositions(
+    positions: CheckCharacter[],
+    onClose: () => void,
+    setLoading: SetStateFn<boolean>,
+    dispatch: AppDispatch
+) {
+    setLoading(true);
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const inputRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: positions,
+            type: 'init'
+        })
+    });
+    if (!inputRes.ok) {
+        addToast({
+            title: `데이터 저장 오류 (${inputRes.status})`,
+            description: `데이터를 저장하는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+    } else {
+        addToast({
+            title: "순서 변경 완료",
+            description: `캐릭터들의 순서를 변경하였습니다.`,
+            color: "success"
+        });
+        dispatch(saveData(positions));
+        setLoading(false);
+        onClose();
     }
 }
