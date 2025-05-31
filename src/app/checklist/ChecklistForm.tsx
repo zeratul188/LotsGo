@@ -25,7 +25,8 @@ import {
     Popover,
     PopoverTrigger,
     PopoverContent,
-    NumberInput
+    NumberInput,
+    ModalFooter
 } from "@heroui/react";
 import Image from "next/image";
 import { 
@@ -42,6 +43,7 @@ import {
     getCubeList, 
     getDayName, 
     getHaveGolds, 
+    getIndexByNickname, 
     getMaxRestValue, 
     getServerList, 
     getTakeGold, 
@@ -49,10 +51,12 @@ import {
     getWeekContents, 
     getWeekDifficultys, 
     handleAddCharacter, 
+    handleApplyPositions, 
     handleCalculateOtherGold, 
     handleCheckGold, 
     handleControlCube, 
     handleDayListCheck, 
+    handleOnDragEnd, 
     handleRemoveCharacter, 
     handleRemoveDayList, 
     handleRemoveWeekList, 
@@ -80,6 +84,11 @@ import AddIcon from "../icons/AddIcon";
 import DeleteIcon from "../icons/DeleteIcon";
 import { Cube } from "../api/checklist/cube/route";
 import { MAX_CHARACTER_COUNT } from "@/utiils/constants";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable
+} from '@hello-pangea/dnd';
 
 // state 관리
 export type ModalData = {
@@ -107,6 +116,74 @@ export function useChecklistForm() {
     }
 }
 
+// 순서 변경 Modal
+type PositionModalProps = {
+    isOpenModalPosition: boolean
+    onOpenChangePosition: (isOpen: boolean) => void,
+    checklist: CheckCharacter[],
+    dispatch: AppDispatch
+}
+function PositionModal({ isOpenModalPosition, onOpenChangePosition, checklist, dispatch }: PositionModalProps) {
+    const newChecklist = checklist.map(item => ({ ...item }));
+    const [positions, setPositions] = useState<CheckCharacter[]>(newChecklist);
+    const [isLoading, setLoading] = useState(false);
+    const onDragEnd = handleOnDragEnd(positions, setPositions);
+
+    return (
+        <Modal
+            isDismissable={false}
+            isOpen={isOpenModalPosition}
+            onOpenChange={onOpenChangePosition}>
+            <ModalContent>
+                {(onClose) => (
+                    <>
+                        <ModalHeader>캐릭터 순서 변경</ModalHeader>
+                        <ModalBody>
+                            <div className="h-[400px] sm600:h-[600px] overflow-y-auto pr-3">
+                                <DragDropContext onDragEnd={onDragEnd}>
+                                    <Droppable droppableId="positions">
+                                        {(provided) => (
+                                            <ul {...provided.droppableProps} ref={provided.innerRef}>
+                                                {positions.map((char, index) => (
+                                                <Draggable key={char.nickname} draggableId={char.nickname} index={index}>
+                                                    {(prov) => (
+                                                    <li
+                                                        ref={prov.innerRef}
+                                                        {...prov.draggableProps}
+                                                        {...prov.dragHandleProps}
+                                                        className="p-2 mb-3 bg-gray-100 dark:bg-[#222222] rounded-md cursor-move border-gray-100 dark:border-[#222222] hover:border-blue-600 border-2"
+                                                    >
+                                                        <div className="flex flex-col gap-1">
+                                                            <span className="fadedtext text-sm">@{char.server} · {char.job} · Lv.{char.level}</span>
+                                                            <span className="text-md">{char.nickname}</span>
+                                                        </div>
+                                                    </li>
+                                                    )}
+                                                </Draggable>
+                                                ))}
+                                                {provided.placeholder}
+                                            </ul>
+                                        )}
+                                    </Droppable>
+                                </DragDropContext>
+                            </div>
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button
+                                fullWidth
+                                color="primary"
+                                isLoading={isLoading}
+                                onPress={async () => {
+                                    await handleApplyPositions(positions, onClose, setLoading, dispatch);
+                                }}>변경</Button>
+                        </ModalFooter>
+                    </>
+                )}
+            </ModalContent>
+        </Modal>
+    )
+}
+
 // 체크리스트 현황 컴포넌트
 type ChecklistStatueProps = {
     checklist: CheckCharacter[],
@@ -122,6 +199,10 @@ export function ChecklistStatue({ checklist, bosses, dispatch }: ChecklistStatue
     const [isLoadingAdd, setLoadingAdd] = useState(false);
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [isGold, setGold] = useState(false);
+
+    const [isOpenModalPosition, setOpenModalPosition] = useState(false);
+    const onOpenChangePosition = (isOpen: boolean) => setOpenModalPosition(isOpen);
+
     const onClickUpdatedCharacters = useClickUpdatedCharacters(checklist, dispatch, setLoading);
     const onClickLoadCharacters = useClickLoadCharacters(inputValue, setResult, setLoadingSearch);
     const onCloseModal = useCloseModal(setResult, setInputValue);
@@ -153,7 +234,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch }: ChecklistStatue
                                 className="w-full"/>
                         </div>
                         <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
-                        <div className="w-full md960:w-[400px]">
+                        <div className="w-full md960:w-[320px]">
                             <Progress 
                                 aria-label="all-gold"
                                 size="md"
@@ -167,15 +248,16 @@ export function ChecklistStatue({ checklist, bosses, dispatch }: ChecklistStatue
                         </div>
                         <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
                         <div className="grow-1 flex flex-col md960:flex-row justify-end items-center gap-2">
-                            <Tooltip 
-                                showArrow
-                                content="가입된 원정대 캐릭터 한에서만 선택 가능합니다.">
-                                <Button
-                                    color="success"
-                                    variant="flat"
-                                    className="w-full md960:w-[100px]"
-                                    onPress={onOpen}>캐릭터 추가</Button>
-                            </Tooltip>
+                            <Button
+                                color="primary"
+                                variant="flat"
+                                className="w-full md960:w-[100px]"
+                                onPress={() => onOpenChangePosition(true)}>순서 변경</Button>
+                            <Button
+                                color="success"
+                                variant="flat"
+                                className="w-full md960:w-[100px]"
+                                onPress={onOpen}>캐릭터 추가</Button>
                             <Tooltip 
                                 showArrow
                                 placement="left"
@@ -190,6 +272,11 @@ export function ChecklistStatue({ checklist, bosses, dispatch }: ChecklistStatue
                     </div>
                 </CardBody>
             </Card>
+            <PositionModal
+                isOpenModalPosition={isOpenModalPosition}
+                onOpenChangePosition={onOpenChangePosition}
+                checklist={checklist}
+                dispatch={dispatch}/>
             <Modal
                 isDismissable={false}
                 isOpen={isOpen}
@@ -358,7 +445,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                 <SettingButton 
                                                     size={16} 
                                                     checklist={checklist} 
-                                                    characterIndex={index}
+                                                    characterIndex={getIndexByNickname(checklist, character.nickname)}
                                                     dispatch={dispatch}/>
                                             </div>
                                         </div>
@@ -367,7 +454,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         <SettingButton 
                                             size={26} 
                                             checklist={checklist} 
-                                            characterIndex={index}
+                                            characterIndex={getIndexByNickname(checklist, character.nickname)}
                                             dispatch={dispatch}/>
                                     </div>
                                 </div>
@@ -464,7 +551,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                     size="sm"
                                                     className="grow"
                                                     onPress={async () => {
-                                                        await handleCalculateOtherGold(checklist, index, 'apply', inputOtherGold, dispatch);
+                                                        await handleCalculateOtherGold(checklist, getIndexByNickname(checklist, character.nickname), 'apply', inputOtherGold, dispatch);
                                                     }}>적용</Button>
                                                 <Button
                                                     variant="flat"
@@ -472,7 +559,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                     size="sm"
                                                     className="grow"
                                                     onPress={async () => {
-                                                        await handleCalculateOtherGold(checklist, index, 'minus', inputOtherGold, dispatch);
+                                                        await handleCalculateOtherGold(checklist, getIndexByNickname(checklist, character.nickname), 'minus', inputOtherGold, dispatch);
                                                     }}>빼기</Button>
                                                 <Button
                                                     variant="flat"
@@ -480,7 +567,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                     size="sm"
                                                     className="grow"
                                                     onPress={async () => {
-                                                        await handleCalculateOtherGold(checklist, index, 'add', inputOtherGold, dispatch);
+                                                        await handleCalculateOtherGold(checklist, getIndexByNickname(checklist, character.nickname), 'add', inputOtherGold, dispatch);
                                                     }}>더하기</Button>
                                             </div>
                                         </div>
@@ -511,7 +598,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                 radius="full"
                                                 isSelected={item.isCheck}
                                                 className="max-w-full mt-1"
-                                                onChange={async () => await handleDayListCheck(checklist, index, idx, dispatch)}>
+                                                onChange={async () => await handleDayListCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                 {item.name}</Checkbox>
                                         </div>
                                     ))}
@@ -524,7 +611,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         className="mt-2"
                                         onPress={() => {
                                             setModalData({
-                                                characterIndex: index,
+                                                characterIndex: getIndexByNickname(checklist, character.nickname),
                                                 type: 'day'
                                             });
                                             onOpen();
@@ -549,7 +636,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                 isDisabled={item.isDisable}
                                                 isSelected={item.isCheck}
                                                 className="max-w-full mt-1"
-                                                onChange={async () => await useOnClickWeekCheck(checklist, index, idx, dispatch)}>
+                                                onChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                 <span className="flex items-center gap-1">
                                                     <span>{item.name} {item.difficulty}</span>
                                                     {item.isGold ? <Image 
@@ -572,7 +659,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                 radius="full"
                                                 isSelected={item.isCheck}
                                                 className="max-w-full mt-1"
-                                                onChange={async () => await handleWeekListCheck(checklist, index, idx, dispatch)}>
+                                                onChange={async () => await handleWeekListCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                 {item.name}</Checkbox>
                                         </div>
                                     ))}
@@ -585,7 +672,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         className="mt-2"
                                         onPress={() => {
                                             setModalData({
-                                                characterIndex: index,
+                                                characterIndex: getIndexByNickname(checklist, character.nickname),
                                                 type: 'week'
                                             });
                                             onOpen();
@@ -624,7 +711,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                                 color="danger"
                                                                 isDisabled={getCountCube(character.cubelist, cube.id) <= 0}
                                                                 onPress={async () => {
-                                                                    await handleControlCube(checklist, index, cube.id, dispatch, false);
+                                                                    await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, false);
                                                                 }}>감소</Button>
                                                             <Button
                                                                 size="sm"
@@ -632,7 +719,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                                 color="success"
                                                                 isDisabled={getCountCube(character.cubelist, cube.id) >= 9999}
                                                                 onPress={async () => {
-                                                                    await handleControlCube(checklist, index, cube.id, dispatch, true);
+                                                                    await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, true);
                                                                 }}>증가</Button>
                                                         </div>
                                                     </TableCell>
