@@ -23,6 +23,11 @@ import { Cube } from "../api/checklist/cube/route";
 import { collection, getDocs } from "firebase/firestore";
 import { firestore } from "@/utiils/firebase";
 
+// 닉네임으로 index 찾기 함수
+export function getIndexByNickname(checklist: CheckCharacter[], nickname: string): number {
+    return checklist.findIndex(character => character.nickname === nickname);
+}
+
 // 로그인 여부 확인 함수
 export function checkLogin(): boolean {
     const userStr = localStorage.getItem('user');

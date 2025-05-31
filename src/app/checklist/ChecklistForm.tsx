@@ -42,6 +42,7 @@ import {
     getCubeList, 
     getDayName, 
     getHaveGolds, 
+    getIndexByNickname, 
     getMaxRestValue, 
     getServerList, 
     getTakeGold, 
@@ -358,7 +359,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                 <SettingButton 
                                                     size={16} 
                                                     checklist={checklist} 
-                                                    characterIndex={index}
+                                                    characterIndex={getIndexByNickname(checklist, character.nickname)}
                                                     dispatch={dispatch}/>
                                             </div>
                                         </div>
@@ -367,7 +368,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         <SettingButton 
                                             size={26} 
                                             checklist={checklist} 
-                                            characterIndex={index}
+                                            characterIndex={getIndexByNickname(checklist, character.nickname)}
                                             dispatch={dispatch}/>
                                     </div>
                                 </div>
@@ -464,7 +465,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                     size="sm"
                                                     className="grow"
                                                     onPress={async () => {
-                                                        await handleCalculateOtherGold(checklist, index, 'apply', inputOtherGold, dispatch);
+                                                        await handleCalculateOtherGold(checklist, getIndexByNickname(checklist, character.nickname), 'apply', inputOtherGold, dispatch);
                                                     }}>적용</Button>
                                                 <Button
                                                     variant="flat"
@@ -472,7 +473,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                     size="sm"
                                                     className="grow"
                                                     onPress={async () => {
-                                                        await handleCalculateOtherGold(checklist, index, 'minus', inputOtherGold, dispatch);
+                                                        await handleCalculateOtherGold(checklist, getIndexByNickname(checklist, character.nickname), 'minus', inputOtherGold, dispatch);
                                                     }}>빼기</Button>
                                                 <Button
                                                     variant="flat"
@@ -480,7 +481,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                     size="sm"
                                                     className="grow"
                                                     onPress={async () => {
-                                                        await handleCalculateOtherGold(checklist, index, 'add', inputOtherGold, dispatch);
+                                                        await handleCalculateOtherGold(checklist, getIndexByNickname(checklist, character.nickname), 'add', inputOtherGold, dispatch);
                                                     }}>더하기</Button>
                                             </div>
                                         </div>
@@ -511,7 +512,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                 radius="full"
                                                 isSelected={item.isCheck}
                                                 className="max-w-full mt-1"
-                                                onChange={async () => await handleDayListCheck(checklist, index, idx, dispatch)}>
+                                                onChange={async () => await handleDayListCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                 {item.name}</Checkbox>
                                         </div>
                                     ))}
@@ -524,7 +525,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         className="mt-2"
                                         onPress={() => {
                                             setModalData({
-                                                characterIndex: index,
+                                                characterIndex: getIndexByNickname(checklist, character.nickname),
                                                 type: 'day'
                                             });
                                             onOpen();
@@ -549,7 +550,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                 isDisabled={item.isDisable}
                                                 isSelected={item.isCheck}
                                                 className="max-w-full mt-1"
-                                                onChange={async () => await useOnClickWeekCheck(checklist, index, idx, dispatch)}>
+                                                onChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                 <span className="flex items-center gap-1">
                                                     <span>{item.name} {item.difficulty}</span>
                                                     {item.isGold ? <Image 
@@ -572,7 +573,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                 radius="full"
                                                 isSelected={item.isCheck}
                                                 className="max-w-full mt-1"
-                                                onChange={async () => await handleWeekListCheck(checklist, index, idx, dispatch)}>
+                                                onChange={async () => await handleWeekListCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                 {item.name}</Checkbox>
                                         </div>
                                     ))}
@@ -585,7 +586,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         className="mt-2"
                                         onPress={() => {
                                             setModalData({
-                                                characterIndex: index,
+                                                characterIndex: getIndexByNickname(checklist, character.nickname),
                                                 type: 'week'
                                             });
                                             onOpen();
@@ -624,7 +625,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                                 color="danger"
                                                                 isDisabled={getCountCube(character.cubelist, cube.id) <= 0}
                                                                 onPress={async () => {
-                                                                    await handleControlCube(checklist, index, cube.id, dispatch, false);
+                                                                    await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, false);
                                                                 }}>감소</Button>
                                                             <Button
                                                                 size="sm"
@@ -632,7 +633,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                                 color="success"
                                                                 isDisabled={getCountCube(character.cubelist, cube.id) >= 9999}
                                                                 onPress={async () => {
-                                                                    await handleControlCube(checklist, index, cube.id, dispatch, true);
+                                                                    await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, true);
                                                                 }}>증가</Button>
                                                         </div>
                                                     </TableCell>
