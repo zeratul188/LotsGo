@@ -139,7 +139,7 @@ function PositionModal({ isOpenModalPosition, onOpenChangePosition, checklist, d
                     <>
                         <ModalHeader>캐릭터 순서 변경</ModalHeader>
                         <ModalBody>
-                            <div className="h-full sm600:h-[600px] overflow-y-auto pr-3">
+                            <div className="h-[400px] sm600:h-[600px] overflow-y-auto pr-3">
                                 <DragDropContext onDragEnd={onDragEnd}>
                                     <Droppable droppableId="positions">
                                         {(provided) => (
