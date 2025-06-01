@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 export type SetStateFn<T> = React.Dispatch<React.SetStateAction<T>>;
 
+// 모바일 화면인지 확인하는 함수
 export function useMobileQuery(): boolean {
     const query = '(max-width: 768px)';
     const [matches, setMatches] = useState(false);
@@ -17,4 +18,18 @@ export function useMobileQuery(): boolean {
     });
 
     return matches;
+}
+
+// 등급 별 색깔 확인 함수
+export function getColorTextByGrade(grade: string): string {
+    switch(grade) {
+        case '일반': return "text-normal";
+        case '고급': return "text-advanced";
+        case '희귀': return "text-rare";
+        case '영웅': return "text-hero"
+        case '전설': return "text-legend"
+        case '유물': return "text-relics";
+        case '고대': return "text-ancient";
+    }
+    return "#000000";
 }

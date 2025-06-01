@@ -124,10 +124,14 @@ type PositionModalProps = {
     dispatch: AppDispatch
 }
 function PositionModal({ isOpenModalPosition, onOpenChangePosition, checklist, dispatch }: PositionModalProps) {
-    const newChecklist = checklist.map(item => ({ ...item }));
-    const [positions, setPositions] = useState<CheckCharacter[]>(newChecklist);
+    const [positions, setPositions] = useState<CheckCharacter[]>([]);
     const [isLoading, setLoading] = useState(false);
     const onDragEnd = handleOnDragEnd(positions, setPositions);
+
+    useEffect(() => {
+        const newChecklist = checklist.map(item => ({ ...item }));
+        setPositions(newChecklist);
+    }, [checklist])
 
     return (
         <Modal

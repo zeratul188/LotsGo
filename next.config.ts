@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     styledComponents: true,
   },
   images: {
-      domains: ['firebasestorage.googleapis.com', 'api.qrserver.com'],
+      domains: ['firebasestorage.googleapis.com', 'api.qrserver.com', 'cdn-lostark.game.onstove.com'],
       formats: ['image/avif', 'image/webp']
   },
 };
