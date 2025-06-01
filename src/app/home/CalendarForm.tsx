@@ -128,69 +128,73 @@ function IslandComponent({ islands, islandTime }: IslandComponentProps) {
                 <div className="w-full sm:w-[max-content] flex gap-10 items-center">
                     <div className="grow">
                         <p className="text-[8pt] fadedtext">다음 일정</p>
-                        <p className="text-lg">{getNextIslandTime(islandTime)}</p>
+                        <p className="w-[max-content] text-lg">{getNextIslandTime(islandTime)}</p>
                     </div>
-                    <div className="grow text-right sm:text-left">
+                    <div className="grow text-right sm:text-left flex flex-col items-end">
                         <p className="text-[8pt] fadedtext">남은 시간</p>
                         <p className={clsx(
-                            "text-lg",
+                            "text-lg w-[max-content]",
                             timeLeft !== 0 ? '' : 'text-red-500'
                         )}>{timeLeft !== 0 ? formatTimeLeft(timeLeft) : "모험섬 출현"}</p>
                     </div>
                 </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {islands.map((island, index) => (
-                    <Card key={index} radius="sm">
-                        <CardHeader className="flex gap-3">
-                            <Image 
-                                src={island.icon} 
-                                width={36}
-                                height={36} 
-                                alt={`island-${index}`} 
-                                radius="sm"/>
-                            <p>{island.name}</p>
-                        </CardHeader>
-                        <Divider/>
-                        <CardBody>
-                            <>
-                                <p className="fadedtext text-sm mb-2">보상 아이템</p>
-                                <div className="grid grid-cols-7 sm:grid-cols-4 lg1200:grid-cols-7 gap-3">
-                                    {island.items.map((item, idx) => (
-                                        <div key={idx}>
-                                            <Tooltip
-                                                showArrow
-                                                content={<p className={getColorTextByGrade(item.grade)}>{item.name}</p>}>
-                                                <Image 
-                                                    src={item.icon} 
-                                                    width={28}
-                                                    height={28} 
-                                                    alt={`item-${index}`} 
-                                                    radius="sm"
-                                                    className="hidden sm:block"/>
-                                            </Tooltip>
-                                            <Popover 
-                                                showArrow>
-                                                <PopoverTrigger>
+                {islands.length !== 0 ? (
+                    islands.map((island, index) => (
+                        <Card key={index} radius="sm">
+                            <CardHeader className="flex gap-3">
+                                <Image 
+                                    src={island.icon} 
+                                    width={36}
+                                    height={36} 
+                                    alt={`island-${index}`} 
+                                    radius="sm"/>
+                                <p>{island.name}</p>
+                            </CardHeader>
+                            <Divider/>
+                            <CardBody>
+                                <>
+                                    <p className="fadedtext text-sm mb-2">보상 아이템</p>
+                                    <div className="grid grid-cols-7 sm:grid-cols-4 lg1200:grid-cols-7 gap-3">
+                                        {island.items.map((item, idx) => (
+                                            <div key={idx}>
+                                                <Tooltip
+                                                    showArrow
+                                                    content={<p className={getColorTextByGrade(item.grade)}>{item.name}</p>}>
                                                     <Image 
                                                         src={item.icon} 
                                                         width={28}
                                                         height={28} 
                                                         alt={`item-${index}`} 
                                                         radius="sm"
-                                                        className="block sm:hidden"/>
-                                                </PopoverTrigger>
-                                                <PopoverContent>
-                                                    <p className={getColorTextByGrade(item.grade)}>{item.name}</p>
-                                                </PopoverContent>
-                                            </Popover>
-                                        </div>
-                                    ))}
-                                </div>
-                            </>
-                        </CardBody>
-                    </Card>
-                ))}
+                                                        className="hidden sm:block"/>
+                                                </Tooltip>
+                                                <Popover 
+                                                    showArrow>
+                                                    <PopoverTrigger>
+                                                        <Image 
+                                                            src={item.icon} 
+                                                            width={28}
+                                                            height={28} 
+                                                            alt={`item-${index}`} 
+                                                            radius="sm"
+                                                            className="block sm:hidden"/>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent>
+                                                        <p className={getColorTextByGrade(item.grade)}>{item.name}</p>
+                                                    </PopoverContent>
+                                                </Popover>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            </CardBody>
+                        </Card>
+                    ))
+                ) : (
+                    <div className="w-full h-[140px] col-span-3 fadedtext flex items-center justify-center text-xl">오늘의 모험섬 일정은 없습니다.</div>
+                )}
             </div>
         </div>
     )

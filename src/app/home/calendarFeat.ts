@@ -53,22 +53,24 @@ export async function loadCalendar(
         const islandsData = data.filter((item: any) => item.CategoryName === '모험 섬');
         const todayIslands = islandsData.filter(filterTodayIslands);
         const today = new Date();
-        for (const time of todayIslands[0].StartTimes) {
-            const startTime = new Date(time);
-            if (isToday(today, startTime)) {
-                setIslandTime(startTime);
-                break;
+        if (todayIslands.length !== 0) {
+            for (const time of todayIslands[0].StartTimes) {
+                const startTime = new Date(time);
+                if (isToday(today, startTime)) {
+                    setIslandTime(startTime);
+                    break;
+                }
             }
-        }
-        for (const island of todayIslands) {
-            const newIsland: Island = {
-                name: island.ContentsName,
-                icon: island.ContentsIcon,
-                items: getRewardItems(island.RewardItems)
+            for (const island of todayIslands) {
+                const newIsland: Island = {
+                    name: island.ContentsName,
+                    icon: island.ContentsIcon,
+                    items: getRewardItems(island.RewardItems)
+                }
+                islands.push(newIsland);
             }
-            islands.push(newIsland);
+            setIslands(islands);
         }
-        setIslands(islands);
     } else {
         console.error(`Unable to load calendars data. (Error Status : ${gamecontentLostarkRes.status})`);
     }
