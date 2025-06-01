@@ -14,7 +14,6 @@ export type Island = {
 // 로스트아크 API로부터 캘린더 정보 가져오는 함수
 export async function loadCalendar(
     setIslands: SetStateFn<Island[]>,
-    setLoading: SetStateFn<boolean>,
     setIslandTime: SetStateFn<Date | null>
 ) {
     const gamecontentLostarkRes = await fetch(`/api/lostark?value=null&code=2`);
@@ -43,7 +42,33 @@ export async function loadCalendar(
     } else {
         console.error(`Unable to load calendars data. (Error Status : ${gamecontentLostarkRes.status})`);
     }
-    setLoading(false);
+}
+
+export type Notice = {
+    title: string,
+    date: Date,
+    link: string
+}
+
+// 로스트아크 API로부터 공지사항 데이터를 가져오는 함수
+export async function loadNotices(setNotices: SetStateFn<Notice[]>) {
+    const noticeLostarkRes = await fetch(`/api/lostark?value=null&code=3`);
+    if (noticeLostarkRes.ok) {
+        const notices: Notice[] = [];
+        const data = await noticeLostarkRes.json();
+        const slicedData = data.slice(0, 20);
+        for (const notice of slicedData) {
+            const newNotice: Notice = {
+                title: notice.Title,
+                date: new Date(notice.Date),
+                link: notice.Link
+            }
+            notices.push(newNotice);
+        }
+        setNotices(notices);
+    } else {
+        console.error(`Unable to load notices data. (Error Status : ${noticeLostarkRes.status})`);
+    }
 }
 
 // 획득 아이템 반환 함수

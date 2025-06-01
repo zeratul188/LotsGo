@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { formatTimeLeft, getNextIslandTime, Island, loadCalendar } from "./calendarFeat";
+import { formatTimeLeft, getNextIslandTime, Island, loadCalendar, loadNotices, Notice } from "./calendarFeat";
 import { LoadingComponent } from "../UtilsCompnents";
 import { 
     Card, CardBody, CardHeader, 
     Divider, 
     Image, 
     Popover, PopoverContent, PopoverTrigger, 
+    ScrollShadow, 
     Tooltip 
 } from "@heroui/react";
 import { getColorTextByGrade } from "@/utiils/utils";
@@ -16,12 +17,41 @@ function useCalendarForm() {
     const [isLoading, setLoading] = useState(true);
     const [islands, setIslands] = useState<Island[]>([]);
     const [islandTime, setIslandTime] = useState<Date | null>(null);
+    const [notices, setNotices] = useState<Notice[]>([]);
 
     return {
         isLoading, setLoading,
         islands, setIslands,
-        islandTime, setIslandTime
+        islandTime, setIslandTime,
+        notices, setNotices
     }
+}
+
+// 공지사항 컴포넌트
+type NoticeComponentProps = {
+    notices: Notice[]
+}
+function NoticeComponent({ notices }: NoticeComponentProps) {
+    const getStringByDate = (date: Date) => `${date.getFullYear()}년 ${date.getMonth()}월 ${date.getDate()}일`;
+    return (
+        <div>
+            <p className="text-2xl">로스트아크 공지사항</p>
+            <Divider className="mt-4"/>
+            <ScrollShadow className="w-full h-[400px]">
+                {notices.map((notice, index) => (
+                    <a href={notice.link} key={index} target="_blank">
+                        <div className={clsx(
+                            "w-full pr-2 pl-2 pt-4 pb-4 hover:bg-gray-100 dark:hover:bg-[#222222]",
+                            index !== 0 ? "border-t-1 border-[#dddddd] dark:border-[#222222]" : ""
+                        )}>
+                            <p className="text-md truncate">{notice.title}</p>
+                            <p className="fadedtext text-sm truncate">{getStringByDate(notice.date)}</p>
+                        </div>
+                    </a>
+                ))}
+            </ScrollShadow>
+        </div>
+    )
 }
 
 // 모험섬 컴포넌트
@@ -130,7 +160,9 @@ export default function CalendarComponent() {
 
     useEffect(() => {
         const loadData = async () => {
-            await loadCalendar(calendarForm.setIslands, calendarForm.setLoading, calendarForm.setIslandTime);
+            await loadCalendar(calendarForm.setIslands, calendarForm.setIslandTime);
+            await loadNotices(calendarForm.setNotices);
+            calendarForm.setLoading(false);
         }
         loadData();
     }, []);
@@ -141,6 +173,10 @@ export default function CalendarComponent() {
     return (
         <div className="w-full">
             <IslandComponent islands={calendarForm.islands} islandTime={calendarForm.islandTime}/>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-8">
+                <NoticeComponent notices={calendarForm.notices}/>
+                <div className="col-span-2 bg-red-500">helloworld</div>
+            </div>
         </div>
     )
 }
