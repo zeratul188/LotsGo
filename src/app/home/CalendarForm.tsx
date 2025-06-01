@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { formatTimeLeft, getNextIslandTime, Island, loadCalendar, loadNotices, Notice } from "./calendarFeat";
+import { formatTimeLeft, getNextIslandTime, Island, loadCalendar, loadEvents, loadNotices, LostarkEvent, Notice } from "./calendarFeat";
 import { LoadingComponent } from "../UtilsCompnents";
 import { 
-    Card, CardBody, CardHeader, 
+    Card, CardBody, CardFooter, CardHeader, 
     Divider, 
     Image, 
     Popover, PopoverContent, PopoverTrigger, 
@@ -18,13 +18,55 @@ function useCalendarForm() {
     const [islands, setIslands] = useState<Island[]>([]);
     const [islandTime, setIslandTime] = useState<Date | null>(null);
     const [notices, setNotices] = useState<Notice[]>([]);
+    const [events, setEvents] = useState<LostarkEvent[]>([]);
 
     return {
         isLoading, setLoading,
         islands, setIslands,
         islandTime, setIslandTime,
-        notices, setNotices
+        notices, setNotices,
+        events, setEvents
     }
+}
+
+// 이벤트 컴포넌트
+type EventComponentProps = {
+    events: LostarkEvent[]
+}
+function EventComponent({ events }: EventComponentProps) {
+    const getStringByDate = (date: Date) => `${date.getFullYear()}년 ${date.getMonth()}월 ${date.getDate()}일`;
+    return (
+        <div className="col-span-2">
+            <p className="text-2xl">로스트아크 이벤트</p>
+            <Divider className="mt-4"/>
+            <ScrollShadow className="w-full h-[600px] sm:h-[400px] pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {events.map((event, index) => (
+                        <Card 
+                            key={index} 
+                            isPressable
+                            onPress={() => window.open(event.link, '_blank')}>
+                            <CardBody className="overflow-visible p-0">
+                                <Image
+                                    alt={`event-${index}`}
+                                    className="w-full object-cover h-[180px]"
+                                    radius="md"
+                                    shadow="sm"
+                                    src={event.thumbnail}
+                                    width="100%"/>
+                            </CardBody>
+                            <CardFooter>
+                                <div className="w-full text-left">
+                                    <p className="text-lg truncate">{event.title}</p>
+                                    <p className="fadedtext text-sm truncate">{getStringByDate(event.startDate)} ~ {getStringByDate(event.endDate)}</p>
+                                </div>
+                            </CardFooter>
+                        </Card>
+                    ))}
+                </div>
+            </ScrollShadow>
+        </div>
+    )
 }
 
 // 공지사항 컴포넌트
@@ -162,6 +204,7 @@ export default function CalendarComponent() {
         const loadData = async () => {
             await loadCalendar(calendarForm.setIslands, calendarForm.setIslandTime);
             await loadNotices(calendarForm.setNotices);
+            await loadEvents(calendarForm.setEvents);
             calendarForm.setLoading(false);
         }
         loadData();
@@ -175,7 +218,7 @@ export default function CalendarComponent() {
             <IslandComponent islands={calendarForm.islands} islandTime={calendarForm.islandTime}/>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-8">
                 <NoticeComponent notices={calendarForm.notices}/>
-                <div className="col-span-2 bg-red-500">helloworld</div>
+                <EventComponent events={calendarForm.events}/>
             </div>
         </div>
     )

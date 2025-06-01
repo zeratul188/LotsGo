@@ -11,6 +11,36 @@ export type Island = {
     items: IslandItem[]
 }
 
+export type LostarkEvent = {
+    title: string,
+    thumbnail: string,
+    link: string,
+    startDate: Date,
+    endDate: Date
+}
+
+// 로스트아크 API로부터 이벤트 정보 가져오는 함수
+export async function loadEvents(setEvents: SetStateFn<LostarkEvent[]>) {
+    const eventLostarkRes = await fetch(`/api/lostark?value=null&code=4`);
+    if (eventLostarkRes.ok) {
+        const events: LostarkEvent[] = [];
+        const data = await eventLostarkRes.json();
+        for (const event of data) {
+            const newEvent: LostarkEvent = {
+                title: event.Title,
+                thumbnail: event.Thumbnail,
+                link: event.Link,
+                startDate: new Date(event.StartDate),
+                endDate: new Date(event.EndDate)
+            }
+            events.push(newEvent);
+        }
+        setEvents(events);
+    } else {
+        console.error(`Unable to load events data. (Error Status : ${eventLostarkRes.status})`);
+    }
+}
+
 // 로스트아크 API로부터 캘린더 정보 가져오는 함수
 export async function loadCalendar(
     setIslands: SetStateFn<Island[]>,
