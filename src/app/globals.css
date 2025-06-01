@@ -77,3 +77,59 @@ body * {
 .redbutton {
   @apply cursor-pointer text-red-600 dark:text-red-400 hover:text-red-800 hover:dark:text-red-300
 }
+
+.text-normal {
+  @apply text-[#000000]
+}
+
+.dark .text-normal {
+  @apply text-[#ffffff]
+}
+
+.text-advanced {
+  @apply text-[#4f8b00]
+}
+
+.dark .text-advanced {
+  @apply text-[#8cf701]
+}
+
+.text-rare {
+  @apply text-[#00b0fa]
+}
+
+.dark .text-rare {
+  @apply text-[#00b0fa]
+}
+
+.text-hero {
+  @apply text-[#ce43fc]
+}
+
+.dark .text-hero {
+  @apply text-[#ce43fc]
+}
+
+.text-legend {
+  @apply text-[#f99200]
+}
+
+.dark .text-legend {
+  @apply text-[#f99200]
+}
+
+.text-relics {
+  @apply text-[#fa5d00]
+}
+
+.dark .text-relics {
+  @apply text-[#fa5d00]
+}
+
+.text-ancient {
+  @apply text-[#98856b]
+}
+
+.dark .text-ancient {
+  @apply text-[#e3c7a1]
+}

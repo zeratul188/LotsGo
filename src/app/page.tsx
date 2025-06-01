@@ -1,13 +1,15 @@
 'use client'
 import * as React from "react";
-import {Button} from "@heroui/react";
+import CalendarComponent from "./home/CalendarForm";
+import ChecklistComponent from "./home/ChecklistForm";
 
 export default function Home() {
+
   return (
     <>
-      <div>
-        <p className="text-[100pt]">page</p>
-        <Button>Button</Button>
+      <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
+        <ChecklistComponent/>
+        <CalendarComponent/>
       </div>
     </>
   );

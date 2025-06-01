@@ -1,0 +1,225 @@
+import { useEffect, useState } from "react";
+import { formatTimeLeft, getNextIslandTime, Island, loadCalendar, loadEvents, loadNotices, LostarkEvent, Notice } from "./calendarFeat";
+import { LoadingComponent } from "../UtilsCompnents";
+import { 
+    Card, CardBody, CardFooter, CardHeader, 
+    Divider, 
+    Image, 
+    Popover, PopoverContent, PopoverTrigger, 
+    ScrollShadow, 
+    Tooltip 
+} from "@heroui/react";
+import { getColorTextByGrade } from "@/utiils/utils";
+import clsx from "clsx";
+
+// state 관리
+function useCalendarForm() {
+    const [isLoading, setLoading] = useState(true);
+    const [islands, setIslands] = useState<Island[]>([]);
+    const [islandTime, setIslandTime] = useState<Date | null>(null);
+    const [notices, setNotices] = useState<Notice[]>([]);
+    const [events, setEvents] = useState<LostarkEvent[]>([]);
+
+    return {
+        isLoading, setLoading,
+        islands, setIslands,
+        islandTime, setIslandTime,
+        notices, setNotices,
+        events, setEvents
+    }
+}
+
+// 이벤트 컴포넌트
+type EventComponentProps = {
+    events: LostarkEvent[]
+}
+function EventComponent({ events }: EventComponentProps) {
+    const getStringByDate = (date: Date) => `${date.getFullYear()}년 ${date.getMonth()}월 ${date.getDate()}일`;
+    return (
+        <div className="col-span-2">
+            <p className="text-2xl">로스트아크 이벤트</p>
+            <Divider className="mt-4"/>
+            <ScrollShadow className="w-full h-[600px] sm:h-[400px] pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {events.map((event, index) => (
+                        <Card 
+                            key={index} 
+                            isPressable
+                            onPress={() => window.open(event.link, '_blank')}>
+                            <CardBody className="overflow-visible p-0">
+                                <Image
+                                    alt={`event-${index}`}
+                                    className="w-full object-cover h-[180px]"
+                                    radius="md"
+                                    shadow="sm"
+                                    src={event.thumbnail}
+                                    width="100%"/>
+                            </CardBody>
+                            <CardFooter>
+                                <div className="w-full text-left">
+                                    <p className="text-lg truncate">{event.title}</p>
+                                    <p className="fadedtext text-sm truncate">{getStringByDate(event.startDate)} ~ {getStringByDate(event.endDate)}</p>
+                                </div>
+                            </CardFooter>
+                        </Card>
+                    ))}
+                </div>
+            </ScrollShadow>
+        </div>
+    )
+}
+
+// 공지사항 컴포넌트
+type NoticeComponentProps = {
+    notices: Notice[]
+}
+function NoticeComponent({ notices }: NoticeComponentProps) {
+    const getStringByDate = (date: Date) => `${date.getFullYear()}년 ${date.getMonth()}월 ${date.getDate()}일`;
+    return (
+        <div>
+            <p className="text-2xl">로스트아크 공지사항</p>
+            <Divider className="mt-4"/>
+            <ScrollShadow className="w-full h-[400px]">
+                {notices.map((notice, index) => (
+                    <a href={notice.link} key={index} target="_blank">
+                        <div className={clsx(
+                            "w-full pr-2 pl-2 pt-4 pb-4 hover:bg-gray-100 dark:hover:bg-[#222222]",
+                            index !== 0 ? "border-t-1 border-[#dddddd] dark:border-[#222222]" : ""
+                        )}>
+                            <p className="text-md truncate">{notice.title}</p>
+                            <p className="fadedtext text-sm truncate">{getStringByDate(notice.date)}</p>
+                        </div>
+                    </a>
+                ))}
+            </ScrollShadow>
+        </div>
+    )
+}
+
+// 모험섬 컴포넌트
+type IslandComponentProps = {
+    islands: Island[],
+    islandTime: Date | null
+}
+function IslandComponent({ islands, islandTime }: IslandComponentProps) {
+    const [timeLeft, setTimeLeft] = useState(() => islandTime !== null ? islandTime?.getTime() - Date.now() : 0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (islandTime !== null) {
+                const diff = islandTime?.getTime() - Date.now();
+                if (diff <= 0) {
+                    setTimeLeft(0);
+                    clearInterval(interval);
+                } else {
+                    setTimeLeft(diff);
+                }
+            } else {
+                clearInterval(interval);
+            }
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [islandTime]);
+
+    return (
+        <div>
+            <div className="flex gap-2 mb-3 flex-col sm:flex-row items-center">
+                <p className="text-2xl grow w-full">오늘의 모험섬</p>
+                <div className="w-full sm:w-[max-content] flex gap-10 items-center">
+                    <div className="grow">
+                        <p className="text-[8pt] fadedtext">다음 일정</p>
+                        <p className="text-lg">{getNextIslandTime(islandTime)}</p>
+                    </div>
+                    <div className="grow text-right sm:text-left">
+                        <p className="text-[8pt] fadedtext">남은 시간</p>
+                        <p className={clsx(
+                            "text-lg",
+                            timeLeft !== 0 ? '' : 'text-red-500'
+                        )}>{timeLeft !== 0 ? formatTimeLeft(timeLeft) : "모험섬 출현"}</p>
+                    </div>
+                </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {islands.map((island, index) => (
+                    <Card key={index} radius="sm">
+                        <CardHeader className="flex gap-3">
+                            <Image 
+                                src={island.icon} 
+                                width={36}
+                                height={36} 
+                                alt={`island-${index}`} 
+                                radius="sm"/>
+                            <p>{island.name}</p>
+                        </CardHeader>
+                        <Divider/>
+                        <CardBody>
+                            <>
+                                <p className="fadedtext text-sm mb-2">보상 아이템</p>
+                                <div className="grid grid-cols-7 sm:grid-cols-4 lg1200:grid-cols-7 gap-3">
+                                    {island.items.map((item, idx) => (
+                                        <div key={idx}>
+                                            <Tooltip
+                                                showArrow
+                                                content={<p className={getColorTextByGrade(item.grade)}>{item.name}</p>}>
+                                                <Image 
+                                                    src={item.icon} 
+                                                    width={28}
+                                                    height={28} 
+                                                    alt={`item-${index}`} 
+                                                    radius="sm"
+                                                    className="hidden sm:block"/>
+                                            </Tooltip>
+                                            <Popover 
+                                                showArrow>
+                                                <PopoverTrigger>
+                                                    <Image 
+                                                        src={item.icon} 
+                                                        width={28}
+                                                        height={28} 
+                                                        alt={`item-${index}`} 
+                                                        radius="sm"
+                                                        className="block sm:hidden"/>
+                                                </PopoverTrigger>
+                                                <PopoverContent>
+                                                    <p className={getColorTextByGrade(item.grade)}>{item.name}</p>
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        </CardBody>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    )
+}
+
+// 일정 (모험섬, 필드보스 등) 컴포넌트
+export default function CalendarComponent() {
+    const calendarForm = useCalendarForm();
+
+    useEffect(() => {
+        const loadData = async () => {
+            await loadCalendar(calendarForm.setIslands, calendarForm.setIslandTime);
+            await loadNotices(calendarForm.setNotices);
+            await loadEvents(calendarForm.setEvents);
+            calendarForm.setLoading(false);
+        }
+        loadData();
+    }, []);
+
+    if (calendarForm.isLoading) {
+        return <LoadingComponent heightStyle="min-h-[500px]"/>
+    }
+    return (
+        <div className="w-full">
+            <IslandComponent islands={calendarForm.islands} islandTime={calendarForm.islandTime}/>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-8">
+                <NoticeComponent notices={calendarForm.notices}/>
+                <EventComponent events={calendarForm.events}/>
+            </div>
+        </div>
+    )
+}
