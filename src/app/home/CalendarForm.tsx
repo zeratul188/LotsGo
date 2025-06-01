@@ -52,7 +52,7 @@ function IslandComponent({ islands, islandTime }: IslandComponentProps) {
     return (
         <div>
             <div className="flex gap-2 mb-3 flex-col sm:flex-row items-center">
-                <p className="text-2xl grow">오늘의 모험섬</p>
+                <p className="text-2xl grow w-full">오늘의 모험섬</p>
                 <div className="w-full sm:w-[max-content] flex gap-10 items-center">
                     <div className="grow">
                         <p className="text-[8pt] fadedtext">다음 일정</p>
@@ -136,7 +136,7 @@ export default function CalendarComponent() {
     }, []);
 
     if (calendarForm.isLoading) {
-        return <LoadingComponent heightStyle="min-h-[calc(100vh-65px)]"/>
+        return <LoadingComponent heightStyle="min-h-[500px]"/>
     }
     return (
         <div className="w-full">
