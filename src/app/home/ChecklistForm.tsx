@@ -54,7 +54,7 @@ export default function ChecklistComponent() {
         loadData();
     }, [checklistForm.bosses]);
 
-    if (!checklistForm.isLogin || checklistForm.checklist.length === 0) {
+    if (!checklistForm.isLogin || (checklistForm.checklist.length === 0 && !checklistForm.isLoading)) {
         return <></>;
     }
     if (checklistForm.isLoading) {

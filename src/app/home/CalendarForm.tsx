@@ -220,9 +220,10 @@ export default function CalendarComponent() {
 
     useEffect(() => {
         const loadData = async () => {
-            await loadCalendar(calendarForm.setIslands, calendarForm.setIslandTime);
-            await loadNotices(calendarForm.setNotices);
-            await loadEvents(calendarForm.setEvents);
+            const calenderPromise = loadCalendar(calendarForm.setIslands, calendarForm.setIslandTime);
+            const noticePromise =  loadNotices(calendarForm.setNotices);
+            const eventPromise = loadEvents(calendarForm.setEvents);
+            await Promise.all([calenderPromise, noticePromise, eventPromise]);
             calendarForm.setLoading(false);
         }
         loadData();
