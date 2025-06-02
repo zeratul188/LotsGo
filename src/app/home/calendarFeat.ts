@@ -1,4 +1,5 @@
 import { SetStateFn } from "@/utiils/utils";
+import { addToast } from "@heroui/react";
 
 export type IslandItem = {
     name: string,
@@ -36,8 +37,6 @@ export async function loadEvents(setEvents: SetStateFn<LostarkEvent[]>) {
             events.push(newEvent);
         }
         setEvents(events);
-    } else {
-        console.error(`Unable to load events data. (Error Status : ${eventLostarkRes.status})`);
     }
 }
 
@@ -72,7 +71,15 @@ export async function loadCalendar(
             setIslands(islands);
         }
     } else {
-        console.error(`Unable to load calendars data. (Error Status : ${gamecontentLostarkRes.status})`);
+        if (gamecontentLostarkRes.status === 503) {
+            addToast({
+                title: "서버 점검",
+                description: `로스트아크가 점검중입니다. 점검 이후 시도해주세요.`,
+                color: "danger"
+            });
+        } else {
+            console.error(`Unable to load calendars data. (Error Status : ${gamecontentLostarkRes.status})`);
+        }
     }
 }
 
@@ -98,8 +105,6 @@ export async function loadNotices(setNotices: SetStateFn<Notice[]>) {
             notices.push(newNotice);
         }
         setNotices(notices);
-    } else {
-        console.error(`Unable to load notices data. (Error Status : ${noticeLostarkRes.status})`);
     }
 }
 

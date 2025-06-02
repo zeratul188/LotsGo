@@ -1181,7 +1181,17 @@ export function useClickUpdatedCharacters(
                     character.level = Number(data.ItemAvgLevel.replaceAll(',', ''));
                 }
             } else {
-                console.log(`Unable to load ${character.nickname}'s character data. (Error Status : ${lostarkRes.status})`);
+                if (lostarkRes.status === 503) {
+                    addToast({
+                        title: "서버 점검",
+                        description: `로스트아크가 점검중입니다. 점검 이후 시도해주세요.`,
+                        color: "danger"
+                    });
+                    setLoading(false);
+                    return;
+                } else {
+                    console.log(`Unable to load ${character.nickname}'s character data. (Error Status : ${lostarkRes.status})`);
+                }
             }
         }
         dispatch(removeCharacter(newChecklist));
@@ -1243,7 +1253,15 @@ export function useClickLoadCharacters(
         setLoadingSearch(true);
         const lostarkRes = await fetch(`/api/lostark?value=${value}&code=0`);
         if (!lostarkRes.ok) {
-            console.log(`Unable to load ${value}'s character data. (Error Status : ${lostarkRes.status})`);
+            if (lostarkRes.status === 503) {
+                addToast({
+                    title: "서버 점검",
+                    description: `로스트아크가 점검중입니다. 점검 이후 시도해주세요.`,
+                    color: "danger"
+                });
+            } else {
+                console.log(`Unable to load ${value}'s character data. (Error Status : ${lostarkRes.status})`);    
+            }
             return;
         }
         const data: Array<any> = await lostarkRes.json();
