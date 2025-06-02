@@ -20,12 +20,14 @@ function useChecklistForm() {
     const [isLoading, setLoading] = useState(true);
     const [isLogin, setLogin] = useState(false);
     const [bosses, setBosses] = useState<Boss[]>([]);
+    const [isAdministrator, setAdministrator] = useState(false);
 
     return {
         checklist, setChecklist,
         isLoading, setLoading,
         isLogin, setLogin,
-        bosses, setBosses
+        bosses, setBosses,
+        isAdministrator, setAdministrator
     }
 }
 
@@ -35,6 +37,10 @@ export default function ChecklistComponent() {
     
     useEffect(() => {
         checklistForm.setLogin(isLogin());
+        const isAdministrator = localStorage.getItem('isAdministrator');
+        if (isAdministrator === 'true') {
+            checklistForm.setAdministrator(true);
+        }
     }, []);
     useEffect(() => {
         const loadData = async () => {
@@ -54,7 +60,7 @@ export default function ChecklistComponent() {
         loadData();
     }, [checklistForm.bosses]);
 
-    if (!checklistForm.isLogin || checklistForm.checklist.length === 0) {
+    if (!checklistForm.isLogin || (checklistForm.checklist.length === 0 && !checklistForm.isLoading) || checklistForm.isAdministrator) {
         return <></>;
     }
     if (checklistForm.isLoading) {
