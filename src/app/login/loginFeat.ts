@@ -97,16 +97,17 @@ export function useLoginHandler(
             .then(() => {
                 onAuthStateChanged(auth, async (userState) => {
                     if (userState) {
-                        if (data.userData.password === 'null') {
-                            const q = query(collection(firestore, 'members'), where("id", "==", user.id), limit(1));
-                            const snapshot = await getDocs(q);
-                            const docRef = snapshot.docs[0].ref;
-                            const hashedPassword = await hashValue(user.password);
-                            await updateDoc(docRef, {
-                                password: hashedPassword
-                            });
+                        if (!data.isAdministrator) {
+                            if (data.userData.password === 'null') {
+                                const q = query(collection(firestore, 'members'), where("id", "==", user.id), limit(1));
+                                const snapshot = await getDocs(q);
+                                const docRef = snapshot.docs[0].ref;
+                                const hashedPassword = await hashValue(user.password);
+                                await updateDoc(docRef, {
+                                    password: hashedPassword
+                                });
+                            }
                         }
-
                         const loginUser: LoginUser = {
                             id: user.id,
                             expedition: data.expedition
@@ -138,19 +139,19 @@ export function useLoginHandler(
             })
             .catch((error: any) => {
                 console.log(error.code);
-                if (error.code === 'auth/wrong-password') {
+                if (error.code === 'auth/wrong-password' && data.userData.password === 'null') {
                     addToast({
                         title: "비밀번호 미일치",
                         description: `비밀번호가 일치하지 않습니다.`,
                         color: "danger"
                     });
-                } else if (error.code === 'auth/user-not-found') {
+                } else if (error.code === 'auth/user-not-found' && data.userData.password === 'null') {
                     addToast({
                         title: "이메일 없음",
                         description: `해당 이메일의 계정이 존재하지 않습니다.`,
                         color: "danger"
                     });
-                } else if (error.code === 'auth/invalid-credential') {
+                } else if (error.code === 'auth/invalid-credential' && data.userData.password === 'null') {
                     addToast({
                         title: "인증 정보 없음",
                         description: `비밀번호가 일치하지 않거나 해당 이메일의 계정이 존재하지 않습니다.`,
