@@ -9,7 +9,7 @@ import {
     ScrollShadow, 
     Tooltip 
 } from "@heroui/react";
-import { getColorTextByGrade } from "@/utiils/utils";
+import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils";
 import clsx from "clsx";
 
 // state 관리
@@ -158,28 +158,32 @@ function IslandComponent({ islands, islandTime }: IslandComponentProps) {
                                     <p className="fadedtext text-sm mb-2">보상 아이템</p>
                                     <div className="grid grid-cols-7 sm:grid-cols-4 lg1200:grid-cols-7 gap-3">
                                         {island.items.map((item, idx) => (
-                                            <div key={idx}>
+                                            <div key={idx} className="flex items-center justify-center">
                                                 <Tooltip
                                                     showArrow
                                                     content={<p className={getColorTextByGrade(item.grade)}>{item.name}</p>}>
-                                                    <Image 
-                                                        src={item.icon} 
-                                                        width={28}
-                                                        height={28} 
-                                                        alt={`item-${index}`} 
-                                                        radius="sm"
-                                                        className="hidden sm:block"/>
-                                                </Tooltip>
-                                                <Popover 
-                                                    showArrow>
-                                                    <PopoverTrigger>
+                                                    <div className={`hidden sm:block w-[34px] h-[34px] aspect-square p-[3px] rounded-md ${getBackgroundByGrade(item.grade)}`}>
                                                         <Image 
                                                             src={item.icon} 
                                                             width={28}
                                                             height={28} 
                                                             alt={`item-${index}`} 
                                                             radius="sm"
-                                                            className="block sm:hidden"/>
+                                                            className="w-full h-full object-cover"/>
+                                                    </div>
+                                                </Tooltip>
+                                                <Popover 
+                                                    showArrow>
+                                                    <PopoverTrigger>
+                                                        <div className={`block sm:hidden w-[34px] h-[34px] aspect-square p-[3px] rounded-md ${getBackgroundByGrade(item.grade)}`}>
+                                                            <Image 
+                                                                src={item.icon} 
+                                                                width={28}
+                                                                height={28} 
+                                                                alt={`item-${index}`} 
+                                                                radius="sm"
+                                                                className="w-full h-full object-cover"/>
+                                                        </div>
                                                     </PopoverTrigger>
                                                     <PopoverContent>
                                                         <p className={getColorTextByGrade(item.grade)}>{item.name}</p>

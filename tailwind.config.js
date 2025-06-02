@@ -22,7 +22,10 @@ module.exports = {
           'sm300': '300px',
           'sm600': '600px',
           'lg1200': '1200px'
-        }
+        },
+        backgroundImage: {
+          'radial': 'radial-gradient(var(--tw-gradient-stops))',
+        },
     },
   },
   darkMode: 'class',
