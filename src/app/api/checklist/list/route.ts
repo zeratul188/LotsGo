@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
         const targetDoc = snapshot.docs[0];
         const data = targetDoc.data();
         //const checklist = data.checklist ?? [];
-        const checklist: CheckCharacter[] = data.checklist.map((item: CheckCharacter) => {
+        const checklist: CheckCharacter[] = data.checklist ? data.checklist.map((item: CheckCharacter) => {
             const defaultDay: Day = {
                 boss: 0,
                 bossBonus: 0,
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
                 otherGold: item.otherGold ?? 0,
                 position: item.position ?? 9999,
             }
-        })
+        }) : [];
         return NextResponse.json(checklist);
     } catch(error) {
         console.error(error);

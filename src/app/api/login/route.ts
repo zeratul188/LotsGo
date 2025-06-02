@@ -58,6 +58,12 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ token, expedition, isAdministrator });
         }
 
+        if (userData.password === 'null') {
+            const token = jwt.sign({ result }, process.env.NEXT_PUBLIC_LOSTARK_JWT_SECRET!, { expiresIn: '7d' });
+            const isAdministrator = result.isAdministrator;
+            return NextResponse.json({ token, userData, expedition, isAdministrator });
+        }
+
         if (!(await isMatchValue(password, userData.password))) {
             return NextResponse.json({ message: '비밀번호가 일치하지 않습니다.' }, { status: 401 });
         }

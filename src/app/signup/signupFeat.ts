@@ -31,6 +31,48 @@ export type ExpeditionChecked = {
     isChecking: boolean, 
     isError: boolean
 }
+export type DuplicateEmail = {
+    isCheck: boolean,
+    isLoading: boolean
+}
+
+// 이메일 중복 확인 버튼 이벤트
+export function useClickDuplicateEmailCheck(
+    member: Member,
+    setEmailChecked: SetStateFn<DuplicateEmail>
+) {
+    return async () => {
+        setEmailChecked({
+            isCheck: false,
+            isLoading: true
+        });
+        const snapshot = await getDocs(collection(firestore, 'members'));
+        const emailList: string[] = snapshot.docs
+            .map(doc => doc.data().email)
+            .filter((email): email is string => typeof email === 'string');
+        if (emailList.includes(member.email)) {
+            addToast({
+                title: "이메일 사용 불가",
+                description: '이미 등록된 이메일입니다. 다른 이메일로 등록하세요.',
+                color: "danger"
+            });
+            setEmailChecked({
+                isCheck: false,
+                isLoading: false
+            });
+        } else {
+            setEmailChecked({
+                isCheck: true,
+                isLoading: false
+            });
+            addToast({
+                title: "이메일 사용 가능",
+                description: `해당 이메일은은 사용이 가능합니다.`,
+                color: "success"
+            });
+        }
+    }
+}
 
 // 중복 확인 버튼 이벤트
 export function useOnClickDuplicateCheck(
@@ -229,6 +271,7 @@ export function useOnClickSignup(
     isDuplicateChecked: boolean,
     isExpeditionChecked: boolean,
     isPrivacyPolicyAgreed: boolean,
+    isDuplicatedEmail: boolean,
     expedition: Character[],
     setLoading: SetStateFn<boolean>
 ) {
@@ -261,6 +304,14 @@ export function useOnClickSignup(
             });
             return true;
         } 
+        if (!isDuplicatedEmail) {
+            addToast({
+                title: "이메일 중복 확인 불가",
+                description: `이메일의 중복 확인을 하지 않았습니다. 확인 후 다시 시도해주세요.`,
+                color: "danger"
+            });
+            return true;
+        }
         if (!member.password.trim() || !member.passwordCheck.trim()) {
             addToast({
                 title: "입력값이 비어있음",
@@ -325,14 +376,13 @@ export function useOnClickSignup(
             return;
         }
 
-        const fakeEmail = `${member.id.trim()}@whitetusk.com`;
-        createUserWithEmailAndPassword(auth, fakeEmail, member.password.trim())
+        createUserWithEmailAndPassword(auth, member.email, member.password.trim())
             .then(async (userCredential) => {
                 const user = userCredential.user;
                 await addDoc(collection(firestore, 'members'), {
                     uid: user.uid,
                     id: member.id,
-                    email: member.email,
+                    email: member.email.trim(),
                     character: member.character,
                     password: hashedPassword,
                     expeditions: expedition
