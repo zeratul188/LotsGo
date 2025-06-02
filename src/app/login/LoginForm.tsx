@@ -51,7 +51,7 @@ export function InputsComponent({
     const {
         onValueChangeID,
         onValueChangePassword
-    } = useLoginHandlers(user, setUser);
+    } = useLoginHandlers(setUser);
     const onClickLogin = useLoginHandler(user, setLoading, setIdDuplicated, setPasswordNotMatch);
 
     return (

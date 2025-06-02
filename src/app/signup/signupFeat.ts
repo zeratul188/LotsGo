@@ -17,6 +17,7 @@ export type Character = {
 export type Member = {
     id: string,
     character: string,
+    email: string,
     password: string,
     passwordCheck: string
 }
@@ -217,7 +218,8 @@ export function useSignupHandlers(
         onValueChangeID: (value: string) => updateMemberData({ id: value }),
         onValueChangeCharacter: (value: string) => updateMemberData({ character: value }),
         onValueChangePassword: (value: string) => updateMemberData({ password: value }),
-        onValueChangePasswordCheck: (value: string) => updateMemberData({ passwordCheck : value })
+        onValueChangePasswordCheck: (value: string) => updateMemberData({ passwordCheck : value }),
+        onValueChangeEmail: (value: string) => updateMemberData({ email: value })
     }
 }
 
@@ -227,7 +229,8 @@ export function useOnClickSignup(
     isDuplicateChecked: boolean,
     isExpeditionChecked: boolean,
     isPrivacyPolicyAgreed: boolean,
-    expedition: Character[]
+    expedition: Character[],
+    setLoading: SetStateFn<boolean>
 ) {
     const router = useRouter();
 
@@ -266,6 +269,14 @@ export function useOnClickSignup(
             });
             return true;
         } 
+        if (!member.email.trim()) {
+            addToast({
+                title: "입력값이 비어있음",
+                description: `\"이메일\"의 입력란이 비어있습니다.`,
+                color: "danger"
+            });
+            return true;
+        } 
         if (member.password.trim().length < 6 || member.password.trim().length > 18) {
             addToast({
                 title: "입력값 조건 미충족족",
@@ -294,8 +305,12 @@ export function useOnClickSignup(
     }
 
     return async () => {
+        setLoading(true);
         // 입력 시 조건 확인 여부
-        if (isInputValid()) { return; }
+        if (isInputValid()) { 
+            setLoading(false);
+            return;
+         }
 
         const hashedPassword = await hashValue(member.password);
         const q = query(collection(firestore, 'members'), where("id", '==', member.id));
@@ -317,6 +332,7 @@ export function useOnClickSignup(
                 await addDoc(collection(firestore, 'members'), {
                     uid: user.uid,
                     id: member.id,
+                    email: member.email,
                     character: member.character,
                     password: hashedPassword,
                     expeditions: expedition
@@ -327,6 +343,7 @@ export function useOnClickSignup(
                     color: "success"
                 });
 
+                setLoading(false);
                 router.push('/login');
             })
             .catch((error) => {
@@ -335,6 +352,7 @@ export function useOnClickSignup(
                     description: `회원가입하는데 문제가 발생하였습니다.`,
                     color: "danger"
                 });
+                setLoading(false);
             })        
     }   
 }

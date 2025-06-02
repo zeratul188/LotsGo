@@ -9,7 +9,7 @@ import clsx from 'clsx';
 // state 관리
 export function useSignupForm() {
     const [expedition, setExpedition] = useState<Character[]>([]);
-    const [member, setMember] = useState<Member>({ id: '', character: '', password: '', passwordCheck: '' });
+    const [member, setMember] = useState<Member>({ id: '', character: '', email: '', password: '', passwordCheck: '' });
     const [duplicateChecked, setDuplicateChecked] = useState<DuplicateChecked>({ isDuplicateChecked: false, isChecking: false, isError: false });
     const [expeditionChecked, setExpeditionChecked] = useState<ExpeditionChecked>({ isExpeditionChecked: false, isChecking: false, isError: false });
     const [isPrivacyPolicyAgreed, setPrivacyPolicyAgreed] = useState<boolean>(false);
@@ -78,11 +78,13 @@ export function InputsComponent({
     expeditionChecked, setExpeditionChecked,
     isPrivacyPolicyAgreed, setPrivacyPolicyAgreed
 }: ReturnType<typeof useSignupForm>) {
+    const [isLoading, setLoading] = useState(false);
     const {
         onValueChangeID,
         onValueChangeCharacter,
         onValueChangePassword,
-        onValueChangePasswordCheck
+        onValueChangePasswordCheck,
+        onValueChangeEmail
     } = useSignupHandlers(member, setMember);
     const onClickDuplicateCheck = useOnClickDuplicateCheck(member, setDuplicateChecked);
     const onClickExpeditionCheck = useOnClickExpeditionCheck(member, setExpeditionChecked, setExpedition);
@@ -91,7 +93,8 @@ export function InputsComponent({
         duplicateChecked.isDuplicateChecked,
         expeditionChecked.isExpeditionChecked,
         isPrivacyPolicyAgreed,
-        expedition
+        expedition,
+        setLoading
     );
     const onValueChangePrivacy = useOnValueChangePrivacy(isPrivacyPolicyAgreed, setPrivacyPolicyAgreed);
 
@@ -135,6 +138,14 @@ export function InputsComponent({
                     size="lg">{expeditionChecked.isExpeditionChecked ? "확인 완료" : "원정대 확인"}</Button>
             </div>
             <ExpeditionComponent expedition={expedition}/>
+            <h3 className="mt-7 text-lg">이메일</h3>
+            <Input
+                size="lg" 
+                type="email"
+                className="mt-1"
+                value={member.email}
+                onValueChange={onValueChangeEmail}
+                placeholder="ex) test1234@whitetusk.com"/>
             <h3 className="mt-7 text-lg">비밀번호</h3>
             <Input
                 size="lg" 
@@ -161,6 +172,7 @@ export function InputsComponent({
             <Button
                 onPress={onClickSignup}
                 fullWidth
+                isLoading={isLoading}
                 color="primary"
                 size="lg"
                 className="mt-10 mb-15">회원가입</Button>

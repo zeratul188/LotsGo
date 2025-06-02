@@ -11,10 +11,7 @@ import { auth, firestore } from "@/utiils/firebase";
 import { collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
 
 // 값 수정 이벤트 핸들링
-export function useLoginHandlers(
-    user: User,
-    setUser: SetStateFn<User>
-) {
+export function useLoginHandlers(setUser: SetStateFn<User>) {
     const updateUserData = useCallback((updated: Partial<User>) => {
         setUser(prev => ({
             ...prev,
@@ -64,12 +61,13 @@ export function useLoginHandler(
             method: 'POST',
             body: JSON.stringify({ id: user.id, password: user.password })
         });
+        const data = await res.json();
 
         // 아이디 없음 또는 비밀번호 일치하지 않을 경우
         if (!res.ok) {
-            const { message } = await res.json();
             try {
-                const msg = message ? JSON.parse(message).message : '';
+                const msg = data.message;
+                console.log(msg);
                 if (msg === '아이디가 존재하지 않습니다.') {
                     setIdDuplicated(true);
                     setPasswordNotMatch(false);
@@ -81,25 +79,32 @@ export function useLoginHandler(
                 return;
             } catch (e) {
                 console.warn("JSON 파싱 실패", e);
+                setLoading(false);
+                return;
             }
         }
 
         // 로그인 성공 시
-        const { token, expedition, isAdministrator } = await res.json();
-        const fakeEmail = `${user.id.trim()}@whitetusk.com`;
-        await signInWithEmailAndPassword(auth, fakeEmail, user.password.trim())
+        let resultEmail = '';
+        if (data.isAdministrator) {
+            resultEmail = `${user.id.trim()}@whitetusk.com`;
+        } else {
+            resultEmail = data.userData.email
+        }
+
+        await signInWithEmailAndPassword(auth, resultEmail, user.password.trim())
             .then(() => {
                 onAuthStateChanged(auth, (userState) => {
                     if (userState) {
                         const loginUser: LoginUser = {
                             id: user.id,
-                            expedition: expedition
+                            expedition: data.expedition
                         }
                         dispatch(logined(loginUser));
-                        dispatch(switchAdministrator(isAdministrator));
-                        localStorage.setItem('token', token);
+                        dispatch(switchAdministrator(data.isAdministrator));
+                        localStorage.setItem('token', data.token);
                         localStorage.setItem('user', JSON.stringify(loginUser));
-                        localStorage.setItem('isAdministrator', isAdministrator);
+                        localStorage.setItem('isAdministrator', data.isAdministrator);
 
                         setLoading(false);
                         setIdDuplicated(false);
@@ -126,7 +131,7 @@ export function useLoginHandler(
                     description: `인증된 사용자 데이터가 없어 재인증을 진행합니다.`,
                     color: "warning"
                 });
-                createUserWithEmailAndPassword(auth, fakeEmail, user.password.trim())
+                createUserWithEmailAndPassword(auth, resultEmail, user.password.trim())
                     .then(async (userCredential) => {
                         const uid = userCredential.user.uid;
                         const q = query(collection(firestore, 'members'), where("id", "==", user.id));
