@@ -187,3 +187,11 @@ export function formatTimeLeft(timeLeft: number): string {
 
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 }
+
+// 모험섬에서 골드 아이템이 있는지 여부 반환 함수
+export function isHaveGold(island: Island): boolean {
+    for (const item of island.items) {
+        if (item.name === '골드') return true;
+    }
+    return false;
+}
