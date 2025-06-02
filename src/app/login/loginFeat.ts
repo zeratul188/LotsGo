@@ -138,19 +138,19 @@ export function useLoginHandler(
             })
             .catch((error: any) => {
                 console.log(error.code);
-                if (error.code === 'auth/wrong-password') {
+                if (error.code === 'auth/wrong-password' && data.userData.password === 'null') {
                     addToast({
                         title: "비밀번호 미일치",
                         description: `비밀번호가 일치하지 않습니다.`,
                         color: "danger"
                     });
-                } else if (error.code === 'auth/user-not-found') {
+                } else if (error.code === 'auth/user-not-found' && data.userData.password === 'null') {
                     addToast({
                         title: "이메일 없음",
                         description: `해당 이메일의 계정이 존재하지 않습니다.`,
                         color: "danger"
                     });
-                } else if (error.code === 'auth/invalid-credential') {
+                } else if (error.code === 'auth/invalid-credential' && data.userData.password === 'null') {
                     addToast({
                         title: "인증 정보 없음",
                         description: `비밀번호가 일치하지 않거나 해당 이메일의 계정이 존재하지 않습니다.`,
