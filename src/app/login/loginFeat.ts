@@ -241,6 +241,7 @@ export async function handleSendPasswordReset(
             description: `비밀번호 재설정 메일이 전송되었습니다. 메일함을 확인해주세요.`,
             color: "success"
         });
+        setLoading(false);
         onClose();
     } else {
         addToast({
@@ -248,6 +249,7 @@ export async function handleSendPasswordReset(
             description: `비밀번호 재설정 메일이 전송을 실패하였습니다.`,
             color: "danger"
         });
+        setLoading(false);
         console.error(data.error);
     }
 }
