@@ -97,16 +97,17 @@ export function useLoginHandler(
             .then(() => {
                 onAuthStateChanged(auth, async (userState) => {
                     if (userState) {
-                        if (data.userData.password === 'null') {
-                            const q = query(collection(firestore, 'members'), where("id", "==", user.id), limit(1));
-                            const snapshot = await getDocs(q);
-                            const docRef = snapshot.docs[0].ref;
-                            const hashedPassword = await hashValue(user.password);
-                            await updateDoc(docRef, {
-                                password: hashedPassword
-                            });
+                        if (!data.isAdministrator) {
+                            if (data.userData.password === 'null') {
+                                const q = query(collection(firestore, 'members'), where("id", "==", user.id), limit(1));
+                                const snapshot = await getDocs(q);
+                                const docRef = snapshot.docs[0].ref;
+                                const hashedPassword = await hashValue(user.password);
+                                await updateDoc(docRef, {
+                                    password: hashedPassword
+                                });
+                            }
                         }
-
                         const loginUser: LoginUser = {
                             id: user.id,
                             expedition: data.expedition
