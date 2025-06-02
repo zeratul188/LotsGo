@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
   images: {
       domains: ['firebasestorage.googleapis.com', 'api.qrserver.com', 'cdn-lostark.game.onstove.com'],
       formats: ['image/avif', 'image/webp']
-  },
+  }
 };
 
 export default nextConfig;
