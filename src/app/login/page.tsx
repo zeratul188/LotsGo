@@ -1,13 +1,14 @@
 'use client'
 import { useEffect } from "react";
-import { InputsComponent, LogoComponent } from "./LoginForm";
+import { FindPasswordModal, InputsComponent, LogoComponent } from "./LoginForm";
 import { useLoginForm } from "./LoginForm";
-import { addToast } from "@heroui/react";
+import { addToast, useDisclosure } from "@heroui/react";
 import { useRouter } from "next/navigation";
 
 export default function Login() {
     const loginForm = useLoginForm();
     const router = useRouter();
+    const {isOpen, onOpen, onOpenChange} = useDisclosure();
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -24,9 +25,19 @@ export default function Login() {
     return (
         <div className="min-h-[calc(100vh-65px)] flex justify-center items-center flex-col p-5 sm:p-0">
             <LogoComponent/>
-            <div className="mt-8 w-full sm:w-100">
-                <InputsComponent {...loginForm}/>
+            <div className="mt-8 w-full sm:w-100 flex items-center flex-col">
+                <InputsComponent 
+                    isLoading={loginForm.isLoading}
+                    setLoading={loginForm.setLoading}
+                    isIdDuplicated={loginForm.isIdDuplicated}
+                    setIdDuplicated={loginForm.setIdDuplicated}
+                    isPasswordNotMatch={loginForm.isPasswordNotMatch}
+                    setPasswordNotMatch={loginForm.setPasswordNotMatch}
+                    user={loginForm.user}
+                    setUser={loginForm.setUser}
+                    onOpen={onOpen}/>
             </div>
+            <FindPasswordModal isOpen={isOpen} onOpenChange={onOpenChange}/>
         </div>
     )
 }

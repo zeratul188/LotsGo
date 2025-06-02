@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { formatTimeLeft, getNextIslandTime, Island, loadCalendar, loadEvents, loadNotices, LostarkEvent, Notice } from "./calendarFeat";
+import { formatTimeLeft, getNextIslandTime, isHaveGold, Island, loadCalendar, loadEvents, loadNotices, LostarkEvent, Notice } from "./calendarFeat";
 import { LoadingComponent } from "../UtilsCompnents";
 import { 
     Card, CardBody, CardFooter, CardHeader, 
+    Chip, 
     Divider, 
     Image, 
     Popover, PopoverContent, PopoverTrigger, 
@@ -142,7 +143,9 @@ function IslandComponent({ islands, islandTime }: IslandComponentProps) {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {islands.length !== 0 ? (
                     islands.map((island, index) => (
-                        <Card key={index} radius="sm">
+                        <Card key={index} radius="sm" className={clsx(
+                            isHaveGold(island) ? "border-2 border-[#ccc923] dark:border-[#c0be2f] bg-[#f1f1d4] dark:bg-[#1d1c0b]" : ""
+                        )}>
                             <CardHeader className="flex gap-3">
                                 <Image 
                                     src={island.icon} 
@@ -150,7 +153,14 @@ function IslandComponent({ islands, islandTime }: IslandComponentProps) {
                                     height={36} 
                                     alt={`island-${index}`} 
                                     radius="sm"/>
-                                <p>{island.name}</p>
+                                <p className="grow">{island.name}</p>
+                                <Chip 
+                                    color="warning" 
+                                    size="sm" 
+                                    className={clsx(
+                                        "text-white dark:text-black",
+                                        isHaveGold(island) ? 'flex' : 'hidden'
+                                    )}>골드 쌀섬</Chip>
                             </CardHeader>
                             <Divider/>
                             <CardBody>

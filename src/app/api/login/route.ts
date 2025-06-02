@@ -9,6 +9,7 @@ import { collection, getDocs, limit, query, where } from "firebase/firestore";
 type User = {
     id: string,
     password: string,
+    email: string,
     expeditions: Array<Character>
 }
 
@@ -27,17 +28,19 @@ export async function POST(req: NextRequest) {
         const snapshot = await getDocs(q);
 
         if (snapshot.empty && id !== administrator.id) {
-            return NextResponse.json({ message: '아이디가 존재하지 않습니다.' }, { status: 401 });
+            return NextResponse.json({ message: '아이디가 존재하지 않습니다.' }, { status: 404 });
         }
 
         const doc = snapshot.docs[0];
         const userData: User = !snapshot.empty ? {
             id: doc.data().id,
             password: doc.data().password,
+            email: doc.data().email,
             expeditions: doc.data().expeditions
         } : {
             id: "",
             password: "",
+            email: '',
             expeditions: []
         }
         const expedition: Array<Character> = !snapshot.empty ? userData.expeditions : [];
@@ -55,13 +58,19 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ token, expedition, isAdministrator });
         }
 
+        if (userData.password === 'null') {
+            const token = jwt.sign({ result }, process.env.NEXT_PUBLIC_LOSTARK_JWT_SECRET!, { expiresIn: '7d' });
+            const isAdministrator = result.isAdministrator;
+            return NextResponse.json({ token, userData, expedition, isAdministrator });
+        }
+
         if (!(await isMatchValue(password, userData.password))) {
             return NextResponse.json({ message: '비밀번호가 일치하지 않습니다.' }, { status: 401 });
         }
 
         const isAdministrator = result.isAdministrator;
         const token = jwt.sign({ result }, process.env.NEXT_PUBLIC_LOSTARK_JWT_SECRET!, { expiresIn: '7d' });
-        return NextResponse.json({ token, expedition, isAdministrator });
+        return NextResponse.json({ token, userData, expedition, isAdministrator });
     } catch(error) {
         console.error(error);
         return NextResponse.json({ message: 'Failed load Database.' }, { status: 500 });

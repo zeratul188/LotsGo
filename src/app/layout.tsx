@@ -4,6 +4,7 @@ import ClientOnly from "./ClientOnly";
 import Providers from "./providers";
 import Header from "./header/Header";
 import StoreClient from "./StoreClient";
+import Footer from "./footer/Footer";
 
 export const metadata: Metadata = {
   title: "화이트터스크",
@@ -23,6 +24,7 @@ export default function RootLayout({
             <Providers>
               <Header/>
               {children}
+              <Footer/>
             </Providers>
           </StoreClient>
         </ClientOnly>

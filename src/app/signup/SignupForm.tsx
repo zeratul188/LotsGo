@@ -1,25 +1,29 @@
 import { Image, Button, Input } from "@heroui/react";
 import { useState } from "react";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Checkbox } from "@heroui/react";
-import { useOnClickDuplicateCheck, useOnClickExpeditionCheck, useOnClickSignup, useOnValueChangePrivacy } from "./signupFeat";
+import { useClickDuplicateEmailCheck, useOnClickDuplicateCheck, useOnClickExpeditionCheck, useOnClickSignup, useOnValueChangePrivacy } from "./signupFeat";
 import { useSignupHandlers } from "./signupFeat";
-import type { Character, Member, DuplicateChecked, ExpeditionChecked } from "./signupFeat";
+import type { Character, Member, DuplicateChecked, ExpeditionChecked, DuplicateEmail } from "./signupFeat";
 import clsx from 'clsx';
 
 // state 관리
 export function useSignupForm() {
     const [expedition, setExpedition] = useState<Character[]>([]);
-    const [member, setMember] = useState<Member>({ id: '', character: '', password: '', passwordCheck: '' });
+    const [member, setMember] = useState<Member>({ id: '', character: '', email: '', password: '', passwordCheck: '' });
     const [duplicateChecked, setDuplicateChecked] = useState<DuplicateChecked>({ isDuplicateChecked: false, isChecking: false, isError: false });
     const [expeditionChecked, setExpeditionChecked] = useState<ExpeditionChecked>({ isExpeditionChecked: false, isChecking: false, isError: false });
+    const [emailChecked, setEmailChecked] = useState<DuplicateEmail>({ isCheck: false, isLoading: false });
     const [isPrivacyPolicyAgreed, setPrivacyPolicyAgreed] = useState<boolean>(false);
+    const [isLoading, setLoading] = useState(false);
 
     return {
         expedition, setExpedition,
         member, setMember,
         duplicateChecked, setDuplicateChecked,
         expeditionChecked, setExpeditionChecked,
-        isPrivacyPolicyAgreed, setPrivacyPolicyAgreed
+        isPrivacyPolicyAgreed, setPrivacyPolicyAgreed,
+        emailChecked, setEmailChecked,
+        isLoading, setLoading
     };
 }
 
@@ -76,13 +80,16 @@ export function InputsComponent({
     member, setMember,
     duplicateChecked, setDuplicateChecked,
     expeditionChecked, setExpeditionChecked,
-    isPrivacyPolicyAgreed, setPrivacyPolicyAgreed
+    isPrivacyPolicyAgreed, setPrivacyPolicyAgreed,
+    emailChecked, setEmailChecked,
+    isLoading, setLoading
 }: ReturnType<typeof useSignupForm>) {
     const {
         onValueChangeID,
         onValueChangeCharacter,
         onValueChangePassword,
-        onValueChangePasswordCheck
+        onValueChangePasswordCheck,
+        onValueChangeEmail
     } = useSignupHandlers(member, setMember);
     const onClickDuplicateCheck = useOnClickDuplicateCheck(member, setDuplicateChecked);
     const onClickExpeditionCheck = useOnClickExpeditionCheck(member, setExpeditionChecked, setExpedition);
@@ -91,9 +98,12 @@ export function InputsComponent({
         duplicateChecked.isDuplicateChecked,
         expeditionChecked.isExpeditionChecked,
         isPrivacyPolicyAgreed,
-        expedition
+        emailChecked.isCheck,
+        expedition,
+        setLoading
     );
     const onValueChangePrivacy = useOnValueChangePrivacy(isPrivacyPolicyAgreed, setPrivacyPolicyAgreed);
+    const onClickDuplicateEmailCheck = useClickDuplicateEmailCheck(member, setEmailChecked);
 
     return (
         <div>
@@ -135,6 +145,22 @@ export function InputsComponent({
                     size="lg">{expeditionChecked.isExpeditionChecked ? "확인 완료" : "원정대 확인"}</Button>
             </div>
             <ExpeditionComponent expedition={expedition}/>
+            <h3 className="mt-7 text-lg">이메일</h3>
+            <div className="flex mt-1 gap-4">
+                <Input
+                    size="lg" 
+                    value={member.email}
+                    isDisabled={emailChecked.isCheck}
+                    onValueChange={onValueChangeEmail}
+                    placeholder="ex) test1234@whitetusk.com"
+                    className="grow"/>
+                <Button
+                    onPress={onClickDuplicateEmailCheck}
+                    isLoading={emailChecked.isLoading}
+                    isDisabled={emailChecked.isCheck}
+                    color="primary"
+                    size="lg">{emailChecked.isCheck ? "확인 완료" : "중복 확인"}</Button>
+            </div>
             <h3 className="mt-7 text-lg">비밀번호</h3>
             <Input
                 size="lg" 
@@ -161,6 +187,7 @@ export function InputsComponent({
             <Button
                 onPress={onClickSignup}
                 fullWidth
+                isLoading={isLoading}
                 color="primary"
                 size="lg"
                 className="mt-10 mb-15">회원가입</Button>

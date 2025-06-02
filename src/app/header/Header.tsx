@@ -2,8 +2,6 @@
 import { Navbar, NavbarBrand, NavbarContent } from "@heroui/react";
 import { NavBrand, NavContents, NavToggle, ProfileContent, NavMenu } from "./navs";
 import { useState } from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
 
 export default function Header() {
     const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
