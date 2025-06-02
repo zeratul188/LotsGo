@@ -54,7 +54,7 @@ export default function ChecklistComponent() {
         loadData();
     }, [checklistForm.bosses]);
 
-    if (!checklistForm.isLogin) {
+    if (!checklistForm.isLogin || checklistForm.checklist.length === 0) {
         return <></>;
     }
     if (checklistForm.isLoading) {
@@ -64,7 +64,7 @@ export default function ChecklistComponent() {
     return (
         <div className="mb-5 flex flex-col sm:flex-row gap-5 w-full">
             <Card radius="sm" className="min-w-[360px]">
-                <CardHeader className="text-xl">숙제 현황</CardHeader>
+                <CardHeader className="text-xl">남은 숙제 현황</CardHeader>
                 <Divider/>
                 <CardBody>
                     <div>

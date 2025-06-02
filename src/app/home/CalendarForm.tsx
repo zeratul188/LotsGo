@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
-import { formatTimeLeft, getNextIslandTime, Island, loadCalendar, loadEvents, loadNotices, LostarkEvent, Notice } from "./calendarFeat";
+import { formatTimeLeft, getNextIslandTime, isHaveGold, Island, loadCalendar, loadEvents, loadNotices, LostarkEvent, Notice } from "./calendarFeat";
 import { LoadingComponent } from "../UtilsCompnents";
 import { 
     Card, CardBody, CardFooter, CardHeader, 
+    Chip, 
     Divider, 
     Image, 
     Popover, PopoverContent, PopoverTrigger, 
     ScrollShadow, 
     Tooltip 
 } from "@heroui/react";
-import { getColorTextByGrade } from "@/utiils/utils";
+import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils";
 import clsx from "clsx";
 
 // state 관리
@@ -142,7 +143,9 @@ function IslandComponent({ islands, islandTime }: IslandComponentProps) {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {islands.length !== 0 ? (
                     islands.map((island, index) => (
-                        <Card key={index} radius="sm">
+                        <Card key={index} radius="sm" className={clsx(
+                            isHaveGold(island) ? "border-2 border-[#ccc923] dark:border-[#c0be2f] bg-[#f1f1d4] dark:bg-[#1d1c0b]" : ""
+                        )}>
                             <CardHeader className="flex gap-3">
                                 <Image 
                                     src={island.icon} 
@@ -150,7 +153,14 @@ function IslandComponent({ islands, islandTime }: IslandComponentProps) {
                                     height={36} 
                                     alt={`island-${index}`} 
                                     radius="sm"/>
-                                <p>{island.name}</p>
+                                <p className="grow">{island.name}</p>
+                                <Chip 
+                                    color="warning" 
+                                    size="sm" 
+                                    className={clsx(
+                                        "text-white dark:text-black",
+                                        isHaveGold(island) ? 'flex' : 'hidden'
+                                    )}>골드 쌀섬</Chip>
                             </CardHeader>
                             <Divider/>
                             <CardBody>
@@ -158,28 +168,32 @@ function IslandComponent({ islands, islandTime }: IslandComponentProps) {
                                     <p className="fadedtext text-sm mb-2">보상 아이템</p>
                                     <div className="grid grid-cols-7 sm:grid-cols-4 lg1200:grid-cols-7 gap-3">
                                         {island.items.map((item, idx) => (
-                                            <div key={idx}>
+                                            <div key={idx} className="flex items-center justify-center">
                                                 <Tooltip
                                                     showArrow
                                                     content={<p className={getColorTextByGrade(item.grade)}>{item.name}</p>}>
-                                                    <Image 
-                                                        src={item.icon} 
-                                                        width={28}
-                                                        height={28} 
-                                                        alt={`item-${index}`} 
-                                                        radius="sm"
-                                                        className="hidden sm:block"/>
-                                                </Tooltip>
-                                                <Popover 
-                                                    showArrow>
-                                                    <PopoverTrigger>
+                                                    <div className={`hidden sm:block w-[34px] h-[34px] aspect-square p-[3px] rounded-md ${getBackgroundByGrade(item.grade)}`}>
                                                         <Image 
                                                             src={item.icon} 
                                                             width={28}
                                                             height={28} 
                                                             alt={`item-${index}`} 
                                                             radius="sm"
-                                                            className="block sm:hidden"/>
+                                                            className="w-full h-full object-cover"/>
+                                                    </div>
+                                                </Tooltip>
+                                                <Popover 
+                                                    showArrow>
+                                                    <PopoverTrigger>
+                                                        <div className={`block sm:hidden w-[34px] h-[34px] aspect-square p-[3px] rounded-md ${getBackgroundByGrade(item.grade)}`}>
+                                                            <Image 
+                                                                src={item.icon} 
+                                                                width={28}
+                                                                height={28} 
+                                                                alt={`item-${index}`} 
+                                                                radius="sm"
+                                                                className="w-full h-full object-cover"/>
+                                                        </div>
                                                     </PopoverTrigger>
                                                     <PopoverContent>
                                                         <p className={getColorTextByGrade(item.grade)}>{item.name}</p>

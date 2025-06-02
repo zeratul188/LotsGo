@@ -86,12 +86,28 @@ body * {
   @apply text-[#ffffff]
 }
 
+.bgc-normal {
+  @apply bg-radial to-[#dddddd] via-[#eeeeee] from-transparent
+}
+
+.dark .bgc-normal {
+  @apply bg-radial to-[#333333] via-[#222222] from-transparent
+}
+
 .text-advanced {
   @apply text-[#4f8b00]
 }
 
 .dark .text-advanced {
   @apply text-[#8cf701]
+}
+
+.bgc-advanced {
+  @apply bg-radial to-[#b1ff4b] via-[#dfffb6] from-transparent
+}
+
+.dark .bgc-advanced {
+  @apply bg-radial to-[#3c6900] via-[#243f00] from-transparent
 }
 
 .text-rare {
@@ -102,12 +118,28 @@ body * {
   @apply text-[#00b0fa]
 }
 
+.bgc-rare {
+  @apply bg-radial to-[#82d9ff] via-[#c0ebff] from-transparent
+}
+
+.dark .bgc-rare {
+  @apply bg-radial to-[#0072a3] via-[#002c3f] from-transparent
+}
+
 .text-hero {
   @apply text-[#ce43fc]
 }
 
 .dark .text-hero {
   @apply text-[#ce43fc]
+}
+
+.bgc-hero {
+  @apply bg-radial to-[#da6aff] via-[#eaaaff] from-transparent
+}
+
+.dark .bgc-hero {
+  @apply bg-radial to-[#7c2997] via-[#3d134b] from-transparent
 }
 
 .text-legend {
@@ -118,6 +150,14 @@ body * {
   @apply text-[#f99200]
 }
 
+.bgc-legend {
+  @apply bg-radial to-[#ffaf40] via-[#ffd8a1] from-transparent
+}
+
+.dark .bgc-legend {
+  @apply bg-radial to-[#c27100] via-[#5e3700] from-transparent
+}
+
 .text-relics {
   @apply text-[#fa5d00]
 }
@@ -126,10 +166,26 @@ body * {
   @apply text-[#fa5d00]
 }
 
+.bgc-relics {
+  @apply bg-radial to-[#ff8138] via-[#ffac7b] from-transparent
+}
+
+.dark .bgc-relics {
+  @apply bg-radial to-[#a83e00] via-[#5c2200] from-transparent
+}
+
 .text-ancient {
   @apply text-[#98856b]
 }
 
 .dark .text-ancient {
   @apply text-[#e3c7a1]
+}
+
+.bgc-ancient {
+  @apply bg-radial to-[#c2b098] via-[#e9dac5] from-transparent
+}
+
+.dark .bgc-ancient {
+  @apply bg-radial to-[#ac977a] via-[#473f32] from-transparent
 }

@@ -17,6 +17,7 @@ export type Character = {
 export type Member = {
     id: string,
     character: string,
+    email: string,
     password: string,
     passwordCheck: string
 }
@@ -29,6 +30,48 @@ export type ExpeditionChecked = {
     isExpeditionChecked: boolean, 
     isChecking: boolean, 
     isError: boolean
+}
+export type DuplicateEmail = {
+    isCheck: boolean,
+    isLoading: boolean
+}
+
+// 이메일 중복 확인 버튼 이벤트
+export function useClickDuplicateEmailCheck(
+    member: Member,
+    setEmailChecked: SetStateFn<DuplicateEmail>
+) {
+    return async () => {
+        setEmailChecked({
+            isCheck: false,
+            isLoading: true
+        });
+        const snapshot = await getDocs(collection(firestore, 'members'));
+        const emailList: string[] = snapshot.docs
+            .map(doc => doc.data().email)
+            .filter((email): email is string => typeof email === 'string');
+        if (emailList.includes(member.email)) {
+            addToast({
+                title: "이메일 사용 불가",
+                description: '이미 등록된 이메일입니다. 다른 이메일로 등록하세요.',
+                color: "danger"
+            });
+            setEmailChecked({
+                isCheck: false,
+                isLoading: false
+            });
+        } else {
+            setEmailChecked({
+                isCheck: true,
+                isLoading: false
+            });
+            addToast({
+                title: "이메일 사용 가능",
+                description: `해당 이메일은은 사용이 가능합니다.`,
+                color: "success"
+            });
+        }
+    }
 }
 
 // 중복 확인 버튼 이벤트
@@ -136,13 +179,21 @@ export function useOnClickExpeditionCheck(
         }));
         const lostarkRes = await fetch(`/api/lostark?value=${member.character}&code=0`);
         if (!lostarkRes.ok) {
+            if (lostarkRes.status === 503) {
+                addToast({
+                    title: "서버 점검",
+                    description: `로스트아크가 점검중입니다. 점검 이후 시도해주세요.`,
+                    color: "danger"
+                });
+            }
             const text = await lostarkRes.text(); // ← JSON이 아닐 수도 있으니까
             setExpeditionChecked({
                 isExpeditionChecked: false,
                 isChecking: false,
                 isError: true
             });
-            throw new Error('API 실패');
+            return;
+            //throw new Error('API 실패');
         }
         const data: Array<any> = await lostarkRes.json();
         if (data.length === 0) {
@@ -209,7 +260,8 @@ export function useSignupHandlers(
         onValueChangeID: (value: string) => updateMemberData({ id: value }),
         onValueChangeCharacter: (value: string) => updateMemberData({ character: value }),
         onValueChangePassword: (value: string) => updateMemberData({ password: value }),
-        onValueChangePasswordCheck: (value: string) => updateMemberData({ passwordCheck : value })
+        onValueChangePasswordCheck: (value: string) => updateMemberData({ passwordCheck : value }),
+        onValueChangeEmail: (value: string) => updateMemberData({ email: value })
     }
 }
 
@@ -219,7 +271,9 @@ export function useOnClickSignup(
     isDuplicateChecked: boolean,
     isExpeditionChecked: boolean,
     isPrivacyPolicyAgreed: boolean,
-    expedition: Character[]
+    isDuplicatedEmail: boolean,
+    expedition: Character[],
+    setLoading: SetStateFn<boolean>
 ) {
     const router = useRouter();
 
@@ -250,10 +304,26 @@ export function useOnClickSignup(
             });
             return true;
         } 
+        if (!isDuplicatedEmail) {
+            addToast({
+                title: "이메일 중복 확인 불가",
+                description: `이메일의 중복 확인을 하지 않았습니다. 확인 후 다시 시도해주세요.`,
+                color: "danger"
+            });
+            return true;
+        }
         if (!member.password.trim() || !member.passwordCheck.trim()) {
             addToast({
                 title: "입력값이 비어있음",
                 description: `\"비밀번호\" 혹은 \"비밀번호 확인\"의 입력란이 비어있습니다.`,
+                color: "danger"
+            });
+            return true;
+        } 
+        if (!member.email.trim()) {
+            addToast({
+                title: "입력값이 비어있음",
+                description: `\"이메일\"의 입력란이 비어있습니다.`,
                 color: "danger"
             });
             return true;
@@ -286,8 +356,12 @@ export function useOnClickSignup(
     }
 
     return async () => {
+        setLoading(true);
         // 입력 시 조건 확인 여부
-        if (isInputValid()) { return; }
+        if (isInputValid()) { 
+            setLoading(false);
+            return;
+         }
 
         const hashedPassword = await hashValue(member.password);
         const q = query(collection(firestore, 'members'), where("id", '==', member.id));
@@ -302,13 +376,13 @@ export function useOnClickSignup(
             return;
         }
 
-        const fakeEmail = `${member.id.trim()}@whitetusk.com`;
-        createUserWithEmailAndPassword(auth, fakeEmail, member.password.trim())
+        createUserWithEmailAndPassword(auth, member.email, member.password.trim())
             .then(async (userCredential) => {
                 const user = userCredential.user;
                 await addDoc(collection(firestore, 'members'), {
                     uid: user.uid,
                     id: member.id,
+                    email: member.email.trim(),
                     character: member.character,
                     password: hashedPassword,
                     expeditions: expedition
@@ -319,6 +393,7 @@ export function useOnClickSignup(
                     color: "success"
                 });
 
+                setLoading(false);
                 router.push('/login');
             })
             .catch((error) => {
@@ -327,6 +402,7 @@ export function useOnClickSignup(
                     description: `회원가입하는데 문제가 발생하였습니다.`,
                     color: "danger"
                 });
+                setLoading(false);
             })        
     }   
 }
