@@ -1512,3 +1512,9 @@ export async function handleApplyPositions(
         onClose();
     }
 }
+
+// 이미 추가된 캐릭터인지 확인 여부
+export function isHaveCharacter(checklist: CheckCharacter[], nickname: string) {
+    console.log(nickname);
+    return checklist.findIndex(item => item.nickname === nickname) !== -1;
+}
