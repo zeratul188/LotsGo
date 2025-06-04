@@ -29,5 +29,8 @@ module.exports = {
     },
   },
   darkMode: 'class',
-  plugins: [heroui()],
+  plugins: [
+    heroui(), 
+    require('tailwind-scrollbar-hide').default,
+  ],
 };

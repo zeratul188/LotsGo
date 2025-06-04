@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Boss } from "../api/checklist/boss/route";
-import { Calendar, formatKoreanDate, Guild, handleSubmitCalendar, initialWeekData } from "./calendarFeat";
+import { Calendar, formatDatetoString, formatHours, formatKoreanDate, getCalendarByWeek, Guild, handleEditMemo, handleSubmitCalendar, initialWeekData } from "./calendarFeat";
 import clsx from "clsx";
 import { 
     Button, 
@@ -15,7 +15,10 @@ import {
     Checkbox,
     DatePicker,
     ModalFooter,
-    Textarea
+    Textarea,
+    Popover,
+    PopoverTrigger,
+    PopoverContent
 } from "@heroui/react";
 import {DateValue, getLocalTimeZone, now} from "@internationalized/date";
 import { getWeekContents, getWeekDifficultys } from "../checklist/checklistFeat";
@@ -42,6 +45,10 @@ export type WeekBox = {
     date: Date,
     calendar: Calendar[]
 }
+export type ShowWeek = {
+    type: string,
+    calendar: Calendar
+}
 type WeekComponentProps = {
     works: Calendar[],
     guild: Guild | null,
@@ -61,6 +68,8 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild }: Week
     const [isEtc, setEtc] = useState(false);
     const [memo, setMemo] = useState('');
     const [isLoadingButton, setLoadingButton] = useState(false);
+    const [editMemo, setEditMemo] = useState('');
+    const [isLoadingMemo, setLoadingMemo] = useState(false);
 
     useEffect(() => {
         initialWeekData(works, guild, setWeeks);
@@ -80,10 +89,10 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild }: Week
                     </Button>
                 </div>
                 <Divider className="mb-4 block sm:hidden"/>
-                <div className="h-[300px] hidden lg1200:grid grid-cols-7 gap-2">
+                <div className="h-full hidden lg1200:grid grid-cols-7 gap-2">
                     {weeks.map((week, index) => (
                         <div key={index} className={clsx(
-                            index > 0 ? 'border-l-1 border-gray-100 dark:border-[#222222] pl-3' : ''
+                            index > 0 ? 'border-l-1 border-gray-200 dark:border-[#2a2a2a] pl-3' : ''
                         )}>
                             <Chip
                                 size="sm"
@@ -93,6 +102,167 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild }: Week
                                 className="min-w-full text-center">
                                 {formatKoreanDate(week.date)}
                             </Chip>
+                            <div className="w-full max-h-[260px] h-[260px] overflow-y-scroll scrollbar-hide mt-2">
+                                {getCalendarByWeek(week, works, guild).map((box, idx) => (
+                                    <Popover 
+                                        key={idx} 
+                                        radius="sm" 
+                                        showArrow
+                                        onOpenChange={() => {
+                                            setEditMemo(box.calendar.memo);
+                                        }}>
+                                        <PopoverTrigger>
+                                            <div className={clsx(
+                                                "rounded-md border-2 pl-2 pr-2 pt-1 pb-1 mb-2 cursor-pointer",
+                                                box.type === 'work' ? 'border-[#75a0d1] dark:border-[#298cfd] hover:bg-[#f0f1f3] hover:dark:bg-[#242f3b]' : 'border-[#b575c2] dark:border-[#c129fd] hover:bg-[#ece7ec] hover:dark:bg-[#301f36]'
+                                            )}>
+                                                <div className="w-full flex gap-2 items-center mb-1">
+                                                    <div className={clsx(
+                                                        "w-[12px] h-[12px] rounded-full",
+                                                        box.type === 'work' ? 'bg-[#0055b6] dark:bg-[#298cfd]' : 'bg-[#9800b6] dark:bg-[#c129fd]'
+                                                    )}/>
+                                                    <p className="text-[9pt] fadedtext grow">{box.type === 'work' ? '개인 일정' : '길드 일정'}</p>
+                                                    <p className="truncate text-[9pt] fadedtext">{formatHours(box.calendar.date)}</p>
+                                                </div>
+                                                <p className="w-full truncate text-sm">{box.calendar.name}</p>
+                                            </div>
+                                        </PopoverTrigger>
+                                        <PopoverContent>
+                                            <div className="w-[300px]">
+                                                <div className="w-full flex gap-2 items-center mb-2 mt-2">
+                                                    <div className={clsx(
+                                                        "w-[16px] h-[16px] rounded-full",
+                                                        box.type === 'work' ? 'bg-[#0055b6] dark:bg-[#298cfd]' : 'bg-[#9800b6] dark:bg-[#c129fd]'
+                                                    )}/>
+                                                    <p className="text-[12pt] fadedtext">{box.type === 'work' ? '개인 일정' : '길드 일정'}</p>
+                                                </div>
+                                                <Divider className="mb-1"/>
+                                                <p className="text-sm fadedtext">제목</p>
+                                                <p className="truncate mb-2">{box.calendar.name}</p>
+                                                <div className={clsx(
+                                                    box.calendar.raidname !== '' && box.calendar.difficulty !== '' ? 'block' : 'hidden'
+                                                )}>
+                                                    <p className="text-sm fadedtext">콘텐츠</p>
+                                                    <p className="truncate mb-2">{box.calendar.raidname} {box.calendar.difficulty}</p>
+                                                </div>
+                                                <p className="text-sm fadedtext">날짜 및 시간</p>
+                                                <p className="truncate mb-2">{formatDatetoString(box.calendar.date)}</p>
+                                                <Textarea
+                                                    label="메모"
+                                                    radius="sm"
+                                                    minRows={3}
+                                                    value={editMemo}
+                                                    placeholder="메모를 입력하세요."
+                                                    onValueChange={setEditMemo}/>
+                                                <Divider className="mb-4 mt-4"/>
+                                                <div className="w-full grid grid-cols-2 gap-2 mb-2">
+                                                    <Button
+                                                        color="success"
+                                                        size="sm"
+                                                        isLoading={isLoadingMemo}
+                                                        onPress={async () => {
+                                                            await handleEditMemo(editMemo, idx, box.type !== 'work', setLoadingMemo, guild, works, box.calendar, setWorks, setGuild);
+                                                        }}>
+                                                        메모 수정
+                                                    </Button>
+                                                    <Button
+                                                        color="danger"
+                                                        size="sm">
+                                                        삭제
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </PopoverContent>
+                                    </Popover>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <div className="w-full h-full flex lg1200:hidden gap-2 overflow-x-scroll scrollbar-hide">
+                    {weeks.map((week, index) => (
+                        <div key={index} className={clsx(
+                            "min-w-[180px]",
+                            index > 0 ? 'border-l-1 border-gray-200 dark:border-[#2a2a2a] pl-3' : ''
+                        )}>
+                            <Chip
+                                size="sm"
+                                variant="flat"
+                                radius="sm"
+                                color="primary"
+                                className="min-w-full text-center">
+                                {formatKoreanDate(week.date)}
+                            </Chip>
+                            <div className="w-full max-h-[260px] h-[260px] overflow-y-scroll scrollbar-hide mt-2">
+                                {getCalendarByWeek(week, works, guild).map((box, idx) => (
+                                    <Popover 
+                                        key={idx} 
+                                        radius="sm" 
+                                        showArrow
+                                        onOpenChange={() => {
+                                            setEditMemo(box.calendar.memo);
+                                        }}>
+                                        <PopoverTrigger>
+                                            <div className={clsx(
+                                                "rounded-md border-2 pl-2 pr-2 pt-1 pb-1 mb-2 cursor-pointer",
+                                                box.type === 'work' ? 'border-[#75a0d1] dark:border-[#298cfd] hover:bg-[#f0f1f3] hover:dark:bg-[#242f3b]' : 'border-[#b575c2] dark:border-[#c129fd] hover:bg-[#ece7ec] hover:dark:bg-[#301f36]'
+                                            )}>
+                                                <div className="w-full flex gap-2 items-center mb-1">
+                                                    <div className={clsx(
+                                                        "w-[12px] h-[12px] rounded-full",
+                                                        box.type === 'work' ? 'bg-[#0055b6] dark:bg-[#298cfd]' : 'bg-[#9800b6] dark:bg-[#c129fd]'
+                                                    )}/>
+                                                    <p className="text-[9pt] fadedtext grow">{box.type === 'work' ? '개인 일정' : '길드 일정'}</p>
+                                                    <p className="truncate text-[9pt] fadedtext">{formatHours(box.calendar.date)}</p>
+                                                </div>
+                                                <p className="w-full truncate text-sm">{box.calendar.name}</p>
+                                            </div>
+                                        </PopoverTrigger>
+                                        <PopoverContent>
+                                            <div className="w-[300px]">
+                                                <div className="w-full flex gap-2 items-center mb-2 mt-2">
+                                                    <div className={clsx(
+                                                        "w-[16px] h-[16px] rounded-full",
+                                                        box.type === 'work' ? 'bg-[#0055b6] dark:bg-[#298cfd]' : 'bg-[#9800b6] dark:bg-[#c129fd]'
+                                                    )}/>
+                                                    <p className="text-[12pt] fadedtext">{box.type === 'work' ? '개인 일정' : '길드 일정'}</p>
+                                                </div>
+                                                <Divider className="mb-1"/>
+                                                <p className="text-sm fadedtext">제목</p>
+                                                <p className="truncate mb-2">{box.calendar.name}</p>
+                                                <div className={clsx(
+                                                    box.calendar.raidname !== '' && box.calendar.difficulty !== '' ? 'block' : 'hidden'
+                                                )}>
+                                                    <p className="text-sm fadedtext">콘텐츠</p>
+                                                    <p className="truncate mb-2">{box.calendar.raidname} {box.calendar.difficulty}</p>
+                                                </div>
+                                                <p className="text-sm fadedtext">날짜 및 시간</p>
+                                                <p className="truncate mb-2">{formatDatetoString(box.calendar.date)}</p>
+                                                <Textarea
+                                                    label="메모"
+                                                    radius="sm"
+                                                    minRows={3}
+                                                    value={editMemo}
+                                                    placeholder="메모를 입력하세요."
+                                                    onValueChange={setEditMemo}/>
+                                                <Divider className="mb-4 mt-4"/>
+                                                <div className="w-full grid grid-cols-2 gap-2 mb-2">
+                                                    <Button
+                                                        color="success"
+                                                        size="sm">
+                                                        메모 수정
+                                                    </Button>
+                                                    <Button
+                                                        color="danger"
+                                                        size="sm">
+                                                        삭제
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </PopoverContent>
+                                    </Popover>
+                                ))}
+                            </div>
                         </div>
                     ))}
                 </div>

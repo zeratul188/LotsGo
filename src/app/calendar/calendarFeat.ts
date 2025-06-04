@@ -4,7 +4,7 @@ import { firestore } from "@/utiils/firebase";
 import { SetStateFn } from "@/utiils/utils";
 import { Boss } from "../api/checklist/boss/route";
 import { addToast, Selection } from "@heroui/react";
-import { WeekBox } from "./CalendarForm";
+import { ShowWeek, WeekBox } from "./CalendarForm";
 import { DateValue, getLocalTimeZone } from "@internationalized/date";
 import { getWeekContents, getWeekDifficultys } from "../checklist/checklistFeat";
 
@@ -169,6 +169,13 @@ export function formatKoreanDate(date: Date): string {
     return `${dayName} (${month}월 ${day}일)`;
 }
 
+// 시간 출력 함수
+export function formatHours(date: Date): string {
+    const hour = (date.getHours()).toString().padStart(2, '0');
+    const miniute = (date.getMinutes()).toString().padStart(2, '0');
+    return `${hour}시 ${miniute}분`;
+}
+
 // 일정을 등록하는 기능
 export async function handleSubmitCalendar(
     title: string,
@@ -318,4 +325,114 @@ export async function handleSubmitCalendar(
             setLoadingButton(false);
         }
     }
+}
+
+// 주마다 해당되는 일정의 배열을 반환하는 함수
+export function getCalendarByWeek(weekbox: WeekBox, calendars: Calendar[], guild: Guild | null): ShowWeek[] {
+    const works: ShowWeek[] = [];
+    for (const calendar of calendars) {
+        if (isSameDate(weekbox.date, calendar.date)) {
+            works.push({
+                type: 'work',
+                calendar: calendar
+            });
+        }
+    }
+    if (guild) {
+        for (const calendar of guild.calendars) {
+        if (isSameDate(weekbox.date, calendar.date)) {
+            works.push({
+                type: 'guild',
+                calendar: calendar
+            });
+        }
+    }
+    }
+    return works;
+}
+
+// 날짜 출력 변환 함수
+export function formatDatetoString(date: Date): string {
+    const year = (date.getFullYear()).toString().padStart(4, '0');
+    const month = (date.getMonth()+1).toString().padStart(2, '0');
+    const day = (date.getDate()).toString().padStart(2, '0');
+    const hour = (date.getHours()).toString().padStart(2, '0');
+    const miniute = (date.getMinutes()).toString().padStart(2, '0');
+    return `${year}년 ${month}월 ${day}일 ${hour}시 ${miniute}분`;
+}
+
+// 메모 수정 클릭 이벤트 함수
+export async function handleEditMemo(
+    editMemo: string, 
+    index: number, 
+    isTypeGuild: boolean,
+    setLoadingMemo: SetStateFn<boolean>,
+    guild: Guild | null,
+    works: Calendar[],
+    selectCalendar: Calendar,
+    setWorks: SetStateFn<Calendar[]>,
+    setGuild: SetStateFn<Guild | null>
+) {
+    setLoadingMemo(true);
+    if (isTypeGuild) {
+        const guildName = await getGuildName();
+        if (guildName) {
+            const calenders: Calendar[] = guild ? guild.calendars.map(item => ({...item})) : [];
+            const findIndex = calenders.findIndex(calendar => calendar.name === selectCalendar.name);
+            if (index !== -1) {
+                calenders[findIndex].memo = editMemo;
+                const q = query(collection(firestore, 'guilds'), where("name", "==", guildName), limit(1));
+                const snapshot = await getDocs(q);
+                if (!snapshot.empty) {
+                    const targetDoc = snapshot.docs[0];
+                    const docRef = doc(firestore, "guilds", targetDoc.id);
+                    await updateDoc(docRef, {
+                        calenders: calenders
+                    });
+                    if (guild) {
+                        const newGuild: Guild = structuredClone(guild);
+                        newGuild.calendars = calenders;
+                        setGuild(newGuild);
+                        addToast({
+                            title: "수정 완료",
+                            description: `메모가 정상적으로 수정되었습니다.`,
+                            color: "success"
+                        });
+                        setLoadingMemo(false);
+                        return;
+                    }
+                }
+            }
+        }
+    } else {
+        const userStr = localStorage.getItem('user');
+        const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+        const id = storedUser.id;
+        const calendars: Calendar[] = works.map(item => ({...item}));
+        const findIndex = calendars.findIndex(calendar => calendar.name === selectCalendar.name);
+        calendars[findIndex].memo = editMemo;
+        const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+            const targetDoc = snapshot.docs[0];
+            const docRef = doc(firestore, "members", targetDoc.id);
+            await updateDoc(docRef, {
+                calendars: calendars
+            });
+            setWorks(calendars);
+            addToast({
+                title: "수정 완료",
+                description: `메모가 정상적으로 수정되었습니다.`,
+                color: "success"
+            });
+            setLoadingMemo(false);
+                    return;
+        }
+    }
+    addToast({
+        title: "데이터 로드 오류",
+        description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+        color: "danger"
+    });
+    setLoadingMemo(false);
 }
