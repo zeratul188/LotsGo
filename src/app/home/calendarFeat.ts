@@ -71,10 +71,10 @@ export async function loadCalendar(
             setIslands(islands);
         }
     } else {
-        if (gamecontentLostarkRes.status === 503) {
+        if (gamecontentLostarkRes.status === 500) {
             addToast({
                 title: "서버 점검",
-                description: `로스트아크가 점검중입니다. 점검 이후 시도해주세요.`,
+                description: `로스트아크가 점검중입니다.`,
                 color: "danger"
             });
         } else {

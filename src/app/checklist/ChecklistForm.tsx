@@ -64,6 +64,7 @@ import {
     handleWeekListCheck, 
     isBiweeklyContent, 
     isCheckBiweeklyContent, 
+    isHaveCharacter, 
     SearchCharacter, 
     useClickLoadCharacters, 
     useClickUpdatedCharacters, 
@@ -313,7 +314,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch }: ChecklistStatue
                                             <div key={index} className="w-full min-h-[64px] mb-1">
                                                 <Checkbox
                                                     aria-label={item.nickname}
-                                                    isDisabled={(MAX_CHARACTER_COUNT <= checklist.length + getCheckedResult(result)) && !item.isCheck}
+                                                    isDisabled={((MAX_CHARACTER_COUNT <= checklist.length + getCheckedResult(result)) && !item.isCheck) || isHaveCharacter(checklist, item.nickname)}
                                                     classNames={{
                                                         base: cn(
                                                             "w-full max-w-full bg-content1",

@@ -21,8 +21,8 @@ const menuItems: Array<{item: string, link: string}> = [
         link: '/checklist'
     },
     {
-        item: "파티 찾기",
-        link: '#'
+        item: "일정",
+        link: '/calendar'
     },
     {
         item: "전투정보실",
@@ -116,8 +116,8 @@ export function NavContents() {
                 </Link>
             </NavbarItem>
             <NavbarItem>
-                <Link color="foreground" href="#">
-                    파티 찾기
+                <Link color="foreground" href="/calendar">
+                    일정
                 </Link>
             </NavbarItem>
             <NavbarItem>
