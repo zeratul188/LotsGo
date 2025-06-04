@@ -1,6 +1,18 @@
 import { useEffect, useState } from "react";
 import { Boss } from "../api/checklist/boss/route";
-import { Calendar, formatDatetoString, formatHours, formatKoreanDate, getCalendarByWeek, Guild, handleEditMemo, handleRemoveCalendar, handleSubmitCalendar, initialWeekData } from "./calendarFeat";
+import { 
+    Calendar, 
+    formatDatetoString, 
+    formatHours, 
+    formatKoreanDate, 
+    getCalendarByWeek, 
+    Guild, 
+    handleEditMemo, 
+    handleRemoveCalendar, 
+    handleSubmitCalendar, 
+    initialWeekData, 
+    isTodayDate 
+} from "./calendarFeat";
 import clsx from "clsx";
 import { 
     Button, 
@@ -103,7 +115,7 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild }: Week
                                 size="sm"
                                 variant="flat"
                                 radius="sm"
-                                color="primary"
+                                color={isTodayDate(week.date) ? "success" : "primary"}
                                 className="min-w-full text-center">
                                 {formatKoreanDate(week.date)}
                             </Chip>
@@ -198,7 +210,7 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild }: Week
                                 size="sm"
                                 variant="flat"
                                 radius="sm"
-                                color="primary"
+                                color={isTodayDate(week.date) ? "success" : "primary"}
                                 className="min-w-full text-center">
                                 {formatKoreanDate(week.date)}
                             </Chip>
@@ -258,12 +270,20 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild }: Week
                                                 <div className="w-full grid grid-cols-2 gap-2 mb-2">
                                                     <Button
                                                         color="success"
-                                                        size="sm">
+                                                        size="sm"
+                                                        isLoading={isLoadingMemo}
+                                                        onPress={async () => {
+                                                            await handleEditMemo(editMemo, box.type !== 'work', setLoadingMemo, guild, works, box.calendar, setWorks, setGuild);
+                                                        }}>
                                                         메모 수정
                                                     </Button>
                                                     <Button
                                                         color="danger"
-                                                        size="sm">
+                                                        size="sm"
+                                                        isLoading={isLoadingDelete}
+                                                        onPress={async () => {
+                                                            await handleRemoveCalendar(box.type !== 'work', setLoadingDelete, guild, works, box.calendar, setWorks, setGuild);
+                                                        }}>
                                                         삭제
                                                     </Button>
                                                 </div>
@@ -389,6 +409,7 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild }: Week
                                     fullWidth
                                     color="primary"
                                     size="lg"
+                                    radius="sm"
                                     isLoading={isLoadingButton}
                                     onPress={async () => {
                                         await handleSubmitCalendar(title, raid, difficulty, selectDate, isTypeGuild, isEtc, memo, onClose, bosses, setLoadingButton, works, setWorks, guild, setGuild);
@@ -402,4 +423,65 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild }: Week
             </Modal>
         </>
     )
+}
+
+export default function TestComponent() {
+  const today = new Date();
+  const [year, setYear] = useState(today.getFullYear());
+  const [month, setMonth] = useState(today.getMonth());
+
+  const days = ['일', '월', '화', '수', '목', '금', '토'];
+  const dates = getCalendarDates(year, month);
+
+  return (
+    <div className="max-w-md mx-auto">
+      <div className="flex justify-between items-center mb-2">
+        <button onClick={() => setMonth(month - 1)}>이전</button>
+        <h2>{year}년 {month + 1}월</h2>
+        <button onClick={() => setMonth(month + 1)}>다음</button>
+      </div>
+
+      <div className="grid grid-cols-7 text-center font-bold">
+        {days.map(day => <div key={day}>{day}</div>)}
+      </div>
+
+      <div className="grid grid-cols-7 text-center">
+        {dates.map((date, index) => (
+          <div key={index} className={`p-2 ${date.getMonth() !== month ? 'text-gray-400' : ''}`}>
+            {date.getDate()}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function getCalendarDates(year: number, month: number): Date[] {
+  const dates: Date[] = [];
+
+  const firstDayOfMonth = new Date(year, month, 1);
+  const lastDayOfMonth = new Date(year, month + 1, 0);
+
+  const startDay = firstDayOfMonth.getDay(); // 요일 (0: 일, 6: 토)
+  const totalDays = lastDayOfMonth.getDate();
+
+  // 이전 달에서 채워야 할 빈 칸
+  for (let i = 0; i < startDay; i++) {
+    dates.push(new Date(year, month, i - startDay + 1)); // 이전 달 날짜
+  }
+
+  // 이번 달 날짜
+  for (let i = 1; i <= totalDays; i++) {
+    dates.push(new Date(year, month, i));
+  }
+
+  // 다음 달까지 채우기 (총 6줄 = 42칸 기준)
+  while (dates.length < 42) {
+    const lastDate = dates[dates.length - 1];
+    const nextDate = new Date(lastDate);
+    nextDate.setDate(lastDate.getDate() + 1);
+    dates.push(nextDate);
+  }
+
+  return dates;
 }

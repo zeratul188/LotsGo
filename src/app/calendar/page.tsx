@@ -1,6 +1,6 @@
 'use client'
 import { useEffect } from "react";
-import { useCalendarForm, WeekComponent } from "./CalendarForm"
+import TestComponent, { useCalendarForm, WeekComponent } from "./CalendarForm"
 import { addToast } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { loadBosses, loadGuild, loadWorks, removeAutoCalendarsByGuild, removeAutoCalendarsByWorks } from "./calendarFeat";
