@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Boss } from "../api/checklist/boss/route";
-import { Calendar, formatDatetoString, formatHours, formatKoreanDate, getCalendarByWeek, Guild, handleEditMemo, handleSubmitCalendar, initialWeekData } from "./calendarFeat";
+import { Calendar, formatDatetoString, formatHours, formatKoreanDate, getCalendarByWeek, Guild, handleEditMemo, handleRemoveCalendar, handleSubmitCalendar, initialWeekData } from "./calendarFeat";
 import clsx from "clsx";
 import { 
     Button, 
@@ -74,6 +74,7 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild }: Week
     const [isLoadingButton, setLoadingButton] = useState(false);
     const [editMemo, setEditMemo] = useState('');
     const [isLoadingMemo, setLoadingMemo] = useState(false);
+    const [isLoadingDelete, setLoadingDelete] = useState(false);
 
     useEffect(() => {
         initialWeekData(works, guild, setWeeks);
@@ -165,13 +166,17 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild }: Week
                                                         size="sm"
                                                         isLoading={isLoadingMemo}
                                                         onPress={async () => {
-                                                            await handleEditMemo(editMemo, idx, box.type !== 'work', setLoadingMemo, guild, works, box.calendar, setWorks, setGuild);
+                                                            await handleEditMemo(editMemo, box.type !== 'work', setLoadingMemo, guild, works, box.calendar, setWorks, setGuild);
                                                         }}>
                                                         메모 수정
                                                     </Button>
                                                     <Button
                                                         color="danger"
-                                                        size="sm">
+                                                        size="sm"
+                                                        isLoading={isLoadingDelete}
+                                                        onPress={async () => {
+                                                            await handleRemoveCalendar(box.type !== 'work', setLoadingDelete, guild, works, box.calendar, setWorks, setGuild);
+                                                        }}>
                                                         삭제
                                                     </Button>
                                                 </div>

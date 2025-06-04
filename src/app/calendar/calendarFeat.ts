@@ -364,7 +364,6 @@ export function formatDatetoString(date: Date): string {
 // 메모 수정 클릭 이벤트 함수
 export async function handleEditMemo(
     editMemo: string, 
-    index: number, 
     isTypeGuild: boolean,
     setLoadingMemo: SetStateFn<boolean>,
     guild: Guild | null,
@@ -378,8 +377,8 @@ export async function handleEditMemo(
         const guildName = await getGuildName();
         if (guildName) {
             const calenders: Calendar[] = guild ? guild.calendars.map(item => ({...item})) : [];
-            const findIndex = calenders.findIndex(calendar => calendar.name === selectCalendar.name);
-            if (index !== -1) {
+            const findIndex = calenders.findIndex(calendar => (calendar.name === selectCalendar.name) && (calendar.date.getTime() === selectCalendar.date.getTime()));
+            if (findIndex !== -1) {
                 calenders[findIndex].memo = editMemo;
                 const q = query(collection(firestore, 'guilds'), where("name", "==", guildName), limit(1));
                 const snapshot = await getDocs(q);
@@ -387,7 +386,7 @@ export async function handleEditMemo(
                     const targetDoc = snapshot.docs[0];
                     const docRef = doc(firestore, "guilds", targetDoc.id);
                     await updateDoc(docRef, {
-                        calenders: calenders
+                        calendars: calenders
                     });
                     if (guild) {
                         const newGuild: Guild = structuredClone(guild);
@@ -409,24 +408,26 @@ export async function handleEditMemo(
         const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
         const id = storedUser.id;
         const calendars: Calendar[] = works.map(item => ({...item}));
-        const findIndex = calendars.findIndex(calendar => calendar.name === selectCalendar.name);
-        calendars[findIndex].memo = editMemo;
-        const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-            const targetDoc = snapshot.docs[0];
-            const docRef = doc(firestore, "members", targetDoc.id);
-            await updateDoc(docRef, {
-                calendars: calendars
-            });
-            setWorks(calendars);
-            addToast({
-                title: "수정 완료",
-                description: `메모가 정상적으로 수정되었습니다.`,
-                color: "success"
-            });
-            setLoadingMemo(false);
-                    return;
+        const findIndex = calendars.findIndex(calendar => (calendar.name === selectCalendar.name) && (calendar.date.getTime() === selectCalendar.date.getTime()));
+        if (findIndex !== -1) {
+            calendars[findIndex].memo = editMemo;
+            const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));
+            const snapshot = await getDocs(q);
+            if (!snapshot.empty) {
+                const targetDoc = snapshot.docs[0];
+                const docRef = doc(firestore, "members", targetDoc.id);
+                await updateDoc(docRef, {
+                    calendars: calendars
+                });
+                setWorks(calendars);
+                addToast({
+                    title: "수정 완료",
+                    description: `메모가 정상적으로 수정되었습니다.`,
+                    color: "success"
+                });
+                setLoadingMemo(false);
+                        return;
+            }
         }
     }
     addToast({
@@ -491,5 +492,76 @@ export async function removeAutoCalendarsByWorks(
             calendars: calendars
         });
         setWorks(calendars);
+    }
+}
+
+// 일정 삭제 버튼 이벤트 함수
+export async function handleRemoveCalendar(
+    isTypeGuild: boolean,
+    setLoadingDelete: SetStateFn<boolean>,
+    guild: Guild | null,
+    works: Calendar[],
+    selectCalendar: Calendar,
+    setWorks: SetStateFn<Calendar[]>,
+    setGuild: SetStateFn<Guild | null>
+) {
+    setLoadingDelete(true);
+    if (isTypeGuild) {
+        const guildName = await getGuildName();
+        if (guildName && guild) {
+            const calenders: Calendar[] = guild ? guild.calendars.map(item => ({...item})) : [];
+            const findIndex = calenders.findIndex(calendar => (calendar.name === selectCalendar.name) && (calendar.date.getTime() === selectCalendar.date.getTime()));
+            if (findIndex !== -1) {
+                const newGuildCalendars = calenders.filter((_, i) => i !== findIndex);
+                const q = query(collection(firestore, 'guilds'), where("name", "==", guildName), limit(1));
+                const snapshot = await getDocs(q);
+                if (!snapshot.empty) {
+                    const targetDoc = snapshot.docs[0];
+                    const docRef = doc(firestore, "guilds", targetDoc.id);
+                    await updateDoc(docRef, {
+                        calendars: newGuildCalendars
+                    });
+                    if (guild) {
+                        const newGuild: Guild = structuredClone(guild);
+                        newGuild.calendars = newGuildCalendars;
+                        setGuild(newGuild);
+                        addToast({
+                            title: "삭제 완료",
+                            description: `일정이 정상적으로 삭제제되었습니다.`,
+                            color: "success"
+                        });
+                        setLoadingDelete(false);
+                        return;
+                    }
+                }
+            }
+        } 
+    } else {
+        const userStr = localStorage.getItem('user');
+        const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+        const id = storedUser.id;
+        const calendars: Calendar[] = works.map(item => ({...item}));
+        const findIndex = calendars.findIndex(calendar => (calendar.name === selectCalendar.name) && (calendar.date.getTime() === selectCalendar.date.getTime()));
+        console.log(`finded index : ${findIndex}`);
+        if (findIndex !== -1) {
+            const newCalendars = calendars.filter((_, i) => i !== findIndex);
+            const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));
+            const snapshot = await getDocs(q);
+            if (!snapshot.empty) {
+                const targetDoc = snapshot.docs[0];
+                const docRef = doc(firestore, "members", targetDoc.id);
+                await updateDoc(docRef, {
+                    calendars: newCalendars
+                });
+                setWorks(newCalendars);
+                addToast({
+                    title: "삭제 완료",
+                    description: `일정이 정상적으로 삭제제되었습니다.`,
+                    color: "success"
+                });
+                setLoadingDelete(false);
+                return;
+            }
+        }
     }
 }
