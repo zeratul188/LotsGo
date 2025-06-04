@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useCalendarForm, WeekComponent } from "./CalendarForm"
 import { addToast } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import { loadBosses, loadGuild, loadWorks } from "./calendarFeat";
+import { loadBosses, loadGuild, loadWorks, removeAutoCalendarsByGuild, removeAutoCalendarsByWorks } from "./calendarFeat";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { LoadingComponent } from "../UtilsCompnents";
 
@@ -41,7 +41,6 @@ export default function Calendar() {
                     const bossPromise = loadBosses(calendarForm.setBosses);
                     const workPromise = loadWorks(calendarForm.setWorks);
                     await Promise.all([guildPromise, bossPromise, workPromise]);
-                    // TODO 날짜가 지난 데이터는 삭제 (길드 + 개인 데이터 포함)
                     calendarForm.setLoading(false);
                 }
                 loadData();
@@ -49,6 +48,26 @@ export default function Calendar() {
         });
         return () => unsubscribe();
     }, []);
+
+    useEffect(() => {
+        const settingData = async () => {
+            await removeAutoCalendarsByWorks(calendarForm.works, calendarForm.setWorks);
+            calendarForm.setResetWorks(true);
+        }
+        if (!calendarForm.resetWorks) {
+            settingData();
+        }
+    }, [calendarForm.works]);
+
+    useEffect(() => {
+        const settingData = async () => {
+            await removeAutoCalendarsByGuild(calendarForm.guild, calendarForm.setGuild);
+            calendarForm.setResetGuild(true);
+        }
+        if (!calendarForm.resetGuild && calendarForm.guild) {
+            settingData();
+        }
+    }, [calendarForm.guild]);
 
     if (calendarForm.isLoading) return <LoadingComponent heightStyle="min-h-[calc(100vh-65px)]"/>
 

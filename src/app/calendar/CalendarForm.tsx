@@ -31,12 +31,16 @@ export function useCalendarForm() {
     const [works, setWorks] = useState<Calendar[]>([]);
     const [bosses, setBosses] = useState<Boss[]>([]);
     const [isLoading, setLoading] = useState(true);
+    const [resetWorks, setResetWorks] = useState(false);
+    const [resetGuild, setResetGuild] = useState(false);
 
     return {
         guild, setGuild,
         bosses, setBosses,
         isLoading, setLoading,
-        works, setWorks
+        works, setWorks,
+        resetWorks, setResetWorks,
+        resetGuild, setResetGuild
     }
 }
 

@@ -436,3 +436,60 @@ export async function handleEditMemo(
     });
     setLoadingMemo(false);
 }
+
+// 일정이 지난 일정 자동 삭제하기 - 길드 일정
+export async function removeAutoCalendarsByGuild(
+    guild: Guild | null,
+    setGuild: SetStateFn<Guild | null>
+) {
+    const now = new Date();
+    const guildName = await getGuildName();
+    if (guildName && guild) {
+        const guildCalendars: Calendar[] = [];
+        for (const calendar of guild.calendars) {
+            if (calendar.date.getTime() >= now.getTime()) {
+                console.log(`added`);
+                guildCalendars.push(calendar);
+            }
+        }
+        const q = query(collection(firestore, 'guilds'), where("name", "==", guildName), limit(1));
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+            const targetDoc = snapshot.docs[0];
+            const docRef = doc(firestore, "guilds", targetDoc.id);
+            await updateDoc(docRef, {
+                calendars: guildCalendars
+            });
+            const newGuild: Guild = structuredClone(guild);
+            newGuild.calendars = guildCalendars;
+            setGuild(newGuild);
+        }
+    }
+}
+
+// 일정이 지난 일정 자동 삭제하기 - 개인 일정
+export async function removeAutoCalendarsByWorks(
+    works: Calendar[],
+    setWorks: SetStateFn<Calendar[]>
+) {
+    const calendars: Calendar[] = [];
+    const now = new Date();
+    for (const calendar of works) {
+        if (calendar.date.getTime() >= now.getTime()) {
+            calendars.push(calendar);
+        }
+    }
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));
+    const snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+        const targetDoc = snapshot.docs[0];
+        const docRef = doc(firestore, "members", targetDoc.id);
+        await updateDoc(docRef, {
+            calendars: calendars
+        });
+        setWorks(calendars);
+    }
+}
