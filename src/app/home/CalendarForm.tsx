@@ -35,7 +35,7 @@ type EventComponentProps = {
     events: LostarkEvent[]
 }
 function EventComponent({ events }: EventComponentProps) {
-    const getStringByDate = (date: Date) => `${date.getFullYear()}년 ${date.getMonth()}월 ${date.getDate()}일`;
+    const getStringByDate = (date: Date) => `${date.getFullYear()}년 ${date.getMonth()+1}월 ${date.getDate()}일`;
     return (
         <div className="col-span-2">
             <p className="text-2xl">로스트아크 이벤트</p>
@@ -75,7 +75,7 @@ type NoticeComponentProps = {
     notices: Notice[]
 }
 function NoticeComponent({ notices }: NoticeComponentProps) {
-    const getStringByDate = (date: Date) => `${date.getFullYear()}년 ${date.getMonth()}월 ${date.getDate()}일`;
+    const getStringByDate = (date: Date) => `${date.getFullYear()}년 ${date.getMonth()+1}월 ${date.getDate()}일`;
     return (
         <div>
             <p className="text-2xl">로스트아크 공지사항</p>
