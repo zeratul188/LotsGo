@@ -43,7 +43,11 @@ export function TodoComponent() {
     const [weeks, setWeeks] = useState<WeekBox[]>([]);
 
     useEffect(() => {
-        todoForm.setLogin(isLogin());
+        if (isLogin()) {
+            todoForm.setLogin(isLogin());
+        } else {
+            todoForm.setLoading(false);
+        }
     }, []);
 
     useEffect(() => {
@@ -55,8 +59,6 @@ export function TodoComponent() {
         }
         if (todoForm.isLogin) {
             loadData();
-        } else {
-            todoForm.setLoading(false);
         }
     }, [todoForm.isLogin]);
 
