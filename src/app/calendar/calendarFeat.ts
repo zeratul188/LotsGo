@@ -340,13 +340,13 @@ export function getCalendarByWeek(weekbox: WeekBox, calendars: Calendar[], guild
     }
     if (guild) {
         for (const calendar of guild.calendars) {
-        if (isSameDate(weekbox.date, calendar.date)) {
-            works.push({
-                type: 'guild',
-                calendar: calendar
-            });
+            if (isSameDate(weekbox.date, calendar.date)) {
+                works.push({
+                    type: 'guild',
+                    calendar: calendar
+                });
+            }
         }
-    }
     }
     return works;
 }
@@ -574,4 +574,64 @@ export function isTodayDate(date: Date): boolean {
         date.getMonth() === today.getMonth() &&
         date.getDate() === today.getDate()
     );
+}
+
+export type TodoDate = {
+    works: Calendar[],
+    guildWorks: Calendar[],
+    date: Date
+}
+// 달력 표시 함수
+export function getCalendarDates(year: number, month: number): Date[] {
+  const dates: Date[] = [];
+
+  const firstDayOfMonth = new Date(year, month, 1);
+  const lastDayOfMonth = new Date(year, month + 1, 0);
+
+  const startDay = firstDayOfMonth.getDay(); // 요일 (0: 일, 6: 토)
+  const totalDays = lastDayOfMonth.getDate();
+
+  // 이전 달에서 채워야 할 빈 칸
+  for (let i = 0; i < startDay; i++) {
+    dates.push(new Date(year, month, i - startDay + 1)); // 이전 달 날짜
+  }
+
+  // 이번 달 날짜
+  for (let i = 1; i <= totalDays; i++) {
+    dates.push(new Date(year, month, i));
+  }
+
+  // 다음 달까지 채우기 (총 6줄 = 42칸 기준)
+  while (dates.length < 42) {
+    const lastDate = dates[dates.length - 1];
+    const nextDate = new Date(lastDate);
+    nextDate.setDate(lastDate.getDate() + 1);
+    dates.push(nextDate);
+  }
+
+  return dates;
+}
+
+// 당일인 일정 배열 반환 함수
+export function getCalendarByDay(date: Date, calendars: Calendar[], guild: Guild | null): ShowWeek[] {
+    const works: ShowWeek[] = [];
+    for (const calendar of calendars) {
+        if (isSameDate(date, calendar.date)) {
+            works.push({
+                type: 'work',
+                calendar: calendar
+            });
+        }
+    }
+    if (guild) {
+        for (const calendar of guild.calendars) {
+            if (isSameDate(date, calendar.date)) {
+                works.push({
+                    type: 'guild',
+                    calendar: calendar
+                });
+            }
+        }
+    }
+    return works;
 }
