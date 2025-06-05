@@ -1,11 +1,12 @@
 'use client'
 import { useEffect } from "react";
 import TestComponent, { useCalendarForm, WeekComponent } from "./CalendarForm"
-import { addToast } from "@heroui/react";
+import { addToast, Divider } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { loadBosses, loadGuild, loadWorks, removeAutoCalendarsByGuild, removeAutoCalendarsByWorks } from "./calendarFeat";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { LoadingComponent } from "../UtilsCompnents";
+import BigComponent from "./CalendarForm";
 
 export default function Calendar() {
     const calendarForm = useCalendarForm();
@@ -77,6 +78,12 @@ export default function Calendar() {
                 works={calendarForm.works} 
                 guild={calendarForm.guild} 
                 bosses={calendarForm.bosses}
+                setWorks={calendarForm.setWorks}
+                setGuild={calendarForm.setGuild}/>
+            <Divider className="mt-6 mb-4"/>
+            <BigComponent 
+                works={calendarForm.works} 
+                guild={calendarForm.guild}
                 setWorks={calendarForm.setWorks}
                 setGuild={calendarForm.setGuild}/>
         </div>
