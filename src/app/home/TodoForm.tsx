@@ -45,10 +45,6 @@ export function TodoComponent() {
     useEffect(() => {
         todoForm.setLogin(isLogin());
     }, []);
-    
-    useEffect(() => {
-        initialWeekData(todoForm.works, todoForm.guild, setWeeks);
-    }, [todoForm.works]);
 
     useEffect(() => {
         const loadData = async () => {
@@ -59,6 +55,8 @@ export function TodoComponent() {
         }
         if (todoForm.isLogin) {
             loadData();
+        } else {
+            todoForm.setLoading(false);
         }
     }, [todoForm.isLogin]);
 
@@ -67,8 +65,11 @@ export function TodoComponent() {
             await removeAutoCalendarsByWorks(todoForm.works, todoForm.setWorks);
             todoForm.setResetWorks(true);
         }
-        if (!todoForm.isResetWorks) {
+        if (!todoForm.isResetWorks && todoForm.isLogin) {
             settingData();
+        }
+        if (todoForm.isLogin) {
+            initialWeekData(todoForm.works, todoForm.guild, setWeeks);
         }
     }, [todoForm.works]);
 
@@ -77,7 +78,7 @@ export function TodoComponent() {
             await removeAutoCalendarsByGuild(todoForm.guild, todoForm.setGuild);
             todoForm.setResetGuild(true);
         }
-        if (!todoForm.isResetGuild && todoForm.guild) {
+        if (!todoForm.isResetGuild && todoForm.guild && todoForm.isLogin) {
             settingData();
         }
     }, [todoForm.guild]);
@@ -86,9 +87,13 @@ export function TodoComponent() {
         return <LoadingComponent heightStyle="min-h-[240px]"/>
     }
 
+    if (!todoForm.isLogin) {
+        return <></>;
+    }
+
     return (
         <div className="w-full mb-4">
-            <p className="text-2xl">이번 주 일정</p>
+            <p className="text-2xl mb-2">이번 주 일정</p>
             <Divider className="mb-4 block sm:hidden"/>
             <div className="h-full hidden lg1200:grid grid-cols-7 gap-2">
                     {weeks.map((week, index) => (

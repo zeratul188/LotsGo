@@ -5,13 +5,16 @@ import {
     formatDatetoString, 
     formatHours, 
     formatKoreanDate, 
+    getCalendarByDay, 
     getCalendarByWeek, 
+    getCalendarDates, 
     Guild, 
     handleEditMemo, 
     handleRemoveCalendar, 
     handleSubmitCalendar, 
     initialWeekData, 
-    isTodayDate 
+    isTodayDate, 
+    TodoDate
 } from "./calendarFeat";
 import clsx from "clsx";
 import { 
@@ -425,63 +428,241 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild }: Week
     )
 }
 
-export default function TestComponent() {
-  const today = new Date();
-  const [year, setYear] = useState(today.getFullYear());
-  const [month, setMonth] = useState(today.getMonth());
-
-  const days = ['일', '월', '화', '수', '목', '금', '토'];
-  const dates = getCalendarDates(year, month);
-
-  return (
-    <div className="max-w-md mx-auto">
-      <div className="flex justify-between items-center mb-2">
-        <button onClick={() => setMonth(month - 1)}>이전</button>
-        <h2>{year}년 {month + 1}월</h2>
-        <button onClick={() => setMonth(month + 1)}>다음</button>
-      </div>
-
-      <div className="grid grid-cols-7 text-center font-bold">
-        {days.map(day => <div key={day}>{day}</div>)}
-      </div>
-
-      <div className="grid grid-cols-7 text-center">
-        {dates.map((date, index) => (
-          <div key={index} className={`p-2 ${date.getMonth() !== month ? 'text-gray-400' : ''}`}>
-            {date.getDate()}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+// 큰 달력 컴포넌트
+type BigComponentProps = {
+    works: Calendar[],
+    guild: Guild | null,
+    setWorks: SetStateFn<Calendar[]>,
+    setGuild: SetStateFn<Guild | null>
 }
+export default function BigComponent({ works, guild, setWorks, setGuild }: BigComponentProps) {
+    const today = new Date();
+    const [year, setYear] = useState(today.getFullYear());
+    const [month, setMonth] = useState(today.getMonth());
+    const [editMemo, setEditMemo] = useState('');
+    const [isLoadingMemo, setLoadingMemo] = useState(false);
+    const [isLoadingDelete, setLoadingDelete] = useState(false);
 
-function getCalendarDates(year: number, month: number): Date[] {
-  const dates: Date[] = [];
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    const [dates, setDates] = useState<Date[]>(getCalendarDates(year, month));
 
-  const firstDayOfMonth = new Date(year, month, 1);
-  const lastDayOfMonth = new Date(year, month + 1, 0);
+    useEffect(() => {
+        setDates(getCalendarDates(year, month));
+    }, [year, month]);
 
-  const startDay = firstDayOfMonth.getDay(); // 요일 (0: 일, 6: 토)
-  const totalDays = lastDayOfMonth.getDate();
-
-  // 이전 달에서 채워야 할 빈 칸
-  for (let i = 0; i < startDay; i++) {
-    dates.push(new Date(year, month, i - startDay + 1)); // 이전 달 날짜
-  }
-
-  // 이번 달 날짜
-  for (let i = 1; i <= totalDays; i++) {
-    dates.push(new Date(year, month, i));
-  }
-
-  // 다음 달까지 채우기 (총 6줄 = 42칸 기준)
-  while (dates.length < 42) {
-    const lastDate = dates[dates.length - 1];
-    const nextDate = new Date(lastDate);
-    nextDate.setDate(lastDate.getDate() + 1);
-    dates.push(nextDate);
-  }
-
-  return dates;
+    return (
+        <div className="w-full mb-10">
+            <div className="block sm:hidden mb-4">
+                <h2 className="w-full text-center text-xl">{year}년 {month + 1}월</h2>
+                <div className="grid grid-cols-4 gap-1 mt-2">
+                    <Button
+                        variant="flat"
+                        color="primary"
+                        size="sm"
+                        onPress={() => {
+                            let value = month;
+                            value--;
+                            if (value < 0) {
+                                value = 11;
+                                setYear(year-1);
+                            }
+                            setMonth(value);
+                        }}>
+                        이전 달
+                    </Button>
+                    <Button
+                        variant="flat"
+                        color="secondary"
+                        size="sm"
+                        onPress={() => setYear(year-1)}>
+                        이전 년
+                    </Button>
+                    <Button
+                        variant="flat"
+                        color="secondary"
+                        size="sm"
+                        onPress={() => setYear(year+1)}>
+                        다음 년
+                    </Button>
+                    <Button
+                        variant="flat"
+                        color="primary"
+                        size="sm"
+                        onPress={() => {
+                            let value = month;
+                            value++;
+                            if (value > 11) {
+                                value = 0;
+                                setYear(year+1);
+                            }
+                            setMonth(value);
+                        }}>
+                        다음 달
+                    </Button>
+                </div>
+            </div>
+            <div className="hidden sm:flex justify-between items-center mb-4">
+                <div>
+                    <Button
+                        variant="flat"
+                        color="primary"
+                        size="sm"
+                        onPress={() => {
+                            let value = month;
+                            value--;
+                            if (value < 0) {
+                                value = 11;
+                                setYear(year-1);
+                            }
+                            setMonth(value);
+                        }}
+                        className="mr-2">
+                        이전 달
+                    </Button>
+                    <Button
+                        variant="flat"
+                        color="secondary"
+                        size="sm"
+                        isDisabled={year <= 0}
+                        onPress={() => setYear(year - 1)}>
+                        이전 년
+                    </Button>
+                </div>
+                <h2 className="text-xl">{year}년 {month + 1}월</h2>
+                <div>
+                    <Button
+                        variant="flat"
+                        color="secondary"
+                        size="sm"
+                        isDisabled={year >= 9999}
+                        onPress={() => setYear(year + 1)}
+                        className="mr-2">
+                        다음 년
+                    </Button>
+                    <Button
+                        variant="flat"
+                        color="primary"
+                        size="sm"
+                        onPress={() => {
+                            let value = month;
+                            value++;
+                            if (value > 11) {
+                                value = 0;
+                                setYear(year+1);
+                            }
+                            setMonth(value);
+                        }}>
+                        다음 달
+                    </Button>
+                </div>
+            </div>
+            <div className="w-[calc(100vw - 40px)] lg1200:w-full scrollbar-hide overflow-x-scroll lg1200:overflow-x-hidden overflow-y-hidden">
+                <div className="w-[1000px] lg1200:w-full">
+                    <div className="grid grid-cols-7 text-center gap-2">
+                        {days.map(day => (
+                            <Chip
+                                key={day}
+                                variant="flat"
+                                radius="sm"
+                                color="primary"
+                                className="min-w-full">
+                                {day}요일
+                            </Chip>
+                        ))}
+                    </div>
+                    <div className="grid grid-cols-7 gap-2 mt-2">
+                        {dates.map((date, index) => (
+                            <div 
+                                key={index}
+                                className={clsx(
+                                    "w-full h-[120px] lg1200:h-[140px] p-2 rounded-md",
+                                    date.getMonth() !== month ? 'text-gray-400 bg-[#cccccc] dark:bg-[#111111]' : isTodayDate(date) && date.getMonth() === month ? 'bg-[#d1f4e0] dark:bg-[#173a26]' : 'bg-[#eeeeee] dark:bg-[#222222]',
+                                )}>
+                                <p className={clsx(
+                                    "mb-1 h-[20px]",
+                                    isTodayDate(date) ? "text-[#308e59] dark:text-[#16b95d]" : ""
+                                )}>{date.getDate()}</p>
+                                <div className="w-full h-[84px] lg1200:h-[104px] overflow-y-scroll scrollbar-hide">
+                                    {getCalendarByDay(date, works, guild).map((box, idx) => (
+                                        <Popover 
+                                            key={idx} 
+                                            radius="sm" 
+                                            showArrow
+                                            onOpenChange={() => {
+                                                setEditMemo(box.calendar.memo);
+                                            }}>
+                                            <PopoverTrigger>
+                                                <div className={clsx(
+                                                    "rounded-md border-2 pl-2 pr-2 pt-1 pb-1 mb-2 cursor-pointer",
+                                                    box.type === 'work' ? 'border-[#75a0d1] dark:border-[#298cfd] hover:bg-[#f0f1f3] hover:dark:bg-[#242f3b]' : 'border-[#b575c2] dark:border-[#c129fd] hover:bg-[#ece7ec] hover:dark:bg-[#301f36]'
+                                                )}>
+                                                    <div className="w-full flex gap-2 items-center">
+                                                        <div className={clsx(
+                                                            "w-[10px] h-[10px] min-w-[10px] min-h-[10px] rounded-full",
+                                                            box.type === 'work' ? 'bg-[#0055b6] dark:bg-[#298cfd]' : 'bg-[#9800b6] dark:bg-[#c129fd]'
+                                                        )}/>
+                                                        <p className="w-full truncate text-sm">{box.calendar.name}</p>
+                                                    </div>
+                                                </div>
+                                            </PopoverTrigger>
+                                            <PopoverContent>
+                                                <div className="w-[300px]">
+                                                    <div className="w-full flex gap-2 items-center mb-2 mt-2">
+                                                        <div className={clsx(
+                                                            "w-[16px] h-[16px] rounded-full",
+                                                            box.type === 'work' ? 'bg-[#0055b6] dark:bg-[#298cfd]' : 'bg-[#9800b6] dark:bg-[#c129fd]'
+                                                        )}/>
+                                                        <p className="text-[12pt] fadedtext">{box.type === 'work' ? '개인 일정' : '길드 일정'}</p>
+                                                    </div>
+                                                    <Divider className="mb-1"/>
+                                                    <p className="text-sm fadedtext">제목</p>
+                                                    <p className="truncate mb-2">{box.calendar.name}</p>
+                                                    <div className={clsx(
+                                                        box.calendar.raidname !== '' && box.calendar.difficulty !== '' ? 'block' : 'hidden'
+                                                    )}>
+                                                        <p className="text-sm fadedtext">콘텐츠</p>
+                                                        <p className="truncate mb-2">{box.calendar.raidname} {box.calendar.difficulty}</p>
+                                                    </div>
+                                                    <p className="text-sm fadedtext">날짜 및 시간</p>
+                                                    <p className="truncate mb-2">{formatDatetoString(box.calendar.date)}</p>
+                                                    <Textarea
+                                                        label="메모"
+                                                        radius="sm"
+                                                        minRows={3}
+                                                        value={editMemo}
+                                                        placeholder="메모를 입력하세요."
+                                                        onValueChange={setEditMemo}/>
+                                                    <Divider className="mb-4 mt-4"/>
+                                                    <div className="w-full grid grid-cols-2 gap-2 mb-2">
+                                                        <Button
+                                                            color="success"
+                                                            size="sm"
+                                                            isLoading={isLoadingMemo}
+                                                            onPress={async () => {
+                                                                await handleEditMemo(editMemo, box.type !== 'work', setLoadingMemo, guild, works, box.calendar, setWorks, setGuild);
+                                                            }}>
+                                                            메모 수정
+                                                        </Button>
+                                                        <Button
+                                                            color="danger"
+                                                            size="sm"
+                                                            isLoading={isLoadingDelete}
+                                                            onPress={async () => {
+                                                                await handleRemoveCalendar(box.type !== 'work', setLoadingDelete, guild, works, box.calendar, setWorks, setGuild);
+                                                            }}>
+                                                            삭제
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </PopoverContent>
+                                        </Popover>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
 }

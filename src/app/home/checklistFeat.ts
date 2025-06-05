@@ -2,9 +2,6 @@ import { SetStateFn } from "@/utiils/utils";
 import { LoginUser } from "../store/loginSlice";
 import { addToast } from "@heroui/react";
 import { CheckCharacter } from "../store/checklistSlice";
-import { Boss } from "../api/checklist/boss/route";
-import { collection, getDocs } from "firebase/firestore";
-import { firestore } from "@/utiils/firebase";
 
 // 로그인 여부 확인 함수
 export function isLogin(): boolean {

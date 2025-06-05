@@ -40,7 +40,7 @@ function EventComponent({ events }: EventComponentProps) {
         <div className="col-span-2">
             <p className="text-2xl">로스트아크 이벤트</p>
             <Divider className="mt-4"/>
-            <ScrollShadow className="w-full h-[600px] sm:h-[400px] pt-4">
+            <ScrollShadow className="w-full h-[600px] sm:h-[500px] pt-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {events.map((event, index) => (
                         <Card 
@@ -80,7 +80,7 @@ function NoticeComponent({ notices }: NoticeComponentProps) {
         <div>
             <p className="text-2xl">로스트아크 공지사항</p>
             <Divider className="mt-4"/>
-            <ScrollShadow className="w-full h-[400px]">
+            <ScrollShadow className="w-full h-[500px]">
                 {notices.map((notice, index) => (
                     <a href={notice.link} key={index} target="_blank">
                         <div className={clsx(
