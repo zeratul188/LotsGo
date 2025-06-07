@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { Character } from "../store/loginSlice";
-import { Accessory, applyAccessories, applyArmData, applyColorElixir, applyEquipment, applyStoneData, Arm, CharacterFile, Equipment, getAllElixir, getAllPower, getBgColorByGrade, getColorByQuality, getObjectByArmorType, getParsedText, getSmallGradeByAccessory, getTextByGrade, getTextColorByGrade, handleSearch, Stone } from "./characterFeat";
+import { Accessory, applyAccessories, applyArmData, applyColorElixir, applyEquipment, applyStoneData, Arm, CharacterFile, Equipment, Gem, getAllElixir, getAllPower, getBgColorByGrade, getColorByQuality, getCountAtkGems, getCountDekGems, getGemByIndex, getGemSimpleTailName, getObjectByArmorType, getParsedText, getSmallGradeByAccessory, getTextByGrade, getTextColorByGrade, handleSearch, loadGems, Stone } from "./characterFeat";
 import PowerIcon from "@/Icons/PowerIcon";
 import { printAllElixirInTooltip, printBonusInTooltip, printCountInTooltip, printElixirInTooltip, printHighUpgradeInTooltip, printInfoInTooltip, printPowerInTooltip } from "./equipmentPrints";
 import clsx from "clsx";
@@ -20,7 +20,8 @@ export function useCharacterForm() {
     const [nickname, setNickname] = useState('');
     const [file, setFile] = useState<CharacterFile>({
         profile: null,
-        equipment: null
+        equipment: null,
+        gem: null
     })
 
     return {
@@ -138,7 +139,7 @@ export function ProfileComponent({ file }: ProfileComponentProps) {
                         <Chip color="secondary" variant="solid" radius="sm">{profile.ServerName}</Chip>
                         <Chip color="warning" variant="solid" radius="sm">{profile.CharacterClassName}</Chip>
                     </div>
-                    <p className="fadedtext mt-4">{profile.Title} · {profile.GuildName} 길드</p>
+                    <p className="fadedtext mt-4">{profile.Title ? profile.Title : '-'}{profile.GuildName ?` · ${profile.GuildName} 길드` : ''}</p>
                     <p className="text-2xl font-bold">{profile.CharacterName}</p>
                     <div className="grow flex flex-col sm:flex-row items-end gap-2 mt-4">
                         <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -183,6 +184,7 @@ export function AbilityComponent({ file }: ProfileComponentProps) {
         <div className="w-full grid grid-cols-1 md960:grid-cols-[2fr_1fr] gap-2">
             <div className="w-full">
                 <EquipmentComponent file={file}/>
+                <GemComponent file={file}/>
             </div>
             <div className="w-full">
 
@@ -232,10 +234,10 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                     width={40}
                                                     height={40}/>
                                             </div>
-                                            <div className="grow">
+                                            <div className="grow truncate">
                                                 <div className="flex gap-1 items-center">
                                                     <p className="fadedtext text-[10pt] whitespace-nowrap w-[max-content]">{equip.type}</p>
-                                                    <p className={`${getColorTextByGrade(equip.grade)} grow truncate`}>{equip.name}</p>
+                                                    <p className={`${getColorTextByGrade(equip.grade)} grow`}>{equip.name}</p>
                                                 </div>
                                                 <div className="flex gap-2 items-center">
                                                     {equip.quality >= 0 ? <Chip size="sm" radius="sm" className={`${getColorByQuality(equip.quality)} text-white`}>{equip.quality}</Chip> : <></>}
@@ -648,6 +650,72 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                             </Popover>
                         ) : <></>}
                     </div>
+                </div>
+            </CardBody>
+        </Card>
+    )
+}
+
+// 보석 컴포넌트
+function GemComponent({ file }: ProfileComponentProps) {
+    const [attack, setAttack] = useState(0);
+    const [gems, setGems] = useState<Gem[]>([]);
+
+    useEffect(() => {
+        if (file.gem) {
+            loadGems(file.gem, setGems, setAttack);
+        }
+    }, [file.gem]);
+
+    return (
+        <Card radius="sm" className="mt-8">
+            <CardHeader>
+                <div className="w-full flex gap-1 items-center">
+                    <p className="grow text-lg">보석</p>
+                    <div className="flex gap-2 items-center">
+                        <p className="fadedtext text-md">{getCountAtkGems(gems)}겁 {getCountDekGems(gems)}작</p>
+                        <Divider orientation="vertical" className="h-5"/>
+                        <p className="fadedtext text-md">기본 공격력 : {attack.toFixed(1)}%</p>
+                    </div>
+                </div>
+            </CardHeader>
+            <Divider/>
+            <CardBody>
+                <div className="w-full grid grid-cols-6 sm:grid-cols-11 gap-2 pt-2 pb-2">
+                    {Array.from({ length: 11 }).map((_, index) => (
+                        <Popover key={index} showArrow>
+                            <PopoverTrigger>
+                                <div className="w-full flex items-center justify-center flex-col">
+                                    <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(getGemByIndex(gems, index) ? getGemByIndex(gems, index)!.grade : "")}`}>
+                                        {getGemByIndex(gems, index) ? (
+                                            <Image
+                                                src={getGemByIndex(gems, index)!.icon}
+                                                width={44}
+                                                height={44}/>
+                                        ) : <></>}
+                                    </div>
+                                    <Chip
+                                        size="sm"
+                                        radius="sm"
+                                        variant="flat"
+                                        className="mt-2">
+                                        {getGemByIndex(gems, index) ? `${getGemByIndex(gems, index)!.level} ${getGemSimpleTailName(getGemByIndex(gems, index))}` : '-'}
+                                    </Chip>
+                                </div>
+                            </PopoverTrigger>
+                            <PopoverContent>
+                                {getGemByIndex(gems, index) ? (
+                                    <div className="max-w-[500px] p-2">
+                                        <p className={`w-full text-center text-lg ${getColorTextByGrade(getGemByIndex(gems, index)!.grade)}`}>{getGemByIndex(gems, index)!.name}</p>
+                                        <p className="mt-1 fadedtext">효과</p>
+                                        <p>{getGemByIndex(gems, index)?.skillStr}</p>
+                                        <p className="mt-2 fadedtext">추가 효과</p>
+                                        <p>기본 공격력 {getGemByIndex(gems, index)?.attack.toFixed(1)}%</p>
+                                    </div>
+                                ) : <div></div>}
+                            </PopoverContent>
+                        </Popover>
+                    ))}
                 </div>
             </CardBody>
         </Card>

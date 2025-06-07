@@ -5,7 +5,8 @@ import data from "./data.json";
 
 export type CharacterFile = {
     profile: any,
-    equipment: any
+    equipment: any,
+    gem: any[] | null
 }
 
 // 캐릭터 검색 함수
@@ -45,6 +46,8 @@ export async function loadProfile(
     const newFile = structuredClone(file);
     newFile.profile = data.ArmoryProfile;
     newFile.equipment = data.ArmoryEquipment;
+    newFile.gem = data.ArmoryGem.Gems;
+    console.log(data.ArmoryGem);
     setLoading(false);
     setFile(newFile);
 }
@@ -506,4 +509,108 @@ export function getAllElixir(equipments: Equipment[]): number {
         }
     }
     return sum;
+}
+
+// 보석 데이터 가져오기
+export type Gem = {
+    slot: number,
+    name: string,
+    icon: string,
+    level: number,
+    grade: string,
+    skillStr: string,
+    attack: number
+}
+export function loadGems(datas: any[], setGems: SetStateFn<Gem[]>, setAttack: SetStateFn<number>) {
+    const gems: Gem[] = [];
+    let attactSum = 0;
+    if (datas) {
+        for (const data of datas) {
+            const parsedTooltip = JSON.parse(data.Tooltip);
+            const gemInfo: GemInfo | null = findGemInfoInTooltip(parsedTooltip);
+            const newGem: Gem = {
+                slot: Number(data.Slot),
+                name: getParsedText(data.Name),
+                icon: data.Icon,
+                level: Number(data.Level),
+                grade: data.Grade,
+                skillStr: gemInfo ? gemInfo.skillStr : '',
+                attack: gemInfo ? gemInfo.attack : 0
+            }
+            gems.push(newGem);
+            attactSum += gemInfo ? gemInfo.attack : 0;
+        }
+    }
+    setGems(gems);
+    setAttack(attactSum);
+}
+
+// 스킬 또는 기본 공격력 가져오기
+type GemInfo = {
+    skillStr: string,
+    attack: number
+}
+function findGemInfoInTooltip(parsed: any): GemInfo | null {
+    for (const key in parsed) {
+        const element = parsed[key];
+        const value = element?.value;
+
+        const element000 = value?.Element_000;
+        const element001 = value?.Element_001;
+        if (typeof element000 === 'string' && typeof element001 === 'string' && element000.includes('효과')) {
+            const text = getParsedText(element001.replaceAll('<BR>', '\r\n'));
+            const skillStr = text.split(/\r?\n/)[0];
+            let attack = 0;
+            if (text.includes('기본 공격력')) {
+                attack = Number(text.split('기본 공격력 ')[1].replaceAll(' 증가', '').replaceAll('%', ''));
+            }
+            return {
+                skillStr: skillStr,
+                attack: attack
+            }
+        }
+    }
+    return null;
+}
+
+// index 기반으로 정해진 slot의 보석 가져오기
+export function getGemByIndex(gems: Gem[], index: number): Gem | null {
+    const gem = gems.find(gem => gem.slot === index);
+    if (gem) {
+        return gem;
+    } else {
+        return null;
+    }
+}
+
+// 보석 이름 간략히 조절
+export function getGemSimpleTailName(gem: Gem | null): string {
+    if (gem) {
+        const name = gem.name;
+        const tail = name.split('레벨 ')[1].replaceAll('의 보석', '').replaceAll(' (귀속)', '');
+        return tail;
+    }
+    return '';
+}
+
+// 겁화/멸화 개수 가져오기
+export function getCountAtkGems(gems: Gem[]): number {
+    let count = 0;
+    for (const gem of gems) {
+        if (gem.name.includes('겁화') || gem.name.includes('멸화') || gem.name.includes('청명')) {
+            count++;
+        }
+    }
+    return count;
+}
+
+// 겁화/멸화 개수 가져오기
+export function getCountDekGems(gems: Gem[]): number {
+    let count = 0;
+    for (const gem of gems) {
+        if (gem.name.includes('작열') || gem.name.includes('홍염') || gem.name.includes('원해')) {
+            count++;
+        }
+    }
+    return count;
 }

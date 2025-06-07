@@ -47,5 +47,5 @@ export function getBackgroundByGrade(grade: string): string {
         case '고대': return "bgc-ancient";
         case '에스더': return "bgc-special";
     }
-    return "";
+    return "bgc-nothing";
 }
