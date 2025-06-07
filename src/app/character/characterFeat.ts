@@ -7,7 +7,8 @@ export type CharacterFile = {
     profile: any,
     equipment: any,
     gem: any[] | null,
-    cards: any[] | null
+    cards: any[] | null,
+    stats: any[] | null
 }
 
 // 캐릭터 검색 함수
@@ -51,6 +52,8 @@ export async function loadProfile(
         newFile.equipment = data.ArmoryEquipment;
         newFile.gem = data.ArmoryGem.Gems;
         newFile.cards = data.ArmoryCard;
+        newFile.stats = data.ArmoryProfile.Stats;
+        console.log(data.Stats);
         setLoading(false);
         setFile(newFile);
         setNothing(false);
@@ -750,4 +753,70 @@ export function getCardGems(sets: CardSet, cards: CardData[]): number {
         }
     }
     return cardSumGems;
+}
+
+// 스택 데이터 가져오기
+export type Stat = {
+    type: string,
+    value: number,
+    tooltip: string[]
+}
+export function loadStats(datas: any[] | null, setStat:SetStateFn<Stat[]>) {
+    const stat: Stat[] = [];
+    console.log(datas);
+    if (datas) {
+        for (const data of datas) {
+            const tooltips: string[] = [];
+            for (const tip of data.Tooltip) {
+                tooltips.push(getParsedText(tip));
+            }
+            const newStat: Stat = {
+                type: data.Type,
+                value: Number(data.Value),
+                tooltip: tooltips
+            }
+            stat.push(newStat);
+        }
+    }
+    setStat(stat);
+}
+
+// 총 스택 반환 함수 - 공격력, 최생 제외
+export function getSumStat(stat: Stat[]): number {
+    let sum = 0;
+    const filterdStats = stat.filter(item => item.type !== '공격력' && item.type !== '최대 생명력');
+    for (const item of filterdStats) {
+        sum += item.value;
+    }
+    return sum;
+}
+
+// 스택 비중이 높은 스택 반환 함수
+export function getHighStats(stat: Stat[]): Stat[] {
+    const filterdStats = stat.filter(item => item.type !== '공격력' && item.type !== '최대 생명력');
+    let newStats: Stat[] = [];
+    for (const item of filterdStats) {
+        if (item.value >= 300) {
+            newStats.push(item);
+        }
+    }
+    newStats = newStats.sort((a, b) => b.value - a.value);
+    return newStats;
+}
+
+// 스택 비중이 낮은 스택 반환 함수
+export function getLowStats(stat: Stat[]): Stat[] {
+    const filterdStats = stat.filter(item => item.type !== '공격력' && item.type !== '최대 생명력');
+    const newStats: Stat[] = [];
+    for (const item of filterdStats) {
+        if (item.value < 300) {
+            newStats.push(item);
+        }
+    }
+    return newStats;
+}
+
+// 원하는 종류의 스택 반환 함수
+export function getStatByType(stat: Stat[], type: string): Stat | undefined {
+    return stat.find(item => item.type === type);
 }

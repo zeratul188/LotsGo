@@ -71,6 +71,10 @@ body * {
 }
 
 .fadedtext {
+  @apply text-gray-400
+}
+
+.dark .fadedtext {
   @apply text-gray-500
 }
 
@@ -207,7 +211,7 @@ body * {
 }
 
 .bgc-nothing {
-  @apply bg-radial to-[#00e5ef] via-[#cffdff] from-transparent
+  @apply bg-radial to-[#c4c4c4] via-[#e6e6e6] from-transparent
 }
 
 .dark .bgc-nothing {
