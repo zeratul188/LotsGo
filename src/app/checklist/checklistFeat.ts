@@ -1391,7 +1391,7 @@ export async function handleAddCharacter(
         });
     } else {
         addToast({
-            title: "캐릭터터 추가",
+            title: "캐릭터 추가",
             description: `캐랙터 추가가 완료되었습니다.`,
             color: "success"
         });
