@@ -837,12 +837,13 @@ function CardComponent({ file }: ProfileComponentProps) {
                                     <ul className="list-disc pl-4 mt-2">
                                         {sets.items.map((item, idx) => (
                                             <li key={idx} className="w-full mb-2">
-                                                <div className="flex gap-2 flex-col sm:flex-row w-full">
+                                                <div className="flex gap-0.5 flex-col sm:flex-row w-full sm:items-center">
                                                     <p className={clsx(
                                                         "w-full sm:w-[max-content]",
                                                         item.isEnable && item.enableCount <= getCardGems(sets, cards) ? '' : 'text-[#aaaaaa] dark:text-[#444444]'
                                                     )}>{item.name}</p>
-                                                    <p className="sm:grow truncate fadedtext text-left sm:text-right">{item.description}</p>
+                                                    <div className="grow hidden sm:block"/>
+                                                    <p className="sm:w-[600px] sm:truncate fadedtext text-left sm:text-right text-sm">{item.description}</p>
                                                 </div>
                                             </li>
                                         ))}
