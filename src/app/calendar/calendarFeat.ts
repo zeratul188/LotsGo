@@ -527,7 +527,7 @@ export async function handleRemoveCalendar(
                         setGuild(newGuild);
                         addToast({
                             title: "삭제 완료",
-                            description: `일정이 정상적으로 삭제제되었습니다.`,
+                            description: `일정이 정상적으로 삭제되었습니다.`,
                             color: "success"
                         });
                         setLoadingDelete(false);

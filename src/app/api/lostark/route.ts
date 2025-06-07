@@ -25,7 +25,8 @@ export async function GET(req: NextRequest) {
         `/armories/characters/${encodeURIComponent(value)}/profiles`, // ARMORIES/PROFILES - 캐릭터 프로파일 정보
         `/gamecontents/calendar`, // GAMECONTENTS - 게임 일정 (모험섬, 로웬, 필드보스 등)
         `/news/notices`, // NEWS/NOICES - 게임 공지사항
-        `/news/events` // NEWS/EVENTS - 게임 내 이벤트
+        `/news/events`, // NEWS/EVENTS - 게임 내 이벤트
+        `/armories/characters/${encodeURIComponent(value)}` // ARMORIES - 캐릭터 전체 정보
     ];
 
     try {
