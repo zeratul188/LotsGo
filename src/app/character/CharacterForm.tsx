@@ -41,15 +41,21 @@ import {
     getCountDekGems, 
     getGemByIndex, 
     getGemSimpleTailName, 
+    getHighStats, 
+    getLowStats, 
     getObjectByArmorType, 
     getParsedText, 
     getSmallGradeByAccessory, 
+    getStatByType, 
+    getSumStat, 
     getTextByGrade, 
     getTextColorByGrade, 
     getUrlGemInImage, 
     handleSearch, 
     loadCards, 
     loadGems, 
+    loadStats, 
+    Stat, 
     Stone 
 } from "./characterFeat";
 import PowerIcon from "@/Icons/PowerIcon";
@@ -69,7 +75,8 @@ export function useCharacterForm() {
         profile: null,
         equipment: null,
         gem: null,
-        cards: null
+        cards: null,
+        stats: null
     });
     const [isNothing, setNothing] = useState(false);
 
@@ -231,14 +238,14 @@ export function ProfileComponent({ file }: ProfileComponentProps) {
 // 능력치 컴포넌트
 export function AbilityComponent({ file }: ProfileComponentProps) {
     return (
-        <div className="w-full grid grid-cols-1 md960:grid-cols-[2fr_1fr] gap-2">
+        <div className="w-full grid grid-cols-1 md960:grid-cols-[5fr_2fr] gap-8">
             <div className="w-full">
                 <EquipmentComponent file={file}/>
                 <GemComponent file={file}/>
                 <CardComponent file={file}/>
             </div>
             <div className="w-full">
-
+                <StatComponent file={file}/>
             </div>
         </div>
     )
@@ -736,7 +743,7 @@ function GemComponent({ file }: ProfileComponentProps) {
                     {Array.from({ length: 11 }).map((_, index) => (
                         <Popover key={index} showArrow>
                             <PopoverTrigger>
-                                <div className="w-full flex items-center justify-center flex-col">
+                                <div className="w-full flex items-center justify-center flex-col cursor-pointer">
                                     <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(getGemByIndex(gems, index) ? getGemByIndex(gems, index)!.grade : "")}`}>
                                         {getGemByIndex(gems, index) ? (
                                             <Image
@@ -822,38 +829,132 @@ function CardComponent({ file }: ProfileComponentProps) {
             </CardBody>
             <Divider/>
             <CardFooter>
-                <Accordion>
-                    <AccordionItem key={1} title={
-                        <p className="whitespace-nowrap overflow-hidden text-ellipsis w-[300px] sm:w-[600px]">
-                            {getCardSetNames(cardSet, cards)}
-                        </p>}>
-                        <div className="w-full">
-                            {cardSet.map((sets, index) => (
-                                <div key={index} className="w-full mt-4">
-                                    <div className="flex w-full gap-2 items-center">
-                                        <p className="grow text-lg text-[#fe6e0e]">{sets.name}</p>
-                                        <p>총 {getCardGems(sets, cards)}각성</p>
+                <div className="w-full max-w-full">
+                    <Accordion fullWidth>
+                        <AccordionItem key={1} title={
+                            <p className="whitespace-nowrap overflow-hidden text-ellipsis max-w-full sm:max-w-[600px]">
+                                {getCardSetNames(cardSet, cards)}
+                            </p>}>
+                            <div className="w-full">
+                                <Divider className="mb-2"/>
+                                {cardSet.map((sets, index) => (
+                                    <div key={index} className="max-w-full mt-4">
+                                        <div className="flex w-full gap-2 items-center">
+                                            <p className="grow text-lg text-[#fe6e0e]">{sets.name}</p>
+                                            <p>총 {getCardGems(sets, cards)}각성</p>
+                                        </div>
+                                        <ul className="list-disc pl-4 mt-2">
+                                            {sets.items.map((item, idx) => (
+                                                <li key={idx} className="w-full mb-2">
+                                                    <div className="flex gap-0.5 flex-col sm:flex-row w-full sm:items-center">
+                                                        <p className={clsx(
+                                                            "w-full sm:w-[max-content]",
+                                                            item.isEnable && item.enableCount <= getCardGems(sets, cards) ? '' : 'text-[#aaaaaa] dark:text-[#444444]'
+                                                        )}>{item.name}</p>
+                                                        <p className="sm:grow sm:truncate fadedtext text-left sm:text-right text-sm">{item.description}</p>
+                                                    </div>
+                                                </li>
+                                            ))}
+                                        </ul>
                                     </div>
-                                    <ul className="list-disc pl-4 mt-2">
-                                        {sets.items.map((item, idx) => (
-                                            <li key={idx} className="w-full mb-2">
-                                                <div className="flex gap-0.5 flex-col sm:flex-row w-full sm:items-center">
-                                                    <p className={clsx(
-                                                        "w-full sm:w-[max-content]",
-                                                        item.isEnable && item.enableCount <= getCardGems(sets, cards) ? '' : 'text-[#aaaaaa] dark:text-[#444444]'
-                                                    )}>{item.name}</p>
-                                                    <div className="grow hidden sm:block"/>
-                                                    <p className="sm:w-[600px] sm:truncate fadedtext text-left sm:text-right text-sm">{item.description}</p>
-                                                </div>
-                                            </li>
+                                ))}
+                            </div>
+                        </AccordionItem>
+                    </Accordion>
+                </div>
+            </CardFooter>
+        </Card>
+    )
+}
+
+// 스택 컴포넌트
+function StatComponent({ file }: ProfileComponentProps) {
+    const [stat, setStat] = useState<Stat[]>([]);
+
+    useEffect(() => {
+        loadStats(file.stats, setStat);
+    }, [file.stats]);
+
+    return (
+        <Card radius="sm">
+            <CardHeader><p className="text-lg">특성</p></CardHeader>
+            <Divider/>
+            <CardBody>
+                <div className="w-full grid grid-cols-2 gap-2">
+                    <Tooltip
+                        showArrow
+                        content={<div className="w-[340px] p-2">
+                            <ul className="list-disc pl-4">
+                                {getStatByType(stat, '공격력') ? getStatByType(stat, '공격력')?.tooltip.map((line, idx) => (
+                                    <li key={idx}>{line}</li>
+                                )) : <></>}
+                            </ul>
+                        </div>}>
+                        <div className="w-full flex gap-2 items-center">
+                            <p className="fadedtext text-sm">공격력</p>
+                            <p>{getStatByType(stat, '공격력') ? getStatByType(stat, '공격력')?.value : 0}</p>
+                        </div>
+                    </Tooltip>
+                    <Tooltip
+                        showArrow
+                        content={<div className="w-[340px] p-2">
+                            <ul className="list-disc pl-4">
+                                {getStatByType(stat, '최대 생명력') ? getStatByType(stat, '최대 생명력')?.tooltip.map((line, idx) => (
+                                    <li key={idx}>{line}</li>
+                                )) : <></>}
+                            </ul>
+                        </div>}>
+                        <div className="w-full flex gap-2 items-center">
+                            <div className="w-full flex gap-2 items-center">
+                                <p className="fadedtext text-sm">최대 생명력</p>
+                                <p>{getStatByType(stat, '최대 생명력') ? getStatByType(stat, '최대 생명력')?.value : 0}</p>
+                            </div>
+                        </div>
+                    </Tooltip>
+                </div>
+                <Divider className="mt-3 mb-3"/>
+                <div>
+                    {getHighStats(stat).map((item, index) => (
+                        <Tooltip
+                            key={index}
+                            showArrow
+                            content={<div className="w-[340px] p-2">
+                                <ul className="list-disc pl-4">
+                                    {item.tooltip.map((line, idx) => (
+                                        <li key={idx}>{line}</li>
+                                    ))}
+                                </ul>
+                            </div>}>
+                            <Progress
+                                showValueLabel
+                                label={`${item.type} : ${item.value}`}
+                                value={item.value}
+                                maxValue={getSumStat(stat)}
+                                size="sm"
+                                className="mb-2"/>
+                        </Tooltip>
+                    ))}
+                    <div className="grid grid-cols-4 gap-2">
+                        {getLowStats(stat).map((item, index) => (
+                            <Tooltip
+                                key={index}
+                                showArrow
+                                content={<div className="w-[340px] p-2">
+                                    <ul className="list-disc pl-4">
+                                        {item.tooltip.map((line, idx) => (
+                                            <li key={idx}>{line}</li>
                                         ))}
                                     </ul>
+                                </div>}>
+                                <div className="w-full flex gap-2 items-center">
+                                    <p className="fadedtext text-sm">{item.type}</p>
+                                    <p>{item.value}</p>
                                 </div>
-                            ))}
-                        </div>
-                    </AccordionItem>
-                </Accordion>
-            </CardFooter>
+                            </Tooltip>
+                        ))}
+                    </div>
+                </div>
+            </CardBody>
         </Card>
     )
 }
