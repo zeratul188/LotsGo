@@ -26,7 +26,7 @@ const menuItems: Array<{item: string, link: string}> = [
     },
     {
         item: "전투정보실",
-        link: '#'
+        link: '/character'
     }
 ];
 // 헤더 메뉴 - 로그인한 상태태
@@ -121,7 +121,7 @@ export function NavContents() {
                 </Link>
             </NavbarItem>
             <NavbarItem>
-                <Link color="foreground" href="#">
+                <Link color="foreground" href="/character">
                     전투정보실
                 </Link>
             </NavbarItem>

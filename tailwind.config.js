@@ -21,7 +21,8 @@ module.exports = {
           'md960': '960px',
           'sm300': '300px',
           'sm600': '600px',
-          'lg1200': '1200px'
+          'lg1200': '1200px',
+          'lg1280': '1280px'
         },
         backgroundImage: {
           'radial': 'radial-gradient(var(--tw-gradient-stops))',

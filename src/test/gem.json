@@ -1,0 +1,60 @@
+{
+    "Element_000": {
+        "type": "NameTagBox",
+        "value": "<P ALIGN='CENTER'><FONT COLOR='#FA5D00'>9레벨 겁화의 보석</FONT></P>"
+    },
+    "Element_001": {
+        "type": "ItemTitle",
+        "value": {
+            "bEquip": 0,
+            "leftStr0": "<FONT SIZE='12'><FONT COLOR='#FA5D00'>유물 보석</FONT></FONT>",
+            "leftStr2": "<FONT SIZE='14'>아이템 레벨 1640 (티어 4)</FONT>",
+            "qualityValue": -1,
+            "rightStr0": "<FONT SIZE='12'><FONT COLOR='#FFD200'>장착중</FONT></FONT>",
+            "slotData": {
+                "advBookIcon": 0,
+                "battleItemTypeIcon": 0,
+                "blackListIcon": 0,
+                "cardIcon": false,
+                "friendship": 0,
+                "iconGrade": 5,
+                "iconPath": "https://cdn-lostark.game.onstove.com/efui_iconatlas/use/use_12_104.png",
+                "imagePath": "",
+                "islandIcon": 0,
+                "petBorder": 0,
+                "rtString": "Lv.9",
+                "seal": false,
+                "temporary": 0,
+                "town": 0,
+                "trash": 0
+            }
+        }
+    },
+    "Element_002": {
+        "type": "SingleTextBox",
+        "value": "<FONT COLOR='#C24B46'>장착 및 합성 가능 아이템 레벨 <FONT COLOR='#FFFFFF'>1640</FONT></FONT><BR><FONT SIZE='12'><FONT COLOR='#C24B46'>거래 제한 아이템 레벨</FONT> 1640</FONT>"
+    },
+    "Element_003": {
+        "type": "MultiTextBox",
+        "value": "|거래가능"
+    },
+    "Element_004": {
+        "type": "SingleTextBox",
+        "value": "보석 레벨 9"
+    },
+    "Element_005": {
+        "type": "IndentStringGroup",
+        "value": null
+    },
+    "Element_006": {
+        "type": "ItemPartBox",
+        "value": {
+            "Element_000": "<FONT COLOR='#A9D0F5'>효과</FONT>",
+            "Element_001": "[창술사] <FONT COLOR='#FFD200'>회선창</FONT> 피해 40.00% 증가<BR><BR><FONT COLOR='#A9D0F5'>추가 효과</FONT><BR>기본 공격력 1.00% 증가"
+        }
+    },
+    "Element_007": {
+        "type": "SingleTextBox",
+        "value": "<FONT SIZE='12'><FONT COLOR='#C24B46'>분해불가</FONT></FONT>"
+    }
+}

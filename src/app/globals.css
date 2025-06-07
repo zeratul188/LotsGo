@@ -189,3 +189,27 @@ body * {
 .dark .bgc-ancient {
   @apply bg-radial to-[#ac977a] via-[#473f32] from-transparent
 }
+
+.text-special {
+  @apply text-[#00a6af]
+}
+
+.dark .text-special {
+  @apply text-[#00e5ef]
+}
+
+.bgc-special {
+  @apply bg-radial to-[#00e5ef] via-[#cffdff] from-transparent
+}
+
+.dark .bgc-special {
+  @apply bg-radial to-[#00e5ef] via-[#002a2c] from-transparent
+}
+
+.bgc-nothing {
+  @apply bg-radial to-[#00e5ef] via-[#cffdff] from-transparent
+}
+
+.dark .bgc-nothing {
+  @apply bg-radial to-[#2a2a2a] via-[#1a1a1a] from-transparent
+}
