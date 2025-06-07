@@ -389,20 +389,24 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                             )
                         })}
                         <div className="flex gap-2 mt-4">
-                            <div className="grow flex gap-3 items-center">
-                                <div className="w-8 h-8"><PowerIcon/></div>
-                                <div>
-                                    <p className="fadedtext text-[9pt]">초월 총합</p>
-                                    <p className="text-xl font-bold">{getAllPower(equipments)}</p>
+                            {getAllPower(equipments) > 0 ? (
+                                <div className="grow flex gap-3 items-center">
+                                    <div className="w-8 h-8"><PowerIcon/></div>
+                                    <div>
+                                        <p className="fadedtext text-[9pt]">초월 총합</p>
+                                        <p className="text-lg font-bold">{getAllPower(equipments)}</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="grow flex gap-3 items-center">
-                                <div className="w-8 h-8"><PotionIcon/></div>
-                                <div>
-                                    <p className="fadedtext text-[9pt]">엘릭서 총합</p>
-                                    <p className="text-xl font-bold">Lv.{getAllElixir(equipments)}</p>
+                            ) : <></>}
+                            {getAllElixir(equipments) > 0 ? (
+                                <div className="grow flex gap-3 items-center">
+                                    <div className="w-8 h-8"><PotionIcon/></div>
+                                    <div>
+                                        <p className="fadedtext text-[9pt]">엘릭서 총합</p>
+                                        <p className="text-lg font-bold">Lv.{getAllElixir(equipments)}</p>
+                                    </div>
                                 </div>
-                            </div>
+                            ) : <></>}
                         </div>
                     </div>
                     <Divider orientation={isMobile ? 'horizontal' : 'vertical'}/>
