@@ -30,6 +30,7 @@ export function getColorTextByGrade(grade: string): string {
         case '전설': return "text-legend"
         case '유물': return "text-relics";
         case '고대': return "text-ancient";
+        case '에스더': return "text-special";
     }
     return "#000000";
 }
@@ -44,6 +45,7 @@ export function getBackgroundByGrade(grade: string): string {
         case '전설': return "bgc-legend"
         case '유물': return "bgc-relics";
         case '고대': return "bgc-ancient";
+        case '에스더': return "bgc-special";
     }
-    return "";
+    return "bgc-nothing";
 }

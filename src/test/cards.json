@@ -1,0 +1,32 @@
+{
+    "Element_000": {
+        "type": "NameTagBox",
+        "value": "<FONT COLOR='#F99200'>각성한 진저웨일</FONT>"
+    },
+    "Element_001": {
+        "type": "Card",
+        "value": {
+            "awakeCount": 5,
+            "awakeTotal": 5,
+            "cardStack": "",
+            "iconData": {
+                "iconPath": "https://cdn-lostark.game.onstove.com/efui_iconatlas/card_legend/card_legend_05_5.png"
+            },
+            "isBookMark": false,
+            "notRegistered": false,
+            "tierGrade": 5
+        }
+    },
+    "Element_002": {
+        "type": "MultiTextBox",
+        "value": "|"
+    },
+    "Element_003": {
+        "type": "SingleTextBox",
+        "value": "<FONT COLOR='#E2C87A'><FONT SIZE='12'>마침내 환영술을 완성한 진저웨일. 무수히 많은 분신을 자유롭게 만들 수 있게 되었다.</FONT></FONT>"
+    },
+    "Element_004": {
+        "type": "SingleTextBox",
+        "value": "<Font color='#5FD3F1'>[카제로스 레이드] 서막 : 붉어진 백야의 나선 - 하드</font><BR><Font color='#5FD3F1'>[에픽 레이드] 폭풍의 지휘관, 베히모스</font><BR><Font color='#5FD3F1'>[카제로스 레이드] 1막 : 대지를 부수는 업화의 궤적</font><BR><Font color='#5FD3F1'>그 외에 획득처가 더 존재합니다.</FONT>"
+    }
+}
