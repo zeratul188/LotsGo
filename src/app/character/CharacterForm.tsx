@@ -1,10 +1,57 @@
 import { getBackgroundByGrade, getColorTextByGrade, SetStateFn, useMobileQuery } from "@/utiils/utils";
-import { Button, Card, CardBody, CardHeader, Chip, Divider, Image, Input, Popover, PopoverContent, PopoverTrigger, Progress, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tooltip } from "@heroui/react";
+import { 
+    Accordion,
+    AccordionItem,
+    Button, 
+    Card, CardBody, CardFooter, CardHeader, 
+    Chip, 
+    Divider, 
+    Image, 
+    Input, 
+    Popover, PopoverContent, PopoverTrigger, 
+    Progress, 
+    Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, 
+    Tooltip 
+} from "@heroui/react";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { Character } from "../store/loginSlice";
-import { Accessory, applyAccessories, applyArmData, applyColorElixir, applyEquipment, applyStoneData, Arm, CharacterFile, Equipment, Gem, getAllElixir, getAllPower, getBgColorByGrade, getColorByQuality, getCountAtkGems, getCountDekGems, getGemByIndex, getGemSimpleTailName, getObjectByArmorType, getParsedText, getSmallGradeByAccessory, getTextByGrade, getTextColorByGrade, handleSearch, loadGems, Stone } from "./characterFeat";
+import { 
+    Accessory, 
+    applyAccessories, 
+    applyArmData, 
+    applyColorElixir, 
+    applyEquipment, 
+    applyStoneData, 
+    Arm, 
+    CardData, 
+    CardSet, 
+    CharacterFile, 
+    Equipment, 
+    Gem, 
+    getAllElixir, 
+    getAllPower, 
+    getBgColorByGrade, 
+    getCardByIndex, 
+    getCardGems, 
+    getCardSetNames, 
+    getColorByQuality, 
+    getCountAtkGems, 
+    getCountDekGems, 
+    getGemByIndex, 
+    getGemSimpleTailName, 
+    getObjectByArmorType, 
+    getParsedText, 
+    getSmallGradeByAccessory, 
+    getTextByGrade, 
+    getTextColorByGrade, 
+    getUrlGemInImage, 
+    handleSearch, 
+    loadCards, 
+    loadGems, 
+    Stone 
+} from "./characterFeat";
 import PowerIcon from "@/Icons/PowerIcon";
 import { printAllElixirInTooltip, printBonusInTooltip, printCountInTooltip, printElixirInTooltip, printHighUpgradeInTooltip, printInfoInTooltip, printPowerInTooltip } from "./equipmentPrints";
 import clsx from "clsx";
@@ -21,14 +68,17 @@ export function useCharacterForm() {
     const [file, setFile] = useState<CharacterFile>({
         profile: null,
         equipment: null,
-        gem: null
-    })
+        gem: null,
+        cards: null
+    });
+    const [isNothing, setNothing] = useState(false);
 
     return {
         isLoading, setLoading,
         isSearched, setSearched,
         nickname, setNickname,
-        file, setFile
+        file, setFile,
+        isNothing, setNothing
     }
 }
 
@@ -132,7 +182,7 @@ type ProfileComponentProps = {
 export function ProfileComponent({ file }: ProfileComponentProps) {
     const profile = file.profile;
     return (
-        <div className="w-full block sm:fixed top-[65px] left-0 h-[max-content] sm:h-[300px] border-b-1 border-[#dddddd] dark:border-[#333333] bg-[#F6F6F6] dark:bg-[#111111] z-9999">
+        <div className="w-full h-[max-content] sm:h-[300px] border-b-1 border-[#dddddd] dark:border-[#333333] bg-[#F6F6F6] dark:bg-[#111111]">
             <div className="w-full max-w-[1280px] mx-auto h-full flex flex-col-reverse sm:flex-row">
                 <div className="p-5 h-full relative flex flex-col">
                     <div className="flex gap-2">
@@ -185,6 +235,7 @@ export function AbilityComponent({ file }: ProfileComponentProps) {
             <div className="w-full">
                 <EquipmentComponent file={file}/>
                 <GemComponent file={file}/>
+                <CardComponent file={file}/>
             </div>
             <div className="w-full">
 
@@ -718,6 +769,90 @@ function GemComponent({ file }: ProfileComponentProps) {
                     ))}
                 </div>
             </CardBody>
+        </Card>
+    )
+}
+
+// 카드 컴포넌트
+function CardComponent({ file }: ProfileComponentProps) {
+    const [cards, setCards] = useState<CardData[]>([]);
+    const [cardSet, setCardSet] = useState<CardSet[]>([]);
+
+    useEffect(() => {
+        loadCards(file.cards, setCards, setCardSet);
+    }, [file.cards]);
+
+    return (
+        <Card radius="sm" className="mt-8">
+            <CardHeader><p className="text-lg">카드</p></CardHeader>
+            <Divider/>
+            <CardBody>
+                <div className="w-[800px] sm:w-full p-2 grid gap-2 grid-cols-6 overflow-x-auto sm:overflow-x-hidden scrollbar-hide">
+                    {Array.from({ length: 6 }).map((_, index) => {
+                        const gradeCard = getCardByIndex(cards, index) ? getColorTextByGrade(getCardByIndex(cards, index)!.grade) : '';
+                        return (
+                            <div key={index} className="flex flex-col justify-center items-center">
+                                <div className="relative w-[110px] h-[180px]">
+                                    {getCardByIndex(cards, index) ? <>
+                                        <img
+                                            src={getCardByIndex(cards, index)?.icon}
+                                            alt="outside"
+                                            className="w-full h-full absolute top-0 left-0 object-cover z-[1] [clip-path:inset(3%_0_1%_0)]"/>
+                                        <img
+                                            src={getUrlGemInImage(getCardByIndex(cards, index)!.count)}
+                                            alt="gem"
+                                            className="w-[80%] h-[20%] absolute left-1/2 bottom-[10%] -translate-x-1/2 z-[3]"/>
+                                    </>: <></>}
+                                    <img
+                                        src={'/character/card/cardout.png'}
+                                        alt="outside"
+                                        className="w-full h-full absolute top-0 left-0 pointer-events-none z-[2]"/>
+                                </div>
+                                <Chip
+                                    radius="sm"
+                                    variant="flat"
+                                    size="sm"
+                                    className="mt-2">
+                                    <p className={`${gradeCard}`}>{getCardByIndex(cards, index) ? getCardByIndex(cards, index)!.name : '-'}</p>
+                                </Chip>
+                            </div>
+                        )
+                    })}
+                </div>
+            </CardBody>
+            <Divider/>
+            <CardFooter>
+                <Accordion>
+                    <AccordionItem key={1} title={
+                        <p className="whitespace-nowrap overflow-hidden text-ellipsis w-[300px] sm:w-[600px]">
+                            {getCardSetNames(cardSet, cards)}
+                        </p>}>
+                        <div className="w-full">
+                            {cardSet.map((sets, index) => (
+                                <div key={index} className="w-full mt-4">
+                                    <div className="flex w-full gap-2 items-center">
+                                        <p className="grow text-lg text-[#fe6e0e]">{sets.name}</p>
+                                        <p>총 {getCardGems(sets, cards)}각성</p>
+                                    </div>
+                                    <ul className="list-disc pl-4 mt-2">
+                                        {sets.items.map((item, idx) => (
+                                            <li key={idx} className="w-full mb-2">
+                                                <div className="flex gap-2 flex-col sm:flex-row w-full">
+                                                    <p className={clsx(
+                                                        "w-full sm:w-[max-content]",
+                                                        item.isEnable && item.enableCount <= getCardGems(sets, cards) ? '' : 'text-[#aaaaaa] dark:text-[#444444]'
+                                                    )}>{item.name}</p>
+                                                    <p className="sm:grow truncate fadedtext text-left sm:text-right">{item.description}</p>
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+                    </AccordionItem>
+                </Accordion>
+            </CardFooter>
         </Card>
     )
 }

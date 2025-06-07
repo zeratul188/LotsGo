@@ -6,7 +6,8 @@ import data from "./data.json";
 export type CharacterFile = {
     profile: any,
     equipment: any,
-    gem: any[] | null
+    gem: any[] | null,
+    cards: any[] | null
 }
 
 // 캐릭터 검색 함수
@@ -28,7 +29,8 @@ export async function loadProfile(
     setLoading: SetStateFn<boolean>,
     setNickname: SetStateFn<string>,
     file: CharacterFile,
-    setFile: SetStateFn<CharacterFile>
+    setFile: SetStateFn<CharacterFile>,
+    setNothing: SetStateFn<boolean>
 ) {
     const lostarkRes = await fetch(`/api/lostark?value=${nickname}&code=5`);
     if (!lostarkRes.ok) {
@@ -44,12 +46,18 @@ export async function loadProfile(
     }
     const data = await lostarkRes.json();
     const newFile = structuredClone(file);
-    newFile.profile = data.ArmoryProfile;
-    newFile.equipment = data.ArmoryEquipment;
-    newFile.gem = data.ArmoryGem.Gems;
-    console.log(data.ArmoryGem);
-    setLoading(false);
-    setFile(newFile);
+    if (data) {
+        newFile.profile = data.ArmoryProfile;
+        newFile.equipment = data.ArmoryEquipment;
+        newFile.gem = data.ArmoryGem.Gems;
+        newFile.cards = data.ArmoryCard;
+        setLoading(false);
+        setFile(newFile);
+        setNothing(false);
+    } else {
+        setLoading(false);
+        setNothing(true);
+    }
 }
 
 // 장비 종류에 따른 값 반환 함수
@@ -613,4 +621,133 @@ export function getCountDekGems(gems: Gem[]): number {
         }
     }
     return count;
+}
+
+// 카드 데이터 가져오기
+export type CardData = {
+    slot: number,
+    name: string,
+    icon: string,
+    count: number,
+    total: number,
+    grade: string
+}
+export type CardDetailSet = {
+    name: string,
+    description: string,
+    isEnable: boolean,
+    enableCount: number
+}
+export type CardSet = {
+    name: string,
+    slots: number[],
+    items: CardDetailSet[]
+}
+export function loadCards(data: any, setCards: SetStateFn<CardData[]>, setCardSet: SetStateFn<CardSet[]>) {
+    const cards: CardData[] = [];
+    const sets: CardSet[] = [];
+    if (data) {
+        const datas = data.Cards;
+        for (const item of datas) {
+            const newCard: CardData = {
+                slot: Number(item.Slot),
+                name: item.Name,
+                icon: item.Icon,
+                count: Number(item.AwakeCount),
+                total: Number(item.AwakeTotal),
+                grade: item.Grade
+            }   
+            cards.push(newCard);
+        }
+        const setDatas = data.Effects;
+        for (const cardSet of setDatas) {
+            const items: CardDetailSet[] = [];
+            const cardCount = cardSet.CardSlots.length;
+            for (const item of cardSet.Items) {
+                let enableCount = 0, cardAllCount = 0;
+                const cardText = item.Name;
+                if (cardText.includes('각성합계')) {
+                    const match = cardText.match(/(\d+)각성합계/);
+                    enableCount = match ? parseInt(match[1], 10) : 0;
+                }
+                if (cardText.includes('세트')) {
+                    const match = cardText.match(/(\d+)세트/);
+                    cardAllCount = match ? parseInt(match[1], 10) : 0;
+                }
+                const newItem: CardDetailSet = {
+                    name: item.Name,
+                    description: item.Description,
+                    isEnable: cardCount >= cardAllCount,
+                    enableCount: enableCount
+                }
+                items.push(newItem);
+            }
+            const newSet: CardSet = {
+                name: items[0].name.replace(/\s*\d+세트.*$/, ""),
+                slots: cardSet.CardSlots,
+                items: items
+            }
+            sets.push(newSet);
+        }
+        setCards(cards);
+        setCardSet(sets);
+    }
+}
+
+// 카드 이미지 안 각성 보석 이미지 반환 함수
+export function getUrlGemInImage(count: number): string {
+    const urls: string[] = [
+        '/character/card/card0.png',
+        '/character/card/card1.png',
+        '/character/card/card2.png',
+        '/character/card/card3.png',
+        '/character/card/card4.png',
+        '/character/card/card5.png'
+    ]
+    return urls[count];
+}
+
+// index 기반으로 정해진 slot의 보석 가져오기
+export function getCardByIndex(cards: CardData[], index: number): CardData | null {
+    const card = cards.find(card => card.slot === index);
+    if (card) {
+        return card;
+    } else {
+        return null;
+    }
+}
+
+// 적용된 카드 세트 효과 목록 출력
+export function getCardSetNames(cardSet: CardSet[], cards: CardData[]): string {
+    let resultStr = "";
+    for (const sets of cardSet) {
+        let str = '';
+        let cardSumGems = 0;
+        for (const index of sets.slots) {
+            const card = cards.find(item => item.slot === index);
+            if (card) {
+                cardSumGems += card.count;
+            }
+        }
+        for (const item of sets.items) {
+            if (item.isEnable && cardSumGems >= item.enableCount) {
+                str = item.name;
+            }
+        }
+        if (resultStr !== '') resultStr += ', ';
+        resultStr += str;
+    }
+    return resultStr;
+}
+
+// 적용된 카드 세트의 각성 개수 반환 함수
+export function getCardGems(sets: CardSet, cards: CardData[]): number {
+    let cardSumGems = 0;
+    for (const index of sets.slots) {
+        const card = cards.find(item => item.slot === index);
+        if (card) {
+            cardSumGems += card.count;
+        }
+    }
+    return cardSumGems;
 }
