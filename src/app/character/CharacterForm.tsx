@@ -90,6 +90,8 @@ export function useCharacterForm() {
     });
     const [isNothing, setNothing] = useState(false);
     const [gems, setGems] = useState<Gem[]>([]);
+    const [isDisable, setDisable] = useState(false);
+    const [isLoadingUpdate, setLoadingUpdate] = useState(false);
 
     return {
         isLoading, setLoading,
@@ -97,7 +99,9 @@ export function useCharacterForm() {
         nickname, setNickname,
         file, setFile,
         isNothing, setNothing,
-        gems, setGems
+        gems, setGems,
+        isDisable, setDisable,
+        isLoadingUpdate, setLoadingUpdate
     }
 }
 
