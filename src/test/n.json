@@ -1,0 +1,64 @@
+{
+    "Element_000": {
+        "type": "NameTagBox",
+        "value": "<P ALIGN='CENTER'><FONT COLOR='#F99200'>특제 황금 나침반</FONT></P>"
+    },
+    "Element_001": {
+        "type": "ItemTitle",
+        "value": {
+            "bEquip": 0,
+            "leftStr0": "<FONT SIZE='12'><FONT COLOR='#F99200'>전설 나침반</FONT></FONT>",
+            "leftStr2": "",
+            "qualityValue": -1,
+            "rightStr0": "<FONT SIZE='12'><FONT COLOR='#FFD200'>장착중</FONT></FONT>",
+            "slotData": {
+                "advBookIcon": 0,
+                "battleItemTypeIcon": 0,
+                "blackListIcon": 0,
+                "cardIcon": false,
+                "friendship": 0,
+                "iconGrade": 4,
+                "iconPath": "https://cdn-lostark.game.onstove.com/efui_iconatlas/acc/acc_311.png",
+                "imagePath": "",
+                "islandIcon": 0,
+                "petBorder": 0,
+                "rtString": "",
+                "seal": false,
+                "temporary": 0,
+                "town": 0,
+                "trash": 0
+            }
+        }
+    },
+    "Element_002": {
+        "type": "SingleTextBox",
+        "value": "<FONT SIZE='12'>원정대 귀속됨 </FONT>"
+    },
+    "Element_003": {
+        "type": "MultiTextBox",
+        "value": "|<font color='#C24B46'>거래 불가</font>"
+    },
+    "Element_004": {
+        "type": "ItemPartBox",
+        "value": {
+            "Element_000": "<FONT COLOR='#A9D0F5'>추가 효과</FONT>",
+            "Element_001": "모든 선박의 최종 내구도 수리 비용 +15.00% 감소<BR>섬에서 이동 속도 +8.00%<BR>선박 통상 운항 속도(노트) +3.0"
+        }
+    },
+    "Element_005": {
+        "type": "IndentStringGroup",
+        "value": null
+    },
+    "Element_006": {
+        "type": "SingleTextBox",
+        "value": "<FONT COLOR='#E2C87A'><FONT SIZE='12'>빛나는 황금을 이용해 만들어진 고급 나침반.<br>수십 년을 사용해도 녹 하나 슬지 않는다고 전해진다.</FONT></FONT>"
+    },
+    "Element_007": {
+        "type": "SingleTextBox",
+        "value": "<FONT SIZE='12'><FONT COLOR='#C24B46'>판매불가</FONT>, <FONT COLOR='#C24B46'>파괴불가</FONT>, <FONT COLOR='#C24B46'>분해불가</FONT>, <FONT COLOR='#C24B46'>품질 업그레이드 불가</FONT></FONT>"
+    },
+    "Element_008": {
+        "type": "SingleTextBox",
+        "value": "<Font color='#5FD3F1'>[제작] 외로운 섬 오페르 - 바욤</font>"
+    }
+}
