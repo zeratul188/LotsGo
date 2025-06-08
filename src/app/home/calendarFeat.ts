@@ -67,7 +67,6 @@ export async function loadCalendar(
                 let isPassed = false;
                 for (const time of island.StartTimes) {
                     const islandDate = new Date(time);
-                    console.log(`island : ${island.ContentsName}\ni time : ${islandDate.getMonth()+1}월 ${islandDate.getDate()}일 ${islandDate.getHours()}시 ${islandDate.getMinutes()}분\nm Time : ${minTimes.getMonth()+1}월 ${minTimes.getDate()}일 ${minTimes.getHours()}시 ${minTimes.getMinutes()}\nisSame : ${isSameDate(minTimes, islandDate)}`);
                     if (isSameDate(minTimes, islandDate)) {
                         isPassed = true;
                     }
