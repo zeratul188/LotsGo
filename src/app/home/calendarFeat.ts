@@ -60,13 +60,33 @@ export async function loadCalendar(
                     break;
                 }
             }
+            let minTimes = new Date();
+            minTimes.setFullYear(9999);
             for (const island of todayIslands) {
-                const newIsland: Island = {
-                    name: island.ContentsName,
-                    icon: island.ContentsIcon,
-                    items: getRewardItems(island.RewardItems)
+                for (const time of island.StartTimes) {
+                    const islandDate = new Date(time);
+                    if (minTimes.getTime() > islandDate.getTime() && isToday(today, islandDate)) {
+                        minTimes = islandDate;
+                    }
                 }
-                islands.push(newIsland);
+            }
+            for (const island of todayIslands) {
+                let isPassed = false;
+                for (const time of island.StartTimes) {
+                    const islandDate = new Date(time);
+                    console.log(`island : ${island.ContentsName}\ni time : ${islandDate.getMonth()+1}월 ${islandDate.getDate()}일 ${islandDate.getHours()}시 ${islandDate.getMinutes()}분\nm Time : ${minTimes.getMonth()+1}월 ${minTimes.getDate()}일 ${minTimes.getHours()}시 ${minTimes.getMinutes()}\nisSame : ${isSameDate(minTimes, islandDate)}`);
+                    if (isSameDate(minTimes, islandDate)) {
+                        isPassed = true;
+                    }
+                }
+                if (isPassed) {
+                    const newIsland: Island = {
+                        name: island.ContentsName,
+                        icon: island.ContentsIcon,
+                        items: getRewardItems(island.RewardItems)
+                    }
+                    islands.push(newIsland);
+                }
             }
             setIslands(islands);
         }
@@ -81,6 +101,14 @@ export async function loadCalendar(
             console.error(`Unable to load calendars data. (Error Status : ${gamecontentLostarkRes.status})`);
         }
     }
+}
+
+//모험섬 시간 일치 여부
+function isSameDate(aDate: Date, bDate: Date): boolean {
+    return aDate.getFullYear() === bDate.getFullYear() &&
+        aDate.getMonth() === bDate.getMonth() &&
+        aDate.getDate() === bDate.getDate() &&
+        aDate.getHours() === bDate.getHours();
 }
 
 export type Notice = {
