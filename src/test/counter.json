@@ -1,0 +1,99 @@
+{
+    "Element_000": {
+        "type": "NameTagBox",
+        "value": "철량추"
+    },
+    "Element_001": {
+        "type": "CommonSkillTitle",
+        "value": {
+            "leftText": "<FONT SIZE='12'>재사용 대기시간 10초</FONT>",
+            "level": "<FONT SIZE='12'><FONT COLOR='#B7DEE8'><FONT COLOR='#5CD1E5'>[난무 스킬]</FONT></FONT></FONT>",
+            "middleText": "",
+            "name": "<FONT SIZE='12'><FONT SIZE='14' COLOR='#FFFFAC'>일반</FONT></FONT>",
+            "slotData": {
+                "iconGrade": 0,
+                "iconPath": "https://cdn-lostark.game.onstove.com/efui_iconatlas/lm_skill/lm_skill_01_10.png",
+                "imagePath": ""
+            }
+        }
+    },
+    "Element_002": {
+        "type": "MultiTextBox",
+        "value": "|<FONT COLOR='#3C78FF'>PvE</FONT>"
+    },
+    "Element_003": {
+        "type": "SingleTextBox",
+        "value": "스킬 레벨 5"
+    },
+    "Element_004": {
+        "type": "MultiTextBox",
+        "value": "마나 135 소모|"
+    },
+    "Element_005": {
+        "type": "SingleTextBox",
+        "value": "<FONT COLOR='#efefdf'><FONT SIZE='11'>창을 바닥에 꽂고 몸을 실어 한바퀴 회전하여 <FONT COLOR='#ffbb00'>839,549</FONT>의 피해를 주고 적을 공중에 띄운다.</FONT></FONT><BR><FONT SIZE='12'><FONT COLOR='#EEA839'>무력화 : 하</FONT></FONT><BR><FONT SIZE='12'><FONT COLOR='#EEA839'>공격 타입 : 백 어택</FONT></FONT><BR><FONT SIZE='12'><FONT COLOR='#EEA839'>슈퍼아머 : 경직 면역</FONT></FONT><BR><FONT SIZE='12'><FONT COLOR='#EEA839'>카운터 : 가능</FONT></FONT>"
+    },
+    "Element_006": {
+        "type": "TripodSkillCustom",
+        "value": {
+            "Element_000": {
+                "desc": "<font color='#FFFDE7'>전방으로 이동거리가 <FONT COLOR='#99ff99'>3.0m</FONT> 증가한다.</font>",
+                "lock": false,
+                "name": "<font color='#FFBB63'>탁월한 기동성</font>",
+                "slotData": {
+                    "iconGrade": 10,
+                    "iconPath": "https://cdn-lostark.game.onstove.com/efui_iconatlas/tripod_tier/tripod_tier_1_10.png",
+                    "imagePath": ""
+                },
+                "tier": "<font color='#FFD200'>레벨 1 (최대)</font>"
+            },
+            "Element_001": {
+                "desc": "<FONT COLOR='#AAAAAA'>티어 2 트라이포드 스킬 레벨 7에 개방</FONT>",
+                "lock": true,
+                "name": "",
+                "tier": ""
+            },
+            "Element_002": {
+                "desc": "<FONT COLOR='#AAAAAA'>티어 3 트라이포드 스킬 레벨 10에 개방</FONT>",
+                "lock": true,
+                "name": "",
+                "tier": ""
+            }
+        }
+    },
+    "Element_007": {
+        "type": "ItemPartBox",
+        "value": {
+            "Element_000": "<FONT COLOR='#A9D0F5'>스킬 룬 효과</FONT>",
+            "Element_001": "[<FONT COLOR='#F99200'>정화</FONT>] 스킬 사용 시 80% 확률로 자신에게 걸린 해로운 효과 1개 제거"
+        }
+    },
+    "Element_008": {
+        "type": "BlinkLineStart",
+        "value": true
+    },
+    "Element_009": {
+        "type": "SingleTextBox",
+        "value": "다음 스킬 레벨 6"
+    },
+    "Element_010": {
+        "type": "MultiTextBox",
+        "value": "|<FONT COLOR='#808080'>필요 레벨</FONT> 10"
+    },
+    "Element_011": {
+        "type": "MultiTextBox",
+        "value": "|<FONT COLOR='#808080'>필요 스킬 포인트 </FONT>4"
+    },
+    "Element_012": {
+        "type": "SingleTextBox",
+        "value": "마나 156 소모"
+    },
+    "Element_013": {
+        "type": "SingleTextBox",
+        "value": "<FONT COLOR='#efefdf'><FONT SIZE='11'>창을 바닥에 꽂고 몸을 실어 한바퀴 회전하여 <FONT COLOR='#ffbb00'>839,618</FONT>의 피해를 주고 적을 공중에 띄운다.</FONT></FONT><BR><FONT SIZE='12'><FONT COLOR='#EEA839'>무력화 : 하</FONT></FONT><BR><FONT SIZE='12'><FONT COLOR='#EEA839'>공격 타입 : 백 어택</FONT></FONT><BR><FONT SIZE='12'><FONT COLOR='#EEA839'>슈퍼아머 : 경직 면역</FONT></FONT>"
+    },
+    "Element_014": {
+        "type": "BlinkLineEnd",
+        "value": true
+    }
+}

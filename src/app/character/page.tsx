@@ -6,6 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { Divider, Tab, Tabs } from "@heroui/react";
 import { loadProfile } from "./characterFeat";
 import { useMobileQuery } from "@/utiils/utils";
+import { SkillComponent } from "./SkillForm";
+import { PointComponent } from "./PointForm";
 
 export default function Character() {
     const characterForm = useCharacterForm();
@@ -37,12 +39,12 @@ export default function Character() {
         {
             id: 'skill',
             label: '스킬',
-            component: null
+            component: <SkillComponent file={characterForm.file} gems={characterForm.gems}/>
         },
         {
             id: 'story',
             label: '수집형 포인트',
-            component: null
+            component: <PointComponent file={characterForm.file}/>
         },
         {
             id: 'cody',
@@ -80,7 +82,7 @@ export default function Character() {
         return <EmptyComponent heightStyle="min-h-[calc(100vh-65px)]"/>
     }
     
-    const l = "{\"Element_000\":{\"type\":\"NameTagBox\",\"value\":\"절제\"},\"Element_001\":{\"type\":\"CommonSkillTitle\",\"value\":{\"leftText\":\"아크 패시브 레벨 <FONT COLOR='#FFD200'>3</FONT>\",\"level\":\"\",\"name\":\"<FONT SIZE='13' COLOR='#FFFFAC'>깨달음</FONT>\",\"slotData\":{\"iconGrade\":0,\"iconPath\":\"https://cdn-lostark.game.onstove.com/efui_iconatlas/ark_passive_01/ark_passive_01_52.png\",\"imagePath\":\"\"}}},\"Element_002\":{\"type\":\"MultiTextBox\",\"value\":\"집중 스탠스를 사용할 수 없지만, 듀얼 게이지 획득량이 <FONT COLOR='#99ff99'>100.0%</FONT> 증가한다.||<BR>\"}}";
+    const l = "{\r\n  \"Element_000\": {\r\n    \"type\": \"NameTagBox\",\r\n    \"value\": \"<P ALIGN='CENTER'><FONT COLOR='#ce43fc'>영롱한 보석 부적</FONT></P>\"\r\n  },\r\n  \"Element_001\": {\r\n    \"type\": \"ItemTitle\",\r\n    \"value\": {\r\n      \"bEquip\": 0,\r\n      \"leftStr0\": \"<FONT SIZE='12'><FONT COLOR='#ce43fc'>영웅 부적</FONT></FONT>\",\r\n      \"leftStr2\": \"\",\r\n      \"qualityValue\": -1,\r\n      \"rightStr0\": \"<FONT SIZE='12'><FONT COLOR='#FFD200'>장착중</FONT></FONT>\",\r\n      \"slotData\": {\r\n        \"advBookIcon\": 0,\r\n        \"battleItemTypeIcon\": 0,\r\n        \"blackListIcon\": 0,\r\n        \"cardIcon\": false,\r\n        \"friendship\": 0,\r\n        \"iconGrade\": 3,\r\n        \"iconPath\": \"https://cdn-lostark.game.onstove.com/efui_iconatlas/acc/acc_306.png\",\r\n        \"imagePath\": \"\",\r\n        \"islandIcon\": 0,\r\n        \"petBorder\": 0,\r\n        \"rtString\": \"\",\r\n        \"seal\": false,\r\n        \"temporary\": 0,\r\n        \"town\": 0,\r\n        \"trash\": 0\r\n      }\r\n    }\r\n  },\r\n  \"Element_002\": {\r\n    \"type\": \"SingleTextBox\",\r\n    \"value\": \"<FONT SIZE='12'>원정대 귀속됨 </FONT>\"\r\n  },\r\n  \"Element_003\": {\r\n    \"type\": \"MultiTextBox\",\r\n    \"value\": \"|<font color='#C24B46'>거래 불가</font>\"\r\n  },\r\n  \"Element_004\": {\r\n    \"type\": \"ItemPartBox\",\r\n    \"value\": {\r\n      \"Element_000\": \"<FONT COLOR='#A9D0F5'>추가 효과</FONT>\",\r\n      \"Element_001\": \"채집 속도 +2.00%<BR>내구도 미차감 확률 +3.20%<BR>모든 생활 전체 등급 재료 획득률 +15.00%\"\r\n    }\r\n  },\r\n  \"Element_005\": {\r\n    \"type\": \"IndentStringGroup\",\r\n    \"value\": null\r\n  },\r\n  \"Element_006\": {\r\n    \"type\": \"SingleTextBox\",\r\n    \"value\": \"<FONT COLOR='#E2C87A'><FONT SIZE='12'>영롱한 보석을 가공해 만든 부적.<br>가지고 있는 것만으로도 강한 힘을 얻게 된다.</FONT></FONT>\"\r\n  },\r\n  \"Element_007\": {\r\n    \"type\": \"SingleTextBox\",\r\n    \"value\": \"<FONT SIZE='12'><FONT COLOR='#C24B46'>판매불가</FONT>, <FONT COLOR='#C24B46'>파괴불가</FONT>, <FONT COLOR='#C24B46'>분해불가</FONT>, <FONT COLOR='#C24B46'>품질 업그레이드 불가</FONT></FONT>\"\r\n  },\r\n  \"Element_008\": {\r\n    \"type\": \"SingleTextBox\",\r\n    \"value\": \"<Font color='#5FD3F1'>[제작] 대도시 - 연금술사</font>\"\r\n  }\r\n}";
 
     return (
         <div className="w-full">

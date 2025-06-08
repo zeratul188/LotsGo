@@ -91,11 +91,11 @@ body * {
 }
 
 .bgc-normal {
-  @apply bg-radial to-[#dddddd] via-[#eeeeee] from-transparent
+  @apply bg-radial to-[#dddddd] via-[#eeeeee] from-transparent border-1 border-[#dddddd]
 }
 
 .dark .bgc-normal {
-  @apply bg-radial to-[#333333] via-[#222222] from-transparent
+  @apply bg-radial to-[#333333] via-[#222222] from-transparent border-[#333333]
 }
 
 .text-advanced {
@@ -107,11 +107,11 @@ body * {
 }
 
 .bgc-advanced {
-  @apply bg-radial to-[#b1ff4b] via-[#dfffb6] from-transparent
+  @apply bg-radial to-[#b1ff4b] via-[#dfffb6] from-transparent border-1 border-[#b1ff4b]
 }
 
 .dark .bgc-advanced {
-  @apply bg-radial to-[#3c6900] via-[#243f00] from-transparent
+  @apply bg-radial to-[#3c6900] via-[#243f00] from-transparent border-[#3c6900]
 }
 
 .text-rare {
@@ -123,11 +123,11 @@ body * {
 }
 
 .bgc-rare {
-  @apply bg-radial to-[#82d9ff] via-[#c0ebff] from-transparent
+  @apply bg-radial to-[#82d9ff] via-[#c0ebff] from-transparent border-1 border-[#82d9ff]
 }
 
 .dark .bgc-rare {
-  @apply bg-radial to-[#0072a3] via-[#002c3f] from-transparent
+  @apply bg-radial to-[#0072a3] via-[#002c3f] from-transparent border-[#0072a3]
 }
 
 .text-hero {
@@ -139,11 +139,11 @@ body * {
 }
 
 .bgc-hero {
-  @apply bg-radial to-[#da6aff] via-[#eaaaff] from-transparent
+  @apply bg-radial to-[#da6aff] via-[#eaaaff] from-transparent border-1 border-[#da6aff]
 }
 
 .dark .bgc-hero {
-  @apply bg-radial to-[#7c2997] via-[#3d134b] from-transparent
+  @apply bg-radial to-[#7c2997] via-[#3d134b] from-transparent border-[#7c2997]
 }
 
 .text-legend {
@@ -155,11 +155,11 @@ body * {
 }
 
 .bgc-legend {
-  @apply bg-radial to-[#ffaf40] via-[#ffd8a1] from-transparent
+  @apply bg-radial to-[#ffaf40] via-[#ffd8a1] from-transparent border-1 border-[#ffaf40]
 }
 
 .dark .bgc-legend {
-  @apply bg-radial to-[#c27100] via-[#5e3700] from-transparent
+  @apply bg-radial to-[#c27100] via-[#5e3700] from-transparent border-[#c27100]
 }
 
 .text-relics {
@@ -171,11 +171,11 @@ body * {
 }
 
 .bgc-relics {
-  @apply bg-radial to-[#ff8138] via-[#ffac7b] from-transparent
+  @apply bg-radial to-[#ff8138] via-[#ffac7b] from-transparent border-1 border-[#ff8138]
 }
 
 .dark .bgc-relics {
-  @apply bg-radial to-[#a83e00] via-[#5c2200] from-transparent
+  @apply bg-radial to-[#a83e00] via-[#5c2200] from-transparent border-[#a83e00]
 }
 
 .text-ancient {
@@ -187,11 +187,11 @@ body * {
 }
 
 .bgc-ancient {
-  @apply bg-radial to-[#c2b098] via-[#e9dac5] from-transparent
+  @apply bg-radial to-[#c2b098] via-[#e9dac5] from-transparent border-1 border-[#c2b098]
 }
 
 .dark .bgc-ancient {
-  @apply bg-radial to-[#ac977a] via-[#473f32] from-transparent
+  @apply bg-radial to-[#ac977a] via-[#473f32] from-transparent border-[#ac977a]
 }
 
 .text-special {
@@ -203,17 +203,17 @@ body * {
 }
 
 .bgc-special {
-  @apply bg-radial to-[#00e5ef] via-[#cffdff] from-transparent
+  @apply bg-radial to-[#00e5ef] via-[#cffdff] from-transparent border-1 border-[#00e5ef]
 }
 
 .dark .bgc-special {
-  @apply bg-radial to-[#00e5ef] via-[#002a2c] from-transparent
+  @apply bg-radial to-[#00e5ef] via-[#002a2c] from-transparent border-[#00e5ef]
 }
 
 .bgc-nothing {
-  @apply bg-radial to-[#c4c4c4] via-[#e6e6e6] from-transparent
+  @apply bg-radial to-[#c4c4c4] via-[#e6e6e6] from-transparent border-1 border-[#c4c4c4]
 }
 
 .dark .bgc-nothing {
-  @apply bg-radial to-[#2a2a2a] via-[#1a1a1a] from-transparent
+  @apply bg-radial to-[#2a2a2a] via-[#1a1a1a] from-transparent border-[#2a2a2a]
 }
