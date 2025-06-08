@@ -24,10 +24,13 @@ import {
     applyColorElixir, 
     applyEquipment, 
     applyStoneData, 
+    ArkpassiveItem, 
+    ArkpassivePoint, 
     Arm, 
     CardData, 
     CardSet, 
     CharacterFile, 
+    Engraving, 
     Equipment, 
     Gem, 
     getAllElixir, 
@@ -37,6 +40,7 @@ import {
     getCardGems, 
     getCardSetNames, 
     getColorByQuality, 
+    getColorByType, 
     getCountAtkGems, 
     getCountDekGems, 
     getGemByIndex, 
@@ -52,7 +56,9 @@ import {
     getTextColorByGrade, 
     getUrlGemInImage, 
     handleSearch, 
+    loadArkpassive, 
     loadCards, 
+    loadEngraving, 
     loadGems, 
     loadStats, 
     Stat, 
@@ -76,16 +82,20 @@ export function useCharacterForm() {
         equipment: null,
         gem: null,
         cards: null,
-        stats: null
+        stats: null,
+        engraving: null,
+        arkpassive: null
     });
     const [isNothing, setNothing] = useState(false);
+    const [gems, setGems] = useState<Gem[]>([]);
 
     return {
         isLoading, setLoading,
         isSearched, setSearched,
         nickname, setNickname,
         file, setFile,
-        isNothing, setNothing
+        isNothing, setNothing,
+        gems, setGems
     }
 }
 
@@ -236,16 +246,23 @@ export function ProfileComponent({ file }: ProfileComponentProps) {
 }
 
 // 능력치 컴포넌트
-export function AbilityComponent({ file }: ProfileComponentProps) {
+type AbilityComponentProps = {
+    file: CharacterFile,
+    gems: Gem[],
+    setGems: SetStateFn<Gem[]>
+}
+export function AbilityComponent({ file, gems, setGems }: AbilityComponentProps) {
     return (
         <div className="w-full grid grid-cols-1 md960:grid-cols-[5fr_2fr] gap-8">
             <div className="w-full">
                 <EquipmentComponent file={file}/>
-                <GemComponent file={file}/>
+                <GemComponent file={file} gems={gems} setGems={setGems}/>
                 <CardComponent file={file}/>
             </div>
             <div className="w-full">
                 <StatComponent file={file}/>
+                <EngravingComponent file={file}/>
+                <ArkpassiveComponent file={file}/>
             </div>
         </div>
     )
@@ -715,9 +732,8 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
 }
 
 // 보석 컴포넌트
-function GemComponent({ file }: ProfileComponentProps) {
+function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
     const [attack, setAttack] = useState(0);
-    const [gems, setGems] = useState<Gem[]>([]);
 
     useEffect(() => {
         if (file.gem) {
@@ -954,6 +970,164 @@ function StatComponent({ file }: ProfileComponentProps) {
                         ))}
                     </div>
                 </div>
+            </CardBody>
+        </Card>
+    )
+}
+
+// 각인 컴포넌트
+function EngravingComponent({ file }: ProfileComponentProps) {
+    const [engravings, setEngravings] = useState<Engraving[]>([]);
+    const isMobile = useMobileQuery();
+
+    useEffect(() => {
+        loadEngraving(file.engraving, setEngravings);
+    }, [file.profile])
+
+    return (
+        <Card radius="sm" className="mt-8">
+            <CardHeader><p className="text-lg">각인</p></CardHeader>
+            <Divider/>
+            <CardBody>
+                <div>
+                    {engravings.map((engraving, index) => (
+                        <Tooltip 
+                            key={index} 
+                            showArrow
+                            placement={isMobile ? 'top' : 'left'}
+                            content={<div className="p-2">
+                                <p className="max-w-[320px]">{engraving.description}</p>
+                            </div>}>
+                            <div className="flex gap-3 mb-2">
+                                <p className={`grow ${getColorTextByGrade(engraving.grade)}`}>{engraving.name}</p>
+                                {engraving.stoneLevel > 0 ? (
+                                    <div className="flex gap-1 items-center fadedtext">
+                                        <Image
+                                            src={'/icons/stoneicon.png'}
+                                            width={12}
+                                            height={20}/>
+                                        <p>X {engraving.stoneLevel}</p>
+                                    </div>
+                                ) : <></>}
+                                <p className={`${getColorTextByGrade(engraving.grade)}`}>◆ X {engraving.level}</p>
+                            </div>
+                        </Tooltip>
+                    ))}
+                </div>
+            </CardBody>
+        </Card>
+    )
+}
+
+// 아크패시브 컴포넌트
+function ArkpassiveComponent({ file }: ProfileComponentProps) {
+    const [points, setPoints] = useState<ArkpassivePoint[]>([]);
+    const [evolution, setEvolution] = useState<ArkpassiveItem[]>([]);
+    const [enlightenment, setEnlightenment] = useState<ArkpassiveItem[]>([]);
+    const [jump, setJump] = useState<ArkpassiveItem[]>([]);
+    const isMobile = useMobileQuery();
+
+    useEffect(() => {
+        loadArkpassive(file.arkpassive, setPoints, setEvolution, setEnlightenment, setJump);
+    }, [file.arkpassive]);
+
+    return (
+        <Card radius="sm" className="mt-8">
+            <CardHeader><p className="text-lg">아크패시브</p></CardHeader>
+            <Divider/>
+            <CardBody>
+                <div className="w-full grid grid-cols-3 gap-1">
+                    {points.map((point, index) => (
+                        <div key={index} className="flex gap-2 items-center">
+                            <p className="fadedtext text-sm">{point.type}</p>
+                            <p className={getColorByType(point.type)}>{point.point}</p>
+                        </div>
+                    ))}
+                </div>
+                <Chip
+                    color="warning"
+                    size="md"
+                    radius="sm"
+                    variant="flat"
+                    className="min-w-full text-center mt-4 mb-4">
+                    진화
+                </Chip>
+                {evolution.map((item, index) => (
+                    <Tooltip 
+                        key={index} 
+                        placement={isMobile ? 'bottom' : 'left'} 
+                        showArrow 
+                        content={<div className="p-2">
+                            <p className="max-w-[320px]">{item.description}</p>
+                        </div>}>
+                        <div className="flex gap-2 mb-2 items-center">
+                            <Image
+                                src={item.icon}
+                                width={24}
+                                height={24}
+                                radius="sm"/>
+                            <p className="fadedtext text-sm">{item.tier}티어</p>
+                            <p className="text-sm">Lv.{item.level}</p>
+                            <p className="grow text-sm">{item.name}</p>
+                        </div>
+                    </Tooltip>
+                ))}
+                <Chip
+                    color="primary"
+                    size="md"
+                    radius="sm"
+                    variant="flat"
+                    className="min-w-full text-center mt-2 mb-4">
+                    깨달음
+                </Chip>
+                {enlightenment.map((item, index) => (
+                    <Tooltip 
+                        key={index} 
+                        placement={isMobile ? 'bottom' : 'left'} 
+                        showArrow 
+                        content={<div className="p-2">
+                            <p className="max-w-[320px]">{item.description}</p>
+                        </div>}>
+                        <div className="flex gap-2 mb-2 items-center">
+                            <Image
+                                src={item.icon}
+                                width={24}
+                                height={24}
+                                radius="sm"/>
+                            <p className="fadedtext text-sm">{item.tier}티어</p>
+                            <p className="text-sm">Lv.{item.level}</p>
+                            <p className="grow text-sm">{item.name}</p>
+                        </div>
+                    </Tooltip>
+                ))}
+                <Chip
+                    color="success"
+                    size="md"
+                    radius="sm"
+                    variant="flat"
+                    className="min-w-full text-center mt-2 mb-4">
+                    도약
+                </Chip>
+                {jump.map((item, index) => (
+                    <Tooltip 
+                        key={index} 
+                        placement={isMobile ? 'bottom' : 'left'} 
+                        showArrow 
+                        content={<div className="p-2">
+                            <p className="max-w-[320px]">{item.description}</p>
+                        </div>}>
+                        <div className="flex gap-2 mb-2 items-center">
+                            <Image
+                                src={item.icon}
+                                width={24}
+                                height={24}
+                                radius="sm"/>
+                            <p className="fadedtext text-sm">{item.tier}티어</p>
+                            <p className="text-sm">Lv.{item.level}</p>
+                            <p className="grow text-sm">{item.name}</p>
+                        </div>
+                    </Tooltip>
+                ))}
             </CardBody>
         </Card>
     )

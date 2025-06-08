@@ -32,7 +32,7 @@ export default function Character() {
         {
             id: 'ability',
             label: '능력치',
-            component: <AbilityComponent file={characterForm.file}/>
+            component: <AbilityComponent file={characterForm.file} gems={characterForm.gems} setGems={characterForm.setGems}/>
         },
         {
             id: 'skill',
@@ -80,7 +80,7 @@ export default function Character() {
         return <EmptyComponent heightStyle="min-h-[calc(100vh-65px)]"/>
     }
     
-    const l = "{\r\n  \"Element_000\": {\r\n    \"type\": \"NameTagBox\",\r\n    \"value\": \"<FONT COLOR='#F99200'>각성한 진저웨일</FONT>\"\r\n  },\r\n  \"Element_001\": {\r\n    \"type\": \"Card\",\r\n    \"value\": {\r\n      \"awakeCount\": 5,\r\n      \"awakeTotal\": 5,\r\n      \"cardStack\": \"\",\r\n      \"iconData\": {\r\n        \"iconPath\": \"https://cdn-lostark.game.onstove.com/efui_iconatlas/card_legend/card_legend_05_5.png\"\r\n      },\r\n      \"isBookMark\": false,\r\n      \"notRegistered\": false,\r\n      \"tierGrade\": 5\r\n    }\r\n  },\r\n  \"Element_002\": {\r\n    \"type\": \"MultiTextBox\",\r\n    \"value\": \"|\"\r\n  },\r\n  \"Element_003\": {\r\n    \"type\": \"SingleTextBox\",\r\n    \"value\": \"<FONT COLOR='#E2C87A'><FONT SIZE='12'>마침내 환영술을 완성한 진저웨일. 무수히 많은 분신을 자유롭게 만들 수 있게 되었다.</FONT></FONT>\"\r\n  },\r\n  \"Element_004\": {\r\n    \"type\": \"SingleTextBox\",\r\n    \"value\": \"<Font color='#5FD3F1'>[카제로스 레이드] 서막 : 붉어진 백야의 나선 - 하드</font><BR><Font color='#5FD3F1'>[에픽 레이드] 폭풍의 지휘관, 베히모스</font><BR><Font color='#5FD3F1'>[카제로스 레이드] 1막 : 대지를 부수는 업화의 궤적</font><BR><Font color='#5FD3F1'>그 외에 획득처가 더 존재합니다.</FONT>\"\r\n  }\r\n}";
+    const l = "{\"Element_000\":{\"type\":\"NameTagBox\",\"value\":\"절제\"},\"Element_001\":{\"type\":\"CommonSkillTitle\",\"value\":{\"leftText\":\"아크 패시브 레벨 <FONT COLOR='#FFD200'>3</FONT>\",\"level\":\"\",\"name\":\"<FONT SIZE='13' COLOR='#FFFFAC'>깨달음</FONT>\",\"slotData\":{\"iconGrade\":0,\"iconPath\":\"https://cdn-lostark.game.onstove.com/efui_iconatlas/ark_passive_01/ark_passive_01_52.png\",\"imagePath\":\"\"}}},\"Element_002\":{\"type\":\"MultiTextBox\",\"value\":\"집중 스탠스를 사용할 수 없지만, 듀얼 게이지 획득량이 <FONT COLOR='#99ff99'>100.0%</FONT> 증가한다.||<BR>\"}}";
 
     return (
         <div className="w-full">
