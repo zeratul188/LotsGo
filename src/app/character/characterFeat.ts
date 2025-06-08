@@ -9,7 +9,8 @@ export type CharacterFile = {
     gem: any[] | null,
     cards: any[] | null,
     stats: any[] | null,
-    engraving: any[] | null
+    engraving: any[] | null,
+    arkpassive: any | null
 }
 
 // 캐릭터 검색 함수
@@ -54,7 +55,8 @@ export async function loadProfile(
         newFile.gem = data.ArmoryGem.Gems;
         newFile.cards = data.ArmoryCard;
         newFile.stats = data.ArmoryProfile.Stats;
-        newFile.engraving = data.ArmoryEngraving.ArkPassiveEffects;
+        newFile.engraving = data.ArmoryEngraving ? data.ArmoryEngraving.ArkPassiveEffects : null;
+        newFile.arkpassive = data.ArkPassive;
         setLoading(false);
         setFile(newFile);
         setNothing(false);
@@ -844,4 +846,83 @@ export function loadEngraving(datas: any[] | null, setEngravings: SetStateFn<Eng
         }
     }
     setEngravings(engravings);
+}
+
+//아크패시브 데이터 가져오기
+export type ArkpassivePoint = {
+    type: string,
+    point: number
+}
+export type ArkpassiveItem = {
+    tier: number,
+    name: string,
+    level: number,
+    icon: string,
+    description: string
+}
+export function loadArkpassive(
+    data: any | null, 
+    setPoints: SetStateFn<ArkpassivePoint[]>,
+    setEvolution: SetStateFn<ArkpassiveItem[]>,
+    setEnlightenment: SetStateFn<ArkpassiveItem[]>,
+    setJump: SetStateFn<ArkpassiveItem[]>
+) {
+    const points: ArkpassivePoint[] = [];
+    const evolution: ArkpassiveItem[] = [];
+    const enlightenment: ArkpassiveItem[] = [];
+    const jump: ArkpassiveItem[] = [];
+    if (data) {
+        const dataPoints = data.Points;
+        for (const point of dataPoints) {
+            const newPoint: ArkpassivePoint = {
+                type: point.Name,
+                point: Number(point.Value)
+            }
+            points.push(newPoint);
+        }
+        const dataEffects = data.Effects;
+        for (const effect of dataEffects) {
+            const parsedTooltip = JSON.parse(effect.ToolTip);
+            const tip = getParsedText(parsedTooltip.Element_002?.value).replaceAll('|', '');
+            const description = getParsedText(effect.Description);
+            const tier = description.split('티어 ')[0].replaceAll(effect.Name, '');
+            const name = description.split('티어 ')[1].split(' Lv.')[0];
+            const level = description.split(' Lv.')[1];
+            const newItem: ArkpassiveItem = {
+                tier: Number(tier),
+                name: name,
+                level: Number(level),
+                icon: effect.Icon,
+                description: tip
+            }
+            switch(effect.Name) {
+                case '진화':
+                    evolution.push(newItem);
+                    break;
+                case '깨달음':
+                    enlightenment.push(newItem);
+                    break;
+                case '도약':
+                    jump.push(newItem);
+                    break;
+            }
+        }
+    }
+    setPoints(points);
+    setEvolution(evolution);
+    setEnlightenment(enlightenment);
+    setJump(jump);
+}
+
+// 아크패시브 타입 별 글자 색 반환 함수
+export function getColorByType(type: string): string {
+    switch(type) {
+        case '진화':
+            return 'text-[#7e733e] dark:text-[#d8c34a]';
+        case '깨달음':
+            return 'text-[#228a8a] dark:text-[#41d1eb]';
+        case '도약':
+            return 'text-[#20722b] dark:text-[#41eb58]';
+    }   
+    return '';
 }
