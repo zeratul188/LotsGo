@@ -8,7 +8,8 @@ export type CharacterFile = {
     equipment: any,
     gem: any[] | null,
     cards: any[] | null,
-    stats: any[] | null
+    stats: any[] | null,
+    engraving: any[] | null
 }
 
 // 캐릭터 검색 함수
@@ -53,7 +54,7 @@ export async function loadProfile(
         newFile.gem = data.ArmoryGem.Gems;
         newFile.cards = data.ArmoryCard;
         newFile.stats = data.ArmoryProfile.Stats;
-        console.log(data.Stats);
+        newFile.engraving = data.ArmoryEngraving.ArkPassiveEffects;
         setLoading(false);
         setFile(newFile);
         setNothing(false);
@@ -763,7 +764,6 @@ export type Stat = {
 }
 export function loadStats(datas: any[] | null, setStat:SetStateFn<Stat[]>) {
     const stat: Stat[] = [];
-    console.log(datas);
     if (datas) {
         for (const data of datas) {
             const tooltips: string[] = [];
@@ -819,4 +819,29 @@ export function getLowStats(stat: Stat[]): Stat[] {
 // 원하는 종류의 스택 반환 함수
 export function getStatByType(stat: Stat[], type: string): Stat | undefined {
     return stat.find(item => item.type === type);
+}
+
+// 각인 데이터 가져오기
+export type Engraving = {
+    name: string,
+    description: string,
+    grade: string,
+    level: number,
+    stoneLevel : number
+}
+export function loadEngraving(datas: any[] | null, setEngravings: SetStateFn<Engraving[]>) {
+    const engravings: Engraving[] = [];
+    if (datas) {
+        for (const data of datas) {
+            const newEngraving: Engraving = {
+                name: data.Name,
+                description: getParsedText(data.Description),
+                grade: data.Grade,
+                level: Number(data.Level),
+                stoneLevel: Number(data.AbilityStoneLevel ? data.AbilityStoneLevel : 0)
+            }
+            engravings.push(newEngraving);
+        }
+    }
+    setEngravings(engravings);
 }

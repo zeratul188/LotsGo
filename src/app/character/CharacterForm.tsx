@@ -28,6 +28,7 @@ import {
     CardData, 
     CardSet, 
     CharacterFile, 
+    Engraving, 
     Equipment, 
     Gem, 
     getAllElixir, 
@@ -53,6 +54,7 @@ import {
     getUrlGemInImage, 
     handleSearch, 
     loadCards, 
+    loadEngraving, 
     loadGems, 
     loadStats, 
     Stat, 
@@ -76,7 +78,8 @@ export function useCharacterForm() {
         equipment: null,
         gem: null,
         cards: null,
-        stats: null
+        stats: null,
+        engraving: null
     });
     const [isNothing, setNothing] = useState(false);
 
@@ -246,6 +249,7 @@ export function AbilityComponent({ file }: ProfileComponentProps) {
             </div>
             <div className="w-full">
                 <StatComponent file={file}/>
+                <EngravingComponent file={file}/>
             </div>
         </div>
     )
@@ -953,6 +957,50 @@ function StatComponent({ file }: ProfileComponentProps) {
                             </Tooltip>
                         ))}
                     </div>
+                </div>
+            </CardBody>
+        </Card>
+    )
+}
+
+// 각인 컴포넌트
+function EngravingComponent({ file }: ProfileComponentProps) {
+    const [engravings, setEngravings] = useState<Engraving[]>([]);
+    const isMobile = useMobileQuery();
+
+    useEffect(() => {
+        loadEngraving(file.engraving, setEngravings);
+    }, [file.profile])
+
+    return (
+        <Card radius="sm" className="mt-8">
+            <CardHeader><p className="text-lg">각인</p></CardHeader>
+            <Divider/>
+            <CardBody>
+                <div>
+                    {engravings.map((engraving, index) => (
+                        <Tooltip 
+                            key={index} 
+                            showArrow
+                            placement={isMobile ? 'top' : 'left'}
+                            content={<div className="p-2">
+                                <p className="max-w-[320px]">{engraving.description}</p>
+                            </div>}>
+                            <div className="flex gap-3 mb-2">
+                                <p className={`grow ${getColorTextByGrade(engraving.grade)}`}>{engraving.name}</p>
+                                {engraving.stoneLevel > 0 ? (
+                                    <div className="flex gap-1 items-center fadedtext">
+                                        <Image
+                                            src={'/icons/stoneicon.png'}
+                                            width={12}
+                                            height={20}/>
+                                        <p>X {engraving.stoneLevel}</p>
+                                    </div>
+                                ) : <></>}
+                                <p className={`${getColorTextByGrade(engraving.grade)}`}>◆ X {engraving.level}</p>
+                            </div>
+                        </Tooltip>
+                    ))}
                 </div>
             </CardBody>
         </Card>
