@@ -53,13 +53,6 @@ export async function loadCalendar(
         const todayIslands = islandsData.filter(filterTodayIslands);
         const today = new Date();
         if (todayIslands.length !== 0) {
-            for (const time of todayIslands[0].StartTimes) {
-                const startTime = new Date(time);
-                if (isToday(today, startTime)) {
-                    setIslandTime(startTime);
-                    break;
-                }
-            }
             let minTimes = new Date();
             minTimes.setFullYear(9999);
             for (const island of todayIslands) {
@@ -88,6 +81,7 @@ export async function loadCalendar(
                     islands.push(newIsland);
                 }
             }
+            setIslandTime(minTimes);
             setIslands(islands);
         }
     } else {
