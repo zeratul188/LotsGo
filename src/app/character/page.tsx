@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { Divider, Tab, Tabs } from "@heroui/react";
 import { loadProfile } from "./characterFeat";
 import { useMobileQuery } from "@/utiils/utils";
+import { SkillComponent } from "./SkillForm";
 
 export default function Character() {
     const characterForm = useCharacterForm();
@@ -37,7 +38,7 @@ export default function Character() {
         {
             id: 'skill',
             label: '스킬',
-            component: null
+            component: <SkillComponent file={characterForm.file} gems={characterForm.gems}/>
         },
         {
             id: 'story',
@@ -80,7 +81,7 @@ export default function Character() {
         return <EmptyComponent heightStyle="min-h-[calc(100vh-65px)]"/>
     }
     
-    const l = "{\"Element_000\":{\"type\":\"NameTagBox\",\"value\":\"절제\"},\"Element_001\":{\"type\":\"CommonSkillTitle\",\"value\":{\"leftText\":\"아크 패시브 레벨 <FONT COLOR='#FFD200'>3</FONT>\",\"level\":\"\",\"name\":\"<FONT SIZE='13' COLOR='#FFFFAC'>깨달음</FONT>\",\"slotData\":{\"iconGrade\":0,\"iconPath\":\"https://cdn-lostark.game.onstove.com/efui_iconatlas/ark_passive_01/ark_passive_01_52.png\",\"imagePath\":\"\"}}},\"Element_002\":{\"type\":\"MultiTextBox\",\"value\":\"집중 스탠스를 사용할 수 없지만, 듀얼 게이지 획득량이 <FONT COLOR='#99ff99'>100.0%</FONT> 증가한다.||<BR>\"}}";
+    const l = "{\"Element_000\":{\"type\":\"NameTagBox\",\"value\":\"<P ALIGN='CENTER'><FONT COLOR='#F99200'>질풍</FONT></P>\"},\"Element_001\":{\"type\":\"ItemTitle\",\"value\":{\"bEquip\":0,\"leftStr0\":\"<FONT SIZE='12'><FONT COLOR='#F99200'>전설 스킬 룬</FONT></FONT>\",\"leftStr1\":\"\",\"leftStr2\":\"\",\"qualityValue\":-1,\"rightStr0\":\"\",\"slotData\":{\"advBookIcon\":0,\"battleItemTypeIcon\":0,\"blackListIcon\":0,\"cardIcon\":false,\"friendship\":0,\"iconGrade\":4,\"iconPath\":\"efui_iconatlas/use/use_7_194.png\",\"imagePath\":\"\",\"islandIcon\":0,\"petBorder\":0,\"rtString\":\"\",\"seal\":false,\"temporary\":0,\"town\":0,\"trash\":0}}},\"Element_002\":{\"type\":\"ItemPartBox\",\"value\":{\"Element_000\":\"<FONT COLOR='#A9D0F5'>스킬 룬 효과</FONT>\",\"Element_001\":\"스킬 시전 속도가 14% 증가\"}},\"Element_003\":{\"type\":\"SingleTextBox\",\"value\":\"<FONT COLOR='#E2C87A'><FONT SIZE='12'>스킬에 강력한 힘을 부여할 수 있는 특별한 룬이다.</FONT></FONT>\"},\"Element_004\":{\"type\":\"SingleTextBox\",\"value\":\"<Font color='#5FD3F1'>[가디언 토벌] 정화 1단계</font><BR><Font color='#5FD3F1'>[가디언 토벌] 정화 2단계</font>\"}}";
 
     return (
         <div className="w-full">

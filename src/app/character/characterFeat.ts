@@ -10,7 +10,8 @@ export type CharacterFile = {
     cards: any[] | null,
     stats: any[] | null,
     engraving: any[] | null,
-    arkpassive: any | null
+    arkpassive: any | null,
+    skills: any[] | null
 }
 
 // 캐릭터 검색 함수
@@ -57,6 +58,7 @@ export async function loadProfile(
         newFile.stats = data.ArmoryProfile.Stats;
         newFile.engraving = data.ArmoryEngraving ? data.ArmoryEngraving.ArkPassiveEffects : null;
         newFile.arkpassive = data.ArkPassive;
+        newFile.skills = data.ArmorySkills;
         setLoading(false);
         setFile(newFile);
         setNothing(false);

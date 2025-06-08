@@ -84,7 +84,8 @@ export function useCharacterForm() {
         cards: null,
         stats: null,
         engraving: null,
-        arkpassive: null
+        arkpassive: null,
+        skills: null
     });
     const [isNothing, setNothing] = useState(false);
     const [gems, setGems] = useState<Gem[]>([]);
