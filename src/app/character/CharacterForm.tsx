@@ -30,6 +30,7 @@ import {
     CardData, 
     CardSet, 
     CharacterFile, 
+    CharacterInfo, 
     Engraving, 
     Equipment, 
     Gem, 
@@ -86,10 +87,14 @@ export function useCharacterForm() {
         engraving: null,
         arkpassive: null,
         skills: null,
-        collects: null
+        collects: null,
+        avatars: null
     });
     const [isNothing, setNothing] = useState(false);
     const [gems, setGems] = useState<Gem[]>([]);
+    const [isDisable, setDisable] = useState(false);
+    const [isLoadingUpdate, setLoadingUpdate] = useState(false);
+    const [expeditions, setExpeditions] = useState<CharacterInfo[]>([]);
 
     return {
         isLoading, setLoading,
@@ -97,7 +102,10 @@ export function useCharacterForm() {
         nickname, setNickname,
         file, setFile,
         isNothing, setNothing,
-        gems, setGems
+        gems, setGems,
+        isDisable, setDisable,
+        isLoadingUpdate, setLoadingUpdate,
+        expeditions, setExpeditions
     }
 }
 
@@ -124,6 +132,10 @@ export function SearchComponent({ setSearched, setLoading, setNickname }: Search
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                             handleSearch(search, setSearched, setLoading, setNickname);
+                            const params = new URLSearchParams(window.location.search);
+                            params.set("nickname", search);
+                            const newUrl = `${window.location.pathname}?${params.toString()}`;
+                            window.history.pushState({}, "", newUrl);
                         }
                     }}
                     className="grow"/>

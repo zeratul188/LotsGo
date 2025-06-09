@@ -3,17 +3,20 @@ import { useEffect } from "react";
 import { EmptyComponent, LoadingComponent } from "../UtilsCompnents";
 import { AbilityComponent, ExpeditionComponent, ProfileComponent, SearchComponent, useCharacterForm } from "./CharacterForm"
 import { useSearchParams } from "next/navigation";
-import { Divider, Tab, Tabs } from "@heroui/react";
-import { loadProfile } from "./characterFeat";
+import { Button, Divider, Tab, Tabs } from "@heroui/react";
+import { loadProfile, useClickUpdate } from "./characterFeat";
 import { useMobileQuery } from "@/utiils/utils";
 import { SkillComponent } from "./SkillForm";
 import { PointComponent } from "./PointForm";
+import { AvatarComponent } from "./AvatarForm";
+import { ExpeditionsComponent } from "./ExpeditionForm";
 
 export default function Character() {
     const characterForm = useCharacterForm();
     const searchParams = useSearchParams();
     const nickname = searchParams.get('nickname');
     const isMobile = useMobileQuery();
+    const onClickUpdate = useClickUpdate(nickname, characterForm.setDisable, characterForm.setLoadingUpdate, characterForm.file, characterForm.setFile, characterForm.setExpeditions);
     
     useEffect(() => {
         if (nickname) {
@@ -21,11 +24,24 @@ export default function Character() {
             characterForm.setLoading(true);
             characterForm.setNickname(nickname);
         }
+        const storedTime = localStorage.getItem('refreshCooldownTime');
+        if (storedTime) {
+            const cooldownEnd = parseInt(storedTime, 10);
+            const now = Date.now();
+            const diff = cooldownEnd - now;
+            if (diff > 0) {
+                characterForm.setDisable(true);
+                const timer = setTimeout(() => {
+                    characterForm.setDisable(false);
+                }, diff);
+                return () => clearTimeout(timer);
+            }
+        }
     }, []);
 
     useEffect(() => {
         if (characterForm.nickname !== '') {
-            const loadData = async () => await loadProfile(characterForm.nickname, characterForm.setSearched, characterForm.setLoading, characterForm.setNickname, characterForm.file, characterForm.setFile, characterForm.setNothing);
+            const loadData = async () => await loadProfile(characterForm.nickname, characterForm.setSearched, characterForm.setLoading, characterForm.setNickname, characterForm.file, characterForm.setFile, characterForm.setNothing, characterForm.setExpeditions);
             loadData();
         }
     }, [characterForm.nickname]);
@@ -49,12 +65,12 @@ export default function Character() {
         {
             id: 'cody',
             label: '아바타',
-            component: null
+            component: <AvatarComponent file={characterForm.file}/>
         },
         {
             id: 'expedition',
             label: '원정대',
-            component: null
+            component: <ExpeditionsComponent expeditions={characterForm.expeditions}/>
         }
     ]
 
@@ -87,8 +103,22 @@ export default function Character() {
     return (
         <div className="w-full">
             <ProfileComponent file={characterForm.file}/>
-            <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
-                <Tabs fullWidth={isMobile} aria-label="character-tabs" items={tabs} size="lg" variant="underlined">
+            <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto md960:relative">
+                <Button
+                    radius="sm"
+                    color="primary"
+                    isLoading={characterForm.isLoadingUpdate}
+                    isDisabled={characterForm.isDisable}
+                    className="w-full md960:w-[max-content] md960:absolute md960:top-4 md960:right-4 mb-4 md960:mb-0"
+                    onPress={onClickUpdate}>
+                    갱신하기
+                </Button>
+                <Tabs 
+                    fullWidth={isMobile} 
+                    aria-label="character-tabs" 
+                    items={tabs} 
+                    size="lg" 
+                    variant="underlined">
                     {(item) => (
                         <Tab key={item.id} title={item.label}>
                             {item.component}
