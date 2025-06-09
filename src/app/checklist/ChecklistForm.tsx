@@ -26,7 +26,8 @@ import {
     PopoverTrigger,
     PopoverContent,
     NumberInput,
-    ModalFooter
+    ModalFooter,
+    Switch
 } from "@heroui/react";
 import Image from "next/image";
 import { 
@@ -54,6 +55,7 @@ import {
     handleApplyPositions, 
     handleCalculateOtherGold, 
     handleCheckGold, 
+    handleCheckGolds, 
     handleControlCube, 
     handleDayListCheck, 
     handleOnDragEnd, 
@@ -1283,14 +1285,22 @@ function WeekContentComponent({
             <Table aria-label="checklist-table" removeWrapper>
                 <TableHeader>
                     <TableColumn>콘텐츠명</TableColumn>
-                    <TableColumn>난이도</TableColumn>
+                    <TableColumn>골드지정</TableColumn>
                     <TableColumn>삭제</TableColumn>
                 </TableHeader>
                 <TableBody emptyContent={"설정된 콘텐츠가 없습니다."}>
                     {checklist[index].checklist.map((item, idx) => (
                         <TableRow key={idx}>
-                            <TableCell>{item.name}</TableCell>
-                            <TableCell>{item.difficulty}</TableCell>
+                            <TableCell>{item.name} {item.difficulty}</TableCell>
+                            <TableCell>
+                                <Switch
+                                    size="sm"
+                                    color="warning"
+                                    isSelected={item.isGold}
+                                    onValueChange={async (isSelected) => {
+                                        await handleCheckGolds(checklist, index, idx, dispatch, isSelected, bosses);
+                                    }}/>
+                            </TableCell>
                             <TableCell>
                                 <button className="underline redbutton" onClick={async () => {
                                     if (confirm('해당 콘텐츠를 삭제하시겠습니까? 삭제 후 되돌릴 수 없습니다.')) {
@@ -1369,7 +1379,7 @@ function WeekContentComponent({
                                 isDisable: false,
                                 isBiweekly: isBiweekly
                             }
-                            await useOnClickAddItem(checklist, index, addItem, dispatch, setLoadingAdd, onClose);
+                            await useOnClickAddItem(checklist, index, addItem, dispatch, setLoadingAdd, onClose, bosses);
                         }
                         
                     }}
