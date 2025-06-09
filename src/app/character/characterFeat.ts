@@ -12,7 +12,8 @@ export type CharacterFile = {
     engraving: any[] | null,
     arkpassive: any | null,
     skills: any[] | null,
-    collects: any[] | null
+    collects: any[] | null,
+    avatars: any[] | null
 }
 
 // 캐릭터 갱신 이벤트 함수
@@ -46,6 +47,7 @@ export function useClickUpdate(
                     newFile.arkpassive = data.ArkPassive;
                     newFile.skills = data.ArmorySkills;
                     newFile.collects = data.Collectibles;
+                    newFile.avatars = data.ArmoryAvatars;
                     const inputRes = await fetch('/api/characters', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

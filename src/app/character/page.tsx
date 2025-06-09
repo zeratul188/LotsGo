@@ -8,6 +8,7 @@ import { loadProfile, useClickUpdate } from "./characterFeat";
 import { useMobileQuery } from "@/utiils/utils";
 import { SkillComponent } from "./SkillForm";
 import { PointComponent } from "./PointForm";
+import { AvatarComponent } from "./AvatarForm";
 
 export default function Character() {
     const characterForm = useCharacterForm();
@@ -63,7 +64,7 @@ export default function Character() {
         {
             id: 'cody',
             label: '아바타',
-            component: null
+            component: <AvatarComponent file={characterForm.file}/>
         },
         {
             id: 'expedition',
