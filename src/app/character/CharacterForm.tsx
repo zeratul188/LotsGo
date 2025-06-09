@@ -206,6 +206,9 @@ export function ExpeditionComponent({ setSearched, setLoading, setNickname }: Se
     )
 }
 
+// 캐릭터 이미지 위로 올릴 직업 목록
+const upperClass = ['도화가', '기상술사', '환수사'];
+
 // 캐릭터 프로파일
 type ProfileComponentProps = {
     file: CharacterFile
@@ -252,7 +255,10 @@ export function ProfileComponent({ file }: ProfileComponentProps) {
                     <img
                         src={file.profile.CharacterImage}
                         alt="character-image"
-                        className="w-[100vw] h-[500px] object-cover scale-130 origin-top translate-y-[-13%]"/>
+                        className={clsx(
+                            "w-[100vw] h-[500px] object-cover scale-130 origin-top",
+                            upperClass.includes(profile.CharacterClassName) ? "translate-y-[-28%]" : "translate-y-[-13%]"
+                        )}/>
                 </div>
             </div>
         </div>

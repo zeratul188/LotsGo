@@ -81,7 +81,7 @@ export function loadSkills(
                 let timeGem: Gem | null = null;
                 for (const gem of gems) {
                     if (gem.skillStr.includes(item.Name)) {
-                        if (gem.skillStr.includes('피해')) {
+                        if (gem.skillStr.includes('피해') || gem.skillStr.includes('지원')) {
                             attackGem = gem;
                         } else if (gem.skillStr.includes('재사용 대기시간')) {
                             timeGem = gem;
@@ -162,9 +162,9 @@ function findRuneInTooltip(parsed: any): string {
 
 // 겁화 보석의 피해 문구 가져오기
 export function getTextAttack(str: string): string {
-    const match = str.match(/피해\s[\d.]+%\s증가/);
+    const match = str.match(/(피해|지원 효과)\s([\d.]+|[\d.]+\s)%\s증가/);
     const result = match ? match[0] : '-';
-    return result;
+    return result.replaceAll('지원 효과', "지원");
 }
 
 // 겁화 보석의 피해 문구 가져오기

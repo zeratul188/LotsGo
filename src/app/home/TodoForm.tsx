@@ -13,10 +13,11 @@ import {
     removeAutoCalendarsByWorks 
 } from "../calendar/calendarFeat";
 import { isLogin } from "./checklistFeat";
-import { Chip, Divider } from "@heroui/react";
+import { Button, Chip, Divider } from "@heroui/react";
 import { WeekBox } from "../calendar/CalendarForm";
 import clsx from "clsx";
 import { LoadingComponent } from "../UtilsCompnents";
+import { useRouter } from "next/navigation";
 
 // state 관리
 export function useTodoForm() {
@@ -40,6 +41,7 @@ export function useTodoForm() {
 // 일정 표시 컴포넌트
 export function TodoComponent() {
     const todoForm = useTodoForm();
+    const router = useRouter();
     const [weeks, setWeeks] = useState<WeekBox[]>([]);
 
     useEffect(() => {
@@ -95,7 +97,16 @@ export function TodoComponent() {
 
     return (
         <div className="w-full mb-4">
-            <p className="text-2xl mb-2">이번 주 일정</p>
+            <div className="mb-2 flex gap-1 w-full">
+                <p className="grow text-2xl">이번 주 일정</p>
+                <Button
+                    radius="sm"
+                    size="sm"
+                    variant="flat"
+                    onPress={() => router.push('/calendar')}>
+                    이동
+                </Button>
+            </div>
             <Divider className="mb-4 block sm:hidden"/>
             <div className="h-full hidden lg1200:grid grid-cols-7 gap-2">
                     {weeks.map((week, index) => (

@@ -5,6 +5,7 @@ import { LoadingComponent } from "../UtilsCompnents";
 import { Boss } from "../api/checklist/boss/route";
 import { getAllCountChecklist, getAllGolds, getBosses, getCompleteChecklist, getHaveGolds } from "../checklist/checklistFeat";
 import { 
+    Button,
     Card, CardBody, CardHeader, 
     Chip, 
     Divider, 
@@ -13,6 +14,7 @@ import {
 } from "@heroui/react";
 import Image from "next/image";
 import CheckIcon from "@/Icons/CheckIcon";
+import { useRouter } from "next/navigation";
 
 // state 관리
 function useChecklistForm() {
@@ -34,6 +36,7 @@ function useChecklistForm() {
 // 숙제 관리 컴포넌트
 export default function ChecklistComponent() {
     const checklistForm = useChecklistForm();
+    const router = useRouter();
     
     useEffect(() => {
         checklistForm.setLogin(isLogin());
@@ -70,7 +73,18 @@ export default function ChecklistComponent() {
     return (
         <div className="mb-5 flex flex-col sm:flex-row gap-5 w-full">
             <Card radius="sm" className="min-w-[360px]">
-                <CardHeader className="text-xl">남은 숙제 현황</CardHeader>
+                <CardHeader>
+                    <div className="w-full flex gap-1 items-center">
+                        <p className="text-xl grow">남은 숙제 현황</p>
+                        <Button
+                            radius="sm"
+                            size="sm"
+                            variant="flat"
+                            onPress={() => router.push('/checklist')}>
+                            이동
+                        </Button>
+                    </div>
+                </CardHeader>
                 <Divider/>
                 <CardBody>
                     <div>

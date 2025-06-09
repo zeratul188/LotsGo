@@ -36,7 +36,7 @@ export function AvatarComponent({ file }: AvatarComponentProps) {
                         <div className="w-full md960:w-[300px] h-[500px] md960:h-[800px] overflow-y-auto scrollbar-hide border-l-0 md960:border-l-1 border-t-1 md960:border-t-0 border-[#eeeeee] dark:border-[#333333]">
                             {avatars.map((avatar, index) => (
                                 <div key={index} className="w-full p-3 flex gap-3">
-                                    <div className={`w-[42px] h-[42px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(avatar.grade)}`}>
+                                    <div className={`w-[42px] h-[42px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(avatar.grade)}`}>
                                         <Image
                                             src={avatar.icon}
                                             width={36}
