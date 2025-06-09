@@ -30,6 +30,7 @@ import {
     CardData, 
     CardSet, 
     CharacterFile, 
+    CharacterInfo, 
     Engraving, 
     Equipment, 
     Gem, 
@@ -93,6 +94,7 @@ export function useCharacterForm() {
     const [gems, setGems] = useState<Gem[]>([]);
     const [isDisable, setDisable] = useState(false);
     const [isLoadingUpdate, setLoadingUpdate] = useState(false);
+    const [expeditions, setExpeditions] = useState<CharacterInfo[]>([]);
 
     return {
         isLoading, setLoading,
@@ -102,7 +104,8 @@ export function useCharacterForm() {
         isNothing, setNothing,
         gems, setGems,
         isDisable, setDisable,
-        isLoadingUpdate, setLoadingUpdate
+        isLoadingUpdate, setLoadingUpdate,
+        expeditions, setExpeditions
     }
 }
 
@@ -129,6 +132,10 @@ export function SearchComponent({ setSearched, setLoading, setNickname }: Search
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                             handleSearch(search, setSearched, setLoading, setNickname);
+                            const params = new URLSearchParams(window.location.search);
+                            params.set("nickname", search);
+                            const newUrl = `${window.location.pathname}?${params.toString()}`;
+                            window.history.pushState({}, "", newUrl);
                         }
                     }}
                     className="grow"/>

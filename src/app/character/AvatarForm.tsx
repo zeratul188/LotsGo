@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { CharacterFile } from "./characterFeat"
 import { Avatar, loadAvatars, loadImage } from "./avatarFeat";
-import { Card, CardBody, CardHeader, Chip, Divider, Image } from "@heroui/react";
+import { Card, CardBody, CardHeader, Divider, Image } from "@heroui/react";
 import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils";
 
 // 아바타 컴포넌트

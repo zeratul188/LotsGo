@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     }
 
     const links = [
-        `/characters/${encodeURIComponent(value)}/siblings`, // CHARACTERS - 원정대 캐릭터 정보 (모든 서버 포함함)
+        `/characters/${encodeURIComponent(value)}/siblings`, // CHARACTERS - 원정대 캐릭터 정보 (모든 서버 포함)
         `/armories/characters/${encodeURIComponent(value)}/profiles`, // ARMORIES/PROFILES - 캐릭터 프로파일 정보
         `/gamecontents/calendar`, // GAMECONTENTS - 게임 일정 (모험섬, 로웬, 필드보스 등)
         `/news/notices`, // NEWS/NOICES - 게임 공지사항

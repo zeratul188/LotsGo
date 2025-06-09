@@ -1,7 +1,7 @@
 import { SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
 import { load } from 'cheerio'
-import data from "./data.json";
+import data from "@/data/characters/data.json";
 
 export type CharacterFile = {
     profile: any,
@@ -16,13 +16,21 @@ export type CharacterFile = {
     avatars: any[] | null
 }
 
+export type CharacterInfo = {
+    nickname: string,
+    job: string,
+    server: string,
+    level: number
+}
+
 // 캐릭터 갱신 이벤트 함수
 export function useClickUpdate(
     nickname: string | null,
     setDisable: SetStateFn<boolean>,
     setLoadingUpdate: SetStateFn<boolean>,
     file: CharacterFile,
-    setFile: SetStateFn<CharacterFile>
+    setFile: SetStateFn<CharacterFile>,
+    setExpeditions: SetStateFn<CharacterInfo[]>
 ) {
     return async () => {
         if (nickname) {
@@ -38,31 +46,54 @@ export function useClickUpdate(
                 const data = await lostarkRes.json();
                 const newFile = structuredClone(file);
                 if (data) {
-                    newFile.profile = data.ArmoryProfile;
-                    newFile.equipment = data.ArmoryEquipment;
-                    newFile.gem = data.ArmoryGem.Gems;
-                    newFile.cards = data.ArmoryCard;
-                    newFile.stats = data.ArmoryProfile.Stats;
-                    newFile.engraving = data.ArmoryEngraving ? data.ArmoryEngraving.ArkPassiveEffects : null;
-                    newFile.arkpassive = data.ArkPassive;
-                    newFile.skills = data.ArmorySkills;
-                    newFile.collects = data.Collectibles;
-                    newFile.avatars = data.ArmoryAvatars;
-                    const inputRes = await fetch('/api/characters', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            nickname: nickname,
-                            file: newFile
-                        })
-                    });
-                    if (inputRes.ok) {
-                        setFile(newFile);
+                    const expeditionRes = await fetch(`/api/lostark?value=${nickname}&code=0`);
+                    if (!lostarkRes.ok) {
                         addToast({
-                            title: "갱신 완료",
-                            description: `캐릭터 정보를 갱신하였습니다.`,
-                            color: "success"
+                            title: "불러오기 오류",
+                            description: `입력한 캐릭터가 존재하지 않거나 로스트아크 점검 시간 등의 이유로 데이터를 불러오지 못했습니다.`,
+                            color: "danger"
                         });
+                    } else {
+                        const expeditionData = await expeditionRes.json();
+                        let newExpeditions: CharacterInfo[] = [];
+                        for (const item of expeditionData) {
+                            const newCharacterInfo: CharacterInfo = {
+                                nickname: item.CharacterName,
+                                job: item.CharacterClassName,
+                                server: item.ServerName,
+                                level: Number(item.ItemAvgLevel.replaceAll(',', ''))
+                            }
+                            newExpeditions.push(newCharacterInfo);
+                        }
+                        newExpeditions = newExpeditions.sort((a, b) => b.level - a.level);
+                        newFile.profile = data.ArmoryProfile;
+                        newFile.equipment = data.ArmoryEquipment;
+                        newFile.gem = data.ArmoryGem.Gems;
+                        newFile.cards = data.ArmoryCard;
+                        newFile.stats = data.ArmoryProfile.Stats;
+                        newFile.engraving = data.ArmoryEngraving ? data.ArmoryEngraving.ArkPassiveEffects : null;
+                        newFile.arkpassive = data.ArkPassive;
+                        newFile.skills = data.ArmorySkills;
+                        newFile.collects = data.Collectibles;
+                        newFile.avatars = data.ArmoryAvatars;
+                        const inputRes = await fetch('/api/characters', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                nickname: nickname,
+                                file: newFile,
+                                expeditions: newExpeditions
+                            })
+                        });
+                        if (inputRes.ok) {
+                            setFile(newFile);
+                            setExpeditions(newExpeditions);
+                            addToast({
+                                title: "갱신 완료",
+                                description: `캐릭터 정보를 갱신하였습니다.`,
+                                color: "success"
+                            });
+                        }
                     }
                 }
             }
@@ -85,6 +116,10 @@ export function handleSearch(
     setLoading: SetStateFn<boolean>,
     setNickname: SetStateFn<string>
 ) {
+    const params = new URLSearchParams(window.location.search);
+    params.set("nickname", searchValue);
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.pushState({}, "", newUrl);
     setNickname(searchValue);
     setSearched(true);
     setLoading(true);
@@ -98,7 +133,8 @@ export async function loadProfile(
     setNickname: SetStateFn<string>,
     file: CharacterFile,
     setFile: SetStateFn<CharacterFile>,
-    setNothing: SetStateFn<boolean>
+    setNothing: SetStateFn<boolean>,
+    setExpeditions: SetStateFn<CharacterInfo[]>
 ) {
     const res = await fetch(`/api/characters?nickname=${nickname}`);
     let isPassed = false;
@@ -111,6 +147,7 @@ export async function loadProfile(
         const hasPassed3Days = (now.getTime() - basedDate.getTime()) >= threeDaysInMs;
 
         if (!hasPassed3Days) {
+            setExpeditions(data.expeditions);
             setFile(data.file);
             setLoading(false);
             setNothing(false);
@@ -135,6 +172,30 @@ export async function loadProfile(
         const data = await lostarkRes.json();
         const newFile = structuredClone(file);
         if (data) {
+            const expeditionRes = await fetch(`/api/lostark?value=${nickname}&code=0`);
+            if (!lostarkRes.ok) {
+                addToast({
+                    title: "불러오기 오류",
+                    description: `입력한 캐릭터가 존재하지 않거나 로스트아크 점검 시간 등의 이유로 데이터를 불러오지 못했습니다.`,
+                    color: "danger"
+                });
+                setNickname('');
+                setSearched(false);
+                setLoading(false);
+                return;
+            }
+            const expeditionData = await expeditionRes.json();
+            let newExpeditions: CharacterInfo[] = [];
+            for (const item of expeditionData) {
+                const newCharacterInfo: CharacterInfo = {
+                    nickname: item.CharacterName,
+                    job: item.CharacterClassName,
+                    server: item.ServerName,
+                    level: Number(item.ItemAvgLevel.replaceAll(',', ''))
+                }
+                newExpeditions.push(newCharacterInfo);
+            }
+            newExpeditions = newExpeditions.sort((a, b) => b.level - a.level);
             newFile.profile = data.ArmoryProfile;
             newFile.equipment = data.ArmoryEquipment;
             newFile.gem = data.ArmoryGem.Gems;
@@ -144,18 +205,21 @@ export async function loadProfile(
             newFile.arkpassive = data.ArkPassive;
             newFile.skills = data.ArmorySkills;
             newFile.collects = data.Collectibles;
+            newFile.avatars = data.ArmoryAvatars;
             const inputRes = await fetch('/api/characters', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     nickname: nickname,
-                    file: newFile
+                    file: newFile,
+                    expeditions: newExpeditions
                 })
             });
             if (inputRes.ok) {
                 setLoading(false);
                 setFile(newFile);
                 setNothing(false);
+                setExpeditions(newExpeditions);
                 return;
             }
         }

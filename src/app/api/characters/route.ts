@@ -1,4 +1,4 @@
-import { CharacterFile } from "@/app/character/characterFeat";
+import { CharacterFile, CharacterInfo } from "@/app/character/characterFeat";
 import { firestore } from "@/utiils/firebase";
 import { addDoc, collection, doc, getDocs, limit, query, updateDoc, where } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
@@ -20,7 +20,8 @@ export async function GET(req: NextRequest) {
 
         const file: CharacterFile = data.file;
         const date: Date = data.date;
-        return NextResponse.json({ file, date });
+        const expeditions: CharacterInfo[] = data.expeditions;
+        return NextResponse.json({ file, date, expeditions });
     } catch(error) {
         console.error(error);
         return NextResponse.json({ error: 'Failed load Database.' }, { status: 500 });
@@ -31,6 +32,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const nickname = body.nickname;
     const file: CharacterFile = body.file;
+    const expeditions: CharacterInfo[] = body.expeditions;
     const today = new Date();
 
     try {
@@ -41,6 +43,7 @@ export async function POST(req: NextRequest) {
             const data = {
                 nickname: nickname,
                 date: today,
+                expeditions: expeditions,
                 file: file
             }
             await addDoc(collection(firestore, 'characters'), data);
@@ -52,6 +55,7 @@ export async function POST(req: NextRequest) {
 
         await updateDoc(docRef, {
             date: today,
+            expeditions: expeditions,
             file: file
         });
         return NextResponse.json({ message: '데이터 저장이 정상적으로 처리되었습니다.' }, { status: 200 });
