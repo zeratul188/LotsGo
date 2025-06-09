@@ -76,9 +76,19 @@ export async function loadChecklist(
     checklist.sort((a, b) => a.position - b.position);
     for (const character of checklist) {
         const sortedChecklist = character.checklist.sort((a, b) => {
-            if (a.isGold && !b.isGold) return -1;
-            if (!a.isGold && b.isGold) return 1;
-            return 0;
+            const aDifficulty = bosses.find(item => item.name === a.name)?.difficulty;
+            const aObj = aDifficulty ? aDifficulty.find(item => item.difficulty === a.difficulty) : null;
+            const aGold = aObj ? aObj.gold : 0;
+            const bDifficulty = bosses.find(item => item.name === b.name)?.difficulty;
+            const bObj = bDifficulty ? bDifficulty.find(item => item.difficulty === b.difficulty) : null;
+            const bGold = bObj ? bObj.gold : 0;
+            if (!a.isGold && b.isGold) {
+                return 1;
+            } else if (a.isGold && !b.isGold) {
+                return -1;
+            } else {
+                return bGold - aGold;  
+            }
         });
         character.checklist = sortedChecklist;
     }
@@ -823,6 +833,77 @@ export async function handleRemoveDayList(
     }
 }
 
+// 주간 콘텐츠 골드 지정 이벤트 함수
+export async function handleCheckGolds(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    checklistIndex: number,
+    dispatch: AppDispatch,
+    isSelected: boolean,
+    bosses: Boss[]
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    let updatedChecklist = {
+        ...checklist[characterIndex],
+        checklist: checklist[characterIndex].checklist.map(item => ({ ...item }))
+    };
+    const prevChecklist = {...updatedChecklist};
+    updatedChecklist.checklist[checklistIndex].isGold = isSelected;
+    const copyChecklist = structuredClone(updatedChecklist.checklist[checklistIndex]);
+
+    dispatch(checkWeek({
+        characterIndex: characterIndex,
+        checklistIndex: checklistIndex,
+        checklist: updatedChecklist.checklist[checklistIndex]
+    }));
+    updatedChecklist.checklist = updatedChecklist.checklist.sort((a, b) => {
+        const aDifficulty = bosses.find(item => item.name === a.name)?.difficulty;
+        const aObj = aDifficulty ? aDifficulty.find(item => item.difficulty === a.difficulty) : null;
+        const aGold = aObj ? aObj.gold : 0;
+        const bDifficulty = bosses.find(item => item.name === b.name)?.difficulty;
+        const bObj = bDifficulty ? bDifficulty.find(item => item.difficulty === b.difficulty) : null;
+        const bGold = bObj ? bObj.gold : 0;
+        if (!a.isGold && b.isGold) {
+            return 1;
+        } else if (a.isGold && !b.isGold) {
+            return -1;
+        } else {
+            return bGold - aGold;  
+        }
+    });
+    dispatch(removeWeek({
+        characterIndex: characterIndex,
+        checklist: updatedChecklist.checklist
+    }))
+    const editRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'check-week',
+            characterIndex: characterIndex,
+            checklistIndex: checklistIndex,
+            checklistItem: copyChecklist
+        })
+    });
+    if (!editRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        dispatch(checkWeek({
+            characterIndex: characterIndex,
+            checklistIndex: checklistIndex,
+            checklist: prevChecklist.checklist[checklistIndex]
+        }));
+        return;
+    }
+}
+
 // 주간 콘텐츠 항목 제거 이벤트 함수
 export async function useOnClickRemoveItem(
     checklist: CheckCharacter[],
@@ -871,18 +952,36 @@ export async function useOnClickAddItem(
     addChecklist: Checklist,
     dispatch: AppDispatch,
     setLoadingAdd: SetStateFn<boolean>,
-    onClose: () => void
+    onClose: () => void,
+    bosses: Boss[]
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser.id;
     const prevChecklist = checklist[characterIndex].checklist;
-    const newChecklist = [...checklist[characterIndex].checklist];
+    let newChecklist = [...checklist[characterIndex].checklist];
     newChecklist.push(addChecklist);
+    const copyChecklist = structuredClone(newChecklist);
+    newChecklist = newChecklist.sort((a, b) => {
+        const aDifficulty = bosses.find(item => item.name === a.name)?.difficulty;
+        const aObj = aDifficulty ? aDifficulty.find(item => item.difficulty === a.difficulty) : null;
+        const aGold = aObj ? aObj.gold : 0;
+        const bDifficulty = bosses.find(item => item.name === b.name)?.difficulty;
+        const bObj = bDifficulty ? bDifficulty.find(item => item.difficulty === b.difficulty) : null;
+        const bGold = bObj ? bObj.gold : 0;
+        if (!a.isGold && b.isGold) {
+            return 1;
+        } else if (a.isGold && !b.isGold) {
+            return -1;
+        } else {
+            return bGold - aGold;  
+        }
+    });
     dispatch(removeWeek({
         characterIndex: characterIndex,
         checklist: newChecklist
     }));
+
     const addRes = await fetch(`/api/checklist/list`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -891,7 +990,7 @@ export async function useOnClickAddItem(
             checklist: checklist,
             type: 'remove-week-item',
             characterIndex: characterIndex,
-            weekChecklist: newChecklist
+            weekChecklist: copyChecklist
         })
     });
     if (!addRes.ok) {

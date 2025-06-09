@@ -170,7 +170,7 @@ const checklistSlice = createSlice({
             const characterIndex = action.payload.characterIndex;
             state.checklist[characterIndex].isGold = action.payload.isGold;
         },
-        // 캐릭터 삭제 + 캐릭터 갱신신
+        // 캐릭터 삭제 + 캐릭터 갱신
         removeCharacter(state, action: PayloadAction<CheckCharacter[]>) {
             const removedChecklist = action.payload;
             state.checklist = removedChecklist;

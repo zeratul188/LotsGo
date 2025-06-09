@@ -113,7 +113,7 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                     </div>
                                 </div>
                                 <div className="w-full p-3 bg-[#f0f0f0] dark:bg-[#222228]">
-                                    <div className="w-full md960:w-[max-content] grid grid-cols-1 md960:grid-cols-3 gap-2 md960:gap-10">
+                                    <div className="w-full grid grid-cols-1 md960:grid-cols-3 gap-2 md960:gap-10">
                                         {skill.tripods.map((tripod, idx) => (
                                             <div key={idx} className="flex gap-2 items-center">
                                                 <Image 
@@ -151,8 +151,8 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                                     {skill.attackGem ? (
                                                         <Image
                                                             src={skill.attackGem!.icon}
-                                                            width={36}
-                                                            height={36}/>
+                                                            width={40}
+                                                            height={40}/>
                                                     ) : <></>}
                                                 </div>
                                                 {skill.attackGem ? (
@@ -182,8 +182,8 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                                     {skill.timeGem ? (
                                                         <Image
                                                             src={skill.timeGem!.icon}
-                                                            width={36}
-                                                            height={36}/>
+                                                            width={40}
+                                                            height={40}/>
                                                     ) : <></>}
                                                 </div>
                                                 {skill.timeGem ? (
