@@ -145,6 +145,33 @@ function findSkillInfoInTooltip(parsed: any): SkillInfo {
     return info;
 }
 
+// 무력화 계산
+export type PowerData = {
+    type: string,
+    level: number,
+    bonus: number
+}
+const powerTable: PowerData[] = [
+    { type: '', level: 1, bonus: 0 },
+    { type: '하', level: 2, bonus: 0 },
+    { type: '중', level: 3, bonus: 1 },
+    { type: '중상', level: 4, bonus: 2 },
+    { type: '상', level: 5, bonus: 3 },
+    { type: '최상', level: 6, bonus: 5 }
+]
+export function AvgSkillPowers(skills: Skill[]): string {
+    let avgLevel = 0, sum = 0;
+    for (const skill of skills) {
+        const powerData = powerTable.find(data => data.type === skill.power);
+        sum += powerData ? powerData.level + powerData.bonus : 0;
+    }
+    avgLevel = Math.round(sum / skills.length);
+    if (avgLevel > 6) avgLevel = 6;
+    else if (avgLevel < 0) avgLevel = 0;
+    const resultData = powerTable.find(data => data.level === avgLevel);
+    return resultData ? resultData.type : '';
+}
+
 // 룬 설명 가져오기
 function findRuneInTooltip(parsed: any): string {
     for (const key in parsed) {
