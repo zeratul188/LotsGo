@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { EmptyComponent, LoadingComponent } from "../UtilsCompnents";
 import { AbilityComponent, ExpeditionComponent, ProfileComponent, SearchComponent, useCharacterForm } from "./CharacterForm"
 import { useSearchParams } from "next/navigation";
-import { Button, Divider, Input, Tab, Tabs } from "@heroui/react";
+import { Button, Divider, Input, Tab, Tabs, Tooltip } from "@heroui/react";
 import { handleSearch, loadProfile, useClickUpdate } from "./characterFeat";
 import { useMobileQuery } from "@/utiils/utils";
 import { SkillComponent } from "./SkillForm";
@@ -16,7 +16,7 @@ export default function Character() {
     const searchParams = useSearchParams();
     const nickname = searchParams.get('nickname');
     const isMobile = useMobileQuery();
-    const onClickUpdate = useClickUpdate(nickname, characterForm.setDisable, characterForm.setLoadingUpdate, characterForm.file, characterForm.setFile, characterForm.setExpeditions);
+    const onClickUpdate = useClickUpdate(nickname, characterForm.setDisable, characterForm.setLoadingUpdate, characterForm.file, characterForm.setFile, characterForm.setExpeditions, characterForm.setGems);
     
     useEffect(() => {
         if (nickname) {
@@ -113,6 +113,7 @@ export default function Character() {
                         className="w-full md960:w-[220px]"
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
+                                characterForm.setGems([]);
                                 handleSearch(inputSearch, characterForm.setSearched, characterForm.setLoading, characterForm.setNickname);
                                 const params = new URLSearchParams(window.location.search);
                                 params.set("nickname", inputSearch);
@@ -121,15 +122,17 @@ export default function Character() {
                                 window.history.pushState({}, "", newUrl);
                             }
                         }}/>
-                    <Button
-                        radius="sm"
-                        color="primary"
-                        isLoading={characterForm.isLoadingUpdate}
-                        isDisabled={characterForm.isDisable}
-                        className="w-full md960:w-[max-content]"
-                        onPress={onClickUpdate}>
-                        갱신하기
-                    </Button>
+                    <Tooltip showArrow content="해당 캐릭터 접속을 종료하고 갱신해주세요.">
+                        <Button
+                            radius="sm"
+                            color="primary"
+                            isLoading={characterForm.isLoadingUpdate}
+                            isDisabled={characterForm.isDisable}
+                            className="w-full md960:w-[max-content]"
+                            onPress={onClickUpdate}>
+                            갱신하기
+                        </Button>
+                    </Tooltip>
                 </div>
                 <Tabs 
                     fullWidth={isMobile} 
