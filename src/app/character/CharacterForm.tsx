@@ -1011,7 +1011,16 @@ function EngravingComponent({ file }: ProfileComponentProps) {
 
     return (
         <Card radius="sm" className="mt-8">
-            <CardHeader><p className="text-lg">각인</p></CardHeader>
+            <CardHeader>
+                <div className="w-full flex gap-1 item-centers">
+                    <p className="grow text-lg">각인</p>
+                    <div className="flex">
+                        {engravings.sort((a, b) => b.level - a.level).map((engraving, index) => (
+                            <p key={index} className={getColorTextByGrade(engraving.grade)}>{engraving.level}</p>
+                        ))}
+                    </div>
+                </div>
+            </CardHeader>
             <Divider/>
             <CardBody className="pl-1 pb-1 pr-1 pt-2">
                 <div>
