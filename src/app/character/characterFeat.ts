@@ -30,11 +30,13 @@ export function useClickUpdate(
     setLoadingUpdate: SetStateFn<boolean>,
     file: CharacterFile,
     setFile: SetStateFn<CharacterFile>,
-    setExpeditions: SetStateFn<CharacterInfo[]>
+    setExpeditions: SetStateFn<CharacterInfo[]>,
+    setGems: SetStateFn<Gem[]>
 ) {
     return async () => {
         if (nickname) {
             setLoadingUpdate(true);
+            setGems([]);
             const lostarkRes = await fetch(`/api/lostark?value=${nickname}&code=5`);
             if (!lostarkRes.ok) {
                 addToast({

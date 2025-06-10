@@ -1,0 +1,139 @@
+{
+    "classImgs": [
+        {
+            "job": "디스트로이어",
+            "img": "/character/classimgs/class1.jpg",
+            "type": "danger"
+        },
+        {
+            "job": "워로드",
+            "img": "/character/classimgs/class2.jpg",
+            "type": "danger"
+        },
+        {
+            "job": "버서커",
+            "img": "/character/classimgs/class3.jpg",
+            "type": "danger"
+        },
+        {
+            "job": "홀리나이트",
+            "img": "/character/classimgs/class4.jpg",
+            "type": "danger"
+        },
+        {
+            "job": "슬레이어",
+            "img": "/character/classimgs/class5.jpg",
+            "type": "danger"
+        },
+        {
+            "job": "스트라이커",
+            "img": "/character/classimgs/class6.jpg",
+            "type": "warning"
+        },
+        {
+            "job": "브레이커",
+            "img": "/character/classimgs/class7.jpg",
+            "type": "warning"
+        },
+        {
+            "job": "배틀마스터",
+            "img": "/character/classimgs/class8.jpg",
+            "type": "warning"
+        },
+        {
+            "job": "인파이터",
+            "img": "/character/classimgs/class9.jpg",
+            "type": "warning"
+        },
+        {
+            "job": "기공사",
+            "img": "/character/classimgs/class10.jpg",
+            "type": "warning"
+        },
+        {
+            "job": "창술사",
+            "img": "/character/classimgs/class11.jpg",
+            "type": "warning"
+        },
+        {
+            "job": "데빌헌터",
+            "img": "/character/classimgs/class12.jpg",
+            "type": "success"
+        },
+        {
+            "job": "블래스터",
+            "img": "/character/classimgs/class13.jpg",
+            "type": "success"
+        },
+        {
+            "job": "호크아이",
+            "img": "/character/classimgs/class14.jpg",
+            "type": "success"
+        },
+        {
+            "job": "스카우터",
+            "img": "/character/classimgs/class15.jpg",
+            "type": "success"
+        },
+        {
+            "job": "건슬링어",
+            "img": "/character/classimgs/class16.jpg",
+            "type": "success"
+        },
+        {
+            "job": "바드",
+            "img": "/character/classimgs/class17.jpg",
+            "type": "primary"
+        },
+        {
+            "job": "서머너",
+            "img": "/character/classimgs/class18.jpg",
+            "type": "primary"
+        },
+        {
+            "job": "아르카나",
+            "img": "/character/classimgs/class19.jpg",
+            "type": "primary"
+        },
+        {
+            "job": "소서리스",
+            "img": "/character/classimgs/class20.jpg",
+            "type": "primary"
+        },
+        {
+            "job": "블레이드",
+            "img": "/character/classimgs/class21.jpg",
+            "type": "secondary"
+        },
+        {
+            "job": "데모닉",
+            "img": "/character/classimgs/class22.jpg",
+            "type": "secondary"
+        },
+        {
+            "job": "리퍼",
+            "img": "/character/classimgs/class23.jpg",
+            "type": "secondary"
+        },
+        {
+            "job": "소울이터",
+            "img": "/character/classimgs/class24.jpg",
+            "type": "secondary"
+        },
+        {
+            "job": "도화가",
+            "img": "/character/classimgs/class25.jpg",
+            "type": "default"
+        },
+        {
+            "job": "기상술사",
+            "img": "/character/classimgs/class26.jpg",
+            "type": "default"
+        },
+        {
+            "job": "환수사",
+            "img": "/character/classimgs/class27.jpg",
+            "type": "default"
+        }
+    ]
+}

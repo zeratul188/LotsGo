@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { formatTimeLeft, getNextIslandTime, isHaveGold, Island, loadCalendar, loadEvents, loadNotices, LostarkEvent, Notice } from "./calendarFeat";
 import { LoadingComponent } from "../UtilsCompnents";
 import { 
+    Button,
     Card, CardBody, CardFooter, CardHeader, 
     Chip, 
     Divider, 
@@ -12,6 +13,7 @@ import {
 } from "@heroui/react";
 import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils";
 import clsx from "clsx";
+import { useRouter } from "next/navigation";
 
 // state 관리
 function useCalendarForm() {
@@ -38,7 +40,18 @@ function EventComponent({ events }: EventComponentProps) {
     const getStringByDate = (date: Date) => `${date.getFullYear()}년 ${date.getMonth()+1}월 ${date.getDate()}일`;
     return (
         <div className="col-span-2">
-            <p className="text-2xl">로스트아크 이벤트</p>
+            <div className="flex gap-1 items-center">
+                <p className="grow text-2xl">로스트아크 이벤트</p>
+                <Button
+                    size="sm"
+                    variant="flat"
+                    onPress={() => {
+                        const url = "https://lostark.game.onstove.com/News/Event/Now";
+                        window.open(url, '_blank');
+                    }}>
+                    더보기
+                </Button>
+            </div>
             <Divider className="mt-4"/>
             <ScrollShadow className="w-full h-[600px] sm:h-[500px] pt-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -78,7 +91,18 @@ function NoticeComponent({ notices }: NoticeComponentProps) {
     const getStringByDate = (date: Date) => `${date.getFullYear()}년 ${date.getMonth()+1}월 ${date.getDate()}일`;
     return (
         <div>
-            <p className="text-2xl">로스트아크 공지사항</p>
+            <div className="flex gap-1 items-center">
+                <p className="grow text-2xl">로스트아크 공지사항</p>
+                <Button
+                    size="sm"
+                    variant="flat"
+                    onPress={() => {
+                        const url = "https://lostark.game.onstove.com/News/Notice/List";
+                        window.open(url, '_blank');
+                    }}>
+                    더보기
+                </Button>
+            </div>
             <Divider className="mt-4"/>
             <ScrollShadow className="w-full h-[500px]">
                 {notices.map((notice, index) => (

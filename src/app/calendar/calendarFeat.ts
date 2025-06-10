@@ -449,7 +449,6 @@ export async function removeAutoCalendarsByGuild(
         const guildCalendars: Calendar[] = [];
         for (const calendar of guild.calendars) {
             if (calendar.date.getTime() >= now.getTime()) {
-                console.log(`added`);
                 guildCalendars.push(calendar);
             }
         }
