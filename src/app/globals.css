@@ -103,7 +103,7 @@ body * {
 }
 
 .dark .bgc-normal-r {
-  @apply bg-gradient-to-l from-[#333333]/50 to-transparent
+  @apply bg-gradient-to-l from-[#333333]/35 to-transparent
 }
 
 .text-advanced {
@@ -127,7 +127,7 @@ body * {
 }
 
 .dark .bgc-advanced-r {
-  @apply bg-gradient-to-l from-[#3c6900]/50 to-transparent
+  @apply bg-gradient-to-l from-[#3c6900]/35 to-transparent
 }
 
 .text-rare {
@@ -151,7 +151,7 @@ body * {
 }
 
 .dark .bgc-rare-r {
-  @apply bg-gradient-to-l from-[#0072a3]/50 to-transparent
+  @apply bg-gradient-to-l from-[#0072a3]/35 to-transparent
 }
 
 .text-hero {
@@ -175,7 +175,7 @@ body * {
 }
 
 .dark .bgc-hero-r {
-  @apply bg-gradient-to-l from-[#7c2997]/50 to-transparent
+  @apply bg-gradient-to-l from-[#7c2997]/35 to-transparent
 }
 
 .text-legend {
@@ -199,7 +199,7 @@ body * {
 }
 
 .dark .bgc-legend-r {
-  @apply bg-gradient-to-l from-[#c27100]/50 to-transparent
+  @apply bg-gradient-to-l from-[#c27100]/35 to-transparent
 }
 
 .text-relics {
@@ -223,7 +223,7 @@ body * {
 }
 
 .dark .bgc-relics-r {
-  @apply bg-gradient-to-l from-[#a83e00]/50 to-transparent
+  @apply bg-gradient-to-l from-[#a83e00]/35 to-transparent
 }
 
 .text-ancient {
@@ -247,7 +247,7 @@ body * {
 }
 
 .dark .bgc-ancient-r {
-  @apply bg-gradient-to-l from-[#ac977a]/50 to-transparent
+  @apply bg-gradient-to-l from-[#ac977a]/35 to-transparent
 }
 
 .text-special {
@@ -271,7 +271,7 @@ body * {
 }
 
 .dark .bgc-special-r {
-  @apply bg-gradient-to-l from-[#00e5ef]/50 to-transparent
+  @apply bg-gradient-to-l from-[#00e5ef]/35 to-transparent
 }
 
 .bgc-nothing {
