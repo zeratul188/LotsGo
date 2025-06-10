@@ -49,3 +49,18 @@ export function getBackgroundByGrade(grade: string): string {
     }
     return "bgc-nothing";
 }
+
+// 등급 별 색깔 확인 함수
+export function getBackgroundRightByGrade(grade: string): string {
+    switch(grade) {
+        case '일반': return "bgc-normal-r";
+        case '고급': return "bgc-advanced-r";
+        case '희귀': return "bgc-rare-r";
+        case '영웅': return "bgc-hero-r"
+        case '전설': return "bgc-legend-r"
+        case '유물': return "bgc-relics-r";
+        case '고대': return "bgc-ancient-r";
+        case '에스더': return "bgc-special-r";
+    }
+    return "bgc-nothing";
+}

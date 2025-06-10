@@ -1,8 +1,8 @@
 import clsx from "clsx";
 import { CharacterInfo } from "./characterFeat"
-import { getBgColorByLevels, getBorderColorByLevel, getCountByLevel, getServerNames, handleSelectCharacter } from "./expeditionFeat"
+import { getBgColorByLevels, getBorderColorByLevel, getCountByLevel, getImgByJob, getServerNames, handleSelectCharacter } from "./expeditionFeat"
 import data from "@/data/characters/data.json";
-import { Chip, Divider } from "@heroui/react";
+import { Avatar, Card, CardBody, Chip, Divider } from "@heroui/react";
 
 type ExpeditionComponentProps = {
     expeditions: CharacterInfo[]
@@ -22,15 +22,25 @@ export function ExpeditionsComponent({ expeditions }: ExpeditionComponentProps) 
                         ))}
                     </div>
                     <Divider className="mt-2 mb-2"/>
-                    <div className="w-full grid grid-cols-2 sm:grid-cols-3 md960:grid-cols-6">
+                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 md960:grid-cols-3 gap-3">
                         {expeditions.filter(character => character.server === server).map((character, idx) => (
-                            <div 
-                                key={idx} 
-                                className={`cursor-pointer hover:bg-gray-100 dark:hover:bg-[#222222] dark:border-[#444444] border-1 border-l-4 pl-2 pr-2 pt-1 pb-1 ${getBorderColorByLevel(character.level)}`}
-                                onClick={() => handleSelectCharacter(character.nickname)}>
-                                <p className="truncate overflow-hidden whitespace-nowrap">{character.nickname}</p>
-                                <p className="fadedtext truncate overflow-hidden whitespace-nowrap text-[10pt]">Lv.{character.level} · {character.job}</p>
-                            </div>
+                            <Card 
+                                key={idx}
+                                radius="sm" 
+                                isPressable 
+                                fullWidth
+                                className={`border-2 ${getBorderColorByLevel(character.level)}`}
+                                onPress={() => handleSelectCharacter(character.nickname)}>
+                                <CardBody>
+                                    <div className="w-full flex gap-4 items-center">
+                                        <Avatar isBordered size="md" src={getImgByJob(character.job)}/>
+                                        <div>
+                                            <p className="truncate overflow-hidden whitespace-nowrap">{character.nickname}</p>
+                                            <p className="fadedtext truncate overflow-hidden whitespace-nowrap text-[10pt]">Lv.{character.level} · {character.job}</p>
+                                        </div>
+                                    </div>
+                                </CardBody>
+                            </Card>
                         ))}
                     </div>
                 </div>

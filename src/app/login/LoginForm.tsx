@@ -73,6 +73,7 @@ export function InputsComponent({
                 fullWidth
                 label="아이디"
                 size="lg"
+                radius="sm"
                 value={user.id}
                 onValueChange={onValueChangeID}
                 isInvalid={isIdDuplicated}
@@ -84,6 +85,7 @@ export function InputsComponent({
                 type="password"
                 label="비밀번호"
                 size="lg" 
+                radius="sm"
                 value={user.password}
                 onValueChange={onValueChangePassword}
                 isInvalid={isPasswordNotMatch}
@@ -95,6 +97,7 @@ export function InputsComponent({
                 isLoading={isLoading}
                 color="primary"
                 size="lg"
+                radius="sm"
                 onPress={onClickLogin}>
                 로그인
             </Button>
@@ -103,6 +106,7 @@ export function InputsComponent({
                 size="lg"
                 as={Link}
                 href="/signup"
+                radius="sm"
                 color="default"
                 className="mt-5">
                 회원가입
