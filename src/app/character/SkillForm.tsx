@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { CharacterFile, Gem, getGemSimpleTailName } from "./characterFeat"
-import { getAllDestory, getTextAttack, getTextTime, loadSkillPoint, loadSkills, Skill } from "./skillFeat"
+import { AvgSkillPowers, getAllDestory, getTextAttack, getTextTime, loadSkillPoint, loadSkills, Skill } from "./skillFeat"
 import { Card, CardBody, CardHeader, Chip, Divider, Image, Popover, PopoverContent, PopoverTrigger, Progress, Tooltip } from "@heroui/react"
 import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils"
 import clsx from "clsx"
@@ -41,31 +41,63 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
         <Card radius="sm">
             <CardHeader>
                 <div className="w-full flex gap-1 md960:gap-5 items-center flex-col md960:flex-row">
-                    <div className="w-full md960:w-[max-content] md960:grow flex gap-1 items-center">
+                    <div className="w-full md960:w-[max-content] md960:grow flex gap-2 items-center">
                         <p className="text-lg grow text-left">스킬</p>
-                        {getAllDestory(skills) > 0 ? (
-                            <Tooltip
-                                showArrow
-                                content={<div className="w-[200px] p-2">
-                                    <div className="w-full flex gap-1 fadedtext">
-                                        <p className="grow">스킬명</p>
-                                        <p>파괴수치</p>
-                                    </div>
-                                    <Divider className="mt-2 mb-2"/>
-                                    {skills.filter(skill => skill.destroy > 0).map((skill, index) => (
-                                        <div key={index} className="w-full flex gap-1 mb-2">
-                                            <p className="grow">{skill.name}</p>
-                                            <p>{skill.destroy}</p>
+                        {AvgSkillPowers(skills) !== '' ? (
+                            <Popover showArrow>
+                                <PopoverTrigger>
+                                    <Chip radius="sm" color="primary" className="cursor-pointer">무력 평균 {AvgSkillPowers(skills)}</Chip>
+                                </PopoverTrigger>
+                                <PopoverContent>
+                                    <div className="w-[230px] p-2">
+                                        <div className="w-full flex gap-1 fadedtext">
+                                            <p className="grow">스킬명</p>
+                                            <p>무력</p>
                                         </div>
-                                    ))}
-                                    <Divider className="mb-2"/>
-                                    <div className="w-full flex gap-1">
-                                        <p className="grow fadedtext">총 파괴수치</p>
-                                        <p className="font-bold">{getAllDestory(skills)}</p>
+                                        <Divider className="mt-2 mb-2"/>
+                                        {skills.map((skill, index) => (
+                                            <div key={index} className="w-full flex gap-1 mb-2 items-center">
+                                                <p className="grow">{skill.name}</p>
+                                                <Chip radius="sm" variant="flat">{skill.power !== ""? skill.power : '-'}</Chip>
+                                            </div>
+                                        ))}
+                                        <Divider className="mb-2"/>
+                                        <div className="w-full flex gap-1 items-center">
+                                            <p className="grow fadedtext">무력 평균</p>
+                                            <Chip radius="sm" color="success" variant="flat">{AvgSkillPowers(skills)}</Chip>
+                                        </div>
+                                        <p className="fadedtext text-[9pt] mt-2">위 계산은 트라이포드와 룬에 반영되지 않은 내용이니 참고하시기 바랍니다.</p>
                                     </div>
-                                </div>}>
-                                <Chip color="secondary">총 파괴 {getAllDestory(skills)}</Chip>
-                            </Tooltip>
+                                </PopoverContent>
+                            </Popover>
+                        ) : <></>}
+                        {getAllDestory(skills) > 0 ? (
+                            <Popover showArrow>
+                                <PopoverTrigger>
+                                    <Chip radius="sm" color="secondary" className="cursor-pointer">총 파괴 {getAllDestory(skills)}</Chip>
+                                </PopoverTrigger>
+                                <PopoverContent>
+                                    <div className="w-[230px] p-2">
+                                        <div className="w-full flex gap-1 fadedtext">
+                                            <p className="grow">스킬명</p>
+                                            <p>파괴수치</p>
+                                        </div>
+                                        <Divider className="mt-2 mb-2"/>
+                                        {skills.filter(skill => skill.destroy > 0).map((skill, index) => (
+                                            <div key={index} className="w-full flex gap-1 mb-2 items-center">
+                                                <p className="grow">{skill.name}</p>
+                                                <Chip radius="sm" variant="flat">Lv.{skill.destroy}</Chip>
+                                            </div>
+                                        ))}
+                                        <Divider className="mb-2"/>
+                                        <div className="w-full flex gap-1 items-center">
+                                            <p className="grow fadedtext">총 파괴수치</p>
+                                            <Chip radius="sm" color="success" variant="flat">Lv.{getAllDestory(skills)}</Chip>
+                                        </div>
+                                        <p className="fadedtext text-[9pt] mt-2">위 계산은 트라이포드와 룬에 반영되지 않은 내용이니 참고하시기 바랍니다.</p>
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
                         ) : <></>}
                     </div>
                     <div className="w-full md960:w-[200px]">
@@ -99,12 +131,12 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                             alt={skill.name}/>
                                         <p className="text-lg font-bold">{skill.name}</p>
                                         <p>Lv.{skill.level}</p>
-                                        <Chip variant="flat" size="sm">{skill.type}</Chip>
+                                        <Chip variant="flat" radius="sm" size="sm">{skill.type}</Chip>
                                     </div>
                                     <div className="w-full md960:w-[max-content] md960:grow flex gap-3 items-center">
-                                        {skill.isCounter ? <Chip variant="solid" size="sm" color="success">카운터</Chip> : <></>}
-                                        {skill.power !== '' ? <Chip variant="solid" size="sm" color="primary">무력 {skill.power}</Chip> : <></>}
-                                        {skill.destroy > 0 ? <Chip variant="solid" size="sm" color="secondary">파괴 {skill.destroy}</Chip> : <></>}
+                                        {skill.isCounter ? <Chip variant="solid" radius="sm" size="sm" color="success">카운터</Chip> : <></>}
+                                        {skill.power !== '' ? <Chip variant="solid" radius="sm" size="sm" color="primary">무력 {skill.power}</Chip> : <></>}
+                                        {skill.destroy > 0 ? <Chip variant="solid" radius="sm" size="sm" color="secondary">파괴 {skill.destroy}</Chip> : <></>}
                                         <div className="grow flex gap-2 justify-end">
                                             {skill.tripods.length > 0 ? <p className="bg-blue-500 rounded-full p-[2px] text-[10pt] w-6 h-6 text-center text-white">{skill.tripods[0].slot}</p> : <></>}
                                             {skill.tripods.length > 1 ? <p className="bg-green-700 rounded-full p-[2px] text-[10pt] w-6 h-6 text-center text-white">{skill.tripods[1].slot}</p> : <></>}
