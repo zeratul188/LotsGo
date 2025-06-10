@@ -220,33 +220,33 @@
     "levels": [
         {
             "level": 1720,
-            "bg": "bg-[#a61d1d] dark:bg-[#a61d1d]",
-            "border": "border-[#a61d1d] dark:border-[#a61d1d]"
+            "bg": "bg-[#FF6947] dark:bg-[#FF6947] text-white",
+            "border": "border-[#FF6947] dark:border-[#FF6947]"
         },
         {
             "level": 1700,
-            "bg": "bg-[#ae8627] dark:bg-[#ae8627]",
-            "border": "border-[#ae8627] dark:border-[#ae8627]"
+            "bg": "bg-[#bbbb71] dark:bg-[#ffffb5] text-white dark:text-black",
+            "border": "border-[#bbbb71] dark:border-[#ffffb5]"
         },
         {
             "level": 1680,
-            "bg": "bg-[#73188d] dark:bg-[#73188d]",
-            "border": "border-[#73188d] dark:border-[#73188d]"
+            "bg": "bg-[#9D71BD] dark:bg-[#9D71BD] text-white",
+            "border": "border-[#9D71BD] dark:border-[#9D71BD]"
         },
         {
             "level": 1660,
-            "bg": "bg-[#126b7e] dark:bg-[#126b7e]",
-            "border": "border-[#126b7e] dark:border-[#126b7e]"
+            "bg": "bg-[#6DD66D] dark:bg-[#6DD66D] text-white",
+            "border": "border-[#6DD66D] dark:border-[#6DD66D]"
         },
         {
             "level": 1640,
-            "bg": "bg-[#1e8117] dark:bg-[#1e8117]",
-            "border": "border-[#1e8117] dark:border-[#1e8117]"
+            "bg": "bg-[#FF82C8] dark:bg-[#FF82C8] text-white",
+            "border": "border-[#FF82C8] dark:border-[#FF82C8]"
         },
         {
             "level": 1580,
-            "bg": "bg-[#1f2790] dark:bg-[#1f2790]",
-            "border": "border-[#1f2790] dark:border-[#1f2790]"
+            "bg": "bg-[#28A0FF] dark:bg-[#28A0FF] text-white",
+            "border": "border-[#28A0FF] dark:border-[#28A0FF]"
         },
         {
             "level": 0,
