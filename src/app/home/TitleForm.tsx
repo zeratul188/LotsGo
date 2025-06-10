@@ -52,7 +52,7 @@ export default function TitleComponent() {
             </div>
             <div className="w-[300px] sm:w-[500px] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
                 <LogoComponent/>
-                <p className="text-lg sm:text-2xl mb-4 sm:mb-8">로스트아크 숙제 및 정보 사이트</p>
+                <p className="text-lg sm:text-2xl mb-4 sm:mb-8">로스트아크 숙제 관리 및 정보 사이트</p>
                 <Input 
                     size="lg"
                     radius="sm"
@@ -60,7 +60,7 @@ export default function TitleComponent() {
                     value={value}
                     maxLength={12}
                     onValueChange={setValue}
-                    startContent={<SearchIcon className="text-black/50 mb-0.5 dark:text-white/90 text-slate-400 pointer-events-none flex-shrink-0" />}
+                    startContent={<SearchIcon className="mb-0.5 dark:text-white/90 text-slate-400 pointer-events-none flex-shrink-0" />}
                     endContent={(
                         <Button
                             size="sm"
