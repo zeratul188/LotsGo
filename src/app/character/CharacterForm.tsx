@@ -1086,7 +1086,10 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
                     size="md"
                     radius="sm"
                     variant="flat"
-                    className="min-w-full text-center mt-4 mb-4">
+                    className={clsx(
+                        "min-w-full text-center mt-4 mb-4",
+                        evolution.length > 0 ? 'flex' : 'hidden'
+                    )}>
                     진화
                 </Chip>
                 {evolution.map((item, index) => (
@@ -1114,7 +1117,10 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
                     size="md"
                     radius="sm"
                     variant="flat"
-                    className="min-w-full text-center mt-2 mb-4">
+                    className={clsx(
+                        "min-w-full text-center mt-2 mb-4",
+                        enlightenment.length > 0 ? 'flex' : 'hidden'
+                    )}>
                     깨달음
                 </Chip>
                 {enlightenment.map((item, index) => (
@@ -1142,7 +1148,10 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
                     size="md"
                     radius="sm"
                     variant="flat"
-                    className="min-w-full text-center mt-2 mb-4">
+                    className={clsx(
+                        "min-w-full text-center mt-2 mb-4",
+                        jump.length > 0 ? 'flex' : 'hidden'
+                    )}>
                     도약
                 </Chip>
                 {jump.map((item, index) => (
