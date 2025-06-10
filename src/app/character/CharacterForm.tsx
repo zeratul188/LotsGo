@@ -1,4 +1,4 @@
-import { getBackgroundByGrade, getColorTextByGrade, SetStateFn, useMobileQuery } from "@/utiils/utils";
+import { getBackgroundByGrade, getBackgroundRightByGrade, getColorTextByGrade, SetStateFn, useMobileQuery } from "@/utiils/utils";
 import { 
     Accordion,
     AccordionItem,
@@ -906,6 +906,7 @@ function CardComponent({ file }: ProfileComponentProps) {
 // 스택 컴포넌트
 function StatComponent({ file }: ProfileComponentProps) {
     const [stat, setStat] = useState<Stat[]>([]);
+    const isMobile = useMobileQuery();
 
     useEffect(() => {
         loadStats(file.stats, setStat);
@@ -919,6 +920,7 @@ function StatComponent({ file }: ProfileComponentProps) {
                 <div className="w-full grid grid-cols-2 gap-2">
                     <Tooltip
                         showArrow
+                        placement={isMobile ? 'top' : 'left'}
                         content={<div className="w-[340px] p-2">
                             <ul className="list-disc pl-4">
                                 {getStatByType(stat, '공격력') ? getStatByType(stat, '공격력')?.tooltip.map((line, idx) => (
@@ -933,6 +935,7 @@ function StatComponent({ file }: ProfileComponentProps) {
                     </Tooltip>
                     <Tooltip
                         showArrow
+                        placement={isMobile ? 'top' : 'left'}
                         content={<div className="w-[340px] p-2">
                             <ul className="list-disc pl-4">
                                 {getStatByType(stat, '최대 생명력') ? getStatByType(stat, '최대 생명력')?.tooltip.map((line, idx) => (
@@ -954,6 +957,7 @@ function StatComponent({ file }: ProfileComponentProps) {
                         <Tooltip
                             key={index}
                             showArrow
+                            placement={isMobile ? 'top' : 'left'}
                             content={<div className="w-[340px] p-2">
                                 <ul className="list-disc pl-4">
                                     {item.tooltip.map((line, idx) => (
@@ -975,6 +979,7 @@ function StatComponent({ file }: ProfileComponentProps) {
                             <Tooltip
                                 key={index}
                                 showArrow
+                                placement={isMobile ? 'top' : 'left'}
                                 content={<div className="w-[340px] p-2">
                                     <ul className="list-disc pl-4">
                                         {item.tooltip.map((line, idx) => (
@@ -1008,9 +1013,9 @@ function EngravingComponent({ file }: ProfileComponentProps) {
         <Card radius="sm" className="mt-8">
             <CardHeader><p className="text-lg">각인</p></CardHeader>
             <Divider/>
-            <CardBody>
+            <CardBody className="pl-1 pb-1 pr-1 pt-2">
                 <div>
-                    {engravings.map((engraving, index) => (
+                    {engravings.sort((a, b) => b.level - a.level).map((engraving, index) => (
                         <Tooltip 
                             key={index} 
                             showArrow
@@ -1018,7 +1023,10 @@ function EngravingComponent({ file }: ProfileComponentProps) {
                             content={<div className="p-2">
                                 <p className="max-w-[320px]">{engraving.description}</p>
                             </div>}>
-                            <div className="flex gap-3 mb-2">
+                            <div className={clsx(
+                                "flex gap-3 mb-2 rounded-md pt-1 pb-1 pl-2 pr-2",
+                                engraving.level >= 4 ? `${getBackgroundRightByGrade(engraving.grade)}` : ""
+                            )}>
                                 <p className={`grow ${getColorTextByGrade(engraving.grade)}`}>{engraving.name}</p>
                                 {engraving.stoneLevel > 0 ? (
                                     <div className="flex gap-1 items-center fadedtext">
