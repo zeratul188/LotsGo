@@ -64,7 +64,7 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                         <Divider className="mb-2"/>
                                         <div className="w-full flex gap-1 items-center">
                                             <p className="grow fadedtext">무력 평균</p>
-                                            <Chip radius="sm" color="success" variant="flat">Lv.{AvgSkillPowers(skills)}</Chip>
+                                            <Chip radius="sm" color="success" variant="flat">{AvgSkillPowers(skills)}</Chip>
                                         </div>
                                         <p className="fadedtext text-[9pt] mt-2">위 계산은 트라이포드와 룬에 반영되지 않은 내용이니 참고하시기 바랍니다.</p>
                                     </div>
