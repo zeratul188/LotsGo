@@ -485,24 +485,69 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                 </Popover>
                             )
                         })}
-                        <div className="flex gap-2 mt-4">
+                        <div className="grid grid-cols-[1fr_2fr] sm:grid-cols-2 gap-2 mt-4">
                             {getAllPower(equipments) > 0 ? (
-                                <div className="grow flex gap-3 items-center">
-                                    <div className="w-8 h-8"><PowerIcon/></div>
-                                    <div>
-                                        <p className="fadedtext text-[9pt]">초월 총합</p>
-                                        <p className="text-lg font-bold">{getAllPower(equipments)}</p>
-                                    </div>
-                                </div>
+                                <Card radius="sm" className="grow">
+                                    <CardBody className="pl-2 pr-2 pt-1 pb-1">
+                                        <div className="w-full flex gap-3 items-center">
+                                            <div className="w-8 h-8"><PowerIcon/></div>
+                                            <div>
+                                                <p className="fadedtext text-[9pt]">초월 총합</p>
+                                                <p className="text-lg font-bold">{getAllPower(equipments)}</p>
+                                            </div>
+                                        </div>
+                                    </CardBody>
+                                </Card>
                             ) : <></>}
                             {getAllElixir(equipments) > 0 ? (
-                                <div className="grow flex gap-3 items-center">
-                                    <div className="w-8 h-8"><PotionIcon/></div>
-                                    <div>
-                                        <p className="fadedtext text-[9pt]">엘릭서 총합</p>
-                                        <p className="text-lg font-bold">Lv.{getAllElixir(equipments)}</p>
-                                    </div>
-                                </div>
+                                <Card radius="sm" className="grow">
+                                    <CardBody className="pl-2 pr-2 pt-1 pb-1">
+                                        <div className="w-full flex gap-3 items-center">
+                                            <div className="w-8 h-8"><PotionIcon/></div>
+                                            <div className="grow">
+                                                <p className="fadedtext text-[9pt]">엘릭서 총합</p>
+                                                <p className="text-lg font-bold">Lv.{getAllElixir(equipments)}</p>
+                                            </div>
+                                            <Popover showArrow>
+                                                <PopoverTrigger>
+                                                    <Button size="sm" variant="flat">자세히 보기</Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent>
+                                                    <div className="w-[320px] p-2">
+                                                        <p className="text-lg">엘릭서 정보</p>
+                                                        <Divider className="mt-1 mb-2"/>
+                                                        {equipments.filter(equipment => equipment.elixirs ? equipment.elixirs.length > 0 : false).map((equipment, index) => (
+                                                            <div key={index} className="mb-2 grid grid-cols-[max-content_1fr_1fr] gap-3 items-center">
+                                                                <Chip size="sm" variant="flat" radius="sm">{equipment.type}</Chip>
+                                                                {equipment.elixirs?.map((elixir, idx) => (
+                                                                    <p key={idx}>Lv.{elixir.level} {elixir.name}</p>
+                                                                ))}
+                                                            </div>
+                                                        ))}
+                                                        <Divider className="mt-1 mb-2"/>
+                                                        {printAllElixirInTooltip(JSON.parse(getObjectByArmorType(equipment, "투구").Tooltip)) ? (
+                                                            <div className="mt-2">
+                                                                <p className="font-bold text-[#fe6e0e]">{printAllElixirInTooltip(JSON.parse(getObjectByArmorType(equipment, "투구").Tooltip))?.topStr.replaceAll('연성 추가 효과', '연성 추가 효과 - ')}</p>
+                                                                <ul className="list-disc pl-4">
+                                                                    <li className="whitespace-pre-line">
+                                                                        {printAllElixirInTooltip(JSON.parse(getObjectByArmorType(equipment, "투구").Tooltip))?.line1.split(/\r?\n/).map((line, i) => (
+                                                                            <p key={i} className={i === 0 ? '' : 'fadedtext'}>{line}</p>
+                                                                        ))}
+                                                                    </li>
+                                                                    <li className="whitespace-pre-line">
+                                                                        {printAllElixirInTooltip(JSON.parse(getObjectByArmorType(equipment, "투구").Tooltip))?.line2.split(/\r?\n/).map((line, i) => (
+                                                                            <p key={i} className={i === 0 ? '' : 'fadedtext'}>{line}</p>
+                                                                        ))}
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                        ) : <></>}
+                                                    </div>
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+                                    </CardBody>
+                                </Card>
                             ) : <></>}
                         </div>
                     </div>
