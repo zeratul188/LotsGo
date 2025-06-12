@@ -1,7 +1,10 @@
 import { Image, Input, Divider, Button, Link, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
-import { useLoginHandlers, useLoginHandler, handleSendPasswordReset } from "./loginFeat";
+import { useLoginHandlers, useLoginHandler, handleSendPasswordReset, login } from "./loginFeat";
 import { useState } from "react";
 import { SetStateFn } from "@/utiils/utils";
+import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../store/store";
 
 export type User = {
     id: string,
@@ -66,6 +69,9 @@ export function InputsComponent({
         onValueChangePassword
     } = useLoginHandlers(setUser);
     const onClickLogin = useLoginHandler(user, setLoading, setIdDuplicated, setPasswordNotMatch);
+    
+    const router = useRouter();
+    const dispatch = useDispatch<AppDispatch>();
 
     return (
         <>
@@ -90,6 +96,11 @@ export function InputsComponent({
                 onValueChange={onValueChangePassword}
                 isInvalid={isPasswordNotMatch}
                 errorMessage="비밀번호가 일치하지 않습니다."
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                        login(user, setLoading, setIdDuplicated, setPasswordNotMatch, router, dispatch);
+                    }
+                }}
                 variant="flat"/>
             <Divider className="mt-8 mb-8"/>
             <Button

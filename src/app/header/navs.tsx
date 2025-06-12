@@ -17,7 +17,7 @@ import { useLogout, useOnActionProfile } from "./headerFeat";
 // 헤더 메뉴
 const menuItems: Array<{item: string, link: string}> = [
     {
-        item: "숙제 관리",
+        item: "숙제",
         link: '/checklist'
     },
     {
@@ -112,7 +112,7 @@ export function NavContents() {
         <>
             <NavbarItem>
                 <Link color="foreground" href="/checklist">
-                    숙제 관리
+                    숙제
                 </Link>
             </NavbarItem>
             <NavbarItem>

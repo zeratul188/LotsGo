@@ -68,6 +68,8 @@ import {
     isCheckBiweeklyContent, 
     isHaveCharacter, 
     SearchCharacter, 
+    useChangeBlessing, 
+    useClickLife, 
     useClickLoadCharacters, 
     useClickUpdatedCharacters, 
     useCloseModal, 
@@ -92,6 +94,7 @@ import {
   Droppable,
   Draggable
 } from '@hello-pangea/dnd';
+import data from '@/data/checklist/data.json';
 
 // state 관리
 export type ModalData = {
@@ -108,6 +111,8 @@ export function useChecklistForm() {
         type: 'null'
     });
     const [cubes, setCubes] = useState<Cube[]>([]);
+    const [life, setLife] = useState(0);
+    const [isBlessing, setBlessing] = useState(false);
 
     return {
         isLoading, setLoading,
@@ -115,7 +120,9 @@ export function useChecklistForm() {
         server, setServer,
         isOpen, onOpen, onOpenChange,
         modalData, setModalData,
-        cubes, setCubes
+        cubes, setCubes,
+        life, setLife,
+        isBlessing, setBlessing
     }
 }
 
@@ -195,9 +202,13 @@ function PositionModal({ isOpenModalPosition, onOpenChangePosition, checklist, d
 type ChecklistStatueProps = {
     checklist: CheckCharacter[],
     bosses: Boss[],
-    dispatch: AppDispatch
+    dispatch: AppDispatch,
+    life: number,
+    isBlessing: boolean,
+    setLife: SetStateFn<number>,
+    setBlessing: SetStateFn<boolean>
 }
-export function ChecklistStatue({ checklist, bosses, dispatch }: ChecklistStatueProps) {
+export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing, setLife, setBlessing }: ChecklistStatueProps) {
     const isMobile = useMobileQuery();
     const [isLoading, setLoading] = useState(false);
     const [inputValue, setInputValue] = useState('');
@@ -206,6 +217,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch }: ChecklistStatue
     const [isLoadingAdd, setLoadingAdd] = useState(false);
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [isGold, setGold] = useState(false);
+    const [newLife, setNewLife] = useState(0);
 
     const [isOpenModalPosition, setOpenModalPosition] = useState(false);
     const onOpenChangePosition = (isOpen: boolean) => setOpenModalPosition(isOpen);
@@ -213,12 +225,14 @@ export function ChecklistStatue({ checklist, bosses, dispatch }: ChecklistStatue
     const onClickUpdatedCharacters = useClickUpdatedCharacters(checklist, dispatch, setLoading);
     const onClickLoadCharacters = useClickLoadCharacters(inputValue, setResult, setLoadingSearch);
     const onCloseModal = useCloseModal(setResult, setInputValue);
+    const onChangeBlessing = useChangeBlessing(life, setBlessing);
+    const onClickLife = useClickLife(newLife, isBlessing, setLife, setNewLife);
     return (
         <>
             <Card fullWidth radius="sm">
                 <CardBody>
-                    <div className="w-full flex flex-col md960:flex-row gap-4">
-                        <div className="w-full md960:w-[400px]">
+                    <div className="w-full grid grid-cols-1 md960:grid-cols-[4fr_1px_3fr_1px_4fr] gap-2">
+                        <div className="w-full flex items-center">
                             <Progress 
                                 aria-label="all-gold"
                                 size="md"
@@ -241,11 +255,11 @@ export function ChecklistStatue({ checklist, bosses, dispatch }: ChecklistStatue
                                 className="w-full"/>
                         </div>
                         <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
-                        <div className="w-full md960:w-[320px]">
+                        <div className="w-full flex items-center">
                             <Progress 
                                 aria-label="all-gold"
                                 size="md"
-                                color="success"
+                                color="secondary"
                                 label={`📃 숙제 진행 상황 : ${getCompleteChecklist(checklist)} / ${getAllCountChecklist(checklist)}`}
                                 showValueLabel={true}
                                 radius="sm"
@@ -254,30 +268,95 @@ export function ChecklistStatue({ checklist, bosses, dispatch }: ChecklistStatue
                                 className="w-full"/>
                         </div>
                         <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
-                        <div className="grow-1 flex flex-col md960:flex-row justify-end items-center gap-2">
-                            <Button
-                                color="primary"
-                                variant="flat"
-                                className="w-full md960:w-[100px]"
-                                onPress={() => onOpenChangePosition(true)}>순서 변경</Button>
-                            <Button
+                        <div className="w-full flex flex-col md960:flex-row gap-2 items-center flex-shrink-0">
+                            <Progress 
+                                aria-label="all-gold"
+                                size="md"
                                 color="success"
-                                variant="flat"
-                                className="w-full md960:w-[100px]"
-                                onPress={onOpen}>캐릭터 추가</Button>
-                            <Tooltip 
-                                showArrow
-                                placement="left"
-                                content="캐릭터 정보만 수정되며, 체크리스트는 영향을 주지 않습니다.">
-                                <Button
-                                    color="primary"
-                                    isLoading={isLoading}
-                                    className="w-full md960:w-[140px]"
-                                    onPress={onClickUpdatedCharacters}>캐릭터 갱신하기</Button>
-                            </Tooltip>
+                                label={`🍃 생활의 기운 : ${life} / ${data.maxLife}`}
+                                radius="sm"
+                                value={life}
+                                maxValue={data.maxLife}
+                                className="grow"/>
+                            <div className="w-full md960:w-[max-content] flex shrink-0 min-w-fit flex-row md960:flex-col gap-2 md960:gap-0 items-center">
+                                <Tooltip showArrow content="베아트리스의 축복">
+                                    <Checkbox 
+                                        size="sm" 
+                                        color="primary" 
+                                        isSelected={isBlessing}
+                                        onValueChange={onChangeBlessing}
+                                        className="mb-0">축복</Checkbox>
+                                </Tooltip>
+                                <div className="grow flex justify-end">
+                                    <Popover showArrow placement="bottom">
+                                        <PopoverTrigger>
+                                            <Button
+                                                size="sm"
+                                                color="primary"
+                                                radius="sm"
+                                                className="w-[100px] md960:w-[max-content]">
+                                                수정
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent>
+                                            <div className="w-[240px] p-2">
+                                                <p className="mb-2">생활의 기운 조정</p>
+                                                <NumberInput
+                                                    fullWidth
+                                                    radius="sm"
+                                                    size="sm"
+                                                    placeholder="0 ~ 12000"
+                                                    maxValue={12000}
+                                                    value={newLife}
+                                                    onValueChange={setNewLife}/>
+                                                <Button
+                                                    fullWidth
+                                                    size="sm"
+                                                    color="primary"
+                                                    className="mt-3"
+                                                    onPress={onClickLife}>
+                                                    저장
+                                                </Button>
+                                            </div>
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </CardBody>
+                <Divider/>
+                <CardFooter className="p-0">
+                    <div className="w-full grid grid-cols-3">
+                        <Button
+                            fullWidth
+                            radius="none"
+                            color="primary"
+                            size="sm"
+                            variant="flat"
+                            onPress={() => onOpenChangePosition(true)}>순서 변경</Button>
+                        <Button
+                            fullWidth
+                            radius="none"
+                            color="success"
+                            variant="flat"
+                            size="sm"
+                            onPress={onOpen}>캐릭터 추가</Button>
+                        <Tooltip 
+                            showArrow
+                            placement="bottom"
+                            content="캐릭터 정보만 수정되며, 체크리스트는 영향을 주지 않습니다.">
+                            <Button
+                                fullWidth
+                                radius="none"
+                                color="primary"
+                                variant="flat"
+                                size="sm"
+                                isLoading={isLoading}
+                                onPress={onClickUpdatedCharacters}>캐릭터 갱신하기</Button>
+                        </Tooltip>
+                    </div>
+                </CardFooter>
             </Card>
             <PositionModal
                 isOpenModalPosition={isOpenModalPosition}
