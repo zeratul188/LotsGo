@@ -909,7 +909,7 @@ function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
                         color="danger"
                         variant="flat"
                         className={clsx(
-                            `min-w-full text-center`,
+                            `min-w-full text-center hidden sm:flex`,
                             gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length !== 0 ? '' : 'hidden',
                             {
                                 'col-span-1': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 1,
@@ -932,7 +932,7 @@ function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
                         color="success"
                         variant="flat"
                         className={clsx(
-                            `min-w-full text-center`,
+                            `min-w-full text-center hidden sm:flex`,
                             gems.filter(item => item.skillStr.includes('재사용 대기시간')).length !== 0 ? '' : 'hidden',
                             {
                                 'col-span-1': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 1,

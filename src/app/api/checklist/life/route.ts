@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const id = body.id;
     const life = body.life;
+    const max = body.max;
     const isNotValue = Boolean(body.isNotValue);
     const isBlessing = Boolean(body.isBlessing);
     const today = new Date();
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest) {
         const lifeObj = {
             life: life,
             date: isNotValue ? lifeDate : today,
+            max: max,
             isBlessing: isBlessing
         }
         await updateDoc(docRef, {
