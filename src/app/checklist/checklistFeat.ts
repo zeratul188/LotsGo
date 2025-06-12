@@ -22,6 +22,7 @@ import { Character, LoginUser } from "../store/loginSlice";
 import { Cube } from "../api/checklist/cube/route";
 import { collection, getDocs } from "firebase/firestore";
 import { firestore } from "@/utiils/firebase";
+import data from '@/data/checklist/data.json';
 
 // 닉네임으로 index 찾기 함수
 export function getIndexByNickname(checklist: CheckCharacter[], nickname: string): number {
@@ -49,7 +50,9 @@ export async function loadChecklist(
     setLoading: SetStateFn<boolean>, 
     dispatch: AppDispatch,
     expedition: Character[],
-    bosses: Boss[]
+    bosses: Boss[],
+    setLife: SetStateFn<number>,
+    setBlessing: SetStateFn<boolean>
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
@@ -64,6 +67,60 @@ export async function loadChecklist(
             color: "danger"
         });
         return;
+    }
+
+    const lifeRes = await fetch(`/api/checklist/life?id=${id}`);
+    const lifeObj = await lifeRes.json();
+
+    // 생기 관련 데이터
+    if (lifeRes.status === 200) {
+        const today = new Date();
+        const lifeDate = new Date(lifeObj.date.seconds * 1000 + lifeObj.date.nanoseconds / 1_000_000);
+        const diffMs = today.getTime() - lifeDate.getTime();
+        const diffMinutes = diffMs / (1000 * 60);
+        const diffCount = Math.floor(diffMinutes / 10);
+        const upValue = lifeObj.isBlessing ? 33 : 30;
+        let life = lifeObj.life + diffCount * upValue;
+        if (life > data.maxLife) life = data.maxLife;
+        const lifeRes = await fetch(`/api/checklist/life`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: id,
+                life: life,
+                isNotValue: false,
+                isBlessing: lifeObj.isBlessing
+            })
+        });
+        if (!lifeRes.ok) {
+            addToast({
+                title: "데이터 로드 오류",
+                description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+                color: "danger"
+            });
+            return;
+        }
+        setLife(life);
+        setBlessing(lifeObj.isBlessing);
+    } else {
+        const initRes = await fetch(`/api/checklist/life`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: id,
+                life: 0,
+                isNotValue: false,
+                isBlessing: false
+            })
+        });
+        if (!initRes.ok) {
+            addToast({
+                title: "데이터 로드 오류",
+                description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+                color: "danger"
+            });
+            return;
+        }
     }
 
     const checklist: CheckCharacter[] = await res.json();
@@ -150,6 +207,67 @@ export async function loadChecklist(
             dispatch(saveData(checklist));
             setLoading(false);
         }
+    }
+}
+
+export function useClickLife(
+    newLife: number, 
+    isBlessing: boolean, 
+    setLife: SetStateFn<number>,
+    setNewLife: SetStateFn<number>
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    return async () => {
+        const lifeRes = await fetch(`/api/checklist/life`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: id,
+                life: newLife,
+                isNotValue: false,
+                isBlessing: isBlessing
+            })
+        });
+        if (!lifeRes.ok) {
+            addToast({
+                title: "데이터 로드 오류",
+                description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+                color: "danger"
+            });
+            return;
+        }
+        setLife(newLife);
+        setNewLife(0);
+    }
+}
+
+// 베아트리스의 축복 조정
+export function useChangeBlessing(life: number, setBlessing: SetStateFn<boolean>) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    return async (isSelected: boolean) => {
+        const lifeRes = await fetch(`/api/checklist/life`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: id,
+                life: life,
+                isNotValue: true,
+                isBlessing: isSelected
+            })
+        });
+        if (!lifeRes.ok) {
+            addToast({
+                title: "데이터 로드 오류",
+                description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+                color: "danger"
+            });
+            return;
+        }
+        setBlessing(isSelected);
     }
 }
 
