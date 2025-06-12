@@ -240,7 +240,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
             <Card 
                 fullWidth 
                 radius="sm"
-                className="md960:w-[calc(100vw-40px)] md960:fixed md960:top-[80px] md960:left-1/2 md960:-translate-x-1/2 md960:z-50">
+                className="md960:w-[calc(100vw-40px)] lg1280:w-[1240px] md960:fixed md960:top-[80px] md960:left-1/2 md960:-translate-x-1/2 md960:z-50">
                 <CardBody>
                     <div className="w-full grid grid-cols-1 md960:grid-cols-[4fr_1px_3fr_1px_4fr] gap-2">
                         <div className="w-full flex items-center">
@@ -280,15 +280,18 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                         </div>
                         <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
                         <div className="w-full flex flex-col md960:flex-row gap-2 items-center flex-shrink-0">
-                            <Progress 
-                                aria-label="all-gold"
-                                size="md"
-                                color="success"
-                                label={`🍃 생활의 기운 : ${life.toLocaleString()} / ${max.toLocaleString()}`}
-                                radius="sm"
-                                value={life}
-                                maxValue={max}
-                                className="grow"/>
+                            <Tooltip showArrow content="생활의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.">
+                                <Progress 
+                                    aria-label="all-gold"
+                                    size="md"
+                                    color="success"
+                                    label={`🍃 생활의 기운 : ${life.toLocaleString()} / ${max.toLocaleString()}`}
+                                    radius="sm"
+                                    value={life}
+                                    maxValue={max}
+                                    className="grow"/>
+                            </Tooltip>
+                            <p className="block md960:hidden fadedtext text-[9pt] w-full text-left">생활의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.</p>
                             <div className="w-full md960:w-[max-content] flex shrink-0 min-w-fit flex-row md960:flex-col gap-2 md960:gap-0 items-center">
                                 <Tooltip showArrow content="베아트리스의 축복">
                                     <Checkbox 
