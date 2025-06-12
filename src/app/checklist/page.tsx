@@ -22,7 +22,7 @@ export default function Checklist() {
     useEffect(() => {
         if (!expedition || expedition.length === 0) return;
         if (checkLogin() && checklistForm.bosses.length !== 0) {
-            loadChecklist(checklistForm.setLoading, dispatch, expedition, checklistForm.bosses);
+            loadChecklist(checklistForm.setLoading, dispatch, expedition, checklistForm.bosses, checklistForm.setLife, checklistForm.setBlessing);
         }
     }, [checklistForm.bosses, expedition]);
 
@@ -67,7 +67,11 @@ export default function Checklist() {
                 <ChecklistStatue 
                     checklist={checklist} 
                     bosses={checklistForm.bosses}
-                    dispatch={dispatch}/>
+                    dispatch={dispatch}
+                    life={checklistForm.life}
+                    isBlessing={checklistForm.isBlessing}
+                    setLife={checklistForm.setLife}
+                    setBlessing={checklistForm.setBlessing}/>
                 <SelectServer 
                     checklist={checklist} 
                     server={checklistForm.server}

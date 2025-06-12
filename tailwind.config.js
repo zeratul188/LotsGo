@@ -12,6 +12,10 @@ module.exports = {
     'border-current',
     'border-t-transparent',
     'rounded-full',
+    {
+      pattern: /col-span-(\d+)/,
+      variants: ['sm', 'md', 'lg'],
+    }
   ],
   theme: {
     extend: {
