@@ -22,7 +22,7 @@ export default function Checklist() {
     useEffect(() => {
         if (!expedition || expedition.length === 0) return;
         if (checkLogin() && checklistForm.bosses.length !== 0) {
-            loadChecklist(checklistForm.setLoading, dispatch, expedition, checklistForm.bosses, checklistForm.setLife, checklistForm.setBlessing);
+            loadChecklist(checklistForm.setLoading, dispatch, expedition, checklistForm.bosses, checklistForm.setLife, checklistForm.setBlessing, checklistForm.setMax);
         }
     }, [checklistForm.bosses, expedition]);
 
@@ -63,7 +63,7 @@ export default function Checklist() {
         return <LoadingComponent heightStyle="min-h-[calc(100vh-65px)]"/>
     } else {
         return (
-            <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
+            <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto relative">
                 <ChecklistStatue 
                     checklist={checklist} 
                     bosses={checklistForm.bosses}
@@ -71,26 +71,30 @@ export default function Checklist() {
                     life={checklistForm.life}
                     isBlessing={checklistForm.isBlessing}
                     setLife={checklistForm.setLife}
-                    setBlessing={checklistForm.setBlessing}/>
-                <SelectServer 
-                    checklist={checklist} 
-                    server={checklistForm.server}
-                    setServer={checklistForm.setServer}/>
-                <ChecklistComponent 
-                    checklist={checklist} 
-                    server={checklistForm.server}
-                    bosses={checklistForm.bosses}
-                    cubes={checklistForm.cubes}
-                    dispatch={dispatch}
-                    onOpen={checklistForm.onOpen}
-                    setModalData={checklistForm.setModalData}/>
-                <ChecklistModal
-                    isOpen={checklistForm.isOpen}
-                    modalData={checklistForm.modalData}
-                    onOpenChange={checklistForm.onOpenChange}
-                    checklist={checklist}
-                    dispatch={dispatch}
-                    bosses={checklistForm.bosses}/>
+                    setBlessing={checklistForm.setBlessing}
+                    max={checklistForm.max}
+                    setMax={checklistForm.setMax}/>
+                <div className="md960:pt-[110px]">
+                    <SelectServer 
+                        checklist={checklist} 
+                        server={checklistForm.server}
+                        setServer={checklistForm.setServer}/>
+                    <ChecklistComponent 
+                        checklist={checklist} 
+                        server={checklistForm.server}
+                        bosses={checklistForm.bosses}
+                        cubes={checklistForm.cubes}
+                        dispatch={dispatch}
+                        onOpen={checklistForm.onOpen}
+                        setModalData={checklistForm.setModalData}/>
+                    <ChecklistModal
+                        isOpen={checklistForm.isOpen}
+                        modalData={checklistForm.modalData}
+                        onOpenChange={checklistForm.onOpenChange}
+                        checklist={checklist}
+                        dispatch={dispatch}
+                        bosses={checklistForm.bosses}/>
+                </div>
             </div>
         )
     }

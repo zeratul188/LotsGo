@@ -94,7 +94,6 @@ import {
   Droppable,
   Draggable
 } from '@hello-pangea/dnd';
-import data from '@/data/checklist/data.json';
 
 // state 관리
 export type ModalData = {
@@ -112,6 +111,7 @@ export function useChecklistForm() {
     });
     const [cubes, setCubes] = useState<Cube[]>([]);
     const [life, setLife] = useState(0);
+    const [max, setMax] = useState(0);
     const [isBlessing, setBlessing] = useState(false);
 
     return {
@@ -122,7 +122,8 @@ export function useChecklistForm() {
         modalData, setModalData,
         cubes, setCubes,
         life, setLife,
-        isBlessing, setBlessing
+        isBlessing, setBlessing,
+        max, setMax
     }
 }
 
@@ -206,9 +207,11 @@ type ChecklistStatueProps = {
     life: number,
     isBlessing: boolean,
     setLife: SetStateFn<number>,
-    setBlessing: SetStateFn<boolean>
+    setBlessing: SetStateFn<boolean>,
+    max: number,
+    setMax: SetStateFn<number>
 }
-export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing, setLife, setBlessing }: ChecklistStatueProps) {
+export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing, setLife, setBlessing, max, setMax }: ChecklistStatueProps) {
     const isMobile = useMobileQuery();
     const [isLoading, setLoading] = useState(false);
     const [inputValue, setInputValue] = useState('');
@@ -218,6 +221,11 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [isGold, setGold] = useState(false);
     const [newLife, setNewLife] = useState(0);
+    const [newMax, setNewMax] = useState(0);
+
+    useEffect(() => {
+        setNewMax(max);
+    }, [max]);
 
     const [isOpenModalPosition, setOpenModalPosition] = useState(false);
     const onOpenChangePosition = (isOpen: boolean) => setOpenModalPosition(isOpen);
@@ -225,11 +233,14 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
     const onClickUpdatedCharacters = useClickUpdatedCharacters(checklist, dispatch, setLoading);
     const onClickLoadCharacters = useClickLoadCharacters(inputValue, setResult, setLoadingSearch);
     const onCloseModal = useCloseModal(setResult, setInputValue);
-    const onChangeBlessing = useChangeBlessing(life, setBlessing);
-    const onClickLife = useClickLife(newLife, isBlessing, setLife, setNewLife);
+    const onChangeBlessing = useChangeBlessing(life, max, setBlessing);
+    const onClickLife = useClickLife(newLife, isBlessing, setLife, setNewLife, newMax, setMax, setNewMax);
     return (
         <>
-            <Card fullWidth radius="sm">
+            <Card 
+                fullWidth 
+                radius="sm"
+                className="md960:w-[calc(100vw-40px)] md960:fixed md960:top-[80px] md960:left-1/2 md960:-translate-x-1/2 md960:z-50">
                 <CardBody>
                     <div className="w-full grid grid-cols-1 md960:grid-cols-[4fr_1px_3fr_1px_4fr] gap-2">
                         <div className="w-full flex items-center">
@@ -273,10 +284,10 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                 aria-label="all-gold"
                                 size="md"
                                 color="success"
-                                label={`🍃 생활의 기운 : ${life} / ${data.maxLife}`}
+                                label={`🍃 생활의 기운 : ${life.toLocaleString()} / ${max.toLocaleString()}`}
                                 radius="sm"
                                 value={life}
-                                maxValue={data.maxLife}
+                                maxValue={max}
                                 className="grow"/>
                             <div className="w-full md960:w-[max-content] flex shrink-0 min-w-fit flex-row md960:flex-col gap-2 md960:gap-0 items-center">
                                 <Tooltip showArrow content="베아트리스의 축복">
@@ -305,10 +316,19 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                                     fullWidth
                                                     radius="sm"
                                                     size="sm"
-                                                    placeholder="0 ~ 12000"
-                                                    maxValue={12000}
+                                                    placeholder={`0 ~ ${newMax}`}
+                                                    maxValue={newMax}
                                                     value={newLife}
                                                     onValueChange={setNewLife}/>
+                                                <p className="mb-2">생활의 기운 최대치</p>
+                                                <NumberInput
+                                                    fullWidth
+                                                    radius="sm"
+                                                    size="sm"
+                                                    placeholder="0 ~ 99999"
+                                                    maxValue={99999}
+                                                    value={newMax}
+                                                    onValueChange={setNewMax}/>
                                                 <Button
                                                     fullWidth
                                                     size="sm"

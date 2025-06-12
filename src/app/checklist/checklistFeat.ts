@@ -22,7 +22,6 @@ import { Character, LoginUser } from "../store/loginSlice";
 import { Cube } from "../api/checklist/cube/route";
 import { collection, getDocs } from "firebase/firestore";
 import { firestore } from "@/utiils/firebase";
-import data from '@/data/checklist/data.json';
 
 // 닉네임으로 index 찾기 함수
 export function getIndexByNickname(checklist: CheckCharacter[], nickname: string): number {
@@ -52,7 +51,8 @@ export async function loadChecklist(
     expedition: Character[],
     bosses: Boss[],
     setLife: SetStateFn<number>,
-    setBlessing: SetStateFn<boolean>
+    setBlessing: SetStateFn<boolean>,
+    setMax: SetStateFn<number>
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
@@ -81,7 +81,7 @@ export async function loadChecklist(
         const diffCount = Math.floor(diffMinutes / 10);
         const upValue = lifeObj.isBlessing ? 33 : 30;
         let life = lifeObj.life + diffCount * upValue;
-        if (life > data.maxLife) life = data.maxLife;
+        if (life > lifeObj.max) life = lifeObj.max;
         const lifeRes = await fetch(`/api/checklist/life`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -89,6 +89,7 @@ export async function loadChecklist(
                 id: id,
                 life: life,
                 isNotValue: false,
+                max: lifeObj.max,
                 isBlessing: lifeObj.isBlessing
             })
         });
@@ -101,6 +102,7 @@ export async function loadChecklist(
             return;
         }
         setLife(life);
+        setMax(lifeObj.max)
         setBlessing(lifeObj.isBlessing);
     } else {
         const initRes = await fetch(`/api/checklist/life`, {
@@ -109,6 +111,7 @@ export async function loadChecklist(
             body: JSON.stringify({
                 id: id,
                 life: 0,
+                max: 10000,
                 isNotValue: false,
                 isBlessing: false
             })
@@ -214,7 +217,10 @@ export function useClickLife(
     newLife: number, 
     isBlessing: boolean, 
     setLife: SetStateFn<number>,
-    setNewLife: SetStateFn<number>
+    setNewLife: SetStateFn<number>,
+    newMax: number,
+    setMax: SetStateFn<number>,
+    setNewMax: SetStateFn<number>
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
@@ -226,6 +232,7 @@ export function useClickLife(
             body: JSON.stringify({
                 id: id,
                 life: newLife,
+                max: newMax,
                 isNotValue: false,
                 isBlessing: isBlessing
             })
@@ -240,11 +247,13 @@ export function useClickLife(
         }
         setLife(newLife);
         setNewLife(0);
+        setMax(newMax);
+        setNewMax(0);
     }
 }
 
 // 베아트리스의 축복 조정
-export function useChangeBlessing(life: number, setBlessing: SetStateFn<boolean>) {
+export function useChangeBlessing(life: number, max: number, setBlessing: SetStateFn<boolean>) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser.id;
@@ -255,6 +264,7 @@ export function useChangeBlessing(life: number, setBlessing: SetStateFn<boolean>
             body: JSON.stringify({
                 id: id,
                 life: life,
+                max: max,
                 isNotValue: true,
                 isBlessing: isSelected
             })
