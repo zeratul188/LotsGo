@@ -280,18 +280,18 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                         </div>
                         <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
                         <div className="w-full flex flex-col md960:flex-row gap-2 items-center flex-shrink-0">
-                            <Tooltip showArrow content="생활의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.">
+                            <Tooltip showArrow content="생명의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.">
                                 <Progress 
                                     aria-label="all-gold"
                                     size="md"
                                     color="success"
-                                    label={`🍃 생활의 기운 : ${life.toLocaleString()} / ${max.toLocaleString()}`}
+                                    label={`🍃 생명의 기운 : ${life.toLocaleString()} / ${max.toLocaleString()}`}
                                     radius="sm"
                                     value={life}
                                     maxValue={max}
                                     className="grow"/>
                             </Tooltip>
-                            <p className="block md960:hidden fadedtext text-[9pt] w-full text-left">생활의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.</p>
+                            <p className="block md960:hidden fadedtext text-[9pt] w-full text-left">생명의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.</p>
                             <div className="w-full md960:w-[max-content] flex shrink-0 min-w-fit flex-row md960:flex-col gap-2 md960:gap-0 items-center">
                                 <Tooltip showArrow content="베아트리스의 축복">
                                     <Checkbox 
@@ -314,16 +314,16 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                         </PopoverTrigger>
                                         <PopoverContent>
                                             <div className="w-[240px] p-2">
-                                                <p className="mb-2">생활의 기운 조정</p>
+                                                <p className="mb-2">생명의 기운 조정</p>
                                                 <NumberInput
                                                     fullWidth
                                                     radius="sm"
                                                     size="sm"
                                                     placeholder={`0 ~ ${newMax}`}
-                                                    maxValue={newMax}
+                                                      maxValue={newMax}
                                                     value={newLife}
                                                     onValueChange={setNewLife}/>
-                                                <p className="mb-2">생활의 기운 최대치</p>
+                                                <p className="mb-2 mt-2">생명의 기운 최대치</p>
                                                 <NumberInput
                                                     fullWidth
                                                     radius="sm"
@@ -334,7 +334,6 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                                     onValueChange={setNewMax}/>
                                                 <Button
                                                     fullWidth
-                                                    size="sm"
                                                     color="primary"
                                                     className="mt-3"
                                                     onPress={onClickLife}>
