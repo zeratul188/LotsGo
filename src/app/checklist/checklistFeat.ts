@@ -82,24 +82,26 @@ export async function loadChecklist(
         const upValue = lifeObj.isBlessing ? 33 : 30;
         let life = lifeObj.life + diffCount * upValue;
         if (life > lifeObj.max) life = lifeObj.max;
-        const lifeRes = await fetch(`/api/checklist/life`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: id,
-                life: life,
-                isNotValue: false,
-                max: lifeObj.max,
-                isBlessing: lifeObj.isBlessing
-            })
-        });
-        if (!lifeRes.ok) {
-            addToast({
-                title: "데이터 로드 오류",
-                description: `데이터를 가져오는데 문제가 발생하였습니다.`,
-                color: "danger"
+        if (diffCount > 0) {
+            const lifeRes = await fetch(`/api/checklist/life`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: id,
+                    life: life,
+                    isNotValue: false,
+                    max: lifeObj.max,
+                    isBlessing: lifeObj.isBlessing
+                })
             });
-            return;
+            if (!lifeRes.ok) {
+                addToast({
+                    title: "데이터 로드 오류",
+                    description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+                    color: "danger"
+                });
+                return;
+            }
         }
         setLife(life);
         setMax(lifeObj.max)
