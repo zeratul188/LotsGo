@@ -42,6 +42,7 @@ import {
     getCardSetNames, 
     getColorByQuality, 
     getColorByType, 
+    getColorProgressArkpassive, 
     getCountAtkGems, 
     getCountDekGems, 
     getGemByIndex, 
@@ -1208,11 +1209,18 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
             <CardHeader><p className="text-lg">아크패시브</p></CardHeader>
             <Divider/>
             <CardBody>
-                <div className="w-full grid grid-cols-3 gap-1">
+                <div className="w-full flex flex-col gap-2">
                     {points.map((point, index) => (
-                        <div key={index} className="flex gap-2 items-center">
-                            <p className="fadedtext text-sm">{point.type}</p>
-                            <p className={getColorByType(point.type)}>{point.point}</p>
+                        <div key={index}>
+                            <div className="w-full flex gap-1 items-center">
+                                <p className="grow fadedtext text-sm">{point.type}</p>
+                                <p className={getColorByType(point.type)}>{point.point}</p>
+                            </div>
+                            <Progress
+                                size="sm"
+                                color={getColorProgressArkpassive(point.type)}
+                                value={point.point}
+                                maxValue={point.max}/>
                         </div>
                     ))}
                 </div>
