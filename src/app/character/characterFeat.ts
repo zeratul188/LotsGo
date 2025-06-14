@@ -1020,7 +1020,8 @@ export function loadEngraving(datas: any[] | null, setEngravings: SetStateFn<Eng
 //아크패시브 데이터 가져오기
 export type ArkpassivePoint = {
     type: string,
-    point: number
+    point: number,
+    max: number
 }
 export type ArkpassiveItem = {
     tier: number,
@@ -1045,7 +1046,8 @@ export function loadArkpassive(
         for (const point of dataPoints) {
             const newPoint: ArkpassivePoint = {
                 type: point.Name,
-                point: Number(point.Value)
+                point: Number(point.Value),
+                max: maxPoint(point.Name)
             }
             points.push(newPoint);
         }
@@ -1081,6 +1083,26 @@ export function loadArkpassive(
     setEvolution(evolution);
     setEnlightenment(enlightenment);
     setJump(jump);
+}
+
+// 아크패시브 별 최대값 가져오기
+function maxPoint(type: string): number {
+    switch(type) {
+        case '진화': return data.arkpassivePoints.evolution;
+        case '깨달음': return data.arkpassivePoints.enlightenment;
+        case '도약': return data.arkpassivePoints.jump;
+    }
+    return 0;
+}
+
+// 아크패시브 별 프로그레스 색상 가져오기
+export function getColorProgressArkpassive(type: string): "warning" | "primary" | "success" | "default" {
+    switch(type) {
+        case '진화': return "warning";
+        case '깨달음': return "primary";
+        case '도약': return "success";
+    }
+    return 'default';
 }
 
 // 아크패시브 타입 별 글자 색 반환 함수
