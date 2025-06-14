@@ -285,7 +285,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                     aria-label="all-gold"
                                     size="md"
                                     color="success"
-                                    label={`🍃 생명의 기운 : ${life.toLocaleString()} / ${max.toLocaleString()}`}
+                                    label={`🍃 생명의 기운 : ${Math.floor(life).toLocaleString()} / ${max.toLocaleString()}`}
                                     radius="sm"
                                     value={life}
                                     maxValue={max}
@@ -320,7 +320,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                                     radius="sm"
                                                     size="sm"
                                                     placeholder={`0 ~ ${newMax}`}
-                                                      maxValue={newMax}
+                                                    maxValue={newMax}
                                                     value={newLife}
                                                     onValueChange={setNewLife}/>
                                                 <p className="mb-2 mt-2">생명의 기운 최대치</p>
