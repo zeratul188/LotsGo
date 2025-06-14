@@ -887,20 +887,15 @@ function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
                     ))}
                     {Array.from({ length: 11-gems.length }).map((_, index) => (
                         <div key={index} className="w-full flex items-center justify-center flex-col cursor-pointer">
-                            <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(getGemByIndex(gems, index) ? getGemByIndex(gems, index)!.grade : "")}`}>
-                                {getGemByIndex(gems, index) ? (
-                                    <Image
-                                        src={getGemByIndex(gems, index)!.icon}
-                                        width={44}
-                                        height={44}/>
-                                ) : <></>}
+                            <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade("")}`}>
+                                <></>
                             </div>
                             <Chip
                                 size="sm"
                                 radius="sm"
                                 variant="flat"
                                 className="mt-2">
-                                {getGemByIndex(gems, index) ? `${getGemByIndex(gems, index)!.level} ${getGemSimpleTailName(getGemByIndex(gems, index))}` : '-'}
+                                -
                             </Chip>
                         </div>
                     ))}
