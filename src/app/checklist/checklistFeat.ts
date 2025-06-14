@@ -77,12 +77,11 @@ export async function loadChecklist(
         const today = new Date();
         const lifeDate = new Date(lifeObj.date.seconds * 1000 + lifeObj.date.nanoseconds / 1_000_000);
         const diffMs = today.getTime() - lifeDate.getTime();
-        const diffMinutes = diffMs / (1000 * 60);
-        const diffCount = Math.floor(diffMinutes / 10);
-        const upValue = lifeObj.isBlessing ? 33 : 30;
-        let life = lifeObj.life + diffCount * upValue;
+        const diffSeconds = Math.round(diffMs / 1000);
+        const upValue = lifeObj.isBlessing ? 0.055 : 0.05;
+        let life = lifeObj.life + diffSeconds * upValue;
         if (life > lifeObj.max) life = lifeObj.max;
-        if (diffCount > 0) {
+        if (diffSeconds > 0) {
             const lifeRes = await fetch(`/api/checklist/life`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -248,9 +247,7 @@ export function useClickLife(
             return;
         }
         setLife(newLife);
-        setNewLife(0);
         setMax(newMax);
-        setNewMax(0);
     }
 }
 
@@ -1744,6 +1741,5 @@ export async function handleApplyPositions(
 
 // 이미 추가된 캐릭터인지 확인 여부
 export function isHaveCharacter(checklist: CheckCharacter[], nickname: string) {
-    console.log(nickname);
     return checklist.findIndex(item => item.nickname === nickname) !== -1;
 }
