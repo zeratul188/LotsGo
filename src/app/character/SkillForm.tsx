@@ -48,7 +48,7 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                 <PopoverTrigger>
                                     <Chip radius="sm" color="primary" className="cursor-pointer">무력 평균 {AvgSkillPowers(skills)}</Chip>
                                 </PopoverTrigger>
-                                <PopoverContent>
+                                <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
                                     <div className="w-[230px] p-2">
                                         <div className="w-full flex gap-1 fadedtext">
                                             <p className="grow">스킬명</p>
@@ -76,7 +76,7 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                 <PopoverTrigger>
                                     <Chip radius="sm" color="secondary" className="cursor-pointer">총 파괴 {getAllDestory(skills)}</Chip>
                                 </PopoverTrigger>
-                                <PopoverContent>
+                                <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
                                     <div className="w-[230px] p-2">
                                         <div className="w-full flex gap-1 fadedtext">
                                             <p className="grow">스킬명</p>
@@ -195,7 +195,7 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                                 ) : <></>}
                                             </div>
                                         </PopoverTrigger>
-                                        <PopoverContent>
+                                        <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
                                             {skill.attackGem ? (
                                                 <div className="max-w-[500px] p-2">
                                                     <p className={`w-full text-center text-lg ${getColorTextByGrade(skill.attackGem!.grade)}`}>{skill.attackGem!.name}</p>
@@ -226,7 +226,7 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                                 ) : <></>}
                                             </div>
                                         </PopoverTrigger>
-                                        <PopoverContent>
+                                        <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
                                             {skill.timeGem ? (
                                                 <div className="max-w-[500px] p-2">
                                                     <p className={`w-full text-center text-lg ${getColorTextByGrade(skill.timeGem!.grade)}`}>{skill.timeGem!.name}</p>
