@@ -67,7 +67,6 @@ export async function login(
     if (!res.ok) {
         try {
             const msg = data.message;
-            console.log(msg);
             if (msg === '아이디가 존재하지 않습니다.') {
                 setIdDuplicated(true);
                 setPasswordNotMatch(false);
@@ -109,7 +108,8 @@ export async function login(
                     }
                     const loginUser: LoginUser = {
                         id: user.id,
-                        expedition: data.expedition
+                        expedition: data.expedition,
+                        character: data.userData ? data.userData.nickname : ''
                     }
                     dispatch(logined(loginUser));
                     dispatch(switchAdministrator(data.isAdministrator));

@@ -27,6 +27,7 @@ export function useTodoForm() {
     const [isResetWorks, setResetWorks] = useState(false);
     const [isResetGuild, setResetGuild] = useState(false);
     const [isLogin, setLogin] = useState(false);
+    const [isAdministrator, setAdministrator] = useState(false);
 
     return {
         guild, setGuild,
@@ -34,7 +35,8 @@ export function useTodoForm() {
         isLoading, setLoading,
         isResetWorks, setResetWorks,
         isResetGuild, setResetGuild,
-        isLogin, setLogin
+        isLogin, setLogin,
+        isAdministrator, setAdministrator
     }
 }
 
@@ -45,6 +47,10 @@ export function TodoComponent() {
     const [weeks, setWeeks] = useState<WeekBox[]>([]);
 
     useEffect(() => {
+        const isAdministrator = localStorage.getItem('isAdministrator');
+        if (isAdministrator === 'true') {
+            todoForm.setAdministrator(true);
+        }
         if (isLogin()) {
             todoForm.setLogin(isLogin());
         } else {
@@ -59,7 +65,7 @@ export function TodoComponent() {
             await Promise.all([guildPromise, workPromise]);
             todoForm.setLoading(false);
         }
-        if (todoForm.isLogin) {
+        if (todoForm.isLogin && !todoForm.isAdministrator) {
             loadData();
         }
     }, [todoForm.isLogin]);
@@ -86,13 +92,13 @@ export function TodoComponent() {
             settingData();
         }
     }, [todoForm.guild]);
+
+    if (!todoForm.isLogin || todoForm.isAdministrator) {
+        return <></>;
+    }
     
     if (todoForm.isLoading) {
         return <LoadingComponent heightStyle="min-h-[240px]"/>
-    }
-
-    if (!todoForm.isLogin) {
-        return <></>;
     }
 
     return (
