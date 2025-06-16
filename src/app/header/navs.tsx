@@ -1,4 +1,4 @@
-import { Image, NavbarItem, Link, NavbarMenuToggle, Tooltip, NavbarMenu, NavbarMenuItem, Button, Divider } from "@heroui/react";
+import { Image, NavbarItem, Link, NavbarMenuToggle, Tooltip, NavbarMenu, NavbarMenuItem, Button, Divider, Avatar } from "@heroui/react";
 import { 
     useSwitch, 
     VisuallyHidden, 
@@ -13,23 +13,33 @@ import { MoonIcon, SunIcon } from "@/Icons/themeicons";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { useLogout, useOnActionProfile } from "./headerFeat";
+import { Character } from "../store/loginSlice";
+import { getImgByJob } from "../character/expeditionFeat";
+import HomeworkIcon from "@/Icons/HomeworkIcon";
+import { SettingIcon } from "../icons/SettingIcon";
+import CalIcon from "@/Icons/CalIcon";
+import CharacterIcon from "@/Icons/CharacterIcon";
+import { useRouter } from "next/navigation";
 
 // 헤더 메뉴
-const menuItems: Array<{item: string, link: string}> = [
+const menuItems = [
     {
         item: "숙제",
-        link: '/checklist'
+        link: '/checklist',
+        icon: <HomeworkIcon/>
     },
     {
         item: "일정",
-        link: '/calendar'
+        link: '/calendar',
+        icon: <CalIcon/>
     },
     {
         item: "전투정보실",
-        link: '/character'
+        link: '/character',
+        icon: <CharacterIcon/>
     }
 ];
-// 헤더 메뉴 - 로그인한 상태태
+// 헤더 메뉴 - 로그인한 상태
 const loginedMenuItems: Array<{item: string, link: string}> = [
     {
         item: "내 정보 수정",
@@ -45,47 +55,90 @@ const loginedMenuItems: Array<{item: string, link: string}> = [
 export function NavMenu() {
     const id = useSelector((state: RootState) => state.login.user.id);
     const isAdministrator = useSelector((state: RootState) => state.login.isAdministrator);
+    const nickname = useSelector((state: RootState) => state.login.user.character);
+    const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
+    const mainCharacter: Character | undefined = expedition.find(character => character.nickname === nickname);
     const onClickLogout = useLogout();
+    const router = useRouter();
     return (
         <NavbarMenu>
+            {isAdministrator ? (
+                <div className="w-full flex flex-row gap-2 items-center">
+                    <Button
+                        radius="sm"
+                        color="secondary"
+                        className="grow"
+                        onPress={() => router.push('/administrator')}>
+                        관리자 페이지 이동
+                    </Button>
+                    <Button
+                        radius="sm"
+                        color="danger"
+                        onPress={onClickLogout}>
+                        로그아웃
+                    </Button>
+                </div>
+            ) : id !== '' ? mainCharacter ? (
+                (
+                    <div className="w-full flex gap-4 items-center mt-1">
+                        <Avatar isBordered size="md" src={getImgByJob(mainCharacter.job)}/>
+                        <div className="grow">
+                            <p className="truncate overflow-hidden whitespace-nowrap">{mainCharacter.nickname}</p>
+                            <p className="fadedtext truncate overflow-hidden whitespace-nowrap text-[10pt]">Lv.{mainCharacter.level} · {mainCharacter.job}</p>
+                        </div>
+                        <Button
+                            radius="sm"
+                            color="danger"
+                            onPress={onClickLogout}>
+                            로그아웃
+                        </Button>
+                    </div>
+                )
+            ) : <></> : (
+                <Button 
+                    fullWidth
+                    as={Link}
+                    href="/login"
+                    radius="sm"
+                    color="primary"
+                    size="lg"
+                    className="mt-4 mb-2">
+                    로그인
+                </Button>
+            )}
+            <Divider className="mt-2 mb-2"/>
             {menuItems.map((item, index) => (
                 <NavbarMenuItem key={`${item.item}-${index}`}>
-                    <div>
-                        <Link 
-                            className="w-full" 
-                            href={item.link} 
-                            color={index === 3 ? 'primary' : 'foreground'}
-                            size="lg">{item.item}</Link>
-                    </div>
+                    <Button
+                        fullWidth
+                        as={Link}
+                        radius="sm"
+                        href={item.link} 
+                        variant="light"
+                        startContent={item.icon}
+                        className="justify-start text-md">
+                        {item.item}
+                    </Button>
                 </NavbarMenuItem>
             ))}
-            <Divider/>
             {id !== '' ? (
                 <>
-                    {loginedMenuItems.map((item, index) => (
-                        <NavbarMenuItem key={`${item.item}-${index}`}>
-                            <Link 
-                                className="w-full" 
-                                href={item.link} 
-                                color={index === 3 ? 'primary' : 'foreground'}
-                                size="lg">{item.item}</Link>
-                        </NavbarMenuItem>
-                    ))}
+                    <Divider className="mt-2 mb-2"/>
                     <NavbarMenuItem 
-                        key="logout"
-                        onClick={onClickLogout}>
-                        <span className="text-red-500">로그아웃</span>
+                        key="setting">
+                        <Button
+                            fullWidth
+                            as={Link}
+                            radius="sm"
+                            href={'#'} 
+                            variant="light"
+                            startContent={<SettingIcon/>}
+                            className="justify-start text-md">
+                            설정
+                        </Button>
                     </NavbarMenuItem>
                 </>
-            ) : (
-                <NavbarMenuItem key="login">
-                    <Link 
-                        className="w-full" 
-                        href="/login"
-                        color="primary"
-                        size="lg">로그인</Link>
-                </NavbarMenuItem>
-            )}
+            ) : <></>}
         </NavbarMenu>
     )
 }

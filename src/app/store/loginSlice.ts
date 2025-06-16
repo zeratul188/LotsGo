@@ -8,7 +8,8 @@ export type Character = {
 }
 export type LoginUser = {
     id: string,
-    expedition: Array<Character>
+    expedition: Array<Character>,
+    character: string
 }
 type LoginState = {
     user: LoginUser,
@@ -18,7 +19,8 @@ type LoginState = {
 const initialState: LoginState = {
     user: {
         id: '',
-        expedition: []
+        expedition: [],
+        character: ''
     },
     isAdministrator: false
 }
@@ -30,6 +32,7 @@ const loginSlice = createSlice({
         logined(state, action: PayloadAction<LoginUser>) {
             state.user.id = action.payload.id;
             state.user.expedition = action.payload.expedition
+            state.user.character = action.payload.character
         },
         switchAdministrator(state, action: PayloadAction<boolean>) {
             state.isAdministrator = action.payload;
@@ -38,6 +41,7 @@ const loginSlice = createSlice({
             state.user.id = '';
             state.user.expedition = [];
             state.isAdministrator = false;
+            state.user.character = '';
         }
     }
 })
