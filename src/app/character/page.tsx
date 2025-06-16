@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from "react";
 import { EmptyComponent, LoadingComponent } from "../UtilsCompnents";
-import { AbilityComponent, ExpeditionComponent, HistoryComponent, ProfileComponent, SearchComponent, useCharacterForm } from "./CharacterForm"
+import { AbilityComponent, ExpeditionComponent, HistoryComponent, NotFoundComponent, ProfileComponent, SearchComponent, useCharacterForm } from "./CharacterForm"
 import { useSearchParams } from "next/navigation";
 import { Button, Divider, Input, Tab, Tabs, Tooltip } from "@heroui/react";
 import { handleSearch, loadProfile, useClickUpdate } from "./characterFeat";
@@ -102,7 +102,11 @@ export default function Character() {
     }
 
     if (characterForm.isNothing) {
-        return <EmptyComponent heightStyle="min-h-[calc(100vh-65px)]"/>
+        return <NotFoundComponent
+            nickname={characterForm.nickname}
+            setSearched={characterForm.setSearched} 
+            setLoading={characterForm.setLoading}
+            setNickname={characterForm.setNickname}/>
     }
 
     return (

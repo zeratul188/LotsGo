@@ -1412,3 +1412,48 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
         </Card>
     )
 }
+
+// 겁색 결과가 없을 경우 표현할 컴포넌트
+type NotFoundComponentProps = {
+    nickname: string,
+    setSearched: SetStateFn<boolean>,
+    setLoading: SetStateFn<boolean>,
+    setNickname: SetStateFn<string>
+}
+export function NotFoundComponent({ nickname, setSearched, setLoading, setNickname }: NotFoundComponentProps) {
+    const [search, setSearch] = useState('');
+    return (
+        <div className="w-full min-h-[calc(100vh-65px)] flex justify-center items-center p-4 flex-col">
+            <p className="text-4xl text-red-400">캐릭터 검색 결과 없음</p>
+            <p className="text-xl mt-2 fadedtext">"{nickname}" 캐릭터 조회를 실패하였습니다.</p>
+            <p className="text-md mt-5">존재하지 않는 캐릭터이거나 캐릭터 검색이 불가능한 캐릭터입니다.</p>
+            <div className="w-full sm:w-[400px] flex gap-2 items-center mt-10">
+                <Input
+                    size="lg"
+                    radius="sm"
+                    placeholder="캐릭터명을 입력하세요."
+                    maxLength={12}
+                    value={search}
+                    onValueChange={setSearch}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            handleSearch(search, setSearched, setLoading, setNickname);
+                            const params = new URLSearchParams(window.location.search);
+                            params.set("nickname", search);
+                            const newUrl = `${window.location.pathname}?${params.toString()}`;
+                            window.history.pushState({}, "", newUrl);
+                        }
+                    }}
+                    className="grow"/>
+                <Button
+                    size="lg"
+                    radius="sm"
+                    color="primary"
+                    className="w-full sm:w-[max-content]"
+                    onPress={() => handleSearch(search, setSearched, setLoading, setNickname)}>
+                    검색
+                </Button>
+            </div>
+        </div>
+    )
+}
