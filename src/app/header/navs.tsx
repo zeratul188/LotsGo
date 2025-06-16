@@ -50,11 +50,13 @@ export function NavMenu() {
         <NavbarMenu>
             {menuItems.map((item, index) => (
                 <NavbarMenuItem key={`${item.item}-${index}`}>
-                    <Link 
-                        className="w-full" 
-                        href={item.link} 
-                        color={index === 3 ? 'primary' : 'foreground'}
-                        size="lg">{item.item}</Link>
+                    <div>
+                        <Link 
+                            className="w-full" 
+                            href={item.link} 
+                            color={index === 3 ? 'primary' : 'foreground'}
+                            size="lg">{item.item}</Link>
+                    </div>
                 </NavbarMenuItem>
             ))}
             <Divider/>

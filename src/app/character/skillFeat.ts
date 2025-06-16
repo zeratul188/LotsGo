@@ -47,7 +47,7 @@ export function loadSkills(
     gems: Gem[],
     setSkills: SetStateFn<Skill[]>
 ) {
-    const skills: Skill[] = [];
+    let skills: Skill[] = [];
     if (datas) {
         for (const item of datas) {
             if (Number(item.Level) > 1) {
@@ -105,6 +105,7 @@ export function loadSkills(
             }
         }
     }
+    skills = skills.sort((a, b) => b.level - a.level);
     setSkills(skills);
 }
 
