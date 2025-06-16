@@ -705,7 +705,7 @@ export type Gem = {
     attack: number
 }
 export function loadGems(datas: any[], setGems: SetStateFn<Gem[]>, setAttack: SetStateFn<number>) {
-    const gems: Gem[] = [];
+    let gems: Gem[] = [];
     let attactSum = 0;
     if (datas) {
         for (const data of datas) {
@@ -724,6 +724,7 @@ export function loadGems(datas: any[], setGems: SetStateFn<Gem[]>, setAttack: Se
             attactSum += gemInfo ? gemInfo.attack : 0;
         }
     }
+    gems = gems.sort((a, b) => b.level - a.level);
     setGems(gems);
     setAttack(attactSum);
 }
