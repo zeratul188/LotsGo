@@ -2,6 +2,7 @@ import { SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
 import { load } from 'cheerio'
 import data from "@/data/characters/data.json";
+import { CharacterHistory, saveHistory, updateHistory } from "./history";
 
 export type CharacterFile = {
     profile: any,
@@ -88,6 +89,15 @@ export function useClickUpdate(
                             })
                         });
                         if (inputRes.ok) {
+                            const today = new Date();
+                            const history: CharacterHistory = {
+                                nickname: nickname,
+                                job: newFile.profile.CharacterClassName,
+                                level: Number(newFile.profile.ItemAvgLevel.replaceAll(',', '')),
+                                server: newFile.profile.ServerName,
+                                date: today
+                            }
+                            updateHistory(history);
                             setFile(newFile);
                             setExpeditions(newExpeditions);
                             addToast({
@@ -149,6 +159,15 @@ export async function loadProfile(
         const hasPassed3Days = (now.getTime() - basedDate.getTime()) >= threeDaysInMs;
 
         if (!hasPassed3Days) {
+            const today = new Date();
+            const history: CharacterHistory = {
+                nickname: nickname,
+                job: data.file.profile.CharacterClassName,
+                level: Number(data.file.profile.ItemAvgLevel.replaceAll(',', '')),
+                server: data.file.profile.ServerName,
+                date: today
+            }
+            saveHistory(history);
             setExpeditions(data.expeditions);
             setFile(data.file);
             setLoading(false);
@@ -218,6 +237,15 @@ export async function loadProfile(
                 })
             });
             if (inputRes.ok) {
+                const today = new Date();
+                const history: CharacterHistory = {
+                    nickname: nickname,
+                    job: newFile.profile.CharacterClassName,
+                    level: Number(newFile.profile.ItemAvgLevel.replaceAll(',', '')),
+                    server: newFile.profile.ServerName,
+                    date: today
+                }
+                saveHistory(history);
                 setLoading(false);
                 setFile(newFile);
                 setNothing(false);
@@ -705,7 +733,7 @@ export type Gem = {
     attack: number
 }
 export function loadGems(datas: any[], setGems: SetStateFn<Gem[]>, setAttack: SetStateFn<number>) {
-    const gems: Gem[] = [];
+    let gems: Gem[] = [];
     let attactSum = 0;
     if (datas) {
         for (const data of datas) {
@@ -724,6 +752,7 @@ export function loadGems(datas: any[], setGems: SetStateFn<Gem[]>, setAttack: Se
             attactSum += gemInfo ? gemInfo.attack : 0;
         }
     }
+    gems = gems.sort((a, b) => b.level - a.level);
     setGems(gems);
     setAttack(attactSum);
 }

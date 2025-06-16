@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from "react";
 import { EmptyComponent, LoadingComponent } from "../UtilsCompnents";
-import { AbilityComponent, ExpeditionComponent, ProfileComponent, SearchComponent, useCharacterForm } from "./CharacterForm"
+import { AbilityComponent, ExpeditionComponent, HistoryComponent, ProfileComponent, SearchComponent, useCharacterForm } from "./CharacterForm"
 import { useSearchParams } from "next/navigation";
 import { Button, Divider, Input, Tab, Tabs, Tooltip } from "@heroui/react";
 import { handleSearch, loadProfile, useClickUpdate } from "./characterFeat";
@@ -83,10 +83,16 @@ export default function Character() {
                     setLoading={characterForm.setLoading}
                     setNickname={characterForm.setNickname}/>
                 <Divider/>
-                <ExpeditionComponent 
-                    setSearched={characterForm.setSearched} 
-                    setLoading={characterForm.setLoading}
-                    setNickname={characterForm.setNickname}/>
+                <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 mx-auto mt-10">
+                    <HistoryComponent 
+                        setSearched={characterForm.setSearched} 
+                        setLoading={characterForm.setLoading}
+                        setNickname={characterForm.setNickname}/>
+                    <ExpeditionComponent 
+                        setSearched={characterForm.setSearched} 
+                        setLoading={characterForm.setLoading}
+                        setNickname={characterForm.setNickname}/>
+                </div>
             </div>
         )
     }
