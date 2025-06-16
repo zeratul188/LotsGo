@@ -358,7 +358,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                             </div> : <></>}
                                         </div>
                                     </PopoverTrigger>
-                                    <PopoverContent>
+                                    <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
                                         <div className="w-[300px] p-3 max-h-[600px] overflow-y-auto scrollbar-hide">
                                             <h3 className={`w-full text-center text-lg font-bold ${getColorTextByGrade(equip.grade)}`}>{equip.name}</h3>
                                             <div className="w-full flex gap-2 mt-3">
@@ -513,7 +513,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                 <PopoverTrigger>
                                                     <Button size="sm" variant="flat">자세히 보기</Button>
                                                 </PopoverTrigger>
-                                                <PopoverContent>
+                                                <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
                                                     <div className="w-[320px] p-2">
                                                         <p className="text-lg">엘릭서 정보</p>
                                                         <Divider className="mt-1 mb-2"/>
@@ -596,7 +596,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                             ) : <></>}
                                         </div>
                                     </PopoverTrigger>
-                                    <PopoverContent>
+                                    <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
                                         <div className="w-[300px] p-3 max-h-[600px] overflow-y-auto scrollbar-hide">
                                             <h3 className={`w-full text-center text-lg font-bold ${getColorTextByGrade(equip.grade)}`}>{equip.name}</h3>
                                             <div className="w-full flex gap-2 mt-3">
@@ -666,7 +666,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                         </div>
                                     </div>
                                 </PopoverTrigger>
-                                <PopoverContent>
+                                <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
                                     <div className="w-[300px] p-3 max-h-[600px] overflow-y-auto scrollbar-hide">
                                         <h3 className={`w-full text-center text-lg font-bold ${getColorTextByGrade(arm.grade)}`}>{arm.name}</h3>
                                         <div className="w-full flex gap-2 mt-3">
@@ -740,7 +740,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                         ) : <></>}
                                     </div>
                                 </PopoverTrigger>
-                                <PopoverContent>
+                                <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
                                     <div className="w-[300px] p-3 max-h-[600px] overflow-y-auto scrollbar-hide">
                                         <h3 className={`w-full text-center text-lg font-bold ${getColorTextByGrade(stone.grade)}`}>{stone.name}</h3>
                                         <div className="w-full flex gap-2 mt-3">
@@ -841,7 +841,7 @@ function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
                                     </Chip>
                                 </div>
                             </PopoverTrigger>
-                            <PopoverContent>
+                            <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
                                 {getGemByIndex(gems, index) ? (
                                     <div className="max-w-[500px] p-2">
                                         <p className={`w-full text-center text-lg ${getColorTextByGrade(gem.grade)}`}>{gem.name}</p>
@@ -873,7 +873,7 @@ function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
                                     </Chip>
                                 </div>
                             </PopoverTrigger>
-                            <PopoverContent>
+                            <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
                                 {getGemByIndex(gems, index) ? (
                                     <div className="max-w-[500px] p-2">
                                         <p className={`w-full text-center text-lg ${getColorTextByGrade(gem.grade)}`}>{gem.name}</p>
