@@ -2,6 +2,7 @@ import { getBackgroundByGrade, getBackgroundRightByGrade, getColorTextByGrade, S
 import { 
     Accordion,
     AccordionItem,
+    Avatar,
     Button, 
     Card, CardBody, CardFooter, CardHeader, 
     Chip, 
@@ -73,6 +74,8 @@ import { printDefaultInTooltip, printListInTooltip, printPointInTooltip, printUs
 import { printArmPointInTooltip, printArmUseInTooltip, printBooleanInTooltip, printEffectInTooltip } from "./armPrints";
 import { printBonusStoneInTooltip, printDefaultStoneInTooltip, printStoneUseInTooltip } from "./stonePrints";
 import PotionIcon from "@/Icons/PosionIcon";
+import { getImgByJob } from "./expeditionFeat";
+import { CharacterHistory } from "./history";
 
 // state 관리
 export function useCharacterForm() {
@@ -153,41 +156,94 @@ export function SearchComponent({ setSearched, setLoading, setNickname }: Search
     )
 }
 
-// 로그인된 원정대 목록 가져오기
-export function ExpeditionComponent({ setSearched, setLoading, setNickname }: SearchComponentProps) {
-    const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
+// 저장된 히스토리 가져오기
+export function HistoryComponent({ setSearched, setLoading, setNickname }: SearchComponentProps) {
+    const storedHistorys = localStorage.getItem('historys');
+    let historys: CharacterHistory[] = [];
+    if (storedHistorys) {
+        const parsed = JSON.parse(storedHistorys) as CharacterHistory[];
+        const restored = parsed.map(item => ({
+            ...item,
+            date: new Date(item.date)
+        }));
+        historys = restored;
+    }
+    historys = historys.reverse();
     return (
-        <div className="w-full md960:w-[960px] mx-auto mt-10">
-            <p className="mb-4 text-2xl">내 원정대 목록</p>
+        <div className="w-full">
+            <p className="mb-4 text-2xl">최근 기록</p>
             <div className="hidden sm:block">
-                <Table removeWrapper selectionMode="single">
+                <Table removeWrapper selectionMode="single" className="max-h-[700px] overflow-auto overflow-x-hidden">
                     <TableHeader>
                         <TableColumn>캐릭터명</TableColumn>
                         <TableColumn>아이템 레벨</TableColumn>
-                        <TableColumn>서버</TableColumn>
-                        <TableColumn>클래스</TableColumn>
+                        <TableColumn>날짜</TableColumn>
                     </TableHeader>
-                    <TableBody emptyContent="로그인이 되어있지 않거나 등록된 원정대 캐릭터가 없습니다.">
-                        {expedition.map((character, index) => (
+                    <TableBody emptyContent="최근에 검색한 캐릭터가 없습니다.">
+                        {historys.map((character, index) => (
                             <TableRow 
                                 key={index}
                                 className="cursor-pointer"
                                 onClick={() => handleSearch(character.nickname, setSearched, setLoading, setNickname)}>
-                                <TableCell>{character.nickname}</TableCell>
+                                <TableCell>
+                                    <div className="w-full flex gap-4 items-center">
+                                        <Avatar isBordered size="md" src={getImgByJob(character.job)}/>
+                                        <div>
+                                            <p className="text-lg">{character.nickname}</p>
+                                            <p className="text-sm fadedtext">@{character.server} · {character.job}</p>
+                                        </div>
+                                    </div>
+                                </TableCell>
                                 <TableCell>{character.level}</TableCell>
-                                <TableCell>{character.server}</TableCell>
-                                <TableCell>{character.job}</TableCell>
+                                <TableCell>{character.date.getFullYear()}-{(character.date.getMonth()+1).toString().padStart(2, '0')}-{character.date.getDate().toString().padStart(2, '0')} {character.date.getHours().toString().padStart(2, '0')}:{character.date.getMinutes().toString().padStart(2, '0')}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </div>
             <div className="block sm:hidden">
-                <Table removeWrapper selectionMode="single">
+                <Table removeWrapper selectionMode="single" className="max-h-[700px] overflow-auto overflow-x-hidden">
+                    <TableHeader>
+                        <TableColumn>캐릭터명</TableColumn>
+                        <TableColumn>날짜</TableColumn>
+                    </TableHeader>
+                    <TableBody emptyContent="최근에 검색한 캐릭터가 없습니다.">
+                        {historys.map((character, index) => (
+                            <TableRow 
+                                key={index}
+                                className="cursor-pointer"
+                                onClick={() => handleSearch(character.nickname, setSearched, setLoading, setNickname)}>
+                                <TableCell>
+                                    <div className="w-full flex gap-4 items-center">
+                                        <Avatar isBordered size="md" src={getImgByJob(character.job)}/>
+                                        <div>
+                                            <p className="text-lg">{character.nickname}</p>
+                                            <p className="text-sm fadedtext">@{character.server} · {character.job} · Lv.{character.level}</p>
+                                        </div>
+                                    </div>
+                                </TableCell>
+                                <TableCell>{character.date.getFullYear()}-{(character.date.getMonth()+1).toString().padStart(2, '0')}-{character.date.getDate().toString().padStart(2, '0')}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+        </div>
+    )
+}
+
+// 로그인된 원정대 목록 가져오기
+export function ExpeditionComponent({ setSearched, setLoading, setNickname }: SearchComponentProps) {
+    const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
+    return (
+        <div className="w-full">
+            <p className="mb-4 text-2xl">내 원정대 목록</p>
+            <div className="hidden sm:block">
+                <Table removeWrapper selectionMode="single" className="max-h-[700px] overflow-auto overflow-x-hidden">
                     <TableHeader>
                         <TableColumn>캐릭터명</TableColumn>
                         <TableColumn>아이템 레벨</TableColumn>
-                        <TableColumn>클래스</TableColumn>
+                        <TableColumn>서버</TableColumn>
                     </TableHeader>
                     <TableBody emptyContent="로그인이 되어있지 않거나 등록된 원정대 캐릭터가 없습니다.">
                         {expedition.map((character, index) => (
@@ -195,9 +251,44 @@ export function ExpeditionComponent({ setSearched, setLoading, setNickname }: Se
                                 key={index}
                                 className="cursor-pointer"
                                 onClick={() => handleSearch(character.nickname, setSearched, setLoading, setNickname)}>
-                                <TableCell>{character.nickname}</TableCell>
+                                <TableCell>
+                                    <div className="w-full flex gap-4 items-center">
+                                        <Avatar isBordered size="md" src={getImgByJob(character.job)}/>
+                                        <div>
+                                            <p className="text-lg">{character.nickname}</p>
+                                            <p className="text-sm fadedtext">{character.job}</p>
+                                        </div>
+                                    </div>
+                                </TableCell>
                                 <TableCell>{character.level}</TableCell>
-                                <TableCell>{character.job}</TableCell>
+                                <TableCell>{character.server}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+            <div className="block sm:hidden">
+                <Table removeWrapper selectionMode="single" className="max-h-[700px] overflow-auto overflow-x-hidden">
+                    <TableHeader>
+                        <TableColumn>캐릭터명</TableColumn>
+                        <TableColumn>아이템 레벨</TableColumn>
+                    </TableHeader>
+                    <TableBody emptyContent="로그인이 되어있지 않거나 등록된 원정대 캐릭터가 없습니다.">
+                        {expedition.map((character, index) => (
+                            <TableRow 
+                                key={index}
+                                className="cursor-pointer"
+                                onClick={() => handleSearch(character.nickname, setSearched, setLoading, setNickname)}>
+                                <TableCell>
+                                    <div className="w-full flex gap-4 items-center">
+                                        <Avatar isBordered size="md" src={getImgByJob(character.job)}/>
+                                        <div>
+                                            <p className="text-lg">{character.nickname}</p>
+                                            <p className="text-sm fadedtext">@{character.server} · {character.job}</p>
+                                        </div>
+                                    </div>
+                                </TableCell>
+                                <TableCell>{character.level}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
