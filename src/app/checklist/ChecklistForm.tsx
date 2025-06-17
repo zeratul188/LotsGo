@@ -342,10 +342,10 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                             <p className="grow text-sm fadedtext">총 부수입</p>
                                             <Image 
                                                 src="/icons/gold.png" 
-                                                width={19} 
-                                                height={19} 
+                                                width={14} 
+                                                height={14} 
                                                 alt="goldicon"
-                                                className="w-[19px] h-[19px]"/>
+                                                className="w-[14px] h-[14px]"/>
                                             <p className="test-sm">{getAllContentOtherGold(bosses, checklist).toLocaleString()}</p>
                                         </div>
                                         <div className="w-full flex items-center gap-1">
