@@ -158,17 +158,24 @@ export function SearchComponent({ setSearched, setLoading, setNickname }: Search
 
 // 저장된 히스토리 가져오기
 export function HistoryComponent({ setSearched, setLoading, setNickname }: SearchComponentProps) {
-    const storedHistorys = localStorage.getItem('historys');
-    let historys: CharacterHistory[] = [];
-    if (storedHistorys) {
-        const parsed = JSON.parse(storedHistorys) as CharacterHistory[];
-        const restored = parsed.map(item => ({
-            ...item,
-            date: new Date(item.date)
-        }));
-        historys = restored;
-    }
-    historys = historys.reverse();
+    const [historys, setHistorys] = useState<CharacterHistory[]>([]);
+    
+    useEffect(() => {
+        const storedHistorys = localStorage.getItem('historys');
+        const now = new Date();
+        const oneWeekAgo = new Date(now.getTime() - 7*24*60*60*1000);
+        if (storedHistorys) {
+            const parsed = JSON.parse(storedHistorys) as CharacterHistory[];
+            const restored = parsed.map(item => ({
+                ...item,
+                date: new Date(item.date)
+            }));
+            let resultArray = restored.filter(item => item.date >= oneWeekAgo);
+            resultArray = resultArray.reverse();
+            setHistorys(resultArray);
+        }
+    }, [])
+
     return (
         <div className="w-full">
             <p className="mb-4 text-2xl">최근 기록</p>
