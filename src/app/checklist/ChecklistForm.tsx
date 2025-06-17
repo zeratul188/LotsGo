@@ -32,10 +32,13 @@ import {
 import Image from "next/image";
 import { 
     DayValue, 
+    getAllContentGold, 
+    getAllContentOtherGold, 
     getAllCountChecklist, 
     getAllCubeCount, 
     getAllGoldCharacter, 
     getAllGolds, 
+    getBossByContent, 
     getBossesById, 
     getCheckedResult, 
     getCompleteChecklist, 
@@ -43,6 +46,7 @@ import {
     getCountCube, 
     getCubeList, 
     getDayName, 
+    getDiffByContent, 
     getHaveGolds, 
     getIndexByNickname, 
     getMaxRestValue, 
@@ -222,15 +226,49 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
     const [isGold, setGold] = useState(false);
     const [newLife, setNewLife] = useState(0);
     const [newMax, setNewMax] = useState(0);
+    const [isDisableUpdate, setDisableUpdate] = useState(true);
+    const [remainingTime, setRemainingTime] = useState(0);
 
     useEffect(() => {
         setNewMax(max);
     }, [max]);
 
+    useEffect(() => {
+        const stored = localStorage.getItem("button_unlock_time");
+        const unlockTime = stored ? parseInt(stored, 10) + Date.now() : Date.now();
+        const now = Date.now();
+
+        if (unlockTime <= now) {
+            setDisableUpdate(false);
+            return;
+        }
+
+        const interval = setInterval(() => {
+            const timeLeft = unlockTime - Date.now();
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                setDisableUpdate(false);
+                setRemainingTime(0);
+                localStorage.removeItem("button_unlock_time");
+            } else {
+                setRemainingTime(timeLeft);
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [isDisableUpdate])
+
+    useEffect(() => {
+        if (remainingTime > 0) {
+            console.log(remainingTime);
+            localStorage.setItem("button_unlock_time", (remainingTime).toString());
+        }
+    }, [remainingTime]);
+
     const [isOpenModalPosition, setOpenModalPosition] = useState(false);
     const onOpenChangePosition = (isOpen: boolean) => setOpenModalPosition(isOpen);
 
-    const onClickUpdatedCharacters = useClickUpdatedCharacters(checklist, dispatch, setLoading);
+    const onClickUpdatedCharacters = useClickUpdatedCharacters(checklist, dispatch, setLoading, setDisableUpdate);
     const onClickLoadCharacters = useClickLoadCharacters(inputValue, setResult, setLoadingSearch);
     const onCloseModal = useCloseModal(setResult, setInputValue);
     const onChangeBlessing = useChangeBlessing(life, max, setBlessing);
@@ -243,28 +281,85 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                 className="md960:w-[calc(100vw-40px)] lg1280:w-[1240px] md960:fixed md960:top-[80px] md960:left-1/2 md960:-translate-x-1/2 md960:z-50">
                 <CardBody>
                     <div className="w-full grid grid-cols-1 md960:grid-cols-[4fr_1px_3fr_1px_4fr] gap-2">
-                        <div className="w-full flex items-center">
-                            <Progress 
-                                aria-label="all-gold"
-                                size="md"
-                                color="warning"
-                                label={(
-                                    <div className="flex items-center">
-                                        <Image 
-                                            src="/icons/gold.png" 
-                                            width={19} 
-                                            height={19} 
-                                            alt="goldicon"
-                                            className="w-[19px] h-[19px]"/>
-                                        <span className="ml-1 text-md">주간 수익 골드량 : {getHaveGolds(bosses, checklist).toLocaleString()} / {getAllGolds(bosses, checklist).toLocaleString()}</span>
+                        <Popover showArrow disableAnimation>
+                            <PopoverTrigger>
+                                <div className="w-full flex items-center cursor-pointer">
+                                    <Progress 
+                                        aria-label="all-gold"
+                                        size="md"
+                                        color="warning"
+                                        label={(
+                                            <div className="flex items-center">
+                                                <Image 
+                                                    src="/icons/gold.png" 
+                                                    width={19} 
+                                                    height={19} 
+                                                    alt="goldicon"
+                                                    className="w-[19px] h-[19px]"/>
+                                                <span className="ml-1 text-md">주간 골드량 : {getHaveGolds(bosses, checklist).toLocaleString()} / {getAllGolds(bosses, checklist).toLocaleString()}</span>
+                                            </div>
+                                        )}
+                                        showValueLabel={true}
+                                        radius="sm"
+                                        value={getHaveGolds(bosses, checklist)}
+                                        maxValue={getAllGolds(bosses, checklist)}
+                                        className="w-full"/>
+                                </div>
+                            </PopoverTrigger>
+                            <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
+                                <div className="w-[calc(100vw-60px)] min-[401px]:max-w-[400px] pl-1 pr-1 pt-3 pb-2">
+                                    <div className="max-h-[400px] overflow-y-auto">
+                                        <Table removeWrapper>
+                                            <TableHeader>
+                                                <TableColumn>캐릭터명</TableColumn>
+                                                <TableColumn>콘텐츠</TableColumn>
+                                                <TableColumn>부수입</TableColumn>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {checklist.map((character, index) => (
+                                                    <TableRow key={index}>
+                                                        <TableCell>{character.nickname}</TableCell>
+                                                        <TableCell>{getCompleteGoldCharacter(bosses, character).toLocaleString()}</TableCell>
+                                                        <TableCell>{character.otherGold.toLocaleString()}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
                                     </div>
-                                )}
-                                showValueLabel={true}
-                                radius="sm"
-                                value={getHaveGolds(bosses, checklist)}
-                                maxValue={getAllGolds(bosses, checklist)}
-                                className="w-full"/>
-                        </div>
+                                    <Divider className="mt-1 mb-2"/>
+                                    <div className="w-full grid grid-cols-2 gap-4 p-1">
+                                        <div className="w-full flex items-center gap-1">
+                                            <p className="grow text-sm fadedtext">총 콘텐츠</p>
+                                            <Image 
+                                                src="/icons/gold.png" 
+                                                width={14} 
+                                                height={14} 
+                                                alt="goldicon"
+                                                className="w-[14px] h-[14px]"/>
+                                            <p className="test-sm">{getAllContentGold(bosses, checklist).toLocaleString()}</p>
+                                        </div>
+                                        <div className="w-full flex items-center gap-1">
+                                            <p className="grow text-sm fadedtext">총 부수입</p>
+                                            <Image 
+                                                src="/icons/gold.png" 
+                                                width={14} 
+                                                height={14} 
+                                                alt="goldicon"
+                                                className="w-[14px] h-[14px]"/>
+                                            <p className="test-sm">{getAllContentOtherGold(bosses, checklist).toLocaleString()}</p>
+                                        </div>
+                                        <div className="w-full flex items-center gap-1">
+                                            <p className="grow text-sm fadedtext">콘텐츠 비율</p>
+                                            <p className="test-sm">{Math.round(getAllContentGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10}%</p>
+                                        </div>
+                                        <div className="w-full flex items-center gap-1">
+                                            <p className="grow text-sm fadedtext">부수입 비율</p>
+                                            <p className="test-sm">{Math.round(getAllContentOtherGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10}%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
                         <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
                         <div className="w-full flex items-center">
                             <Progress 
@@ -374,6 +469,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                 color="primary"
                                 variant="flat"
                                 size="sm"
+                                isDisabled={isDisableUpdate}
                                 isLoading={isLoading}
                                 onPress={onClickUpdatedCharacters}>캐릭터 갱신하기</Button>
                         </Tooltip>
@@ -735,27 +831,47 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         radius="sm"
                                         className="min-w-full text-center">주간 콘텐츠</Chip>
                                     {character.checklist.map((item, idx) => (
-                                        <div key={idx}>
-                                            <Checkbox
-                                                lineThrough
-                                                aria-label={`checklist-${item.name}-${idx}`}
-                                                size="sm"
-                                                radius="full"
-                                                isDisabled={item.isDisable}
-                                                isSelected={item.isCheck}
-                                                className="max-w-full mt-1"
-                                                onChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
-                                                <span className="flex items-center gap-1">
-                                                    <span>{item.name} {item.difficulty}</span>
-                                                    {item.isGold ? <Image 
-                                                        src="/icons/gold.png" 
-                                                        width={14} 
-                                                        height={14} 
-                                                        alt="goldicon"
-                                                        className="w-[14px] h-[14px]"/> : <></>}
-                                                </span>
-                                            </Checkbox>
-                                        </div>
+                                        <Tooltip 
+                                            key={idx}
+                                            showArrow
+                                            content={
+                                                <div className="p-1">
+                                                    <p>{getBossByContent(bosses, item.name) && getDiffByContent(bosses, item.name, item.difficulty) ? `${getBossByContent(bosses, item.name)?.name} ${getDiffByContent(bosses, item.name, item.difficulty)?.difficulty}` : ''}</p>
+                                                    <div className="w-full flex gap-1 items-center">
+                                                        <p className="grow fadedtext">Lv.{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.level : 0}</p>
+                                                        <Image 
+                                                            src="/icons/gold.png" 
+                                                            width={16} 
+                                                            height={16} 
+                                                            alt="goldicon"
+                                                            className="w-[16px] h-[16px]"/>
+                                                        <p>{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.gold : 0}</p>
+                                                    </div>
+                                                </div>
+                                                
+                                            }>
+                                            <div>
+                                                <Checkbox
+                                                    lineThrough
+                                                    aria-label={`checklist-${item.name}-${idx}`}
+                                                    size="sm"
+                                                    radius="full"
+                                                    isDisabled={item.isDisable}
+                                                    isSelected={item.isCheck}
+                                                    className="max-w-full mt-1"
+                                                    onChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
+                                                    <span className="flex items-center gap-1">
+                                                        <span>{item.name} {item.difficulty}</span>
+                                                        {item.isGold ? <Image 
+                                                            src="/icons/gold.png" 
+                                                            width={14} 
+                                                            height={14} 
+                                                            alt="goldicon"
+                                                            className="w-[14px] h-[14px]"/> : <></>}
+                                                    </span>
+                                                </Checkbox>
+                                            </div>
+                                        </Tooltip>
                                     ))}
                                     {character.weeklist.map((item, idx) => (
                                         <div key={idx}>

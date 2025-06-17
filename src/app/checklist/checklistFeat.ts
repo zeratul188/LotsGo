@@ -1388,7 +1388,8 @@ export async function handleRemoveCharacter(
 export function useClickUpdatedCharacters(
     checklist: CheckCharacter[],
     dispatch: AppDispatch,
-    setLoading: SetStateFn<boolean>
+    setLoading: SetStateFn<boolean>,
+    setDisableUpdate: SetStateFn<boolean>
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
@@ -1446,6 +1447,9 @@ export function useClickUpdatedCharacters(
                 color: "success"
             });
         }
+        const unlockTime = 2 * 60 * 1000;
+        localStorage.setItem("button_unlock_time", unlockTime.toString());
+        setDisableUpdate(true);
         setLoading(false);
     }
 }
@@ -1742,4 +1746,35 @@ export async function handleApplyPositions(
 // 이미 추가된 캐릭터인지 확인 여부
 export function isHaveCharacter(checklist: CheckCharacter[], nickname: string) {
     return checklist.findIndex(item => item.nickname === nickname) !== -1;
+}
+
+// 주간 콘텐츠 골드량 가져오기
+export function getDiffByContent(bosses: Boss[], name: string, diff: string): Difficulty | undefined {
+    const boss: Boss | undefined = bosses.find(item => item.name === name);
+    const difficulty: Difficulty | undefined = boss ? boss.difficulty.find(item => item.difficulty === diff) : undefined;
+    return difficulty;
+}
+
+// 주간 콘텐츠 보스 정보 가져오기
+export function getBossByContent(bosses: Boss[], name: String): Boss | undefined {
+    const boss: Boss | undefined = bosses.find(item => item.name === name);
+    return boss;
+}
+
+// 모든 캐릭터 총 콘텐츠 골드량 가져오기
+export function getAllContentGold(bosses: Boss[], checklist: CheckCharacter[]): number {
+    let sumGold = 0;
+    for (const character of checklist) {
+        sumGold += getCompleteGoldCharacter(bosses, character);
+    }
+    return sumGold
+}
+
+// 모든 캐릭터 총 부수입 가져오기
+export function getAllContentOtherGold(bosses: Boss[], checklist: CheckCharacter[]): number {
+    let sumGold = 0;
+    for (const character of checklist) {
+        sumGold += character.otherGold;
+    }
+    return sumGold
 }
