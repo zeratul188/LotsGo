@@ -315,10 +315,11 @@ type ProfileComponentProps = {
 }
 export function ProfileComponent({ file }: ProfileComponentProps) {
     const profile = file.profile;
+    const isMobile = useMobileQuery();
     return (
         <div className="w-full h-[max-content] sm:h-[300px] border-b-1 border-[#dddddd] dark:border-[#333333] bg-[#F6F6F6] dark:bg-[#111111]">
-            <div className="w-full max-w-[1280px] mx-auto h-full flex flex-col-reverse sm:flex-row">
-                <div className="p-5 h-full relative flex flex-col">
+            <div className="w-full max-w-[1280px] mx-auto flex flex-col-reverse sm:flex-row relative">
+                <div className="p-5 h-full hidden sm:flex flex-col">
                     <div className="flex gap-2">
                         <Chip color="secondary" variant="solid" radius="sm">{profile.ServerName}</Chip>
                         <Chip color="warning" variant="solid" radius="sm">{profile.CharacterClassName}</Chip>
@@ -350,13 +351,34 @@ export function ProfileComponent({ file }: ProfileComponentProps) {
                         </div>
                     </div>
                 </div>
-                <div className="grow"/>
-                <div className="w-[100vw] sm:w-[440px] h-[280px] sm:h-[100%] overflow-hidden [mask-image:linear-gradient(to_bottom,black,black,black,transparent)] sm:[mask-image:linear-gradient(to_right,transparent,black,black,black)] lg1280:[mask-image:linear-gradient(to_right,transparent,black,black,transparent)]">
+                <div className="flex sm:hidden p-5 flex-col z-1 h-[300px] bg-gradient-to-r from-[#15181d] via-[#15181d]/25 to-transparent">
+                    <div className="flex gap-2">
+                        <Chip color="secondary" variant="solid" radius="sm">{profile.ServerName}</Chip>
+                        <Chip color="warning" variant="solid" radius="sm">{profile.CharacterClassName}</Chip>
+                    </div>
+                    <p className="text-[#dddddd] text-sm mt-4">{profile.Title ? profile.Title : '-'}{profile.GuildName ?` · ${profile.GuildName} 길드` : ''}</p>
+                    <p className="text-2xl font-bold text-white">{profile.CharacterName}</p>
+                    <div className="grow grid grid-cols-[75px_1fr] mt-5">
+                        <p className="fadedtext text-sm">아이템 레벨</p>
+                        <p className="text-sm text-white">{profile.ItemAvgLevel}</p>
+                        <p className="fadedtext text-sm">전투 레벨</p>
+                        <p className="text-sm text-white">{profile.CharacterLevel}</p>
+                        <p className="fadedtext text-sm">원정대 레벨</p>
+                        <p className="text-sm text-white">{profile.ExpeditionLevel}</p>
+                        <p className="fadedtext text-sm">PvP</p>
+                        <p className="text-sm text-white">{profile.PvpGradeName}</p>
+                        <p className="fadedtext text-sm">영지</p>
+                        <p className="text-sm text-white">Lv.{profile.TownLevel} {profile.TownName}</p>
+                    </div>
+                </div>
+                <div className="grow hidden sm:block"/>
+                <div className="absolute sm:static top-0 left-0 z-0 bg-[#15181d] sm:bg-transparent w-[100vw] sm:w-[440px] h-full sm:h-[300px] overflow-hidden sm:[mask-image:linear-gradient(to_right,transparent,black,black,black)] lg1280:[mask-image:linear-gradient(to_right,transparent,black,black,transparent)]">
                     <img
                         src={file.profile.CharacterImage}
                         alt="character-image"
                         className={clsx(
                             "w-[100vw] h-[500px] object-cover scale-130 origin-top",
+                            isMobile ? "translate-x-[20%]" : "",
                             upperClass.includes(profile.CharacterClassName) ? "translate-y-[-28%]" : "translate-y-[-13%]"
                         )}/>
                 </div>

@@ -38,7 +38,6 @@ export function useOnActionProfile() {
 }
 
 export function useLogout() {
-    const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
     return () => {
         localStorage.removeItem('token');
