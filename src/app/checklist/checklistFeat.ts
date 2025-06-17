@@ -1760,3 +1760,21 @@ export function getBossByContent(bosses: Boss[], name: String): Boss | undefined
     const boss: Boss | undefined = bosses.find(item => item.name === name);
     return boss;
 }
+
+// 모든 캐릭터 총 콘텐츠 골드량 가져오기
+export function getAllContentGold(bosses: Boss[], checklist: CheckCharacter[]): number {
+    let sumGold = 0;
+    for (const character of checklist) {
+        sumGold += getCompleteGoldCharacter(bosses, character);
+    }
+    return sumGold
+}
+
+// 모든 캐릭터 총 부수입 가져오기
+export function getAllContentOtherGold(bosses: Boss[], checklist: CheckCharacter[]): number {
+    let sumGold = 0;
+    for (const character of checklist) {
+        sumGold += character.otherGold;
+    }
+    return sumGold
+}

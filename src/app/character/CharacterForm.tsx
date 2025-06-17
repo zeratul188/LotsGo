@@ -420,7 +420,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                 return null;
                             }
                             return (
-                                <Popover key={index} disableAnimation>
+                                <Popover key={index} showArrow disableAnimation>
                                     <PopoverTrigger>
                                         <div className="flex gap-2 mb-4 items-center cursor-pointer">
                                             <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(equip.grade)}`}>
