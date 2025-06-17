@@ -140,3 +140,14 @@ function findDescriptionInTooltip(parsed: any): string[] {
     }
     return [];
 }
+
+// 수집품 진행률에 따른 색상 반환
+export function getColorByProgress(value: number, max: number): "primary" | "default" | "secondary" | "success" | "warning" | "danger" | undefined {
+    const percent = value / max * 100;
+    if (percent === 100) { return 'success' }
+    if (percent >= 75) { return 'secondary' }
+    if (percent >= 50) { return 'primary' }
+    if (percent >= 25) { return'warning' }
+    if (percent > 0) { return 'danger' }
+    return 'default'
+}
