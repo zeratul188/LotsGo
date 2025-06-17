@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { CharacterFile } from "./characterFeat"
-import { Collect, CollectEquipment, getCompleteMaxPoint, getCompletePoint, getProgressData, Hobby, loadCollects, loadHobbys, loadItems } from "./pointFeat"
-import { Card, CardBody, CardHeader, Divider, Image, Popover, PopoverContent, PopoverTrigger, Progress, Switch } from "@heroui/react"
+import { Collect, CollectEquipment, getColorByProgress, getCompleteMaxPoint, getCompletePoint, getProgressData, Hobby, loadCollects, loadHobbys, loadItems } from "./pointFeat"
+import { Card, CardBody, CardFooter, CardHeader, Divider, Image, Popover, PopoverContent, PopoverTrigger, Progress, Switch } from "@heroui/react"
 import CheckIcon from "@/Icons/CheckIcon"
 import clsx from "clsx"
 import { getBackgroundByGrade, getColorTextByGrade, useMobileQuery } from "@/utiils/utils"
@@ -39,7 +39,8 @@ export function PointComponent({ file }: PointComponentProps) {
                                 showValueLabel
                                 radius="sm"
                                 value={getProgressData(collects)}
-                                maxValue={collects.length*100}/>
+                                maxValue={collects.length*100}
+                                color={getColorByProgress(getProgressData(collects), collects.length*100)}/>
                             <Switch 
                                 isSelected={isSelected}
                                 onValueChange={setSelected}
@@ -64,7 +65,7 @@ export function PointComponent({ file }: PointComponentProps) {
                         </div>
                         <Divider orientation={isMobile ? 'horizontal' : "vertical"} className="md960:h-[65px]"/>
                         <div className="w-full md960:w-[200px]">
-                            <Popover showArrow>
+                            <Popover showArrow disableAnimation>
                                 <PopoverTrigger>
                                     <div className="w-full flex items-center gap-2 cursor-pointer">
                                         <div className={`w-[32px] h-[32px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(collectEquipments.length > 0 ? collectEquipments[0].grade : "")}`}>
@@ -81,7 +82,7 @@ export function PointComponent({ file }: PointComponentProps) {
                                         </div>
                                     </div>
                                 </PopoverTrigger>
-                                <PopoverContent>
+                                <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
                                     <div className="max-w-[240px] pt-2 pl-1 pr-1 pb-2">
                                         <ul className="list-disc pl-4">
                                             {collectEquipments.length > 0 ? collectEquipments[0].descriptions.map((line, idx) => (
@@ -91,7 +92,7 @@ export function PointComponent({ file }: PointComponentProps) {
                                     </div>
                                 </PopoverContent>
                             </Popover>
-                            <Popover showArrow>
+                            <Popover showArrow disableAnimation>
                                 <PopoverTrigger>
                                     <div className="w-full flex items-center gap-2 cursor-pointer mt-1">
                                         <div className={`w-[32px] h-[32px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(collectEquipments.length > 1 ? collectEquipments[1].grade : "-")}`}>
@@ -108,7 +109,7 @@ export function PointComponent({ file }: PointComponentProps) {
                                         </div>
                                     </div>
                                 </PopoverTrigger>
-                                <PopoverContent>
+                                <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
                                     <div className="max-w-[240px] pt-2 pl-1 pr-1 pb-2">
                                         <ul className="list-disc pl-4">
                                             {collectEquipments.length > 1 ? collectEquipments[1].descriptions.map((line, idx) => (
@@ -136,7 +137,9 @@ export function DetailComponent({ collects, isSelected }: DetailComponentProps) 
     return (
         <div className="w-full grid grid-cols-1 sm:grid-cols-3 md960:grid-cols-5 gap-4">
             {collects.map((collect, index) => (
-                <Card radius="sm" key={index}>
+                <Card radius="sm" key={index} className={clsx(
+                    isSelected && getCompletePoint(collect) === getCompleteMaxPoint(collect) ? 'hidden' : 'flex'
+                )}>
                     <CardHeader>
                         <div className="w-full">
                             <div className="w-full flex gap-2 items-center">
@@ -146,7 +149,7 @@ export function DetailComponent({ collects, isSelected }: DetailComponentProps) 
                             </div>
                             <Progress
                                 size="sm"
-                                color={getCompletePoint(collect) === getCompleteMaxPoint(collect) ? 'success' : 'primary'}
+                                color={getColorByProgress(getCompletePoint(collect), getCompleteMaxPoint(collect))}
                                 value={getCompletePoint(collect)}
                                 maxValue={getCompleteMaxPoint(collect)}
                                 className="mt-2"/>
@@ -175,6 +178,12 @@ export function DetailComponent({ collects, isSelected }: DetailComponentProps) 
                             ))}
                         </div>
                     </CardBody>
+                    <Divider/>
+                    <CardFooter>
+                        {getCompletePoint(collect) === getCompleteMaxPoint(collect) ? (
+                            <p className="text-sm text-green-600 dark:text-green-400">모든 수집품을 획득하였습니다.</p>
+                        ) : <p className="text-sm fadedtext">{getCompleteMaxPoint(collect) - getCompletePoint(collect)}개 남음</p>}
+                    </CardFooter>
                 </Card>
             ))}
         </div>

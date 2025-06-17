@@ -76,6 +76,7 @@ import { printBonusStoneInTooltip, printDefaultStoneInTooltip, printStoneUseInTo
 import PotionIcon from "@/Icons/PosionIcon";
 import { getImgByJob } from "./expeditionFeat";
 import { CharacterHistory } from "./history";
+import { motion } from "framer-motion";
 
 // state 관리
 export function useCharacterForm() {
@@ -158,17 +159,24 @@ export function SearchComponent({ setSearched, setLoading, setNickname }: Search
 
 // 저장된 히스토리 가져오기
 export function HistoryComponent({ setSearched, setLoading, setNickname }: SearchComponentProps) {
-    const storedHistorys = localStorage.getItem('historys');
-    let historys: CharacterHistory[] = [];
-    if (storedHistorys) {
-        const parsed = JSON.parse(storedHistorys) as CharacterHistory[];
-        const restored = parsed.map(item => ({
-            ...item,
-            date: new Date(item.date)
-        }));
-        historys = restored;
-    }
-    historys = historys.reverse();
+    const [historys, setHistorys] = useState<CharacterHistory[]>([]);
+    
+    useEffect(() => {
+        const storedHistorys = localStorage.getItem('historys');
+        const now = new Date();
+        const oneWeekAgo = new Date(now.getTime() - 7*24*60*60*1000);
+        if (storedHistorys) {
+            const parsed = JSON.parse(storedHistorys) as CharacterHistory[];
+            const restored = parsed.map(item => ({
+                ...item,
+                date: new Date(item.date)
+            }));
+            let resultArray = restored.filter(item => item.date >= oneWeekAgo);
+            resultArray = resultArray.reverse();
+            setHistorys(resultArray);
+        }
+    }, [])
+
     return (
         <div className="w-full">
             <p className="mb-4 text-2xl">최근 기록</p>
@@ -412,7 +420,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                 return null;
                             }
                             return (
-                                <Popover key={index}>
+                                <Popover key={index} showArrow disableAnimation>
                                     <PopoverTrigger>
                                         <div className="flex gap-2 mb-4 items-center cursor-pointer">
                                             <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(equip.grade)}`}>
@@ -600,7 +608,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                 <p className="fadedtext text-[9pt]">엘릭서 총합</p>
                                                 <p className="text-lg font-bold">Lv.{getAllElixir(equipments)}</p>
                                             </div>
-                                            <Popover showArrow>
+                                            <Popover showArrow disableAnimation>
                                                 <PopoverTrigger>
                                                     <Button size="sm" variant="flat">자세히 보기</Button>
                                                 </PopoverTrigger>
@@ -654,7 +662,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                 return null;
                             }
                             return (
-                                <Popover key={index}>
+                                <Popover key={index} disableAnimation>
                                     <PopoverTrigger>
                                         <div className="flex gap-2 mb-2 items-center cursor-pointer">
                                             <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(equip.grade)}`}>
@@ -738,7 +746,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                             )
                         })}
                         {arm ? (
-                            <Popover>
+                            <Popover showArrow disableAnimation>
                                 <PopoverTrigger>
                                     <div className="flex gap-2 mb-2 items-center cursor-pointer">
                                         <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(arm.grade)}`}>
@@ -805,7 +813,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                             </Popover>
                         ) : <></>}
                         {stone ? (
-                            <Popover>
+                            <Popover showArrow disableAnimation>
                                 <PopoverTrigger>
                                     <div className="flex gap-2 mb-2 items-center cursor-pointer">
                                         <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(stone.grade)}`}>
@@ -914,7 +922,7 @@ function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
             <CardBody>
                 <div className="w-full grid grid-cols-6 sm:grid-cols-11 gap-2 pt-2 pb-2">
                     {gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).sort((a, b) => b.level - a.level).map((gem, index) => (
-                        <Popover key={index} showArrow>
+                        <Popover key={index} showArrow disableAnimation>
                             <PopoverTrigger>
                                 <div className="w-full flex items-center justify-center flex-col cursor-pointer">
                                     <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(gem.grade)}`}>
@@ -946,7 +954,7 @@ function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
                         </Popover>
                     ))}
                     {gems.filter(item => item.skillStr.includes('재사용 대기시간')).sort((a, b) => b.level - a.level).map((gem, index) => (
-                        <Popover key={index} showArrow>
+                        <Popover key={index} showArrow disableAnimation>
                             <PopoverTrigger>
                                 <div className="w-full flex items-center justify-center flex-col cursor-pointer">
                                     <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(gem.grade)}`}>
@@ -1427,7 +1435,7 @@ export function NotFoundComponent({ nickname, setSearched, setLoading, setNickna
             <p className="text-4xl text-red-400">캐릭터 검색 결과 없음</p>
             <p className="text-xl mt-2 fadedtext">"{nickname}" 캐릭터 조회를 실패하였습니다.</p>
             <p className="text-md mt-5">존재하지 않는 캐릭터이거나 캐릭터 검색이 불가능한 캐릭터입니다.</p>
-            <div className="w-full sm:w-[400px] flex gap-2 items-center mt-10">
+            <div className="w-full sm:w-[400px] flex flex-col sm:flex-row gap-5 sm:gap-2 items-center mt-10">
                 <Input
                     size="lg"
                     radius="sm"

@@ -176,7 +176,7 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                     <p className={`${getColorTextByGrade(skill.rune ? skill.rune.grade : '')}`}>{skill.rune ? `${skill.rune.grade} ${skill.rune.name}` : '-'}</p>
                                 </div>
                                 <div className="w-full grid grid-cols-2 gap-1 mt-4">
-                                    <Popover showArrow>
+                                    <Popover showArrow disableAnimation>
                                         <PopoverTrigger>
                                             <div className="w-full flex items-center gap-2 cursor-pointer">
                                                 <div className={`w-[42px] h-[42px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(skill.attackGem ? skill.attackGem!.grade : "")}`}>
@@ -207,7 +207,7 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                             ) : <div></div>}
                                         </PopoverContent>
                                     </Popover>
-                                    <Popover showArrow>
+                                    <Popover showArrow disableAnimation>
                                         <PopoverTrigger>
                                             <div className="w-full flex items-center gap-2 cursor-pointer">
                                                 <div className={`w-[42px] h-[42px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(skill.timeGem ? skill.timeGem!.grade : "")}`}>
