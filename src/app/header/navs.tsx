@@ -94,7 +94,15 @@ export function NavMenu() {
                         </Button>
                     </div>
                 )
-            ) : <></> : (
+            ) : (
+                <Button
+                    fullWidth
+                    radius="sm"
+                    color="danger"
+                    onPress={onClickLogout}>
+                    로그아웃
+                </Button>
+            ) : (
                 <Button 
                     fullWidth
                     as={Link}
