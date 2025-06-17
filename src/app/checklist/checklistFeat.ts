@@ -1388,7 +1388,8 @@ export async function handleRemoveCharacter(
 export function useClickUpdatedCharacters(
     checklist: CheckCharacter[],
     dispatch: AppDispatch,
-    setLoading: SetStateFn<boolean>
+    setLoading: SetStateFn<boolean>,
+    setDisableUpdate: SetStateFn<boolean>
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
@@ -1446,6 +1447,9 @@ export function useClickUpdatedCharacters(
                 color: "success"
             });
         }
+        const unlockTime = 2 * 60 * 1000;
+        localStorage.setItem("button_unlock_time", unlockTime.toString());
+        setDisableUpdate(true);
         setLoading(false);
     }
 }

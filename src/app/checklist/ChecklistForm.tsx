@@ -222,15 +222,49 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
     const [isGold, setGold] = useState(false);
     const [newLife, setNewLife] = useState(0);
     const [newMax, setNewMax] = useState(0);
+    const [isDisableUpdate, setDisableUpdate] = useState(true);
+    const [remainingTime, setRemainingTime] = useState(0);
 
     useEffect(() => {
         setNewMax(max);
     }, [max]);
 
+    useEffect(() => {
+        const stored = localStorage.getItem("button_unlock_time");
+        const unlockTime = stored ? parseInt(stored, 10) + Date.now() : Date.now();
+        const now = Date.now();
+
+        if (unlockTime <= now) {
+            setDisableUpdate(false);
+            return;
+        }
+
+        const interval = setInterval(() => {
+            const timeLeft = unlockTime - Date.now();
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                setDisableUpdate(false);
+                setRemainingTime(0);
+                localStorage.removeItem("button_unlock_time");
+            } else {
+                setRemainingTime(timeLeft);
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [isDisableUpdate])
+
+    useEffect(() => {
+        if (remainingTime > 0) {
+            console.log(remainingTime);
+            localStorage.setItem("button_unlock_time", (remainingTime).toString());
+        }
+    }, [remainingTime]);
+
     const [isOpenModalPosition, setOpenModalPosition] = useState(false);
     const onOpenChangePosition = (isOpen: boolean) => setOpenModalPosition(isOpen);
 
-    const onClickUpdatedCharacters = useClickUpdatedCharacters(checklist, dispatch, setLoading);
+    const onClickUpdatedCharacters = useClickUpdatedCharacters(checklist, dispatch, setLoading, setDisableUpdate);
     const onClickLoadCharacters = useClickLoadCharacters(inputValue, setResult, setLoadingSearch);
     const onCloseModal = useCloseModal(setResult, setInputValue);
     const onChangeBlessing = useChangeBlessing(life, max, setBlessing);
@@ -374,6 +408,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                 color="primary"
                                 variant="flat"
                                 size="sm"
+                                isDisabled={isDisableUpdate}
                                 isLoading={isLoading}
                                 onPress={onClickUpdatedCharacters}>캐릭터 갱신하기</Button>
                         </Tooltip>
