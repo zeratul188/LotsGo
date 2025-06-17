@@ -1427,7 +1427,7 @@ export function NotFoundComponent({ nickname, setSearched, setLoading, setNickna
             <p className="text-4xl text-red-400">캐릭터 검색 결과 없음</p>
             <p className="text-xl mt-2 fadedtext">"{nickname}" 캐릭터 조회를 실패하였습니다.</p>
             <p className="text-md mt-5">존재하지 않는 캐릭터이거나 캐릭터 검색이 불가능한 캐릭터입니다.</p>
-            <div className="w-full sm:w-[400px] flex gap-2 items-center mt-10">
+            <div className="w-full sm:w-[400px] flex flex-col sm:flex-row gap-5 sm:gap-2 items-center mt-10">
                 <Input
                     size="lg"
                     radius="sm"
