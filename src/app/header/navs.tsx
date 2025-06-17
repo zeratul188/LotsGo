@@ -223,7 +223,6 @@ function ProfileButton() {
                         <DropdownItem key="administrator" color="secondary">관리자 페이지 이동</DropdownItem>
                     ) : (
                         <>
-                            <DropdownItem key="profile">내 정보 수정</DropdownItem>
                             <DropdownItem key="setting">설정</DropdownItem>
                         </>
                     )}
