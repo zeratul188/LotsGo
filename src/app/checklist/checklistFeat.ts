@@ -1749,8 +1749,14 @@ export function isHaveCharacter(checklist: CheckCharacter[], nickname: string) {
 }
 
 // 주간 콘텐츠 골드량 가져오기
-export function getGoldByContent(bosses: Boss[], name: string, diff: string): number {
+export function getDiffByContent(bosses: Boss[], name: string, diff: string): Difficulty | undefined {
     const boss: Boss | undefined = bosses.find(item => item.name === name);
     const difficulty: Difficulty | undefined = boss ? boss.difficulty.find(item => item.difficulty === diff) : undefined;
-    return difficulty ? difficulty.gold : 0;
+    return difficulty;
+}
+
+// 주간 콘텐츠 보스 정보 가져오기
+export function getBossByContent(bosses: Boss[], name: String): Boss | undefined {
+    const boss: Boss | undefined = bosses.find(item => item.name === name);
+    return boss;
 }

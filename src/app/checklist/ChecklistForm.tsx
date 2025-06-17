@@ -36,6 +36,7 @@ import {
     getAllCubeCount, 
     getAllGoldCharacter, 
     getAllGolds, 
+    getBossByContent, 
     getBossesById, 
     getCheckedResult, 
     getCompleteChecklist, 
@@ -43,7 +44,7 @@ import {
     getCountCube, 
     getCubeList, 
     getDayName, 
-    getGoldByContent, 
+    getDiffByContent, 
     getHaveGolds, 
     getIndexByNickname, 
     getMaxRestValue, 
@@ -775,15 +776,20 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                             key={idx}
                                             showArrow
                                             content={
-                                                <div className="flex gap-1 items-center">
-                                                    <Image 
-                                                        src="/icons/gold.png" 
-                                                        width={16} 
-                                                        height={16} 
-                                                        alt="goldicon"
-                                                        className="w-[16px] h-[16px]"/>
-                                                    <p>{getGoldByContent(bosses, item.name, item.difficulty)}</p>
+                                                <div className="p-1">
+                                                    <p>{getBossByContent(bosses, item.name) && getDiffByContent(bosses, item.name, item.difficulty) ? `${getBossByContent(bosses, item.name)?.name} ${getDiffByContent(bosses, item.name, item.difficulty)?.difficulty}` : ''}</p>
+                                                    <div className="w-full flex gap-1 items-center">
+                                                        <p className="grow fadedtext">Lv.{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.level : 0}</p>
+                                                        <Image 
+                                                            src="/icons/gold.png" 
+                                                            width={16} 
+                                                            height={16} 
+                                                            alt="goldicon"
+                                                            className="w-[16px] h-[16px]"/>
+                                                        <p>{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.gold : 0}</p>
+                                                    </div>
                                                 </div>
+                                                
                                             }>
                                             <div>
                                                 <Checkbox
