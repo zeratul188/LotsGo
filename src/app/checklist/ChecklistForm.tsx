@@ -307,7 +307,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                 </div>
                             </PopoverTrigger>
                             <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
-                                <div className="w-[400px] pl-1 pr-1 pt-3 pb-2">
+                                <div className="w-[calc(100vw-60px)] min-[401px]:max-w-[400px] pl-1 pr-1 pt-3 pb-2">
                                     <div className="max-h-[400px] overflow-y-auto">
                                         <Table removeWrapper>
                                             <TableHeader>
