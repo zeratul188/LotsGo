@@ -43,6 +43,7 @@ import {
     getCountCube, 
     getCubeList, 
     getDayName, 
+    getGoldByContent, 
     getHaveGolds, 
     getIndexByNickname, 
     getMaxRestValue, 
@@ -290,7 +291,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                             height={19} 
                                             alt="goldicon"
                                             className="w-[19px] h-[19px]"/>
-                                        <span className="ml-1 text-md">주간 수익 골드량 : {getHaveGolds(bosses, checklist).toLocaleString()} / {getAllGolds(bosses, checklist).toLocaleString()}</span>
+                                        <span className="ml-1 text-md">주간 골드량 : {getHaveGolds(bosses, checklist).toLocaleString()} / {getAllGolds(bosses, checklist).toLocaleString()}</span>
                                     </div>
                                 )}
                                 showValueLabel={true}
@@ -770,27 +771,42 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         radius="sm"
                                         className="min-w-full text-center">주간 콘텐츠</Chip>
                                     {character.checklist.map((item, idx) => (
-                                        <div key={idx}>
-                                            <Checkbox
-                                                lineThrough
-                                                aria-label={`checklist-${item.name}-${idx}`}
-                                                size="sm"
-                                                radius="full"
-                                                isDisabled={item.isDisable}
-                                                isSelected={item.isCheck}
-                                                className="max-w-full mt-1"
-                                                onChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
-                                                <span className="flex items-center gap-1">
-                                                    <span>{item.name} {item.difficulty}</span>
-                                                    {item.isGold ? <Image 
+                                        <Tooltip 
+                                            key={idx}
+                                            showArrow
+                                            content={
+                                                <div className="flex gap-1 items-center">
+                                                    <Image 
                                                         src="/icons/gold.png" 
-                                                        width={14} 
-                                                        height={14} 
+                                                        width={16} 
+                                                        height={16} 
                                                         alt="goldicon"
-                                                        className="w-[14px] h-[14px]"/> : <></>}
-                                                </span>
-                                            </Checkbox>
-                                        </div>
+                                                        className="w-[16px] h-[16px]"/>
+                                                    <p>{getGoldByContent(bosses, item.name, item.difficulty)}</p>
+                                                </div>
+                                            }>
+                                            <div>
+                                                <Checkbox
+                                                    lineThrough
+                                                    aria-label={`checklist-${item.name}-${idx}`}
+                                                    size="sm"
+                                                    radius="full"
+                                                    isDisabled={item.isDisable}
+                                                    isSelected={item.isCheck}
+                                                    className="max-w-full mt-1"
+                                                    onChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
+                                                    <span className="flex items-center gap-1">
+                                                        <span>{item.name} {item.difficulty}</span>
+                                                        {item.isGold ? <Image 
+                                                            src="/icons/gold.png" 
+                                                            width={14} 
+                                                            height={14} 
+                                                            alt="goldicon"
+                                                            className="w-[14px] h-[14px]"/> : <></>}
+                                                    </span>
+                                                </Checkbox>
+                                            </div>
+                                        </Tooltip>
                                     ))}
                                     {character.weeklist.map((item, idx) => (
                                         <div key={idx}>

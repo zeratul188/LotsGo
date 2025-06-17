@@ -1747,3 +1747,10 @@ export async function handleApplyPositions(
 export function isHaveCharacter(checklist: CheckCharacter[], nickname: string) {
     return checklist.findIndex(item => item.nickname === nickname) !== -1;
 }
+
+// 주간 콘텐츠 골드량 가져오기
+export function getGoldByContent(bosses: Boss[], name: string, diff: string): number {
+    const boss: Boss | undefined = bosses.find(item => item.name === name);
+    const difficulty: Difficulty | undefined = boss ? boss.difficulty.find(item => item.difficulty === diff) : undefined;
+    return difficulty ? difficulty.gold : 0;
+}
