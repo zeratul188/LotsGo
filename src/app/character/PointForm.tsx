@@ -64,7 +64,7 @@ export function PointComponent({ file }: PointComponentProps) {
                         </div>
                         <Divider orientation={isMobile ? 'horizontal' : "vertical"} className="md960:h-[65px]"/>
                         <div className="w-full md960:w-[200px]">
-                            <Popover showArrow>
+                            <Popover showArrow disableAnimation>
                                 <PopoverTrigger>
                                     <div className="w-full flex items-center gap-2 cursor-pointer">
                                         <div className={`w-[32px] h-[32px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(collectEquipments.length > 0 ? collectEquipments[0].grade : "")}`}>
@@ -81,7 +81,7 @@ export function PointComponent({ file }: PointComponentProps) {
                                         </div>
                                     </div>
                                 </PopoverTrigger>
-                                <PopoverContent>
+                                <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
                                     <div className="max-w-[240px] pt-2 pl-1 pr-1 pb-2">
                                         <ul className="list-disc pl-4">
                                             {collectEquipments.length > 0 ? collectEquipments[0].descriptions.map((line, idx) => (
@@ -91,7 +91,7 @@ export function PointComponent({ file }: PointComponentProps) {
                                     </div>
                                 </PopoverContent>
                             </Popover>
-                            <Popover showArrow>
+                            <Popover showArrow disableAnimation>
                                 <PopoverTrigger>
                                     <div className="w-full flex items-center gap-2 cursor-pointer mt-1">
                                         <div className={`w-[32px] h-[32px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(collectEquipments.length > 1 ? collectEquipments[1].grade : "-")}`}>
@@ -108,7 +108,7 @@ export function PointComponent({ file }: PointComponentProps) {
                                         </div>
                                     </div>
                                 </PopoverTrigger>
-                                <PopoverContent>
+                                <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
                                     <div className="max-w-[240px] pt-2 pl-1 pr-1 pb-2">
                                         <ul className="list-disc pl-4">
                                             {collectEquipments.length > 1 ? collectEquipments[1].descriptions.map((line, idx) => (

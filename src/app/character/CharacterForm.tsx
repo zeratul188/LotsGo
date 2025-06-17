@@ -76,6 +76,7 @@ import { printBonusStoneInTooltip, printDefaultStoneInTooltip, printStoneUseInTo
 import PotionIcon from "@/Icons/PosionIcon";
 import { getImgByJob } from "./expeditionFeat";
 import { CharacterHistory } from "./history";
+import { motion } from "framer-motion";
 
 // state 관리
 export function useCharacterForm() {
@@ -419,7 +420,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                 return null;
                             }
                             return (
-                                <Popover key={index}>
+                                <Popover key={index} disableAnimation>
                                     <PopoverTrigger>
                                         <div className="flex gap-2 mb-4 items-center cursor-pointer">
                                             <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(equip.grade)}`}>
@@ -607,7 +608,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                 <p className="fadedtext text-[9pt]">엘릭서 총합</p>
                                                 <p className="text-lg font-bold">Lv.{getAllElixir(equipments)}</p>
                                             </div>
-                                            <Popover showArrow>
+                                            <Popover showArrow disableAnimation>
                                                 <PopoverTrigger>
                                                     <Button size="sm" variant="flat">자세히 보기</Button>
                                                 </PopoverTrigger>
@@ -661,7 +662,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                 return null;
                             }
                             return (
-                                <Popover key={index}>
+                                <Popover key={index} disableAnimation>
                                     <PopoverTrigger>
                                         <div className="flex gap-2 mb-2 items-center cursor-pointer">
                                             <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(equip.grade)}`}>
@@ -745,7 +746,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                             )
                         })}
                         {arm ? (
-                            <Popover>
+                            <Popover showArrow disableAnimation>
                                 <PopoverTrigger>
                                     <div className="flex gap-2 mb-2 items-center cursor-pointer">
                                         <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(arm.grade)}`}>
@@ -812,7 +813,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                             </Popover>
                         ) : <></>}
                         {stone ? (
-                            <Popover>
+                            <Popover showArrow disableAnimation>
                                 <PopoverTrigger>
                                     <div className="flex gap-2 mb-2 items-center cursor-pointer">
                                         <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(stone.grade)}`}>
@@ -921,7 +922,7 @@ function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
             <CardBody>
                 <div className="w-full grid grid-cols-6 sm:grid-cols-11 gap-2 pt-2 pb-2">
                     {gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).sort((a, b) => b.level - a.level).map((gem, index) => (
-                        <Popover key={index} showArrow>
+                        <Popover key={index} showArrow disableAnimation>
                             <PopoverTrigger>
                                 <div className="w-full flex items-center justify-center flex-col cursor-pointer">
                                     <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(gem.grade)}`}>
@@ -953,7 +954,7 @@ function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
                         </Popover>
                     ))}
                     {gems.filter(item => item.skillStr.includes('재사용 대기시간')).sort((a, b) => b.level - a.level).map((gem, index) => (
-                        <Popover key={index} showArrow>
+                        <Popover key={index} showArrow disableAnimation>
                             <PopoverTrigger>
                                 <div className="w-full flex items-center justify-center flex-col cursor-pointer">
                                     <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(gem.grade)}`}>
