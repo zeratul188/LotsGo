@@ -853,7 +853,9 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                             height={16} 
                                                             alt="goldicon"
                                                             className="w-[16px] h-[16px]"/>
-                                                        <p>{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.gold : 0}</p>
+                                                        <p className={clsx(
+                                                            item.isGold ? '' : 'fadedtext line-through'
+                                                        )}>{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.gold : 0}</p>
                                                     </div>
                                                 </div>
                                                 
@@ -1037,7 +1039,7 @@ function RestCheckButton({ checklist, character, type, dispatch }: RestCheckButt
                 {getDayName(type)} ({dayValue.value}/{type === '에포나' ? 3 : 1})
             </Checkbox>
             <div className="w-full h-[18px] relative mt-1">
-                <span className="w-full text-center fadedtext text-sm absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">휴식 게이지 {dayValue.restValue}</span>
+                <span className="w-full text-center text-[#444444] dark:text-[#aaaaaa] text-sm absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">휴식 게이지 {dayValue.restValue}</span>
                 <RestComponent restValue={dayValue.restValue} type={type}/>
             </div>
         </div>
