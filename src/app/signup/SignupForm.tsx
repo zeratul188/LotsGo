@@ -114,6 +114,7 @@ export function InputsComponent({
                     placeholder="4~20글자 내로 아이디를 입력하세요."
                     className="grow"
                     maxLength={20}
+                    radius="sm"
                     isInvalid={duplicateChecked.isError}
                     errorMessage="이미 중복된 아이디가 있습니다."
                     isDisabled={duplicateChecked.isDuplicateChecked}
@@ -124,12 +125,15 @@ export function InputsComponent({
                     isLoading={duplicateChecked.isChecking}
                     isDisabled={duplicateChecked.isDuplicateChecked}
                     color="primary"
-                    size="lg">{duplicateChecked.isDuplicateChecked ? "사용 가능" : "중복 확인"}</Button>
+                    radius="sm"
+                    size="lg"
+                    className="w-[120px]">{duplicateChecked.isDuplicateChecked ? "사용 가능" : "중복 확인"}</Button>
             </div>
             <h3 className="mt-7 text-lg">대표 캐릭터 이름</h3>
             <div className="flex mt-1 gap-4">
                 <Input
                     size="lg" 
+                    radius="sm"
                     value={member.character}
                     isInvalid={expeditionChecked.isError}
                     errorMessage="로스트아크 API로부터 데이터를 받아올 수 없습니다."
@@ -142,7 +146,9 @@ export function InputsComponent({
                     isLoading={expeditionChecked.isChecking}
                     isDisabled={expeditionChecked.isExpeditionChecked}
                     color="primary"
-                    size="lg">{expeditionChecked.isExpeditionChecked ? "확인 완료" : "원정대 확인"}</Button>
+                    radius="sm"
+                    size="lg"
+                    className="w-[120px]">{expeditionChecked.isExpeditionChecked ? "확인 완료" : "원정대 확인"}</Button>
             </div>
             <ExpeditionComponent expedition={expedition}/>
             <h3 className="mt-7 text-lg">이메일</h3>
@@ -153,13 +159,16 @@ export function InputsComponent({
                     isDisabled={emailChecked.isCheck}
                     onValueChange={onValueChangeEmail}
                     placeholder="ex) test1234@whitetusk.com"
+                    radius="sm"
                     className="grow"/>
                 <Button
                     onPress={onClickDuplicateEmailCheck}
                     isLoading={emailChecked.isLoading}
                     isDisabled={emailChecked.isCheck}
                     color="primary"
-                    size="lg">{emailChecked.isCheck ? "확인 완료" : "중복 확인"}</Button>
+                    radius="sm"
+                    size="lg"
+                    className="w-[120px]">{emailChecked.isCheck ? "확인 완료" : "중복 확인"}</Button>
             </div>
             <h3 className="mt-7 text-lg">비밀번호</h3>
             <Input
@@ -167,6 +176,7 @@ export function InputsComponent({
                 type="password"
                 className="mt-1"
                 value={member.password}
+                    radius="sm"
                 onValueChange={onValueChangePassword}
                 placeholder="6~18글자 내로 비밀번호를 입력하세요."/>
             <h3 className="mt-7 text-lg">비밀번호 확인</h3>
@@ -174,6 +184,7 @@ export function InputsComponent({
                 size="lg" 
                 type="password"
                 className="mt-1"
+                    radius="sm"
                 isInvalid={member.password !== member.passwordCheck}
                 errorMessage="입력한 비밀번호와 일치해야 합니다."
                 value={member.passwordCheck}

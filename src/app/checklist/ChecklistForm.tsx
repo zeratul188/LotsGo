@@ -347,15 +347,24 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                                 className="w-[14px] h-[14px]"/>
                                             <p className="test-sm">{getAllContentOtherGold(bosses, checklist).toLocaleString()}</p>
                                         </div>
-                                        <div className="w-full flex items-center gap-1">
+                                        <div className="w-full flex items-center gap-1.5">
                                             <p className="grow text-sm fadedtext">콘텐츠 비율</p>
-                                            <p className="test-sm">{Math.round(getAllContentGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10}%</p>
+                                            <div className="w-[9px] h-[9px] rounded-full bg-green-500"/>
+                                            <p className="test-sm">{getHaveGolds(bosses, checklist) !== 0 ? Math.round(getAllContentGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 : 0}%</p>
                                         </div>
-                                        <div className="w-full flex items-center gap-1">
+                                        <div className="w-full flex items-center gap-1.5">
                                             <p className="grow text-sm fadedtext">부수입 비율</p>
-                                            <p className="test-sm">{Math.round(getAllContentOtherGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10}%</p>
+                                            <div className="w-[9px] h-[9px] rounded-full bg-purple-600"/>
+                                            <p className="test-sm">{getHaveGolds(bosses, checklist) !== 0 ? Math.round(getAllContentOtherGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 : 0}%</p>
                                         </div>
                                     </div>
+                                    <progress
+                                        value={getAllContentGold(bosses, checklist)}
+                                        max={getHaveGolds(bosses, checklist)}
+                                        className={clsx(
+                                            "w-full h-[7px] rounded-full [&::-webkit-progress-bar]:bg-purple-600 [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-value]:bg-green-500",
+                                            getAllContentGold(bosses, checklist) === getHaveGolds(bosses, checklist) ? "[&::-webkit-progress-value]:rounded-full" : "[&::-webkit-progress-value]:rounded-l-full"
+                                        )}/>
                                 </div>
                             </PopoverContent>
                         </Popover>
