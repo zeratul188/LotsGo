@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { checkLogin } from "../checklist/checklistFeat";
 import ChangePasswordComponent from "./ChangePasswordForm";
+import DeleteComponent from "./DeleteForm";
 
 const tabs = [
     {
@@ -21,7 +22,7 @@ const tabs = [
     {
         key: 'exit-site',
         title: '회원탈퇴',
-        component: null
+        component: <DeleteComponent/>
     }
 ]
 
