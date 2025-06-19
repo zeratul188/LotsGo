@@ -1,7 +1,8 @@
 import { SetStateFn } from "@/utiils/utils";
 import { changeChracter, Character, LoginUser, saveExpedition } from "../store/loginSlice";
 import { addToast } from "@heroui/react";
-import { AppDispatch } from "../store/store";
+import { AppDispatch, RootState } from "../store/store";
+import { useSelector } from "react-redux";
 
 // 초기 데이터 가져오기
 export type ExpeditionCharacter = {
@@ -30,8 +31,7 @@ export async function handleSelectCharacter(
     index: number, 
     expedition: ExpeditionCharacter[],
     setExpedition: SetStateFn<ExpeditionCharacter[]>,
-    dispatch: AppDispatch,
-    storedExpedition: Character[]
+    dispatch: AppDispatch
 ) {
     if (expedition[index].isCharacter) {
         addToast({
@@ -70,9 +70,19 @@ export async function handleSelectCharacter(
     }
     setExpedition(expedition);
     dispatch(changeChracter(expedition[index].nickname));
+    const newExpeditions: Character[] = [];
+    for (const character of expedition) {
+        const newChracter: Character = {
+            nickname: character.nickname,
+            job: character.job,
+            level: character.level,
+            server: character.server
+        }
+        newExpeditions.push(newChracter);
+    }
     const loginUser: LoginUser = {
         id: id,
-        expedition: storedExpedition,
+        expedition: newExpeditions,
         character: expedition[index].nickname
     }
     localStorage.setItem('user', JSON.stringify(loginUser));
@@ -168,11 +178,24 @@ export function useClickUpdate(
                         newSettingExpeditions.push(newChracter);
                     }
                     setExpedition(newSettingExpeditions);
+                    const defaultCharacter: Character | undefined = newSettingExpeditions.find(character => character.isCharacter);
+                    const defaultNickname = defaultCharacter ? defaultCharacter.nickname : 'null';
+                    const loginUser: LoginUser = {
+                        id: id,
+                        expedition: newExpedition,
+                        character: defaultNickname
+                    }
+                    localStorage.setItem('user', JSON.stringify(loginUser));
+                    addToast({
+                        title: "갱신 완료",
+                        description: `캐릭터들의 정볼를 갱신하였습니다.`,
+                        color: "success"
+                    });
                 }
             }
         }
 
-        const unlockTime = 60 * 1000;
+        const unlockTime = 1 * 1000;
         localStorage.setItem("expedition_unlock_time", unlockTime.toString());
         setDisable(true);
         setLoading(false);
