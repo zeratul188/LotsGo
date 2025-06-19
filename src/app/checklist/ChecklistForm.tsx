@@ -800,20 +800,25 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                     <RestCheckButton checklist={checklist} character={character} type="전선" dispatch={dispatch}/>
                                     <RestCheckButton checklist={checklist} character={character} type="가디언" dispatch={dispatch}/>
                                     <RestCheckButton checklist={checklist} character={character} type="에포나" dispatch={dispatch}/>
-                                    {character.daylist.map((item, idx) => (
-                                        <div key={idx}>
-                                            <Checkbox
-                                                lineThrough
-                                                aria-label={`checklist-${item.name}-${idx}`}
-                                                size="sm"
-                                                color="secondary"
-                                                radius="full"
-                                                isSelected={item.isCheck}
-                                                className="max-w-full mt-1"
-                                                onChange={async () => await handleDayListCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
-                                                {item.name}</Checkbox>
-                                        </div>
-                                    ))}
+                                    <div className="w-full pl-2.5">
+                                        {character.daylist.map((item, idx) => (
+                                            <div key={idx}>
+                                                <Checkbox
+                                                    lineThrough
+                                                    aria-label={`checklist-${item.name}-${idx}`}
+                                                    size="sm"
+                                                    color="secondary"
+                                                    radius="full"
+                                                    isSelected={item.isCheck}
+                                                    className={clsx(
+                                                        "max-w-full w-full mt-3 box-border p-1.5",
+                                                        item.isCheck ? 'outline-2 outline-purple-400 dark:outline-purple-700 rounded-md bg-purple-400/20 dark:bg-purple-700/20' : ''
+                                                    )}
+                                                    onChange={async () => await handleDayListCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
+                                                    {item.name}</Checkbox>
+                                            </div>
+                                        ))}
+                                    </div>
                                     <Button 
                                         color="primary" 
                                         variant="light" 
@@ -838,63 +843,73 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         variant="flat" 
                                         radius="sm"
                                         className="min-w-full text-center">주간 콘텐츠</Chip>
-                                    {character.checklist.map((item, idx) => (
-                                        <Tooltip 
-                                            key={idx}
-                                            showArrow
-                                            content={
-                                                <div className="p-1">
-                                                    <p>{getBossByContent(bosses, item.name) && getDiffByContent(bosses, item.name, item.difficulty) ? `${getBossByContent(bosses, item.name)?.name} ${getDiffByContent(bosses, item.name, item.difficulty)?.difficulty}` : ''}</p>
-                                                    <div className="w-full flex gap-1 items-center">
-                                                        <p className="grow fadedtext">Lv.{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.level : 0}</p>
-                                                        <Image 
-                                                            src="/icons/gold.png" 
-                                                            width={16} 
-                                                            height={16} 
-                                                            alt="goldicon"
-                                                            className="w-[16px] h-[16px]"/>
-                                                        <p>{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.gold : 0}</p>
+                                    <div className="pl-2.5">
+                                        {character.checklist.map((item, idx) => (
+                                            <Tooltip 
+                                                key={idx}
+                                                showArrow
+                                                content={
+                                                    <div className="p-1">
+                                                        <p>{getBossByContent(bosses, item.name) && getDiffByContent(bosses, item.name, item.difficulty) ? `${getBossByContent(bosses, item.name)?.name} ${getDiffByContent(bosses, item.name, item.difficulty)?.difficulty}` : ''}</p>
+                                                        <div className="w-full flex gap-1 items-center">
+                                                            <p className="grow fadedtext">Lv.{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.level : 0}</p>
+                                                            <Image 
+                                                                src="/icons/gold.png" 
+                                                                width={16} 
+                                                                height={16} 
+                                                                alt="goldicon"
+                                                                className="w-[16px] h-[16px]"/>
+                                                            <p className={clsx(
+                                                                item.isGold ? '' : 'fadedtext line-through'
+                                                            )}>{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.gold : 0}</p>
+                                                        </div>
                                                     </div>
+                                                    
+                                                }>
+                                                <div>
+                                                    <Checkbox
+                                                        lineThrough
+                                                        aria-label={`checklist-${item.name}-${idx}`}
+                                                        size="sm"
+                                                        radius="full"
+                                                        isDisabled={item.isDisable}
+                                                        isSelected={item.isCheck}
+                                                        className={clsx(
+                                                            "max-w-full w-full mt-3 box-border p-1.5",
+                                                            item.isCheck ? 'outline-2 outline-blue-400 dark:outline-blue-800 rounded-md bg-blue-400/20 dark:bg-blue-800/20' : ''
+                                                        )}
+                                                        onChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
+                                                        <span className="flex items-center gap-1">
+                                                            <span>{item.name} {item.difficulty}</span>
+                                                            {item.isGold ? <Image 
+                                                                src="/icons/gold.png" 
+                                                                width={14} 
+                                                                height={14} 
+                                                                alt="goldicon"
+                                                                className="w-[14px] h-[14px]"/> : <></>}
+                                                        </span>
+                                                    </Checkbox>
                                                 </div>
-                                                
-                                            }>
-                                            <div>
+                                            </Tooltip>
+                                        ))}
+                                        {character.weeklist.map((item, idx) => (
+                                            <div key={idx}>
                                                 <Checkbox
                                                     lineThrough
                                                     aria-label={`checklist-${item.name}-${idx}`}
                                                     size="sm"
+                                                    color="secondary"
                                                     radius="full"
-                                                    isDisabled={item.isDisable}
                                                     isSelected={item.isCheck}
-                                                    className="max-w-full mt-1"
-                                                    onChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
-                                                    <span className="flex items-center gap-1">
-                                                        <span>{item.name} {item.difficulty}</span>
-                                                        {item.isGold ? <Image 
-                                                            src="/icons/gold.png" 
-                                                            width={14} 
-                                                            height={14} 
-                                                            alt="goldicon"
-                                                            className="w-[14px] h-[14px]"/> : <></>}
-                                                    </span>
-                                                </Checkbox>
+                                                    className={clsx(
+                                                        "max-w-full w-full mt-3 box-border p-1.5",
+                                                        item.isCheck ? 'outline-2 outline-purple-400 dark:outline-purple-700 rounded-md bg-purple-400/20 dark:bg-purple-700/20' : ''
+                                                    )}
+                                                    onChange={async () => await handleWeekListCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
+                                                    {item.name}</Checkbox>
                                             </div>
-                                        </Tooltip>
-                                    ))}
-                                    {character.weeklist.map((item, idx) => (
-                                        <div key={idx}>
-                                            <Checkbox
-                                                lineThrough
-                                                aria-label={`checklist-${item.name}-${idx}`}
-                                                size="sm"
-                                                color="secondary"
-                                                radius="full"
-                                                isSelected={item.isCheck}
-                                                className="max-w-full mt-1"
-                                                onChange={async () => await handleWeekListCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
-                                                {item.name}</Checkbox>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                     <Button 
                                         color="primary" 
                                         variant="light" 
@@ -1026,18 +1041,24 @@ function RestCheckButton({ checklist, character, type, dispatch }: RestCheckButt
     const dayValue: DayValue = getTypeDayValue(character, type);
     const onClickDayCheck = useOnClickDayCheck(checklist, character.nickname, type, character.day, dispatch);
     return (
-        <div className="mt-2">
+        <div 
+            className={clsx(
+                "max-w-full w-full mt-2 box-border p-1.5 pt-0.5",
+                type === '에포나' ? dayValue.value === 3 ? 'outline-2 outline-yellow-400 dark:outline-yellow-700 rounded-md bg-yellow-400/20 dark:bg-yellow-700/20' : '' : dayValue.value === 1 ? 'outline-2 outline-yellow-400 dark:outline-yellow-700 rounded-md bg-yellow-400/20 dark:bg-yellow-700/20' : ''
+            )}>
             <Checkbox
                 aria-label={`${character.nickname}'s ${type}`}
                 size="sm"
+                color="warning"
                 lineThrough
                 radius="full"
                 isSelected={type === '에포나' ? dayValue.value === 3 : dayValue.value === 1}
+                className="p-0 pl-2"
                 onChange={onClickDayCheck}>
                 {getDayName(type)} ({dayValue.value}/{type === '에포나' ? 3 : 1})
             </Checkbox>
             <div className="w-full h-[18px] relative mt-1">
-                <span className="w-full text-center fadedtext text-sm absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">휴식 게이지 {dayValue.restValue}</span>
+                <span className="w-full text-center text-[#444444] dark:text-[#aaaaaa] text-sm absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">휴식 게이지 {dayValue.restValue}</span>
                 <RestComponent restValue={dayValue.restValue} type={type}/>
             </div>
         </div>
@@ -1054,16 +1075,18 @@ function RestComponent({ restValue, type }: RestComponentProps) {
     const countBlocks = restValue / (maxRestValue/10);
 
     return (
-        <div className="flex w-full h-full gap-0.5">
+        <div className="flex w-full h-full gap-1">
             {Array.from({ length: 5 }).map((_, index) => (
                 <div key={index} className="grow h-full flex">
                     <div className={clsx(
                         "grow border-1 border-r-0 border-gray-300 dark:border-gray-700",
-                        countBlocks >= (2*index + 1) ? 'bg-green-300 dark:bg-green-700' : "bg-gray-100 dark:bg-gray-900"
+                        index === 0 ? 'rounded-l-full' : '',
+                        countBlocks >= (2*index + 1) ? 'bg-green-300 dark:bg-green-700' : "bg-[#111111]/15 dark:bg-[#111111]/30"
                     )}/>
                     <div className={clsx(
                         "grow border-1 border-l-0 border-gray-300 dark:border-gray-700",
-                        countBlocks >= (2*index + 2) ? 'bg-green-300 dark:bg-green-700' : "bg-gray-100 dark:bg-gray-900"
+                        index === 4 ? 'rounded-r-full' : '',
+                        countBlocks >= (2*index + 2) ? 'bg-green-300 dark:bg-green-700' : "bg-[#111111]/15 dark:bg-[#111111]/30"
                     )}/>
                 </div>
             ))}
