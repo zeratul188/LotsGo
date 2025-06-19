@@ -210,13 +210,26 @@ function ProfileButton() {
     const onActionProfile = useOnActionProfile();
     const id = useSelector((state: RootState) => state.login.user.id);
     const isAdministrator = useSelector((state: RootState) => state.login.isAdministrator);
+    const nickname = useSelector((state: RootState) => state.login.user.character);
+    const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
+    const mainCharacter: Character | undefined = expedition.find(character => character.nickname === nickname);
     if (id === '') {
         return <Link color="foreground" href="/login">로그인</Link>
     } else {
         return (
             <Dropdown>
                 <DropdownTrigger>
-                    <Button variant="light">{isAdministrator ? '관리자' : id}님</Button>
+                    {isAdministrator || !mainCharacter ? (
+                        <Button variant="light">{isAdministrator ? '관리자' : id}님</Button>
+                    ) : (
+                        <div className="flex gap-2 items-center cursor-pointer" role="button" tabIndex={0}>
+                            <Avatar isBordered size="md" src={getImgByJob(mainCharacter.job)}/>
+                            <div className="h-[max-content]">
+                                <p className="truncate overflow-hidden whitespace-nowrap leading-none">{id}님</p>
+                                <p className="fadedtext truncate overflow-hidden whitespace-nowrap text-[10pt] leading-none mt-1">{mainCharacter.nickname}</p>
+                            </div>
+                        </div>
+                    )}
                 </DropdownTrigger>
                 <DropdownMenu aria-label="logined-profile" onAction={onActionProfile}>
                     {isAdministrator ? (
