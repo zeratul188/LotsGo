@@ -260,7 +260,6 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
 
     useEffect(() => {
         if (remainingTime > 0) {
-            console.log(remainingTime);
             localStorage.setItem("button_unlock_time", (remainingTime).toString());
         }
     }, [remainingTime]);

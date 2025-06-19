@@ -14,11 +14,8 @@ export function useOnActionProfile() {
 
     return (key: Key) => {
         switch(key) {
-            case "profile":
-                // router.puth('/profile');
-                break;
             case "setting":
-                // router.puth('/setting');
+                router.push('/setting');
                 break;
             case "logout":
                 localStorage.removeItem('token');
@@ -41,7 +38,6 @@ export function useOnActionProfile() {
 }
 
 export function useLogout() {
-    const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
     return () => {
         localStorage.removeItem('token');
