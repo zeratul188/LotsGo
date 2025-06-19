@@ -68,56 +68,60 @@ export function ExpeditionsComponent() {
                     갱신하기
                 </Button>
             </div>
-            <Table 
-                fullWidth
-                aria-label="table-expeditions" 
-                removeWrapper
-                className={clsx(
-                    isMobile ? 'w-[00px]' : ''
-                )}>
-                <TableHeader>
-                    <TableColumn>캐릭터명</TableColumn>
-                    <TableColumn>아이템 레벨</TableColumn>
-                    <TableColumn>서버</TableColumn>
-                    <TableColumn>대표 캐릭터</TableColumn>
-                    <TableColumn>전투정보실</TableColumn>
-                </TableHeader>
-                <TableBody>
-                    {expedition.map((character, index) => (
-                        <TableRow key={index}>
-                            <TableCell>
-                                <div className="flex gap-4">
-                                    <Avatar isBordered size="md" src={getImgByJob(character.job)}/>
-                                    <div>
-                                        <p className="truncate text-md overflow-hidden whitespace-nowrap">{character.nickname}</p>
-                                        <p className="fadedtext truncate overflow-hidden whitespace-nowrap text-[10pt]">{character.job}</p>
+            <div className={clsx(
+                'overflow-x-auto',
+                isMobile ? 'max-w-[750px]' : 'w-full'
+            )}>
+                <Table 
+                    fullWidth
+                    aria-label="table-expeditions" 
+                    removeWrapper className={clsx(
+                        isMobile ? 'w-[750px]' : ''
+                    )}>
+                    <TableHeader>
+                        <TableColumn>캐릭터명</TableColumn>
+                        <TableColumn>아이템 레벨</TableColumn>
+                        <TableColumn>서버</TableColumn>
+                        <TableColumn>대표 캐릭터</TableColumn>
+                        <TableColumn>전투정보실</TableColumn>
+                    </TableHeader>
+                    <TableBody>
+                        {expedition.map((character, index) => (
+                            <TableRow key={index}>
+                                <TableCell>
+                                    <div className="flex gap-4">
+                                        <Avatar isBordered size="md" src={getImgByJob(character.job)}/>
+                                        <div>
+                                            <p className="truncate text-md overflow-hidden whitespace-nowrap">{character.nickname}</p>
+                                            <p className="fadedtext truncate overflow-hidden whitespace-nowrap text-[10pt]">{character.job}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            </TableCell>
-                            <TableCell>{character.level}</TableCell>
-                            <TableCell>{character.server}</TableCell>
-                            <TableCell>
-                                <Switch
-                                    isSelected={character.isCharacter}
-                                    onValueChange={async () => {
-                                        await handleSelectCharacter(index, expedition, setExpedition, dispatch, storeExpedition);
-                                    }}/>
-                            </TableCell>
-                            <TableCell>
-                                <Button
-                                    showAnchorIcon
-                                    as={Link}
-                                    size="sm"
-                                    color="primary"
-                                    href={`/character?nickname=${character.nickname}`}
-                                    variant="flat">
-                                    전투정보실
-                                </Button>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                                </TableCell>
+                                <TableCell>{character.level}</TableCell>
+                                <TableCell>{character.server}</TableCell>
+                                <TableCell>
+                                    <Switch
+                                        isSelected={character.isCharacter}
+                                        onValueChange={async () => {
+                                            await handleSelectCharacter(index, expedition, setExpedition, dispatch, storeExpedition);
+                                        }}/>
+                                </TableCell>
+                                <TableCell>
+                                    <Button
+                                        showAnchorIcon
+                                        as={Link}
+                                        size="sm"
+                                        color="primary"
+                                        href={`/character?nickname=${character.nickname}`}
+                                        variant="flat">
+                                        전투정보실
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
         </div>
     )
 }

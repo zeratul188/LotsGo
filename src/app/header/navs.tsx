@@ -138,7 +138,7 @@ export function NavMenu() {
                             fullWidth
                             as={Link}
                             radius="sm"
-                            href={'#'} 
+                            href="/setting"
                             variant="light"
                             startContent={<SettingIcon/>}
                             className="justify-start text-md">
