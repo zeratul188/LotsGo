@@ -214,7 +214,15 @@ function ProfileButton() {
     const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
     const mainCharacter: Character | undefined = expedition.find(character => character.nickname === nickname);
     if (id === '') {
-        return <Link color="foreground" href="/login">로그인</Link>
+        return (
+            <Button
+                as={Link}
+                radius="sm"
+                className="bg-gradient-to-tr from-blue-700 to-pink-500 text-white shadow-lg"
+                href="/login">
+                로그인
+            </Button>
+        )
     } else {
         return (
             <Dropdown>
