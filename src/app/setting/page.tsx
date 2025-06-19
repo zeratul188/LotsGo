@@ -5,6 +5,7 @@ import { ExpeditionsComponent } from "./ExpeditionForm";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { checkLogin } from "../checklist/checklistFeat";
+import ChangePasswordComponent from "./ChangePasswordForm";
 
 const tabs = [
     {
@@ -15,7 +16,7 @@ const tabs = [
     {
         key: 'change-password',
         title: '비밀번호 변경',
-        component: null
+        component: <ChangePasswordComponent/>
     },
     {
         key: 'exit-site',
