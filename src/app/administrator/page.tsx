@@ -52,7 +52,7 @@ export default function Administrator() {
                 size="lg"
                 className="flex">
                 {menus.map((menu: TabMenu) => (
-                    <Tab key={menu.key} title={menu.title} className="min-w-[200px] flex-1">
+                    <Tab key={menu.key} title={menu.title} className="sm:min-w-[160px] flex-1">
                         <div className="w-full border-l-0 md:border-l border-gray-300 dark:border-gray-600 pl-0 md:pl-4 min-h-full overflow-y-auto max-h-[calc(100vh-105px)] scrollbar-none">
                             {menu.component}
                         </div>

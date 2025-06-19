@@ -21,13 +21,14 @@ export function useLoginHandlers(setUser: SetStateFn<User>) {
     }, [setUser]);
 
     return {
-        onValueChangeID: (value: string) => updateUserData({ id: value }),
-        onValueChangePassword: (value: string) => updateUserData({ password: value })
+        onValueChangeID: (value: string) => updateUserData({ id: value.trim() }),
+        onValueChangePassword: (value: string) => updateUserData({ password: value.trim() })
     };
 }
 
 type RouterType = ReturnType<typeof useRouter>;
 
+// 로그인 함수
 export async function login(
     user: User,
     setLoading: SetStateFn<boolean>,

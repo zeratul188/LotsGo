@@ -42,9 +42,15 @@ const loginSlice = createSlice({
             state.user.expedition = [];
             state.isAdministrator = false;
             state.user.character = '';
+        },
+        changeChracter(state, action: PayloadAction<string>) {
+            state.user.character = action.payload;
+        },
+        saveExpedition(state, action: PayloadAction<Character[]>) {
+            state.user.expedition = action.payload;
         }
     }
 })
 
-export const { logined, switchAdministrator, logout } = loginSlice.actions
+export const { logined, switchAdministrator, logout, changeChracter, saveExpedition } = loginSlice.actions
 export default loginSlice.reducer
