@@ -4,7 +4,7 @@ import { database, firestore } from "@/utiils/firebase";
 import { ref, get } from "firebase/database";
 import { isMatchValue } from "@/utiils/bcrypt";
 import type { Character } from "@/app/store/loginSlice";
-import { collection, getDocs, limit, query, where } from "firebase/firestore";
+import { collection, doc, getDocs, limit, query, updateDoc, where } from "firebase/firestore";
 
 type User = {
     id: string,
@@ -32,13 +32,13 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: '아이디가 존재하지 않습니다.' }, { status: 404 });
         }
 
-        const doc = snapshot.docs[0];
+        const targetDoc = snapshot.docs[0];
         const userData: User = !snapshot.empty ? {
-            id: doc.data().id,
-            password: doc.data().password,
-            email: doc.data().email,
-            expeditions: doc.data().expeditions,
-            nickname: doc.data().character
+            id: targetDoc.data().id,
+            password: targetDoc.data().password,
+            email: targetDoc.data().email,
+            expeditions: targetDoc.data().expeditions,
+            nickname: targetDoc.data().character
         } : {
             id: "",
             password: "",
@@ -69,6 +69,14 @@ export async function POST(req: NextRequest) {
 
         if (!(await isMatchValue(password, userData.password))) {
             return NextResponse.json({ message: '비밀번호가 일치하지 않습니다.' }, { status: 401 });
+        }
+
+        if (!result.isAdministrator) {
+            const today = new Date();
+            const docRef = doc(firestore, 'members', targetDoc.id);
+            await updateDoc(docRef, {
+                loginDate: today
+            });
         }
 
         const isAdministrator = result.isAdministrator;
