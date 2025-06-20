@@ -103,7 +103,7 @@ export function ExpeditionsComponent() {
                                     <Switch
                                         isSelected={character.isCharacter}
                                         onValueChange={async () => {
-                                            await handleSelectCharacter(index, expedition, setExpedition, dispatch, storeExpedition);
+                                            await handleSelectCharacter(index, expedition, setExpedition, dispatch);
                                         }}/>
                                 </TableCell>
                                 <TableCell>

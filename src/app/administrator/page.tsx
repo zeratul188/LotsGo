@@ -6,6 +6,7 @@ import Checklist from "./Checklist";
 import { useMobileQuery } from "@/utiils/utils";
 import type { RootState } from "../store/store";
 import { useSelector } from "react-redux";
+import MembersComponent from "./MembersForm";
 
 type TabMenu = {
     key: string,
@@ -24,9 +25,9 @@ export default function Administrator() {
             component: <Checklist/>
         },
         {
-            key: 'party',
-            title: '파티 찾기',
-            component: null
+            key: 'members',
+            title: '맴버 관리',
+            component: <MembersComponent/>
         },
     ]
 
@@ -53,7 +54,7 @@ export default function Administrator() {
                 className="flex">
                 {menus.map((menu: TabMenu) => (
                     <Tab key={menu.key} title={menu.title} className="sm:min-w-[160px] flex-1">
-                        <div className="w-full border-l-0 md:border-l border-gray-300 dark:border-gray-600 pl-0 md:pl-4 min-h-full overflow-y-auto max-h-[calc(100vh-105px)] scrollbar-none">
+                        <div className="w-full border-l-0 md:border-l border-gray-300 dark:border-gray-600 pl-0 md:pl-4  overflow-y-auto sm:h-[calc(100vh-105px)] sm:max-h-[calc(100vh-105px)] scrollbar-none">
                             {menu.component}
                         </div>
                     </Tab>

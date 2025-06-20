@@ -283,26 +283,28 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                         <Popover showArrow disableAnimation>
                             <PopoverTrigger>
                                 <div className="w-full flex items-center cursor-pointer">
-                                    <Progress 
-                                        aria-label="all-gold"
-                                        size="md"
-                                        color="warning"
-                                        label={(
-                                            <div className="flex items-center">
-                                                <Image 
-                                                    src="/icons/gold.png" 
-                                                    width={19} 
-                                                    height={19} 
-                                                    alt="goldicon"
-                                                    className="w-[19px] h-[19px]"/>
-                                                <span className="ml-1 text-md">주간 골드량 : {getHaveGolds(bosses, checklist).toLocaleString()} / {getAllGolds(bosses, checklist).toLocaleString()}</span>
-                                            </div>
-                                        )}
-                                        showValueLabel={true}
-                                        radius="sm"
-                                        value={getHaveGolds(bosses, checklist)}
-                                        maxValue={getAllGolds(bosses, checklist)}
-                                        className="w-full"/>
+                                    <Tooltip showArrow content="이 부분을 클릭하면 획득 골드에 대한 세부적인 정보를 확인할 수 있습니다.">
+                                        <Progress 
+                                            aria-label="all-gold"
+                                            size="md"
+                                            color="warning"
+                                            label={(
+                                                <div className="flex items-center">
+                                                    <Image 
+                                                        src="/icons/gold.png" 
+                                                        width={19} 
+                                                        height={19} 
+                                                        alt="goldicon"
+                                                        className="w-[19px] h-[19px]"/>
+                                                    <span className="ml-1 text-md">주간 골드량 : {getHaveGolds(bosses, checklist).toLocaleString()} / {getAllGolds(bosses, checklist).toLocaleString()}</span>
+                                                </div>
+                                            )}
+                                            showValueLabel={true}
+                                            radius="sm"
+                                            value={getHaveGolds(bosses, checklist)}
+                                            maxValue={getAllGolds(bosses, checklist)}
+                                            className="w-full"/>
+                                    </Tooltip>
                                 </div>
                             </PopoverTrigger>
                             <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
@@ -825,7 +827,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         fullWidth 
                                         size="sm" 
                                         startContent={<AddIcon size={16}/>}
-                                        className="mt-2"
+                                        className="mt-4"
                                         onPress={() => {
                                             setModalData({
                                                 characterIndex: getIndexByNickname(checklist, character.nickname),
@@ -916,7 +918,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         fullWidth 
                                         size="sm" 
                                         startContent={<AddIcon size={16}/>}
-                                        className="mt-2"
+                                        className="mt-4"
                                         onPress={() => {
                                             setModalData({
                                                 characterIndex: getIndexByNickname(checklist, character.nickname),
