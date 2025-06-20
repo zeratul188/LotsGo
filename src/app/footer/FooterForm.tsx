@@ -20,7 +20,7 @@ export function LogoComponent() {
 export function SiteInformation() {
     return (
         <div className="mt-4">
-            <p className="fadedtext text-[9pt]">© 2025 LOS'TGO All rights reserved.</p>
+            <p className="fadedtext text-[9pt]">© 2025 LOT'S GO All rights reserved.</p>
             <p className="fadedtext text-[9pt]">This site is not affiliated with Smilegate RPG or Smilegate Stove.</p>
         </div>
     )
