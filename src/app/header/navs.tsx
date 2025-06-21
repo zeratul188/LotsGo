@@ -155,16 +155,30 @@ export function NavMenu() {
 export function NavBrand() {
     return (
         <>
-            <Image 
-                src="title(L).png" 
-                width={200} 
-                className="dark:hidden cursor-pointer"
-                onClick={() => location.href = '/'}/>
-            <Image 
-                src="title(D).png" 
-                width={200} 
-                className="hidden dark:block cursor-pointer"
-                onClick={() => location.href = '/'}/>
+            <div className="block sm:hidden">
+                <Image 
+                    src="icon(L).png" 
+                    width={40} 
+                    className="dark:hidden cursor-pointer"
+                    onClick={() => location.href = '/'}/>
+                <Image 
+                    src="icon(D).png" 
+                    width={40} 
+                    className="hidden dark:block cursor-pointer"
+                    onClick={() => location.href = '/'}/>
+            </div>
+            <div className="hidden sm:block">
+                <Image 
+                    src="title(L).png" 
+                    width={200} 
+                    className="dark:hidden cursor-pointer"
+                    onClick={() => location.href = '/'}/>
+                <Image 
+                    src="title(D).png" 
+                    width={200} 
+                    className="hidden dark:block cursor-pointer"
+                    onClick={() => location.href = '/'}/>
+            </div>
         </>
     )
 }
