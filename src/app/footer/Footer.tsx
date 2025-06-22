@@ -1,7 +1,7 @@
 'use client'
 import { useMobileQuery } from "@/utiils/utils";
 import { LogoComponent, SiteInformation } from "./FooterForm";
-import { Divider } from "@heroui/react";
+import { Button, Divider, Link } from "@heroui/react";
 
 export default function Footer() {
     const isMobile = useMobileQuery();
@@ -16,7 +16,36 @@ export default function Footer() {
                 <div>
                     <Divider orientation={isMobile ? 'horizontal' : 'vertical'} className="w-full sm:w-[1px]"/>
                 </div>
-                <div className="w-full sm:w-[240px]">right components</div>
+                <div className="w-full sm:w-[240px]">
+                    <Button
+                        fullWidth
+                        radius="sm"
+                        as={Link}
+                        href="/policy"
+                        color="primary">
+                        로츠고 이용 가이드
+                    </Button>
+                    <Button
+                        fullWidth
+                        radius="sm"
+                        as={Link}
+                        size="sm"
+                        href="/policy"
+                        variant="flat"
+                        className="mt-2">
+                        개인정보 처리방침
+                    </Button>
+                    <Button
+                        fullWidth
+                        radius="sm"
+                        as={Link}
+                        size="sm"
+                        href="/terms"
+                        variant="flat"
+                        className="mt-2">
+                        이용약관
+                    </Button>
+                </div>
             </div>
         </div>
     )
