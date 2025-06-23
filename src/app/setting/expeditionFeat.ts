@@ -195,7 +195,7 @@ export function useClickUpdate(
             }
         }
 
-        const unlockTime = 1 * 1000;
+        const unlockTime = 60 * 1000;
         localStorage.setItem("expedition_unlock_time", unlockTime.toString());
         setDisable(true);
         setLoading(false);

@@ -1,7 +1,10 @@
 import { isMatchValue } from "@/utiils/bcrypt";
+import { decrypt } from "@/utiils/crypto";
 import { firestore } from "@/utiils/firebase";
 import { collection, doc, getDocs, limit, query, updateDoc, where } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
+
+const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
@@ -20,8 +23,9 @@ export async function GET(req: NextRequest) {
         const heshedPassword = targetDoc.data() ? targetDoc.data().password : 'null';
         const isSamePassword = await isMatchValue(password, heshedPassword);
         const email = targetDoc.data() ? targetDoc.data().email : '';
+        const decryptEmail = decrypt(email, secretKey);
 
-        return NextResponse.json({ isSamePassword, email });
+        return NextResponse.json({ isSamePassword, decryptEmail });
     } catch(error) {
         console.error(error);
         return NextResponse.json({ error: 'Failed load Database.' }, { status: 500 });

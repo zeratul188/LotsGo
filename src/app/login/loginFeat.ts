@@ -10,6 +10,9 @@ import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndP
 import { auth, firestore } from "@/utiils/firebase";
 import { collection, doc, getDocs, limit, query, updateDoc, where } from "firebase/firestore";
 import { hashValue } from "@/utiils/bcrypt";
+import { decrypt } from "@/utiils/crypto";
+
+const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
 // 값 수정 이벤트 핸들링
 export function useLoginHandlers(setUser: SetStateFn<User>) {
@@ -89,7 +92,7 @@ export async function login(
     if (data.isAdministrator) {
         resultEmail = `${user.id.trim()}@whitetusk.com`;
     } else {
-        resultEmail = data.userData.email
+        resultEmail = decrypt(data.userData.email, secretKey);
     }
 
     await signInWithEmailAndPassword(auth, resultEmail, user.password.trim())
@@ -219,7 +222,8 @@ export async function handleSendPasswordReset(
     }
 
     if (snapshot.docs[0].data().email) {
-        if (email !== snapshot.docs[0].data().email) {
+        const decryptEmail = decrypt(snapshot.docs[0].data().email, secretKey);
+        if (email !== decryptEmail) {
             addToast({
                 title: "이메일 일치 오류",
                 description: `해당 ID를 가진 계정의 이메일이 입력한 이메일과 일치하지 않습니다.`,
