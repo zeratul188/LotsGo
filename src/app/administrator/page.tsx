@@ -7,6 +7,7 @@ import { useMobileQuery } from "@/utiils/utils";
 import type { RootState } from "../store/store";
 import { useSelector } from "react-redux";
 import MembersComponent from "./MembersForm";
+import CryptoComponent from "./CryptoForm";
 
 type TabMenu = {
     key: string,
@@ -28,6 +29,11 @@ export default function Administrator() {
             key: 'members',
             title: '맴버 관리',
             component: <MembersComponent/>
+        },
+        {
+            key: 'crypto',
+            title: '암호화 관리',
+            component: <CryptoComponent/>
         },
     ]
 
