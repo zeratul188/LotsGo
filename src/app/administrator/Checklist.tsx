@@ -121,7 +121,8 @@ function BossComponent() {
         onValueChangeDifficulty,
         onValueChangeLevel,
         onValueChangeGold,
-        onValueChangeBiweekly
+        onValueChangeBiweekly,
+        onValueChangeBoundGold
     } = useInputHandlers(inputs, setInputs);
     const onCloseModal = useClearData(setInputName, setInputs, setEditMode, setEditIndex);
 
@@ -152,24 +153,31 @@ function BossComponent() {
                                 </CardHeader>
                                 <Divider/>
                                 <CardBody>
-                                    <Table removeWrapper aria-label="difficulty table">
-                                        <TableHeader>
-                                            <TableColumn>난이도</TableColumn>
-                                            <TableColumn>입장 가능 레벨</TableColumn>
-                                            <TableColumn>획득 골드</TableColumn>
-                                            <TableColumn>격주 여부</TableColumn>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {item.difficulty.map((difficulty: Difficulty, idx: number) => (
-                                                <TableRow key={idx}>
-                                                    <TableCell>{difficulty.difficulty}</TableCell>
-                                                    <TableCell>{difficulty.level.toLocaleString()}</TableCell>
-                                                    <TableCell>{difficulty.gold.toLocaleString()}</TableCell>
-                                                    <TableCell>{difficulty.isBiweekly ? '○' : '✕'}</TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                                    <div className="w-full overflow-x-auto scrollbar-hide">
+                                        <Table 
+                                            removeWrapper 
+                                            aria-label="difficulty table" 
+                                            className="w-[500px] sm:w-full">
+                                            <TableHeader>
+                                                <TableColumn>난이도</TableColumn>
+                                                <TableColumn>입장 가능 레벨</TableColumn>
+                                                <TableColumn>획득 골드</TableColumn>
+                                                <TableColumn>귀속 골드</TableColumn>
+                                                <TableColumn>격주 여부</TableColumn>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {item.difficulty.map((difficulty: Difficulty, idx: number) => (
+                                                    <TableRow key={idx}>
+                                                        <TableCell>{difficulty.difficulty}</TableCell>
+                                                        <TableCell>{difficulty.level.toLocaleString()}</TableCell>
+                                                        <TableCell>{difficulty.gold.toLocaleString()}</TableCell>
+                                                        <TableCell>{difficulty.boundGold.toLocaleString()}</TableCell>
+                                                        <TableCell>{difficulty.isBiweekly ? '○' : '✕'}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
                                 </CardBody>
                                 <Divider/>
                                 <CardFooter>
@@ -236,6 +244,15 @@ function BossComponent() {
                                                     step={10}
                                                     value={input.gold}
                                                     onValueChange={(value: number) => onValueChangeGold(value, index)}/>
+                                                <NumberInput
+                                                    label="귀속 골드"
+                                                    labelPlacement="outside"
+                                                    placeholder="0 ~ 9999999"
+                                                    minValue={0}
+                                                    maxValue={9999999}
+                                                    step={10}
+                                                    value={input.boundGold}
+                                                    onValueChange={(value: number) => onValueChangeBoundGold(value, index)}/>
                                                 <Switch 
                                                     isSelected={input.isBiweekly} 
                                                     onValueChange={(isSelected: boolean) => onValueChangeBiweekly(isSelected, index)}>격주 여부</Switch>

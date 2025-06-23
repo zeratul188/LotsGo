@@ -15,7 +15,13 @@ export async function loadBoss(
         const bosses: Boss[] = snapshot.docs.map(doc => ({
             id: doc.id,
             name: doc.data().name,
-            difficulty: doc.data().difficulty
+            difficulty: doc.data().difficulty.map((d: any) => ({
+                difficulty: d.difficulty,
+                level: d.level,
+                isBiweekly: d.isBiweekly,
+                gold: d.gold,
+                boundGold: d.boundGold ?? 0
+            }))
         }));
         setBoss(bosses);
         setLoading(false);
@@ -35,7 +41,8 @@ export function useOnAddInput(setInputs: SetStateFn<Difficulty[]>) {
         difficulty: '',
         level: 0,
         isBiweekly: false,
-        gold: 0
+        gold: 0,
+        boundGold: 0
     }
     return () => setInputs(prev => [...prev, emptyDifficulty]);
 }
@@ -55,6 +62,7 @@ export function useInputHandlers(inputs: Difficulty[], setInputs: SetStateFn<Dif
         onValueChangeDifficulty: (value: string, index: number) => updateInputData({ difficulty: value }, index),
         onValueChangeLevel: (value: number, index: number) => updateInputData({ level: value }, index),
         onValueChangeGold: (value: number, index: number) => updateInputData({ gold: value }, index),
+        onValueChangeBoundGold: (value: number, index: number) => updateInputData({ boundGold: value }, index),
         onValueChangeBiweekly: (isSelected: boolean, index: number) => updateInputData({ isBiweekly: isSelected }, index)
     }
 }

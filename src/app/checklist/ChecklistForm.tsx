@@ -32,6 +32,7 @@ import {
 import Image from "next/image";
 import { 
     DayValue, 
+    getAllBoundGold, 
     getAllContentGold, 
     getAllContentOtherGold, 
     getAllCountChecklist, 
@@ -41,13 +42,17 @@ import {
     getBossByContent, 
     getBossesById, 
     getCheckedResult, 
+    getCompleteBoundGoldCharacter, 
     getCompleteChecklist, 
     getCompleteGoldCharacter, 
+    getCompleteSharedGoldCharacter, 
     getCountCube, 
     getCubeList, 
     getDayName, 
     getDiffByContent, 
+    getHaveBoundGolds, 
     getHaveGolds, 
+    getHaveSharedGolds, 
     getIndexByNickname, 
     getMaxRestValue, 
     getServerList, 
@@ -308,29 +313,33 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                 </div>
                             </PopoverTrigger>
                             <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
-                                <div className="w-[calc(100vw-60px)] min-[401px]:max-w-[400px] pl-1 pr-1 pt-3 pb-2">
-                                    <div className="max-h-[400px] overflow-y-auto">
-                                        <Table removeWrapper>
-                                            <TableHeader>
-                                                <TableColumn>캐릭터명</TableColumn>
-                                                <TableColumn>콘텐츠</TableColumn>
-                                                <TableColumn>부수입</TableColumn>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {checklist.map((character, index) => (
-                                                    <TableRow key={index}>
-                                                        <TableCell>{character.nickname}</TableCell>
-                                                        <TableCell>{getCompleteGoldCharacter(bosses, character).toLocaleString()}</TableCell>
-                                                        <TableCell>{character.otherGold.toLocaleString()}</TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
+                                <div className="w-[calc(100vw-60px)] min-[501px]:max-w-[500px] pl-1 pr-1 pt-3 pb-2">
+                                    <div className="w-full overflow-x-auto scrollbar-hide">
+                                        <div className="w-[400px] min-[501px]:w-full max-h-[400px] overflow-y-auto">
+                                            <Table removeWrapper>
+                                                <TableHeader>
+                                                    <TableColumn>캐릭터명</TableColumn>
+                                                    <TableColumn>콘텐츠</TableColumn>
+                                                    <TableColumn>귀속 골드</TableColumn>
+                                                    <TableColumn>부수입</TableColumn>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {checklist.map((character, index) => (
+                                                        <TableRow key={index}>
+                                                            <TableCell>{character.nickname}</TableCell>
+                                                            <TableCell>{getCompleteSharedGoldCharacter(bosses, character).toLocaleString()}</TableCell>
+                                                            <TableCell>{getCompleteBoundGoldCharacter(bosses, character).toLocaleString()}</TableCell>
+                                                            <TableCell>{character.otherGold.toLocaleString()}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </div>
                                     </div>
                                     <Divider className="mt-1 mb-2"/>
-                                    <div className="w-full grid grid-cols-2 gap-4 p-1">
+                                    <div className="w-full grid grid-cols-1 min-[501px]:grid-cols-3 gap-4 p-1 items-center">
                                         <div className="w-full flex items-center gap-1">
-                                            <p className="grow text-sm fadedtext">총 콘텐츠</p>
+                                            <p className="grow text-[9pt] fadedtext">총 콘텐츠</p>
                                             <Image 
                                                 src="/icons/gold.png" 
                                                 width={14} 
@@ -340,7 +349,17 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                             <p className="test-sm">{getAllContentGold(bosses, checklist).toLocaleString()}</p>
                                         </div>
                                         <div className="w-full flex items-center gap-1">
-                                            <p className="grow text-sm fadedtext">총 부수입</p>
+                                            <p className="grow text-[9pt] fadedtext">총 귀속 골드</p>
+                                            <Image 
+                                                src="/icons/gold.png" 
+                                                width={14} 
+                                                height={14} 
+                                                alt="goldicon"
+                                                className="w-[14px] h-[14px]"/>
+                                            <p className="test-sm">{getAllBoundGold(bosses, checklist).toLocaleString()}</p>
+                                        </div>
+                                        <div className="w-full flex items-center gap-1">
+                                            <p className="grow text-[9pt] fadedtext">총 부수입</p>
                                             <Image 
                                                 src="/icons/gold.png" 
                                                 width={14} 
@@ -350,23 +369,28 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                             <p className="test-sm">{getAllContentOtherGold(bosses, checklist).toLocaleString()}</p>
                                         </div>
                                         <div className="w-full flex items-center gap-1.5">
-                                            <p className="grow text-sm fadedtext">콘텐츠 비율</p>
+                                            <p className="grow text-[9pt] fadedtext">콘텐츠 비율</p>
                                             <div className="w-[9px] h-[9px] rounded-full bg-green-500"/>
-                                            <p className="test-sm">{getHaveGolds(bosses, checklist) !== 0 ? Math.round(getAllContentGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 : 0}%</p>
+                                            <p className="test-sm">{getHaveSharedGolds(bosses, checklist) !== 0 ? Math.round(getAllContentGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 : 0}%</p>
                                         </div>
                                         <div className="w-full flex items-center gap-1.5">
-                                            <p className="grow text-sm fadedtext">부수입 비율</p>
+                                            <p className="grow text-[9pt] fadedtext">귀속 골드 비율</p>
+                                            <div className="w-[9px] h-[9px] rounded-full bg-yellow-500"/>
+                                            <p className="test-sm">{getHaveBoundGolds(bosses, checklist) !== 0 ? Math.round(getAllBoundGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 : 0}%</p>
+                                        </div>
+                                        <div className="w-full flex items-center gap-1.5">
+                                            <p className="grow text-[9pt] fadedtext">부수입 비율</p>
                                             <div className="w-[9px] h-[9px] rounded-full bg-purple-600"/>
                                             <p className="test-sm">{getHaveGolds(bosses, checklist) !== 0 ? Math.round(getAllContentOtherGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 : 0}%</p>
                                         </div>
                                     </div>
-                                    <progress
-                                        value={getAllContentGold(bosses, checklist)}
-                                        max={getHaveGolds(bosses, checklist)}
-                                        className={clsx(
-                                            "w-full h-[7px] rounded-full [&::-webkit-progress-bar]:bg-purple-600 [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-value]:bg-green-500",
-                                            getAllContentGold(bosses, checklist) === getHaveGolds(bosses, checklist) ? "[&::-webkit-progress-value]:rounded-full" : "[&::-webkit-progress-value]:rounded-l-full"
-                                        )}/>
+                                    {bosses.length && checklist.length ? (
+                                        <div className="w-full h-2 bg-gray-200 rounded-full relative overflow-hidden mt-2">
+                                            <div className="absolute top-0 left-0 h-full bg-purple-600" style={{ width: '100%' }}></div>
+                                            <div className="absolute top-0 left-0 h-full bg-yellow-500" style={{ width: `${getHaveGolds(bosses, checklist) !== 0 ? Math.round(getAllContentGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 + Math.round(getAllBoundGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 : 0}%` }}></div>
+                                            <div className="absolute top-0 left-0 h-full bg-green-500" style={{ width: `${getHaveGolds(bosses, checklist) !== 0 ? Math.round(getAllContentGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 : 0}%` }}></div>
+                                        </div>
+                                    ) : <></>}
                                 </div>
                             </PopoverContent>
                         </Popover>
@@ -718,12 +742,33 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                             height={14} 
                                                             alt="goldicon"
                                                             className="w-[16px] h-[16px]"/>
-                                                        <span className="ml-1 text-md">{getCompleteGoldCharacter(bosses, character).toLocaleString()} / {(getAllGoldCharacter(bosses, character)+character.otherGold).toLocaleString()}</span>
+                                                        <span className="ml-1 text-md">{getCompleteSharedGoldCharacter(bosses, character).toLocaleString()} / {(getAllGoldCharacter(bosses, character)+character.otherGold).toLocaleString()}</span>
                                                     </div>
                                                 )}
                                                 showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
                                                 radius="sm"
-                                                value={getCompleteGoldCharacter(bosses, character)}
+                                                value={getCompleteSharedGoldCharacter(bosses, character)}
+                                                maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
+                                                className="w-full mb-2"/>
+                                            <span className="text-sm fadedtext">콘텐츠 귀속 골드 획득량</span>
+                                            <Progress 
+                                                aria-label="all-gold"
+                                                size="sm"
+                                                color="warning"
+                                                label={(
+                                                    <div className="flex items-center">
+                                                        <Image 
+                                                            src="/icons/gold.png" 
+                                                            width={14} 
+                                                            height={14} 
+                                                            alt="goldicon"
+                                                            className="w-[16px] h-[16px]"/>
+                                                        <span className="ml-1 text-md">{getCompleteBoundGoldCharacter(bosses, character).toLocaleString()} / {(getAllGoldCharacter(bosses, character)+character.otherGold).toLocaleString()}</span>
+                                                    </div>
+                                                )}
+                                                showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
+                                                radius="sm"
+                                                value={getCompleteBoundGoldCharacter(bosses, character)}
                                                 maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
                                                 className="w-full mb-2"/>
                                             <span className="text-sm fadedtext">부수입</span>
@@ -850,20 +895,40 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                             <Tooltip 
                                                 key={idx}
                                                 showArrow
+                                                placement="left"
                                                 content={
-                                                    <div className="p-1">
-                                                        <p>{getBossByContent(bosses, item.name) && getDiffByContent(bosses, item.name, item.difficulty) ? `${getBossByContent(bosses, item.name)?.name} ${getDiffByContent(bosses, item.name, item.difficulty)?.difficulty}` : ''}</p>
-                                                        <div className="w-full flex gap-1 items-center">
-                                                            <p className="grow fadedtext">Lv.{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.level : 0}</p>
-                                                            <Image 
-                                                                src="/icons/gold.png" 
-                                                                width={16} 
-                                                                height={16} 
-                                                                alt="goldicon"
-                                                                className="w-[16px] h-[16px]"/>
-                                                            <p className={clsx(
-                                                                item.isGold ? '' : 'fadedtext line-through'
-                                                            )}>{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.gold : 0}</p>
+                                                    <div className="p-1 min-w-[160px]">
+                                                        <p className="overflow-hidden text-ellipsis whitespace-nowrap font-bold">{getBossByContent(bosses, item.name) ? `${getBossByContent(bosses, item.name)?.name}` : ''}</p>
+                                                        <Divider className="mt-2 mb-2"/>
+                                                        <div className="w-full grid grid-cols-[max-content_1fr] gap-1">
+                                                            <p className="fadedtext">난이도</p>
+                                                            <p className="text-right">{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.difficulty : ''}</p>
+                                                            <p className="fadedtext">레벨</p>
+                                                            <p className="text-right">{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.level : 0}</p>
+                                                            <p className="fadedtext">골드</p>
+                                                            <div className="flex gap-1 items-center justify-end">
+                                                                <Image 
+                                                                    src="/icons/gold.png" 
+                                                                    width={16} 
+                                                                    height={16} 
+                                                                    alt="goldicon"
+                                                                    className="w-[16px] h-[16px]"/>
+                                                                <p className={clsx(
+                                                                    item.isGold ? '' : 'fadedtext line-through'
+                                                                )}>{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.gold.toLocaleString() : 0}</p>
+                                                            </div>
+                                                            <p className="fadedtext">귀속 골드</p>
+                                                            <div className="flex gap-1 items-center justify-end">
+                                                                <Image 
+                                                                    src="/icons/gold.png" 
+                                                                    width={16} 
+                                                                    height={16} 
+                                                                    alt="goldicon"
+                                                                    className="w-[16px] h-[16px]"/>
+                                                                <p className={clsx(
+                                                                    item.isGold ? '' : 'fadedtext line-through'
+                                                                )}>{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.boundGold ? getDiffByContent(bosses, item.name, item.difficulty)?.boundGold.toLocaleString() : 0 : 0}</p>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     
