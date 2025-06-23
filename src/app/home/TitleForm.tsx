@@ -48,7 +48,7 @@ export default function TitleComponent() {
                     width={500}
                     height={500}
                     className="w-full lg1280:x-[1920px] h-full object-cover"/>
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-white/65 dark:bg-black/75 w-full lg1280:w-[1280px] h-[260px] sm:h-[340px] md960:h-[500px]"></div>
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-white/50 dark:bg-black/75 w-full lg1280:w-[1280px] h-[260px] sm:h-[340px] md960:h-[500px]"></div>
             </div>
             <div className="w-[300px] sm:w-[500px] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
                 <LogoComponent/>
