@@ -1,4 +1,4 @@
-import { Image, Button, Input } from "@heroui/react";
+import { Image, Button, Input, Link } from "@heroui/react";
 import { useState } from "react";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Checkbox } from "@heroui/react";
 import { useClickDuplicateEmailCheck, useOnClickDuplicateCheck, useOnClickExpeditionCheck, useOnClickSignup, useOnValueChangePrivacy } from "./signupFeat";
@@ -183,18 +183,20 @@ export function InputsComponent({
             <Input
                 size="lg" 
                 type="password"
-                className="mt-1"
-                    radius="sm"
+                className="mt-1 mb-4"
+                radius="sm"
                 isInvalid={member.password !== member.passwordCheck}
                 errorMessage="입력한 비밀번호와 일치해야 합니다."
                 value={member.passwordCheck}
                 onValueChange={onValueChangePasswordCheck}
                 placeholder="6~18글자 내로 비밀번호를 입력하세요."/>
-            <Checkbox
-                size="lg"
-                isSelected={isPrivacyPolicyAgreed}
-                onValueChange={onValueChangePrivacy}
-                className="mt-2">개인정보 수집 및 이용에 동의합니다.</Checkbox>
+            <div className="flex gap-1 items-center">
+                <Checkbox
+                    size="lg"
+                    isSelected={isPrivacyPolicyAgreed}
+                    onValueChange={onValueChangePrivacy}>개인정보 수집 및 이용에 동의합니다.</Checkbox>
+                <Link underline="hover" href="/policy">자세히 보기</Link>
+            </div>
             <Button
                 onPress={onClickSignup}
                 fullWidth
