@@ -11,7 +11,7 @@ export default function Header() {
             <NavbarContent className="flex sm:hidden">
                 <NavToggle isMenuOpen={isMenuOpen}/>
             </NavbarContent>
-            <NavbarBrand>
+            <NavbarBrand className="absolute sm:static left-1/2 sm:left-0 -translate-x-1/2 sm:-translate-x-1">
                 <NavBrand/>
             </NavbarBrand>
             <NavbarContent className="hidden sm:flex gap-10" justify="center">
