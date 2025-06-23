@@ -3,6 +3,7 @@ import { firestore } from "@/utiils/firebase";
 import { collection, deleteDoc, doc, getDocs, limit, query, where } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
 import admin from "firebase-admin";
+import { decrypt } from "@/utiils/crypto";
 
 if (!admin.apps.length) {
     admin.initializeApp({
@@ -13,6 +14,7 @@ if (!admin.apps.length) {
     }),
   });
 }
+const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
 export type Member = {
     docID: string,
@@ -32,7 +34,7 @@ export async function GET(_req: NextRequest) {
             uid: doc.data().uid,
             id: doc.data().id,
             character: doc.data().character,
-            email: doc.data().email,
+            email: decrypt(doc.data().email, secretKey),
             expeditions: doc.data().expeditions,
             loginDate: doc.data().loginDate
         }));
