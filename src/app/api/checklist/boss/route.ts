@@ -6,7 +6,8 @@ export type Difficulty = {
     difficulty: string,
     level: number,
     isBiweekly: boolean,
-    gold: number
+    gold: number,
+    boundGold: number
 }
 export type Boss = {
     id: string,
@@ -20,7 +21,13 @@ export async function GET(_req: NextRequest) {
         const bosses: Boss[] = snapshot.docs.map(doc => ({
             id: doc.id,
             name: doc.data().name,
-            difficulty: doc.data().difficulty
+            difficulty: doc.data().difficulty.map((d: any) => ({
+                difficulty: d.difficulty,
+                level: d.level,
+                isBiweekly: d.isBiweekly,
+                gold: d.gold,
+                boundGold: d.boundGold ? d.boundGold : 0
+            }))
         }));
 
         return NextResponse.json(bosses);
