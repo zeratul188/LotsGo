@@ -142,3 +142,12 @@ export async function handleDeleteItem(
     }
     setLoadingDelete(false);
 }
+
+// 총 후원 금액 - 검색된 필터만 포함
+export function getSumPrice(results: Donate[]): number {
+    let sum = 0;
+    for (const donate of results) {
+        sum += donate.price;
+    }
+    return sum;
+}

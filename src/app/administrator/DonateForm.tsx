@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { Donate } from "../api/administrator/donate/route"
 import { LoadingComponent } from "../UtilsCompnents";
-import { formatDate, handleAddDonate, handleDeleteItem, loadDonates, resetInputs } from "./donateFeat";
+import { formatDate, getSumPrice, handleAddDonate, handleDeleteItem, loadDonates, resetInputs } from "./donateFeat";
 import { Button, Input, Modal, ModalBody, ModalContent, ModalHeader, NumberInput, Pagination, Popover, PopoverContent, PopoverTrigger, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Textarea, Tooltip, useDisclosure } from "@heroui/react";
 import clsx from "clsx";
 import { SetStateFn } from "@/utiils/utils";
@@ -40,8 +40,8 @@ export default function DonateComponent() {
 
     return (
         <div className="w-full min-h-[calc(100vh-105px)]">
-            <div className="w-full flex flex-col sm:flex-row gap-2 mb-4">
-                <div className="flex gap-2">
+            <div className="w-full flex flex-col sm:flex-row gap-2 mb-4 items-center">
+                <div className="w-full sm:w-[max-content] flex gap-2">
                     <Input
                         radius="sm"
                         placeholder="ID, 금액을 입력하세요."
@@ -65,6 +65,13 @@ export default function DonateComponent() {
                     </Button>
                 </div>
                 <div className="grow hidden sm:block"/>
+                <Input
+                    isReadOnly
+                    radius="sm"
+                    label="후원 총 금액"
+                    size="sm"
+                    value={`￦${getSumPrice(results).toLocaleString()}`}
+                    className="w-full sm:w-[200px]"/>
                 <Button
                     color="primary"
                     radius="sm"
@@ -199,7 +206,7 @@ function DonateModal({ isOpen, onOpenChange, donates, setDonates }: DonateModalP
                                 radius="sm"
                                 color="primary"
                                 isLoading={isLoading}
-                                isDisabled={id.trim() === '' || price <= 0 || isNaN(price)}
+                                isDisabled={id.trim() === '' || isNaN(price)}
                                 className="mb-4"
                                 onPress={async () => {
                                     await handleAddDonate(id, price, memo, setLoading, onClose, donates, setDonates);
