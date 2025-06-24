@@ -126,8 +126,7 @@ export async function handleDeleteItem(
         })
     });
     if (res.ok) {
-        const newDonates = donates.filter(item => item.uid !== uid);
-        setDonates(newDonates);
+        setDonates(prev => prev.filter(item => item.uid !== uid));
         addToast({
             title: "삭제 완료",
             description: `후원 항목을 삭제하였습니다.`,
