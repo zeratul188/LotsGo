@@ -25,6 +25,7 @@ export default function DonateComponent() {
 
     useEffect(() => {
         const searchedDonates = donates.filter(donate => donate.id.includes(search) || donate.price.toString().includes(search));
+        setPage(1);
         setResults(searchedDonates);
     }, [donates]);
 
@@ -50,6 +51,7 @@ export default function DonateComponent() {
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 const searchedDonates = donates.filter(donate => donate.id.includes(search) || donate.price.toString().includes(search));
+                                setPage(1);
                                 setResults(searchedDonates);
                             }
                         }}
@@ -59,6 +61,7 @@ export default function DonateComponent() {
                         color="primary"
                         onPress={() => {
                             const searchedDonates = donates.filter(donate => donate.id.includes(search) || donate.price.toString().includes(search));
+                            setPage(1);
                             setResults(searchedDonates);
                         }}>
                         검색
