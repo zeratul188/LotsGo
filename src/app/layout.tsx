@@ -19,8 +19,9 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
-          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
-            crossOrigin="anonymous"></script>
+        <link rel="icon" href="/favicon.ico" />
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
+          crossOrigin="anonymous"></script>
       </head>
       <body>
         <ClientOnly>
