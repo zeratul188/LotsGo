@@ -8,6 +8,7 @@ import type { RootState } from "../store/store";
 import { useSelector } from "react-redux";
 import MembersComponent from "./MembersForm";
 import CryptoComponent from "./CryptoForm";
+import DonateComponent from "./DonateForm";
 
 type TabMenu = {
     key: string,
@@ -35,6 +36,11 @@ export default function Administrator() {
             title: '암호화 관리',
             component: <CryptoComponent/>
         },
+        {
+            key: 'donate',
+            title: '후원 관리',
+            component: <DonateComponent/>
+        }
     ]
 
     useEffect(() => {
