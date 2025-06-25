@@ -26,7 +26,7 @@ export function printListInTooltip(parsed: any): string {
         const element000 = value?.Element_000;
         const element001 = value?.Element_001
         if (typeof element000 === 'string' && typeof element001 === 'string' && element000.includes('연마 효과')) {
-            let text = getParsedText(element001.replaceAll('<BR>', '\r\n'));
+            let text = getParsedText(element001.replaceAll('<BR>', '\r\n').replaceAll('<br>', '\r\n'));
             return text;
         }
     }
