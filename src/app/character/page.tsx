@@ -16,7 +16,7 @@ export default function Character() {
     const searchParams = useSearchParams();
     const nickname = searchParams.get('nickname');
     const isMobile = useMobileQuery();
-    const onClickUpdate = useClickUpdate(nickname, characterForm.setDisable, characterForm.setLoadingUpdate, characterForm.file, characterForm.setFile, characterForm.setExpeditions, characterForm.setGems);
+    const onClickUpdate = useClickUpdate(nickname, characterForm.setDisable, characterForm.setLoadingUpdate, characterForm.file, characterForm.setFile, characterForm.setExpeditions, characterForm.setGems, characterForm.setCombat, characterForm.combat);
     
     useEffect(() => {
         if (nickname) {
@@ -41,9 +41,7 @@ export default function Character() {
 
     useEffect(() => {
         if (characterForm.nickname !== '') {
-            const loadData = async () => await loadProfile(characterForm.nickname, characterForm.setSearched, characterForm.setLoading, characterForm.setNickname, characterForm.file, characterForm.setFile, characterForm.setNothing, characterForm.setExpeditions, characterForm.setBadge
-                
-            );
+            const loadData = async () => await loadProfile(characterForm.nickname, characterForm.setSearched, characterForm.setLoading, characterForm.setNickname, characterForm.file, characterForm.setFile, characterForm.setNothing, characterForm.setExpeditions, characterForm.setBadge, characterForm.setCombat, characterForm.combat);
             loadData();
         }
     }, [characterForm.nickname]);
@@ -52,7 +50,7 @@ export default function Character() {
         {
             id: 'ability',
             label: '능력치',
-            component: <AbilityComponent file={characterForm.file} gems={characterForm.gems} setGems={characterForm.setGems}/>
+            component: <AbilityComponent file={characterForm.file} gems={characterForm.gems} setGems={characterForm.setGems} combat={characterForm.combat}/>
         },
         {
             id: 'skill',

@@ -1124,7 +1124,10 @@ function RestCheckButton({ checklist, character, type, dispatch }: RestCheckButt
                 onChange={onClickDayCheck}>
                 {getDayName(type)} ({dayValue.value}/{type === '에포나' ? 3 : 1})
             </Checkbox>
-            <div className="w-full h-[18px] relative mt-1">
+            <div className={clsx(
+                "w-full h-[18px] relative mt-1",
+                type === '에포나' ? 'hidden' : 'block'
+            )}>
                 <span className="w-full text-center text-[#444444] dark:text-[#aaaaaa] text-sm absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">휴식 게이지 {dayValue.restValue}</span>
                 <RestComponent restValue={dayValue.restValue} type={type}/>
             </div>

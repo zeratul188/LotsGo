@@ -33,7 +33,9 @@ export function useClickUpdate(
     file: CharacterFile,
     setFile: SetStateFn<CharacterFile>,
     setExpeditions: SetStateFn<CharacterInfo[]>,
-    setGems: SetStateFn<Gem[]>
+    setGems: SetStateFn<Gem[]>,
+    setCombat: SetStateFn<number>,
+    combat: number
 ) {
     return async () => {
         if (nickname) {
@@ -86,7 +88,8 @@ export function useClickUpdate(
                             body: JSON.stringify({
                                 nickname: nickname,
                                 file: newFile,
-                                expeditions: newExpeditions
+                                expeditions: newExpeditions,
+                                combatPower: newFile.profile.CombatPower.replaceAll(',', '')
                             })
                         });
                         if (inputRes.ok) {
@@ -97,6 +100,10 @@ export function useClickUpdate(
                                 level: Number(newFile.profile.ItemAvgLevel.replaceAll(',', '')),
                                 server: newFile.profile.ServerName,
                                 date: today
+                            }
+                            const nowCombat: number = Number(newFile.profile.CombatPower?.replaceAll(',', '') || 0);
+                            if (nowCombat > combat) {
+                                setCombat(nowCombat);
                             }
                             updateHistory(history);
                             setFile(newFile);
@@ -148,7 +155,9 @@ export async function loadProfile(
     setFile: SetStateFn<CharacterFile>,
     setNothing: SetStateFn<boolean>,
     setExpeditions: SetStateFn<CharacterInfo[]>,
-    setBadge: SetStateFn<boolean>
+    setBadge: SetStateFn<boolean>,
+    setCombat: SetStateFn<number>,
+    combat: number
 ) {
     const badgeRes = await fetch('/api/administrator/badge');
     if (badgeRes.ok) {
@@ -162,7 +171,7 @@ export async function loadProfile(
     }
 
     const res = await fetch(`/api/characters?nickname=${nickname}`);
-    let isPassed = false;
+    let isPassed = false, savedCombat = 0;
 
     if (res.ok) {
         const data = await res.json();
@@ -185,8 +194,10 @@ export async function loadProfile(
             setFile(data.file);
             setLoading(false);
             setNothing(false);
+            setCombat(Number(data.combatPower));
             return;
         } else {
+            savedCombat = Number(data.combatPower);
             isPassed = true;
         }
     }
@@ -246,7 +257,8 @@ export async function loadProfile(
                 body: JSON.stringify({
                     nickname: nickname,
                     file: newFile,
-                    expeditions: newExpeditions
+                    expeditions: newExpeditions,
+                    combatPower: newFile.profile.CombatPower.replaceAll(',', '')
                 })
             });
             if (inputRes.ok) {
@@ -257,6 +269,12 @@ export async function loadProfile(
                     level: Number(newFile.profile.ItemAvgLevel.replaceAll(',', '')),
                     server: newFile.profile.ServerName,
                     date: today
+                }
+                const nowCombat: number = Number(newFile.profile.CombatPower?.replaceAll(',', '') || 0);
+                if (savedCombat > nowCombat) {
+                    setCombat(savedCombat);
+                } else {
+                    setCombat(nowCombat);
                 }
                 saveHistory(history);
                 setLoading(false);
@@ -468,7 +486,7 @@ function findItemInTooltip(tooltip: any): string[] {
         const element000 = value?.Element_000;
         const element001 = value?.Element_001;
         if (typeof element000 === "string" && typeof element001 === "string" && element000.includes("연마 효과")) {
-            const text = getParsedText(element001.replaceAll('<BR>', '|'));
+            const text = getParsedText(element001.replaceAll('<br>', '|').replaceAll('<BR>', '|'));
             items = text.split('|');
             return items;
         }
@@ -1158,4 +1176,21 @@ export function getColorByType(type: string): string {
             return 'text-[#20722b] dark:text-[#41eb58]';
     }   
     return '';
+}
+
+// 아크패시브 전투력 관련 딜러인지 폿인지 여부 가져오기
+export function getCharacterType(arkpassive: any | null): string {
+    if (arkpassive) {
+        const dataEffects = arkpassive.Effects;
+        for (const effect of dataEffects) {
+            const description = getParsedText(effect.Description);
+            const name = description.split('티어 ')[1].split(' Lv.')[0];
+            if (effect.Name === '깨달음') {
+                if (data.arkType.includes(name)) {
+                    return "supportor";
+                }
+            }
+        }
+    }
+    return 'attack';
 }
