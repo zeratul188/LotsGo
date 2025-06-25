@@ -504,7 +504,7 @@ function CombatPowerComponent({ file, combat }: CombatPowerComponentProps) {
                 <Divider className="mt-2 mb-2"/>
                 <div className="w-full flex gap-1">
                     <p className="grow fadedtext">최고 전투력</p>
-                    <p>{combat}</p>
+                    <p>{combat.toLocaleString()}</p>
                 </div>
             </CardBody>
         </Card>
