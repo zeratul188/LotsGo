@@ -76,7 +76,8 @@ import { printBonusStoneInTooltip, printDefaultStoneInTooltip, printStoneUseInTo
 import PotionIcon from "@/Icons/PosionIcon";
 import { getImgByJob } from "./expeditionFeat";
 import { CharacterHistory } from "./history";
-import { motion } from "framer-motion";
+import './effects.css';
+import VegaIcon from "@/Icons/VegaIcon";
 
 // state 관리
 export function useCharacterForm() {
@@ -100,6 +101,7 @@ export function useCharacterForm() {
     const [isDisable, setDisable] = useState(false);
     const [isLoadingUpdate, setLoadingUpdate] = useState(false);
     const [expeditions, setExpeditions] = useState<CharacterInfo[]>([]);
+    const [isBadge, setBadge] = useState(false);
 
     return {
         isLoading, setLoading,
@@ -110,7 +112,8 @@ export function useCharacterForm() {
         gems, setGems,
         isDisable, setDisable,
         isLoadingUpdate, setLoadingUpdate,
-        expeditions, setExpeditions
+        expeditions, setExpeditions,
+        isBadge, setBadge
     }
 }
 
@@ -313,7 +316,11 @@ const upperClass = ['도화가', '기상술사', '환수사'];
 type ProfileComponentProps = {
     file: CharacterFile
 }
-export function ProfileComponent({ file }: ProfileComponentProps) {
+type NewProfileComponentProps = {
+    file: CharacterFile,
+    isBadge: boolean
+}
+export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
     const profile = file.profile;
     const isMobile = useMobileQuery();
     return (
@@ -325,7 +332,20 @@ export function ProfileComponent({ file }: ProfileComponentProps) {
                         <Chip color="warning" variant="solid" radius="sm">{profile.CharacterClassName}</Chip>
                     </div>
                     <p className="fadedtext mt-4">{profile.Title ? profile.Title : '-'}{profile.GuildName ?` · ${profile.GuildName} 길드` : ''}</p>
-                    <p className="text-2xl font-bold">{profile.CharacterName}</p>
+                    {isBadge ? (
+                        <div className="flex gap-2 items-center">
+                            <div className="tag-container">
+                                <div className="flex">
+                                    <span className="battletag">{profile.CharacterName}</span>
+                                    <div className="empty-box"></div>
+                                </div>
+                                <span className="tail-wrapper">
+                                    <span className="tail-box"></span>
+                                </span>
+                            </div>
+                            <Tooltip showArrow content="후원자 뱃지"><div className="w-8 h-8"><VegaIcon/></div></Tooltip>
+                        </div>
+                    ) : <p className="text-2xl font-bold">{profile.CharacterName}</p>}
                     <div className="grow flex flex-col sm:flex-row items-end gap-2 mt-4">
                         <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-3">
                             <div>
@@ -357,7 +377,20 @@ export function ProfileComponent({ file }: ProfileComponentProps) {
                         <Chip color="warning" variant="solid" radius="sm">{profile.CharacterClassName}</Chip>
                     </div>
                     <p className="text-[#dddddd] text-sm mt-4">{profile.Title ? profile.Title : '-'}{profile.GuildName ?` · ${profile.GuildName} 길드` : ''}</p>
-                    <p className="text-2xl font-bold text-white">{profile.CharacterName}</p>
+                    {isBadge ? (
+                        <div className="flex gap-2 items-center">
+                            <div className="tag-container-mobile mt-2">
+                                <div className="flex">
+                                    <span className="battletag">{profile.CharacterName}</span>
+                                    <div className="empty-box-mobile"></div>
+                                </div>
+                                <span className="tail-wrapper">
+                                    <span className="tail-box-mobile"></span>
+                                </span>
+                            </div>
+                            <Tooltip showArrow content="후원자 뱃지"><div className="w-6 h-6"><VegaIcon/></div></Tooltip>
+                        </div>
+                    ) : <p className="text-xl font-bold text-white">{profile.CharacterName}</p>}
                     <div className="grow grid grid-cols-[75px_1fr] mt-5">
                         <p className="fadedtext text-sm">아이템 레벨</p>
                         <p className="text-sm text-white">{profile.ItemAvgLevel}</p>
