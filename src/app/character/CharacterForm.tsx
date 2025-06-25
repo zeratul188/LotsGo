@@ -41,6 +41,7 @@ import {
     getCardByIndex, 
     getCardGems, 
     getCardSetNames, 
+    getCharacterType, 
     getColorByQuality, 
     getColorByType, 
     getColorProgressArkpassive, 
@@ -78,6 +79,8 @@ import { getImgByJob } from "./expeditionFeat";
 import { CharacterHistory } from "./history";
 import './effects.css';
 import VegaIcon from "@/Icons/VegaIcon";
+import AttackIcon from "@/Icons/AttackIcon";
+import SupportorIcon from "@/Icons/SupportorIcon";
 
 // state 관리
 export function useCharacterForm() {
@@ -102,6 +105,7 @@ export function useCharacterForm() {
     const [isLoadingUpdate, setLoadingUpdate] = useState(false);
     const [expeditions, setExpeditions] = useState<CharacterInfo[]>([]);
     const [isBadge, setBadge] = useState(false);
+    const [combat, setCombat] = useState(0);
 
     return {
         isLoading, setLoading,
@@ -113,7 +117,8 @@ export function useCharacterForm() {
         isDisable, setDisable,
         isLoadingUpdate, setLoadingUpdate,
         expeditions, setExpeditions,
-        isBadge, setBadge
+        isBadge, setBadge,
+        combat, setCombat
     }
 }
 
@@ -424,22 +429,85 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
 type AbilityComponentProps = {
     file: CharacterFile,
     gems: Gem[],
-    setGems: SetStateFn<Gem[]>
+    setGems: SetStateFn<Gem[]>,
+    combat: number
 }
-export function AbilityComponent({ file, gems, setGems }: AbilityComponentProps) {
+export function AbilityComponent({ file, gems, setGems, combat }: AbilityComponentProps) {
     return (
         <div className="w-full grid grid-cols-1 md960:grid-cols-[5fr_2fr] gap-8">
             <div className="w-full">
+                <div className="block sm:hidden">
+                    <CombatPowerComponent file={file} combat={combat}/>
+                </div>
                 <EquipmentComponent file={file}/>
-                <GemComponent file={file} gems={gems} setGems={setGems}/>
+                <GemComponent file={file} gems={gems} setGems={setGems} combat={combat}/>
                 <CardComponent file={file}/>
             </div>
             <div className="w-full">
+                <div className="hidden sm:block">
+                    <CombatPowerComponent file={file} combat={combat}/>
+                </div>
                 <StatComponent file={file}/>
                 <EngravingComponent file={file}/>
                 <ArkpassiveComponent file={file}/>
             </div>
         </div>
+    )
+}
+
+// 전투력 표시 요소
+type CombatPowerComponentProps = {
+    file: CharacterFile,
+    combat: number
+}
+function CombatPowerComponent({ file, combat }: CombatPowerComponentProps) {
+    const profile = file.profile;
+    const arkpassive = file.arkpassive;
+    const [type, setType] = useState('attack');
+
+    useEffect(() => {
+        setType(getCharacterType(arkpassive));
+    }, [file]);
+
+    return (
+        <Card fullWidth radius="sm" className="mb-8">
+            <CardHeader>전투력</CardHeader>
+            <Divider/>
+            <CardBody>
+                <div className="w-full flex justify-center">
+                    <Chip
+                        startContent={(
+                            <div>
+                                <div className={clsx(
+                                    type === 'supportor' ? 'hidden' : 'block'
+                                )}><AttackIcon size={14}/></div>
+                                <div className={clsx(
+                                    type === 'supportor' ? 'block' : 'hidden'
+                                )}><SupportorIcon size={14}/></div>
+                            </div>
+                        )}
+                        variant="flat"
+                        size="sm"
+                        color={type === 'supportor' ? "success" : "danger"}>
+                        {type === 'supportor' ? '서포터' : '딜러'}
+                    </Chip>
+                </div>
+                <div className={clsx(
+                    "w-full h-[60px] relative flex flex-col items-center justify-center",
+                    type === 'supportor' ? "bg-radial from-[#65d87e] dark:from-[#2b6b39] via-transparent to-transparent" : "bg-radial from-[#ce8888] dark:from-[#a50e0e] via-transparent to-transparent"
+                )}>
+                    <p className={clsx(
+                        "text-4xl font-bold",
+                        type === 'supportor' ? "text-[#065c1d] dark:text-[#87e09e]" : "text-[#750d0d] dark:text-[#e49e9e]"
+                    )}>{profile.CombatPower ?? '전투력 없음'}</p>
+                </div>
+                <Divider className="mt-2 mb-2"/>
+                <div className="w-full flex gap-1">
+                    <p className="grow fadedtext">최고 전투력</p>
+                    <p>{combat.toLocaleString()}</p>
+                </div>
+            </CardBody>
+        </Card>
     )
 }
 

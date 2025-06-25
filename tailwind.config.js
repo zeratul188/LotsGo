@@ -6,6 +6,7 @@ module.exports = {
     './src/**/*.{js,ts,jsx,tsx,mdx}',
     './node_modules/@heroui/react/**/*.{js,ts,jsx,tsx}',
     './node_modules/@heroui/theme/**/*.{js,ts,jsx,tsx}',
+    "./app/**/*.{js,ts,jsx,tsx}",
   ],
   safelist: [
     'animate-spin',
@@ -29,7 +30,7 @@ module.exports = {
           'lg1280': '1280px'
         },
         backgroundImage: {
-          'radial': 'radial-gradient(var(--tw-gradient-stops))',
+          'gradient-radial': 'radial-gradient(circle, var(--tw-gradient-stops))',
         },
     },
   },
