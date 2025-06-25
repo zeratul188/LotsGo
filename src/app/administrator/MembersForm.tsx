@@ -75,7 +75,7 @@ export default function MembersComponent() {
                                     showShadow
                                     color="primary"
                                     page={page}
-                                    total={Math.ceil(members.length / rowsPerPage)}
+                                    total={Math.ceil(result.length / rowsPerPage)}
                                     onChange={(page) => setPage(page)}/>
                             </div>
                         }>

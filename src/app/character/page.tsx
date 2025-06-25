@@ -41,7 +41,9 @@ export default function Character() {
 
     useEffect(() => {
         if (characterForm.nickname !== '') {
-            const loadData = async () => await loadProfile(characterForm.nickname, characterForm.setSearched, characterForm.setLoading, characterForm.setNickname, characterForm.file, characterForm.setFile, characterForm.setNothing, characterForm.setExpeditions);
+            const loadData = async () => await loadProfile(characterForm.nickname, characterForm.setSearched, characterForm.setLoading, characterForm.setNickname, characterForm.file, characterForm.setFile, characterForm.setNothing, characterForm.setExpeditions, characterForm.setBadge
+                
+            );
             loadData();
         }
     }, [characterForm.nickname]);
@@ -111,7 +113,7 @@ export default function Character() {
 
     return (
         <div className="w-full">
-            <ProfileComponent file={characterForm.file}/>
+            <ProfileComponent file={characterForm.file} isBadge={characterForm.isBadge}/>
             <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto md960:relative">
                 <div className="w-full md960:w-[max-content] md960:absolute md960:top-4 md960:right-4 mb-4 md960:mb-0 flex flex-col md960:flex-row gap-3">
                     <Input
