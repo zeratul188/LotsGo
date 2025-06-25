@@ -1,0 +1,110 @@
+.tag-container {
+    width: max-content;
+    display: inline-block;
+    padding: 4px 16px;
+    background: linear-gradient(to right, #3f72ff, #b93fff);
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    clip-path: polygon(0 0, 90% 0, 100% 0%, 90% 100%, 0 100%);
+    position: relative;
+    overflow: visible; /* 중요! 꼬리가 잘리지 않게 */
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
+    box-shadow: inset 0 0 0 3px rgba(104, 149, 233, 0.5);
+}
+
+.tag-container-mobile {
+    width: max-content;
+    display: inline-block;
+    padding: 3px 10px;
+    background: linear-gradient(to right, #3f72ff, #b93fff);
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    clip-path: polygon(0 0, 90% 0, 100% 0%, 90% 100%, 0 100%);
+    position: relative;
+    overflow: visible; /* 중요! 꼬리가 잘리지 않게 */
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    box-shadow: inset 0 0 0 3px rgba(104, 149, 233, 0.5);
+}
+
+.battletag {
+    position: relative;
+    z-index: 1;
+}
+
+.tail-wrapper {
+    position: absolute;
+    top: 50%;
+    right: -40px;
+    width: 100px;
+    height: 300px;
+    transform: translateY(-38%) translateX(28%) rotate(-45deg);
+    transform-origin: left center;
+    overflow: hidden;
+}
+
+.tail-box {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+    to right,
+    transparent,
+    transparent 3px,
+    #ffcb39 3px,
+    #ffcb39 6px
+    );
+    clip-path: polygon(0 25%, 100% 0%, 100% 100%, 0% 75%);
+    animation: trailSlide 3s infinite linear alternate;
+    opacity: 1;
+}
+
+.tail-box-mobile {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+    to right,
+    transparent,
+    transparent 3px,
+    #ffcb39 3px,
+    #ffcb39 6px
+    );
+    clip-path: polygon(0 25%, 100% 0%, 100% 100%, 0% 75%);
+    animation: trailSlideMobile 3s infinite linear alternate;
+    opacity: 1;
+}
+
+@keyframes trailSlide {
+  from {
+    transform: translateX(0) translateY(0);
+  }
+  to {
+    transform: translateX(30px) translateY(30px);
+  }
+}
+
+@keyframes trailSlideMobile {
+  from {
+    transform: translateX(25px) translateY(25px);
+  }
+  to {
+    transform: translateX(50px) translateY(50px);
+  }
+}
+
+.battletag {
+  position: relative;
+  z-index: 1;
+}
+
+.empty-box {
+    width: 50px;
+}
+
+.empty-box-mobile {
+    width: 30px;
+}

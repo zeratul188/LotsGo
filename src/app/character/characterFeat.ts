@@ -3,6 +3,7 @@ import { addToast } from "@heroui/react";
 import { load } from 'cheerio'
 import data from "@/data/characters/data.json";
 import { CharacterHistory, saveHistory, updateHistory } from "./history";
+import { Badge } from "../api/administrator/badge/route";
 
 export type CharacterFile = {
     profile: any,
@@ -146,8 +147,20 @@ export async function loadProfile(
     file: CharacterFile,
     setFile: SetStateFn<CharacterFile>,
     setNothing: SetStateFn<boolean>,
-    setExpeditions: SetStateFn<CharacterInfo[]>
+    setExpeditions: SetStateFn<CharacterInfo[]>,
+    setBadge: SetStateFn<boolean>
 ) {
+    const badgeRes = await fetch('/api/administrator/badge');
+    if (badgeRes.ok) {
+        const badges: Badge[] = await badgeRes.json();
+        const findIndex = badges.findIndex(badge => badge.nickname === nickname);
+        if (findIndex !== -1) {
+            setBadge(true);
+        } else {
+            setBadge(false);
+        }
+    }
+
     const res = await fetch(`/api/characters?nickname=${nickname}`);
     let isPassed = false;
 
