@@ -26,6 +26,11 @@
             "type": "danger"
         },
         {
+            "job": "발키리",
+            "img": "/character/classimgs/class28.jpg",
+            "type": "danger"
+        },
+        {
             "job": "스트라이커",
             "img": "/character/classimgs/class6.jpg",
             "type": "warning"
