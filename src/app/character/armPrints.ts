@@ -9,8 +9,8 @@ export function printEffectInTooltip(parsed: any): string[] {
         const element000 = value?.Element_000;
         const element001 = value?.Element_001;
         if (typeof element000 === 'string' && typeof element001 === 'string' && element000.includes('팔찌 효과')) {
-            let text = getParsedText(element001.replaceAll('<BR>', '\r\n'));
-            return text.split(/\r?\n/);
+            let text = getParsedText(element001.replaceAll('</img>', '|').replaceAll('<BR>', '\r\n').replaceAll('<br>', '\r\n'));
+            return text.split("|").slice(1);
         }
     }
 
