@@ -611,6 +611,42 @@ export function getSmallGradeByAccessory(type: String, item: string) {
         grade: "none"
     }
 }
+function cleanText(text: string): string {
+    text = text.replaceAll(/\r\n|\r|\n/g, '').replace(/\s+/g, '').replace(/(\d+\.\d)0%/, '$1%').replaceAll('몬스터', '적');
+    text = text.replace(/(\d+\.\d{1,2})%/g, (_, num) => {
+        const cleaned = parseFloat(num).toString(); // 숫자로 변환 후 문자열로
+        return `${cleaned}%`;
+    });
+    return text;
+}
+
+// 팔찌 등급 표시
+export function getSmallGradeByArm(item: string) {
+    const datas = data.arms;
+    const findItem = datas.find(dataItem => cleanText(item) === cleanText(dataItem.name))
+    if (findItem) {
+        let grade = 'none';
+        switch(findItem.grade) {
+            case '하':
+                grade = 'sm';
+                break;
+            case '중':
+                grade = 'md';
+                break;
+            case '상':
+                grade = 'lg';
+                break;
+        }
+        return {
+            name: findItem.small,
+            grade: grade
+        }
+    }
+    return {
+        name: "null",
+        grade: "none"
+    }
+}
 
 // 등급 별 문자 반환
 export function getTextByGrade(grade: string): string {
@@ -840,7 +876,7 @@ export function getGemSimpleTailName(gem: Gem | null): string {
 export function getCountAtkGems(gems: Gem[]): number {
     let count = 0;
     for (const gem of gems) {
-        if (gem.name.includes('겁화') || gem.name.includes('멸화') || gem.name.includes('청명')) {
+        if (gem.skillStr.includes('피해') || gem.skillStr.includes('지원')) {
             count++;
         }
     }
@@ -851,7 +887,7 @@ export function getCountAtkGems(gems: Gem[]): number {
 export function getCountDekGems(gems: Gem[]): number {
     let count = 0;
     for (const gem of gems) {
-        if (gem.name.includes('작열') || gem.name.includes('홍염') || gem.name.includes('원해')) {
+        if (gem.skillStr.includes('재사용 대기시간')) {
             count++;
         }
     }

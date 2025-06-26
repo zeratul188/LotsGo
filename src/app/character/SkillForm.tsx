@@ -159,7 +159,6 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                                         idx === 0 ? 'border-blue-500 bg-blue-900' : idx === 1 ? 'border-green-500 bg-green-900' : 'border-yellow-500 bg-yellow-900'
                                                     )}/>
                                                 <p>{tripod.name}</p>
-                                                <p className="fadedtext">Lv.{tripod.level}</p>
                                             </div>
                                         ))}
                                     </div>

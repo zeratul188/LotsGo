@@ -54,6 +54,7 @@ import {
     getObjectByArmorType, 
     getParsedText, 
     getSmallGradeByAccessory, 
+    getSmallGradeByArm, 
     getStatByType, 
     getSumStat, 
     getTextByGrade, 
@@ -471,27 +472,30 @@ function CombatPowerComponent({ file, combat }: CombatPowerComponentProps) {
 
     return (
         <Card fullWidth radius="sm" className="mb-8">
-            <CardHeader>전투력</CardHeader>
+            <CardHeader>
+                <div className="w-full flex gap-1 items-center">
+                    <p className="grow">전투력</p>
+                </div>
+                <Chip
+                    startContent={(
+                        <div>
+                            <div className={clsx(
+                                type === 'supportor' ? 'hidden' : 'block'
+                            )}><AttackIcon size={14}/></div>
+                            <div className={clsx(
+                                type === 'supportor' ? 'block' : 'hidden'
+                            )}><SupportorIcon size={14}/></div>
+                        </div>
+                    )}
+                    variant="flat"
+                    size="sm"
+                    className="pl-2"
+                    color={type === 'supportor' ? "success" : "danger"}>
+                    {type === 'supportor' ? '서포터' : '딜러'}
+                </Chip>
+            </CardHeader>
             <Divider/>
             <CardBody>
-                <div className="w-full flex justify-center">
-                    <Chip
-                        startContent={(
-                            <div>
-                                <div className={clsx(
-                                    type === 'supportor' ? 'hidden' : 'block'
-                                )}><AttackIcon size={14}/></div>
-                                <div className={clsx(
-                                    type === 'supportor' ? 'block' : 'hidden'
-                                )}><SupportorIcon size={14}/></div>
-                            </div>
-                        )}
-                        variant="flat"
-                        size="sm"
-                        color={type === 'supportor' ? "success" : "danger"}>
-                        {type === 'supportor' ? '서포터' : '딜러'}
-                    </Chip>
-                </div>
                 <div className={clsx(
                     "w-full h-[60px] relative flex flex-col items-center justify-center",
                     type === 'supportor' ? "bg-radial from-[#65d87e] dark:from-[#2b6b39] via-transparent to-transparent" : "bg-radial from-[#ce8888] dark:from-[#a50e0e] via-transparent to-transparent"
@@ -502,7 +506,7 @@ function CombatPowerComponent({ file, combat }: CombatPowerComponentProps) {
                     )}>{profile.CombatPower ?? '전투력 없음'}</p>
                 </div>
                 <Divider className="mt-2 mb-2"/>
-                <div className="w-full flex gap-1">
+                <div className="w-full flex gap-1 mt-2">
                     <p className="grow fadedtext">최고 전투력</p>
                     <p>{combat.toLocaleString()}</p>
                 </div>
@@ -804,7 +808,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                 </div>
                                             </div>
                                             {equip.items.length > 0 ? (
-                                                <div className="w-[100px] flex flex-col gap-[1px] h-full items-start">
+                                                <div className="w-[130px] flex flex-col gap-[1px] h-full items-start">
                                                     {equip.items.map((item, idx) => (
                                                         <div key={idx} className="flex gap-1 text-[9pt] items-center">
                                                             <div className={`${getBgColorByGrade(getSmallGradeByAccessory(equip.type, item).grade)} w-2 h-2 rounded-full`}/>
@@ -886,6 +890,22 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                 {arm.point > 0 ? <Chip size="sm" radius="sm" variant="flat" color="success">+{arm.point}</Chip> : <></>}
                                             </div>
                                         </div>
+                                        {printEffectInTooltip(arm.tooltip).length > 0 ? (
+                                            <div className="w-[130px] flex flex-col gap-[1px] h-full items-start">
+                                                {printEffectInTooltip(arm.tooltip).map((item: string, idx) => (
+                                                    <div key={idx} className={clsx(
+                                                        "flex gap-1 text-[9pt] items-center",
+                                                        getSmallGradeByArm(item).name !== 'null' ? 'block' : 'hidden'
+                                                    )}>
+                                                        <div className={`${getBgColorByGrade(getSmallGradeByArm(item).grade)} w-2 h-2 rounded-full`}/>
+                                                        <p className={getTextColorByGrade(getSmallGradeByArm(item).grade)}>{getTextByGrade(getSmallGradeByArm(item).grade)}</p>
+                                                        <p className={clsx(
+                                                            getSmallGradeByArm(item).grade === 'none' ? 'fadedtext' : ''
+                                                        )}>{getSmallGradeByArm(item).name}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : <></>}
                                     </div>
                                 </PopoverTrigger>
                                 <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
@@ -914,7 +934,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                 <p className="fadedtext">팔찌 효과</p>
                                                 <ul className="list-disc pl-4">
                                                     {printEffectInTooltip(arm.tooltip).map((line, idx) => (
-                                                        <li key={idx}>{line}</li>
+                                                        <li key={idx} className="whitespace-pre-line">{line}</li>
                                                     ))}
                                                 </ul>
                                             </div>
@@ -1558,6 +1578,7 @@ export function NotFoundComponent({ nickname, setSearched, setLoading, setNickna
             <p className="text-4xl text-red-400">캐릭터 검색 결과 없음</p>
             <p className="text-xl mt-2 fadedtext">"{nickname}" 캐릭터 조회를 실패하였습니다.</p>
             <p className="text-md mt-5">존재하지 않는 캐릭터이거나 캐릭터 검색이 불가능한 캐릭터입니다.</p>
+            <p className="text-md">캐릭터가 존재함에도 검색이 되지 않는다면 게임 내에서 한번 접속 후 다시 시도해주세요.</p>
             <div className="w-full sm:w-[400px] flex flex-col sm:flex-row gap-5 sm:gap-2 items-center mt-10">
                 <Input
                     size="lg"
