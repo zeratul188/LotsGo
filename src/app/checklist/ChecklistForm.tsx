@@ -251,7 +251,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
 
             const lastTime = parseInt(saved);
             const diff = Date.now() - lastTime;
-            const timeLeft = 10 * 1000 - diff;
+            const timeLeft = 60 * 1000 - diff;
 
             if (timeLeft <= 0) {
                 setDisableUpdate(false);
