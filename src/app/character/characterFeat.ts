@@ -658,6 +658,16 @@ export function getTextByGrade(grade: string): string {
     return '-';
 }
 
+// 등급 별 이미지 SRC 반환
+export function getSrcByGrade(grade: string): string {
+    switch(grade) {
+        case 'lg': return '/lg.png';
+        case 'md': return '/md.png';
+        case 'sm': return '/sm.png';
+    }
+    return '/noeffect.png';
+}
+
 // 등급 별 배경 색상 반환
 export function getBgColorByGrade(grade: string): string {
     switch(grade) {
@@ -1117,7 +1127,8 @@ export function loadEngraving(datas: any[] | null, setEngravings: SetStateFn<Eng
 export type ArkpassivePoint = {
     type: string,
     point: number,
-    max: number
+    max: number,
+    description: string
 }
 export type ArkpassiveItem = {
     tier: number,
@@ -1143,7 +1154,8 @@ export function loadArkpassive(
             const newPoint: ArkpassivePoint = {
                 type: point.Name,
                 point: Number(point.Value),
-                max: maxPoint(point.Name)
+                max: maxPoint(point.Name),
+                description: point.Description
             }
             points.push(newPoint);
         }

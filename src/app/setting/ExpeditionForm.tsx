@@ -25,24 +25,24 @@ export function ExpeditionsComponent() {
     }, []);
 
     useEffect(() => {
-        const stored = localStorage.getItem('expedition_unlock_time');
-        const unlockTime = stored ? parseInt(stored, 10) + Date.now() : Date.now();
-        const now = Date.now();
-
-        if (unlockTime <= now) {
-            setDisable(false);
-            return;
-        }
+        if (!isDisable) return;
 
         const interval = setInterval(() => {
-            const timeLeft = unlockTime - Date.now();
-            if (timeLeft <= 0) {
-                clearInterval(interval);
+            const saved = localStorage.getItem("expedition_unlock_time");
+            if (!saved) {
                 setDisable(false);
-                setRemainingTime(0);
-                localStorage.removeItem("expedition_unlock_time");
-            } else {
-                setRemainingTime(timeLeft);
+                clearInterval(interval);
+                return;
+            }
+
+            const lastTime = parseInt(saved);
+            const diff = Date.now() - lastTime;
+            const timeLeft = 60 * 1000 - diff;
+
+            if (timeLeft <= 0) {
+                setDisable(false);
+                clearInterval(interval);
+                localStorage.removeItem('expedition_unlock_time');
             }
         }, 1000);
 

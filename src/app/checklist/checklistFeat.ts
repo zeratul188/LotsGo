@@ -1530,8 +1530,8 @@ export function useClickUpdatedCharacters(
                 color: "success"
             });
         }
-        const unlockTime = 2 * 60 * 1000;
-        localStorage.setItem("button_unlock_time", unlockTime.toString());
+        const now = Date.now();
+        localStorage.setItem("button_unlock_time", now.toString());
         setDisableUpdate(true);
         setLoading(false);
     }

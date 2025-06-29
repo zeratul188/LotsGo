@@ -13,8 +13,7 @@ import {
     handleRemoveCalendar, 
     handleSubmitCalendar, 
     initialWeekData, 
-    isTodayDate, 
-    TodoDate
+    isTodayDate
 } from "./calendarFeat";
 import clsx from "clsx";
 import { 
