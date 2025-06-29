@@ -1470,19 +1470,18 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
             <CardHeader><p className="text-lg">아크패시브</p></CardHeader>
             <Divider/>
             <CardBody>
-                <div className="w-full flex flex-col gap-2">
+                <div className="w-full grid grid-cols-3 gap-2 mb-2">
                     {points.map((point, index) => (
-                        <div key={index}>
-                            <div className="w-full flex gap-1 items-center">
-                                <p className="grow fadedtext text-sm">{point.type}</p>
-                                <p className="fadedtext text-sm">{point.description} -</p>
-                                <p className={getColorByType(point.type)}>{point.point}</p>
-                            </div>
+                        <div key={index} className="flex flex-col items-center">
+                            <p className="fadedtext text-sm">{point.type}</p>
+                            <p className={`${getColorByType(point.type)} text-2xl font-bold`}>{point.point}</p>
+                            <Chip size="sm" variant="flat" className="mt-1">{point.description ? point.description : '미개방'}</Chip>
                             <Progress
                                 size="sm"
                                 color={getColorProgressArkpassive(point.type)}
                                 value={point.point}
-                                maxValue={point.max}/>
+                                maxValue={point.max}
+                                className="w-[70px] mt-2"/>
                         </div>
                     ))}
                 </div>

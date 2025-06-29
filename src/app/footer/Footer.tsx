@@ -20,6 +20,8 @@ export default function Footer() {
                 <div className="w-full sm:w-[260px]">
                     <Button
                         fullWidth
+                        showAnchorIcon
+                        as={Link}
                         radius="sm"
                         color="primary"
                         startContent={

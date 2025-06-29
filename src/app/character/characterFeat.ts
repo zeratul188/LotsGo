@@ -1135,7 +1135,7 @@ export type ArkpassiveItem = {
     name: string,
     level: number,
     icon: string,
-    description: string
+    description: string | null
 }
 export function loadArkpassive(
     data: any | null, 
