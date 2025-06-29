@@ -239,24 +239,24 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
     }, [max]);
 
     useEffect(() => {
-        const stored = localStorage.getItem("button_unlock_time");
-        const unlockTime = stored ? parseInt(stored, 10) + Date.now() : Date.now();
-        const now = Date.now();
-
-        if (unlockTime <= now) {
-            setDisableUpdate(false);
-            return;
-        }
+        if (!isDisableUpdate) return;
 
         const interval = setInterval(() => {
-            const timeLeft = unlockTime - Date.now();
-            if (timeLeft <= 0) {
-                clearInterval(interval);
+            const saved = localStorage.getItem("button_unlock_time");
+            if (!saved) {
                 setDisableUpdate(false);
-                setRemainingTime(0);
-                localStorage.removeItem("button_unlock_time");
-            } else {
-                setRemainingTime(timeLeft);
+                clearInterval(interval);
+                return;
+            }
+
+            const lastTime = parseInt(saved);
+            const diff = Date.now() - lastTime;
+            const timeLeft = 10 * 1000 - diff;
+
+            if (timeLeft <= 0) {
+                setDisableUpdate(false);
+                clearInterval(interval);
+                localStorage.removeItem('button_unlock_time');
             }
         }, 1000);
 
