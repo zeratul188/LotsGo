@@ -242,12 +242,12 @@ function ProfileButton() {
             <Dropdown>
                 <DropdownTrigger>
                     {isAdministrator || !mainCharacter ? (
-                        <Button variant="light">{isAdministrator ? '관리자' : id}님</Button>
+                        <Button variant="light">{isAdministrator ? '관리자' : id}</Button>
                     ) : (
                         <div className="flex gap-2 items-center cursor-pointer" role="button" tabIndex={0}>
                             <Avatar isBordered size="md" src={getImgByJob(mainCharacter.job)}/>
                             <div className="h-[max-content]">
-                                <p className="truncate overflow-hidden whitespace-nowrap leading-none">{id}님</p>
+                                <p className="truncate overflow-hidden whitespace-nowrap leading-none">{id}</p>
                                 <p className="fadedtext truncate overflow-hidden whitespace-nowrap text-[10pt] leading-none mt-1">{mainCharacter.nickname}</p>
                             </div>
                         </div>

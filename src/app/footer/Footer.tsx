@@ -2,6 +2,7 @@
 import { useMobileQuery } from "@/utiils/utils";
 import { LogoComponent, SiteInformation } from "./FooterForm";
 import { Button, Divider, Link, Popover, PopoverContent, PopoverTrigger } from "@heroui/react";
+import Image from "next/image";
 
 export default function Footer() {
     const isMobile = useMobileQuery();
@@ -20,10 +21,14 @@ export default function Footer() {
                     <Button
                         fullWidth
                         radius="sm"
-                        as={Link}
-                        href="/policy"
-                        color="primary">
-                        로츠고 이용 가이드
+                        color="primary"
+                        startContent={
+                            <Image width={20} height={20} src="/discord.png" alt="discord-icon"/>
+                        }
+                        onPress={() => {
+                            window.open('https://discord.gg/FzP3zuyW4s', '_target');
+                        }}>
+                        Lot's Go 디스코드
                     </Button>
                     <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
                         <Button
