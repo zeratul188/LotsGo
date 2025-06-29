@@ -55,6 +55,7 @@ import {
     getParsedText, 
     getSmallGradeByAccessory, 
     getSmallGradeByArm, 
+    getSrcByGrade, 
     getStatByType, 
     getSumStat, 
     getTextByGrade, 
@@ -328,6 +329,7 @@ type NewProfileComponentProps = {
 }
 export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
     const profile = file.profile;
+    const arkpassiveTitle = file.arkpassive.Title;
     const isMobile = useMobileQuery();
     return (
         <div className="w-full h-[max-content] sm:h-[300px] border-b-1 border-[#dddddd] dark:border-[#333333] bg-[#F6F6F6] dark:bg-[#111111]">
@@ -336,6 +338,7 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
                     <div className="flex gap-2">
                         <Chip color="secondary" variant="solid" radius="sm">{profile.ServerName}</Chip>
                         <Chip color="warning" variant="solid" radius="sm">{profile.CharacterClassName}</Chip>
+                        <Chip color="primary" variant="solid" radius="sm" className={clsx(arkpassiveTitle ? 'flex' : 'hidden')}>{arkpassiveTitle}</Chip>
                     </div>
                     <p className="fadedtext mt-4">{profile.Title ? profile.Title : '-'}{profile.GuildName ?` · ${profile.GuildName} 길드` : ''}</p>
                     {isBadge ? (
@@ -382,6 +385,14 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
                         <Chip color="secondary" variant="solid" radius="sm">{profile.ServerName}</Chip>
                         <Chip color="warning" variant="solid" radius="sm">{profile.CharacterClassName}</Chip>
                     </div>
+                    <Chip 
+                        color="primary" 
+                        variant="solid" 
+                        radius="sm" 
+                        className={clsx(
+                            'mt-2',
+                            arkpassiveTitle ? 'flex' : 'hidden')
+                        }>{arkpassiveTitle}</Chip>
                     <p className="text-[#dddddd] text-sm mt-4">{profile.Title ? profile.Title : '-'}{profile.GuildName ?` · ${profile.GuildName} 길드` : ''}</p>
                     {isBadge ? (
                         <div className="flex gap-2 items-center">
@@ -811,7 +822,11 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                 <div className="w-[130px] flex flex-col gap-[1px] h-full items-start">
                                                     {equip.items.map((item, idx) => (
                                                         <div key={idx} className="flex gap-1 text-[9pt] items-center">
-                                                            <div className={`${getBgColorByGrade(getSmallGradeByAccessory(equip.type, item).grade)} w-2 h-2 rounded-full`}/>
+                                                            <Image
+                                                                src={getSrcByGrade(getSmallGradeByAccessory(equip.type, item).grade)}
+                                                                width={16}
+                                                                height={16}
+                                                                alt={`effect-${idx}`}/>
                                                             <p className={getTextColorByGrade(getSmallGradeByAccessory(equip.type, item).grade)}>{getTextByGrade(getSmallGradeByAccessory(equip.type, item).grade)}</p>
                                                             <p className={clsx(
                                                                 getSmallGradeByAccessory(equip.type, item).grade === 'none' ? 'fadedtext' : ''
@@ -897,7 +912,11 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                         "flex gap-1 text-[9pt] items-center",
                                                         getSmallGradeByArm(item).name !== 'null' ? 'block' : 'hidden'
                                                     )}>
-                                                        <div className={`${getBgColorByGrade(getSmallGradeByArm(item).grade)} w-2 h-2 rounded-full`}/>
+                                                        <Image
+                                                            src={getSrcByGrade(getSmallGradeByArm(item).grade)}
+                                                            width={16}
+                                                            height={16}
+                                                            alt={`arm-effect-${idx}`}/>
                                                         <p className={getTextColorByGrade(getSmallGradeByArm(item).grade)}>{getTextByGrade(getSmallGradeByArm(item).grade)}</p>
                                                         <p className={clsx(
                                                             getSmallGradeByArm(item).grade === 'none' ? 'fadedtext' : ''
@@ -1456,6 +1475,7 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
                         <div key={index}>
                             <div className="w-full flex gap-1 items-center">
                                 <p className="grow fadedtext text-sm">{point.type}</p>
+                                <p className="fadedtext text-sm">{point.description} -</p>
                                 <p className={getColorByType(point.type)}>{point.point}</p>
                             </div>
                             <Progress
