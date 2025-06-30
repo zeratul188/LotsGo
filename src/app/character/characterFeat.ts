@@ -82,6 +82,18 @@ export function useClickUpdate(
                         newFile.skills = data.ArmorySkills;
                         newFile.collects = data.Collectibles;
                         newFile.avatars = data.ArmoryAvatars;
+                        
+                        await fetch('/api/caches/characters', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                nickname: nickname,
+                                file: newFile,
+                                expeditions: newExpeditions,
+                                combatPower: newFile.profile.CombatPower.replaceAll(',', '')
+                            })
+                        });
+
                         const inputRes = await fetch('/api/characters', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -170,6 +182,27 @@ export async function loadProfile(
         }
     }
 
+    const cacheRes = await fetch(`/api/caches/characters?nickname=${nickname}`);
+    if (cacheRes.ok) {
+        console.log(`loaded caches!`);
+        const data = await cacheRes.json();
+        const today = new Date();
+        const history: CharacterHistory = {
+            nickname: nickname,
+            job: data.file.profile.CharacterClassName,
+            level: Number(data.file.profile.ItemAvgLevel.replaceAll(',', '')),
+            server: data.file.profile.ServerName,
+            date: today
+        }
+        saveHistory(history);
+        setExpeditions(data.expeditions);
+        setFile(data.file);
+        setLoading(false);
+        setNothing(false);
+        setCombat(Number(data.combatPower));
+        return;
+    }
+
     const res = await fetch(`/api/characters?nickname=${nickname}`);
     let isPassed = false, savedCombat = 0;
 
@@ -181,6 +214,16 @@ export async function loadProfile(
         const hasPassed3Days = (now.getTime() - basedDate.getTime()) >= threeDaysInMs;
 
         if (!hasPassed3Days) {
+            await fetch('/api/caches/characters', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nickname: nickname,
+                    file: data.file,
+                    expeditions: data.expeditions,
+                    combatPower: data.combatPower
+                })
+            });
             const today = new Date();
             const history: CharacterHistory = {
                 nickname: nickname,
@@ -251,6 +294,16 @@ export async function loadProfile(
             newFile.skills = data.ArmorySkills;
             newFile.collects = data.Collectibles;
             newFile.avatars = data.ArmoryAvatars;
+            await fetch('/api/caches/characters', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nickname: nickname,
+                    file: newFile,
+                    expeditions: newExpeditions,
+                    combatPower: newFile.profile.CombatPower.replaceAll(',', '')
+                })
+            });
             const inputRes = await fetch('/api/characters', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1135,7 +1188,7 @@ export type ArkpassiveItem = {
     name: string,
     level: number,
     icon: string,
-    description: string
+    description: string | null
 }
 export function loadArkpassive(
     data: any | null, 
