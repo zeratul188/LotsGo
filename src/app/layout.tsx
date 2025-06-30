@@ -6,6 +6,7 @@ import Header from "./header/Header";
 import StoreClient from "./StoreClient";
 import Footer from "./footer/Footer";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: "로츠고 : 로스트아크 숙제 및 정보",
@@ -38,6 +39,7 @@ export default function RootLayout({
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
           crossOrigin="anonymous"
         />
+        <Analytics />
       </body>
     </html>
   );
