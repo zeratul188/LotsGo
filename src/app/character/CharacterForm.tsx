@@ -352,7 +352,7 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
                                     <span className="tail-box"></span>
                                 </span>
                             </div>
-                            <Tooltip showArrow content="후원자 뱃지"><div className="w-8 h-8"><VegaIcon/></div></Tooltip>
+                            <Tooltip showArrow content="후원자 뱃지"><div className="w-12 h-12"><VegaIcon/></div></Tooltip>
                         </div>
                     ) : <p className="text-2xl font-bold">{profile.CharacterName}</p>}
                     <div className="grow flex flex-col sm:flex-row items-end gap-2 mt-4">
@@ -405,7 +405,7 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
                                     <span className="tail-box-mobile"></span>
                                 </span>
                             </div>
-                            <Tooltip showArrow content="후원자 뱃지"><div className="w-6 h-6"><VegaIcon/></div></Tooltip>
+                            <Tooltip showArrow content="후원자 뱃지"><div className="w-12 h-12 text-white"><VegaIcon/></div></Tooltip>
                         </div>
                     ) : <p className="text-xl font-bold text-white">{profile.CharacterName}</p>}
                     <div className="grow grid grid-cols-[75px_1fr] mt-5">
