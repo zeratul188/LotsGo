@@ -251,7 +251,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
 
             const lastTime = parseInt(saved);
             const diff = Date.now() - lastTime;
-            const timeLeft = 10 * 1000 - diff;
+            const timeLeft = 60 * 1000 - diff;
 
             if (timeLeft <= 0) {
                 setDisableUpdate(false);
@@ -754,7 +754,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                 value={getCompleteSharedGoldCharacter(bosses, character)}
                                                 maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
                                                 className="w-full mb-2"/>
-                                            <span className="text-sm fadedtext">콘텐츠 귀속 골드 획득량</span>
+                                            <span className="text-sm fadedtext">귀속 골드 획득량</span>
                                             <Progress 
                                                 aria-label="all-gold"
                                                 size="sm"
@@ -900,6 +900,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                 key={idx}
                                                 showArrow
                                                 placement="left"
+                                                delay={1000}
                                                 content={
                                                     <div className="p-1 min-w-[160px]">
                                                         <p className="overflow-hidden text-ellipsis whitespace-nowrap font-bold">{getBossByContent(bosses, item.name) ? `${getBossByContent(bosses, item.name)?.name}` : ''}</p>

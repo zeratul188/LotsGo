@@ -7,13 +7,14 @@ import {
     Card, CardBody, CardFooter, CardHeader, 
     Chip, 
     Divider, 
-    Image, 
     Input, 
+    Image as HeroUIImage,
     Popover, PopoverContent, PopoverTrigger, 
     Progress, 
     Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, 
     Tooltip 
 } from "@heroui/react";
+import Image from 'next/image';
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
@@ -37,7 +38,6 @@ import {
     Gem, 
     getAllElixir, 
     getAllPower, 
-    getBgColorByGrade, 
     getCardByIndex, 
     getCardGems, 
     getCardSetNames, 
@@ -352,7 +352,7 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
                                     <span className="tail-box"></span>
                                 </span>
                             </div>
-                            <Tooltip showArrow content="후원자 뱃지"><div className="w-8 h-8"><VegaIcon/></div></Tooltip>
+                            <Tooltip showArrow content="후원자 뱃지"><div className="w-12 h-12"><VegaIcon/></div></Tooltip>
                         </div>
                     ) : <p className="text-2xl font-bold">{profile.CharacterName}</p>}
                     <div className="grow flex flex-col sm:flex-row items-end gap-2 mt-4">
@@ -405,7 +405,7 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
                                     <span className="tail-box-mobile"></span>
                                 </span>
                             </div>
-                            <Tooltip showArrow content="후원자 뱃지"><div className="w-6 h-6"><VegaIcon/></div></Tooltip>
+                            <Tooltip showArrow content="후원자 뱃지"><div className="w-12 h-12 text-white"><VegaIcon/></div></Tooltip>
                         </div>
                     ) : <p className="text-xl font-bold text-white">{profile.CharacterName}</p>}
                     <div className="grow grid grid-cols-[75px_1fr] mt-5">
@@ -565,7 +565,8 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                 <Image
                                                     src={equip.icon}
                                                     width={40}
-                                                    height={40}/>
+                                                    height={40}
+                                                    alt="equip-icon"/>
                                             </div>
                                             <div className="grow truncate">
                                                 <div className="flex gap-1 items-center">
@@ -603,7 +604,8 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                     <Image
                                                         src={equip.icon}
                                                         width={45}
-                                                        height={45}/>
+                                                        height={45}
+                                                        alt="detail-equip-icon"/>
                                                 </div>
                                                 <div className="grow">
                                                     <div className="flex gap-2">
@@ -807,7 +809,8 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                 <Image
                                                     src={equip.icon}
                                                     width={40}
-                                                    height={40}/>
+                                                    height={40}
+                                                    alt="accessories-icon"/>
                                             </div>
                                             <div className="grow">
                                                 <div className="flex gap-1 items-center">
@@ -845,7 +848,8 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                     <Image
                                                         src={equip.icon}
                                                         width={45}
-                                                        height={45}/>
+                                                        height={45}
+                                                        alt="detail-accessories-icon"/>
                                                 </div>
                                                 <div className="grow">
                                                     <div className="flex gap-2">
@@ -895,7 +899,8 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                             <Image
                                                 src={arm.icon}
                                                 width={40}
-                                                height={40}/>
+                                                height={40}
+                                                alt="arm-icon"/>
                                         </div>
                                         <div className="grow">
                                             <div className="flex gap-1 items-center">
@@ -935,7 +940,8 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                 <Image
                                                     src={arm.icon}
                                                     width={45}
-                                                    height={45}/>
+                                                    height={45}
+                                                    alt="detail-arm-icon"/>
                                             </div>
                                             <div className="grow">
                                                 <div className="flex gap-2">
@@ -982,7 +988,8 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                             <Image
                                                 src={stone.icon}
                                                 width={40}
-                                                height={40}/>
+                                                height={40}
+                                                alt="stone-icon"/>
                                         </div>
                                         <div className="grow">
                                             <div className="flex gap-1 items-center">
@@ -1009,7 +1016,8 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                 <Image
                                                     src={stone.icon}
                                                     width={45}
-                                                    height={45}/>
+                                                    height={45}
+                                                    alt="detail-stone-icon"/>
                                             </div>
                                             <div className="grow">
                                                 <div className="flex gap-2">
@@ -1091,7 +1099,8 @@ function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
                                         <Image
                                             src={gem.icon}
                                             width={44}
-                                            height={44}/>
+                                            height={44}
+                                            alt="gem-icon"/>
                                     </div>
                                     <Chip
                                         size="sm"
@@ -1123,7 +1132,8 @@ function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
                                         <Image
                                             src={gem.icon}
                                             width={44}
-                                            height={44}/>
+                                            height={44}
+                                            alt="detail-gem-icon"/>
                                     </div>
                                     <Chip
                                         size="sm"
@@ -1439,7 +1449,8 @@ function EngravingComponent({ file }: ProfileComponentProps) {
                                         <Image
                                             src={'/icons/stoneicon.png'}
                                             width={12}
-                                            height={20}/>
+                                            height={20}
+                                            alt="stone-icon"/>
                                         <p>X {engraving.stoneLevel}</p>
                                     </div>
                                 ) : <></>}
@@ -1470,19 +1481,18 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
             <CardHeader><p className="text-lg">아크패시브</p></CardHeader>
             <Divider/>
             <CardBody>
-                <div className="w-full flex flex-col gap-2">
+                <div className="w-full grid grid-cols-3 gap-2 mb-2">
                     {points.map((point, index) => (
-                        <div key={index}>
-                            <div className="w-full flex gap-1 items-center">
-                                <p className="grow fadedtext text-sm">{point.type}</p>
-                                <p className="fadedtext text-sm">{point.description} -</p>
-                                <p className={getColorByType(point.type)}>{point.point}</p>
-                            </div>
+                        <div key={index} className="flex flex-col items-center">
+                            <p className="fadedtext text-sm">{point.type}</p>
+                            <p className={`${getColorByType(point.type)} text-2xl font-bold`}>{point.point}</p>
+                            <Chip size="sm" variant="flat" className="mt-1">{point.description ? point.description : '미개방'}</Chip>
                             <Progress
                                 size="sm"
                                 color={getColorProgressArkpassive(point.type)}
                                 value={point.point}
-                                maxValue={point.max}/>
+                                maxValue={point.max}
+                                className="w-[70px] mt-2"/>
                         </div>
                     ))}
                 </div>
@@ -1506,11 +1516,12 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
                             <p className="max-w-[320px]">{item.description}</p>
                         </div>}>
                         <div className="flex gap-2 mb-2 items-center">
-                            <Image
+                            <HeroUIImage
                                 src={item.icon}
                                 width={24}
                                 height={24}
-                                radius="sm"/>
+                                radius="sm"
+                                alt="arkpassvie-icon"/>
                             <p className="fadedtext text-sm">{item.tier}티어</p>
                             <p className="text-sm">Lv.{item.level}</p>
                             <p className="grow text-sm">{item.name}</p>
@@ -1537,11 +1548,12 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
                             <p className="max-w-[320px]">{item.description}</p>
                         </div>}>
                         <div className="flex gap-2 mb-2 items-center">
-                            <Image
+                            <HeroUIImage
                                 src={item.icon}
                                 width={24}
                                 height={24}
-                                radius="sm"/>
+                                radius="sm"
+                                alt="arkpassvie-icon"/>
                             <p className="fadedtext text-sm">{item.tier}티어</p>
                             <p className="text-sm">Lv.{item.level}</p>
                             <p className="grow text-sm">{item.name}</p>
@@ -1568,11 +1580,12 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
                             <p className="max-w-[320px]">{item.description}</p>
                         </div>}>
                         <div className="flex gap-2 mb-2 items-center">
-                            <Image
+                            <HeroUIImage
                                 src={item.icon}
                                 width={24}
                                 height={24}
-                                radius="sm"/>
+                                radius="sm"
+                                alt="arkpassvie-icon"/>
                             <p className="fadedtext text-sm">{item.tier}티어</p>
                             <p className="text-sm">Lv.{item.level}</p>
                             <p className="grow text-sm">{item.name}</p>
