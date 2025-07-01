@@ -10,6 +10,8 @@ import { SkillComponent } from "./SkillForm";
 import { PointComponent } from "./PointForm";
 import { AvatarComponent } from "./AvatarForm";
 import { ExpeditionsComponent } from "./ExpeditionForm";
+import LineAd from "../ad/LineAd";
+import BoxAd from "../ad/BoxAd";
 
 export default function CharacterClient() {
     const characterForm = useCharacterForm();
@@ -86,6 +88,11 @@ export default function CharacterClient() {
                     setLoading={characterForm.setLoading}
                     setNickname={characterForm.setNickname}/>
                 <Divider/>
+                <div className="w-full flex justify-center overflow-hidden">
+                    <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px] mt-8">
+                        <LineAd isLoaded={true}/>
+                    </div>
+                </div>
                 <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 mx-auto mt-10">
                     <HistoryComponent 
                         setSearched={characterForm.setSearched} 
@@ -96,6 +103,19 @@ export default function CharacterClient() {
                         setLoading={characterForm.setLoading}
                         setNickname={characterForm.setNickname}/>
                 </div>
+                {isMobile ? (
+                    <div className="w-full flex justify-center px-4">
+                        <div className="w-full max-w-[360px] min-h-[100px] mt-8">
+                            <BoxAd isLoaded={true}/>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="w-full flex justify-center px-4 overflow-hidden mt-8">
+                        <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px] mt-8">
+                            <LineAd isLoaded={true}/>
+                        </div>
+                    </div>
+                )}
             </div>
         )
     }
@@ -116,6 +136,13 @@ export default function CharacterClient() {
         <>
             <div className="w-full">
                 <ProfileComponent file={characterForm.file} isBadge={characterForm.isBadge}/>
+                {!characterForm.isLoading ? (
+                    <div className="w-full flex justify-center px-4 overflow-hidden mt-4">
+                        <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px]">
+                            <LineAd isLoaded={!characterForm.isLoading}/>
+                        </div>
+                    </div>
+                ) : <></>}
                 <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto md960:relative">
                     <div className="w-full md960:w-[max-content] md960:absolute md960:top-4 md960:right-4 mb-4 md960:mb-0 flex flex-col md960:flex-row gap-3">
                         <Input
@@ -160,6 +187,19 @@ export default function CharacterClient() {
                             </Tab>
                         )}
                     </Tabs>
+                    {!characterForm.isLoading ? isMobile ? (
+                        <div className="w-full flex justify-center px-4">
+                            <div className="w-full max-w-[360px] min-h-[100px] mt-4">
+                                <BoxAd isLoaded={!characterForm.isLoading}/>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="w-full flex justify-center px-4 overflow-hidden mt-4">
+                            <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px]">
+                                <LineAd isLoaded={!characterForm.isLoading}/>
+                            </div>
+                        </div>
+                    ) : <></>}
                 </div>
             </div>
         </>
