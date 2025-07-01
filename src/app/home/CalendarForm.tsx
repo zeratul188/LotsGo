@@ -14,18 +14,27 @@ import {
 import { getBackgroundByGrade, getColorTextByGrade, SetStateFn } from "@/utiils/utils";
 import clsx from "clsx";
 
+export type ContentData = {
+    date: Date | null,
+    imgSrc: string
+}
+
 // state 관리
 function useCalendarForm() {
     const [islands, setIslands] = useState<Island[]>([]);
     const [islandTime, setIslandTime] = useState<Date | null>(null);
     const [notices, setNotices] = useState<Notice[]>([]);
     const [events, setEvents] = useState<LostarkEvent[]>([]);
+    const [gate, setGate] = useState<ContentData | null>(null);
+    const [boss, setBoss] = useState<ContentData | null>(null);
 
     return {
         islands, setIslands,
         islandTime, setIslandTime,
         notices, setNotices,
-        events, setEvents
+        events, setEvents,
+        gate, setGate,
+        boss, setBoss
     }
 }
 
@@ -235,6 +244,125 @@ function IslandComponent({ islands, islandTime }: IslandComponentProps) {
     )
 }
 
+// 카오스게이트, 필드보스 컴포넌트
+type ContentComponentProps = {
+    gate: ContentData | null,
+    boss: ContentData | null
+}
+function ContentComponent({ gate, boss }: ContentComponentProps) {
+    const [gateTimeLeft, setGateTimeLeft] = useState(() => gate ? gate.date ? gate.date.getTime() - Date.now() : 0 : 0);
+    const [bossTimeLeft, setBossTimeLeft] = useState(() => boss ? boss.date ? boss.date.getTime() - Date.now() : 0 : 0);
+
+    useEffect(() => {
+        const gateInterval = setInterval(() => {
+            if (gate) {
+                if (gate.date) {
+                    const diff = gate.date.getTime() - Date.now();
+                    if (diff <= 0) {
+                        setGateTimeLeft(0);
+                        clearInterval(gateInterval);
+                    } else {
+                        setGateTimeLeft(diff);
+                    }
+                } else {
+                    clearInterval(gateInterval);    
+                }
+            } else {
+                clearInterval(gateInterval);
+            }
+        }, 1000);
+        return () => clearInterval(gateInterval)
+    }, [gate]);
+
+    useEffect(() => {
+        const bossInterval = setInterval(() => {
+            if (boss) {
+                if (boss.date) {
+                    const diff = boss.date.getTime() - Date.now();
+                    if (diff <= 0) {
+                        setBossTimeLeft(0);
+                        clearInterval(bossInterval);
+                    } else {
+                        setBossTimeLeft(diff);
+                    }
+                } else {
+                    clearInterval(bossInterval);    
+                }
+            } else {
+                clearInterval(bossInterval);
+            }
+        }, 1000);
+        return () => clearInterval(bossInterval)
+    }, [boss]);
+
+    return (
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+            {gate ? (
+                <Card radius="sm">
+                    <CardBody>
+                        <div className="w-full flex gap-2 items-center">
+                            <Image 
+                                src={gate.imgSrc} 
+                                width={36}
+                                height={36} 
+                                alt={`gate-icon`} 
+                                radius="sm"/>
+                            <p className="grow">카오스 게이트</p>
+                            <div className="w-[max-content] flex gap-5 sm:gap-10 items-center">
+                                <div className="grow">
+                                    <p className="text-[8pt] fadedtext">다음 일정</p>
+                                    <p className={clsx(
+                                        "w-[max-content] text-lg",
+                                        getNextIslandTime(gate.date) === '일정 없음' ? 'fadedtext' : ''
+                                    )}>{getNextIslandTime(gate.date)}</p>
+                                </div>
+                                <div className="grow text-left flex flex-col">
+                                    <p className="text-[8pt] fadedtext">남은 시간</p>
+                                    <p className={clsx(
+                                        "text-lg w-[max-content]",
+                                        gateTimeLeft !== 0 ? '' : gate.date ? 'text-red-500' : 'fadedtext'
+                                    )}>{gateTimeLeft !== 0 ? formatTimeLeft(gateTimeLeft) : gate.date ? "출현" : '일정 없음'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </CardBody>
+                </Card>
+            ) : <></>}
+            {boss ? (
+                <Card radius="sm">
+                    <CardBody>
+                        <div className="w-full flex gap-2 items-center">
+                            <Image 
+                                src={boss.imgSrc} 
+                                width={36}
+                                height={36} 
+                                alt={`boss-icon`} 
+                                radius="sm"/>
+                            <p className="grow">필드보스</p>
+                            <div className="w-[max-content] flex gap-5 sm:gap-10 items-center">
+                                <div className="grow">
+                                    <p className="text-[8pt] fadedtext">다음 일정</p>
+                                    <p className={clsx(
+                                        "w-[max-content] text-lg",
+                                        getNextIslandTime(boss.date) === '일정 없음' ? 'fadedtext' : ''
+                                    )}>{getNextIslandTime(boss.date)}</p>
+                                </div>
+                                <div className="grow text-left flex flex-col">
+                                    <p className="text-[8pt] fadedtext">남은 시간</p>
+                                    <p className={clsx(
+                                        "text-lg w-[max-content]",
+                                        bossTimeLeft !== 0 ? '' : boss.date ? 'text-red-500' : 'fadedtext'
+                                    )}>{bossTimeLeft !== 0 ? formatTimeLeft(bossTimeLeft) : boss.date ? "출현" : "일정 없음"}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </CardBody>
+                </Card>
+            ) : <></>}
+        </div>
+    )
+}
+
 // 일정 (모험섬, 필드보스 등) 컴포넌트
 type CalendarComponentProps = {
     setLoaded: SetStateFn<boolean>
@@ -244,7 +372,7 @@ export default function CalendarComponent({ setLoaded }: CalendarComponentProps)
 
     useEffect(() => {
         const loadData = async () => {
-            const calenderPromise = loadCalendar(calendarForm.setIslands, calendarForm.setIslandTime);
+            const calenderPromise = loadCalendar(calendarForm.setIslands, calendarForm.setIslandTime, calendarForm.setGate, calendarForm.setBoss);
             const noticePromise =  loadNotices(calendarForm.setNotices);
             const eventPromise = loadEvents(calendarForm.setEvents);
             await Promise.all([calenderPromise, noticePromise, eventPromise]);
@@ -254,7 +382,8 @@ export default function CalendarComponent({ setLoaded }: CalendarComponentProps)
     }, []);
     
     return (
-        <div className="w-full">
+        <div className="w-full mt-10">
+            <ContentComponent gate={calendarForm.gate} boss={calendarForm.boss}/>
             <IslandComponent islands={calendarForm.islands} islandTime={calendarForm.islandTime}/>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-8">
                 <NoticeComponent notices={calendarForm.notices}/>

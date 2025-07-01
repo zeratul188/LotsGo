@@ -23,7 +23,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <head />
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+      </head>
       <body>
         <ClientOnly>
           <StoreClient>

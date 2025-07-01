@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+<url><loc>https://www.lotsgo.kr/calendar</loc><lastmod>2025-07-01T06:38:36.749Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.lotsgo.kr/login</loc><lastmod>2025-07-01T06:38:36.751Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.lotsgo.kr/policy</loc><lastmod>2025-07-01T06:38:36.751Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.lotsgo.kr</loc><lastmod>2025-07-01T06:38:36.751Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.lotsgo.kr/setting</loc><lastmod>2025-07-01T06:38:36.751Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.lotsgo.kr/terms</loc><lastmod>2025-07-01T06:38:36.751Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.lotsgo.kr/character</loc><lastmod>2025-07-01T06:38:36.751Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.lotsgo.kr/signup</loc><lastmod>2025-07-01T06:38:36.751Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.lotsgo.kr/checklist</loc><lastmod>2025-07-01T06:38:36.751Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+</urlset>

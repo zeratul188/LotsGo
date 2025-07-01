@@ -1,0 +1,10 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /administrator/
+
+# Host
+Host: https://www.lotsgo.kr
+
+# Sitemaps
+Sitemap: https://www.lotsgo.kr/sitemap.xml
