@@ -1,7 +1,6 @@
 'use client'
 import { 
     Tabs, Tab, 
-    addToast, 
     Card, CardBody, CardFooter, 
     Button,
     Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure,
@@ -40,8 +39,10 @@ function CubeComponent() {
     const [isLoading, setLoading] = useState(true);
     const [inputName, setInputName] = useState('');
     const [inputLevel, setInputLevel] = useState(0);
+    const [inputTier, setInputTier] = useState(0);
+    const [inputReward, setInputReward] = useState(0);
 
-    const onClickAddCube = useOnAddCube(inputName, inputLevel, cubes, setCubes, setInputName, setInputLevel);
+    const onClickAddCube = useOnAddCube(inputName, inputLevel, inputTier, inputReward, cubes, setCubes, setInputName, setInputLevel, setInputTier, setInputReward);
 
     useEffect(() => {
         const fetchCube = async () => {
@@ -72,6 +73,26 @@ function CubeComponent() {
                             value={inputLevel}
                             onValueChange={setInputLevel}
                             className="grow"/>
+                        <NumberInput
+                            isRequired
+                            label="티어"
+                            placeholder="1 ~ 4"
+                            minValue={0}
+                            maxValue={9}
+                            step={1}
+                            value={inputTier}
+                            onValueChange={setInputTier}
+                            className="grow"/>
+                        <NumberInput
+                            isRequired
+                            label="보상 (1레벨 보석 기준)"
+                            placeholder="0 ~ 9999"
+                            minValue={0}
+                            maxValue={9999}
+                            step={1}
+                            value={inputReward}
+                            onValueChange={setInputReward}
+                            className="grow"/>
                         <Button
                             color="primary"
                             size="lg"
@@ -82,6 +103,8 @@ function CubeComponent() {
                         <TableHeader>
                             <TableColumn>큐브명</TableColumn>
                             <TableColumn>권장 아이템 레벨</TableColumn>
+                            <TableColumn>티어</TableColumn>
+                            <TableColumn>보상 (1레벨 보석)</TableColumn>
                             <TableColumn>관리</TableColumn>
                         </TableHeader>
                         <TableBody emptyContent={"데이터가 존재하지 않습니다."}>
@@ -89,6 +112,8 @@ function CubeComponent() {
                                 <TableRow key={index}>
                                     <TableCell>{cube.name}</TableCell>
                                     <TableCell>{cube.level}</TableCell>
+                                    <TableCell>{cube.tier}</TableCell>
+                                    <TableCell>{cube.reward}</TableCell>
                                     <TableCell>
                                         <button 
                                             className="underline redbutton"
