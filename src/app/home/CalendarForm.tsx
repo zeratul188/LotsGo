@@ -11,20 +11,17 @@ import {
     ScrollShadow, 
     Tooltip 
 } from "@heroui/react";
-import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils";
+import { getBackgroundByGrade, getColorTextByGrade, SetStateFn } from "@/utiils/utils";
 import clsx from "clsx";
-import { useRouter } from "next/navigation";
 
 // state 관리
 function useCalendarForm() {
-    const [isLoading, setLoading] = useState(true);
     const [islands, setIslands] = useState<Island[]>([]);
     const [islandTime, setIslandTime] = useState<Date | null>(null);
     const [notices, setNotices] = useState<Notice[]>([]);
     const [events, setEvents] = useState<LostarkEvent[]>([]);
 
     return {
-        isLoading, setLoading,
         islands, setIslands,
         islandTime, setIslandTime,
         notices, setNotices,
@@ -239,7 +236,10 @@ function IslandComponent({ islands, islandTime }: IslandComponentProps) {
 }
 
 // 일정 (모험섬, 필드보스 등) 컴포넌트
-export default function CalendarComponent() {
+type CalendarComponentProps = {
+    setLoaded: SetStateFn<boolean>
+}
+export default function CalendarComponent({ setLoaded }: CalendarComponentProps) {
     const calendarForm = useCalendarForm();
 
     useEffect(() => {
@@ -248,14 +248,11 @@ export default function CalendarComponent() {
             const noticePromise =  loadNotices(calendarForm.setNotices);
             const eventPromise = loadEvents(calendarForm.setEvents);
             await Promise.all([calenderPromise, noticePromise, eventPromise]);
-            calendarForm.setLoading(false);
+            setLoaded(true);
         }
         loadData();
     }, []);
-
-    if (calendarForm.isLoading) {
-        return <LoadingComponent heightStyle="min-h-[500px]"/>
-    }
+    
     return (
         <div className="w-full">
             <IslandComponent islands={calendarForm.islands} islandTime={calendarForm.islandTime}/>
