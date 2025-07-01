@@ -4,13 +4,15 @@ import { useCalendarForm, WeekComponent } from "./CalendarForm"
 import { addToast, Divider } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { loadBosses, loadGuild, loadWorks, removeAutoCalendarsByGuild, removeAutoCalendarsByWorks } from "./calendarFeat";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { LoadingComponent } from "../UtilsCompnents";
-import BigComponent from "./CalendarForm";
+import { getAuth, onAuthStateChanged } from "firebase/auth";import BigComponent from "./CalendarForm";
+import LineAd from "../ad/LineAd";
+import BoxAd from "../ad/BoxAd";
+import { useMobileQuery } from "@/utiils/utils";
 
 export default function CalendarClient() {
     const calendarForm = useCalendarForm();
     const router = useRouter();
+    const isMobile = useMobileQuery();
 
     useEffect(() => {
         const auth = getAuth();
@@ -70,8 +72,6 @@ export default function CalendarClient() {
         }
     }, [calendarForm.guild]);
 
-    if (calendarForm.isLoading) return <LoadingComponent heightStyle="min-h-[calc(100vh-65px)]"/>
-
     return (
         <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
             <WeekComponent 
@@ -81,11 +81,31 @@ export default function CalendarClient() {
                 setWorks={calendarForm.setWorks}
                 setGuild={calendarForm.setGuild}/>
             <Divider className="mt-6 mb-4"/>
+            {!calendarForm.isLoading ? (
+                <div className="w-full flex justify-center overflow-hidden md960:pt-[110px]">
+                    <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px] mt-8">
+                        <LineAd isLoaded={!calendarForm.isLoading}/>
+                    </div>
+                </div>
+            ) : <></>}
             <BigComponent 
                 works={calendarForm.works} 
                 guild={calendarForm.guild}
                 setWorks={calendarForm.setWorks}
                 setGuild={calendarForm.setGuild}/>
+            {!calendarForm.isLoading ? isMobile ? (
+                <div className="w-full flex justify-center px-4">
+                    <div className="w-full max-w-[360px] min-h-[100px] mt-8">
+                    <BoxAd isLoaded={!calendarForm.isLoading}/>
+                    </div>
+                </div>
+            ) : (
+                <div className="w-full flex justify-center px-4 overflow-hidden mt-8">
+                    <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px] mt-8">
+                        <LineAd isLoaded={!calendarForm.isLoading}/>
+                    </div>
+                </div>
+            ) : <></>}
         </div>
     )
 }
