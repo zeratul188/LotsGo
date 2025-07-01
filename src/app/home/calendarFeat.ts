@@ -1,5 +1,6 @@
 import { SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
+import { ContentData } from "./CalendarForm";
 
 export type IslandItem = {
     name: string,
@@ -43,7 +44,9 @@ export async function loadEvents(setEvents: SetStateFn<LostarkEvent[]>) {
 // 로스트아크 API로부터 캘린더 정보 가져오는 함수
 export async function loadCalendar(
     setIslands: SetStateFn<Island[]>,
-    setIslandTime: SetStateFn<Date | null>
+    setIslandTime: SetStateFn<Date | null>,
+    setGate: SetStateFn<ContentData | null>,
+    setBoss: SetStateFn<ContentData | null>
 ) {
     const gamecontentLostarkRes = await fetch(`/api/lostark?value=null&code=2`);
     if (gamecontentLostarkRes.ok) {
@@ -83,6 +86,51 @@ export async function loadCalendar(
             setIslandTime(minTimes);
             setIslands(islands);
         }
+        const bossContentData: ContentData | null = {
+            date: null,
+            imgSrc: ''
+        }
+        const bossData = data.find((item: any) => item.CategoryName === '필드보스');
+        if (bossData) {
+            const imgSrc = bossData.ContentsIcon;
+            const nowDate = new Date();
+            let saveDate: Date | null = null;
+            for (const item of bossData.StartTimes) {
+                const itemDate = new Date(item);
+                const diffMs = Math.abs(itemDate.getTime() - nowDate.getTime());
+                const isOver3Hours = diffMs >= 3 * 60 * 60 * 1000;
+                if (nowDate.getTime() < itemDate.getTime() && !isOver3Hours) {
+                    saveDate = itemDate;
+                    break;
+                }
+            }
+            bossContentData.date = saveDate;
+            bossContentData.imgSrc = imgSrc;
+        }
+        setBoss(bossContentData);
+        const gateContentData: ContentData | null = {
+            date: null,
+            imgSrc: ''
+        }
+        const gateData = data.find((item: any) => item.CategoryName === '카오스게이트');
+        if (gateData) {
+            const imgSrc = gateData.ContentsIcon;
+            const nowDate = new Date();
+            let saveDate: Date | null = null;
+            for (const item of gateData.StartTimes) {
+                const itemDate = new Date(item);
+                itemDate.setMinutes(itemDate.getMinutes() + 10);
+                const diffMs = Math.abs(itemDate.getTime() - nowDate.getTime());
+                const isOver3Hours = diffMs >= 3 * 60 * 60 * 1000;
+                if (nowDate.getTime() < itemDate.getTime() && !isOver3Hours) {
+                    saveDate = itemDate;
+                    break;
+                }
+            }
+            gateContentData.date = saveDate;
+            gateContentData.imgSrc = imgSrc;
+        }
+        setGate(gateContentData);
     } else {
         if (gamecontentLostarkRes.status === 500) {
             addToast({
@@ -190,7 +238,7 @@ function isToday(today: Date, islandTime: Date): boolean {
 
 // 다음 모험섬 시간 출력
 export function getNextIslandTime(islandTime: Date | null): string {
-    if (islandTime !== null) {
+    if (islandTime) {
         const hourStr = String(islandTime.getHours()).padStart(2, '0');
         const minuteStr = String(islandTime.getMinutes()).padStart(2, '0');
         const secondStr = String(islandTime.getSeconds()).padStart(2, '0');
