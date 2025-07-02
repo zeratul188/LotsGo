@@ -31,6 +31,7 @@ import {
 } from "@heroui/react";
 import Image from "next/image";
 import { 
+    CubeStatue,
     DayValue, 
     getAllBoundGold, 
     getAllContentGold, 
@@ -42,12 +43,14 @@ import {
     getBossByContent, 
     getBossesById, 
     getCheckedResult, 
+    getColumnsByCubeTiers, 
     getCompleteBoundGoldCharacter, 
     getCompleteChecklist, 
     getCompleteGoldCharacter, 
     getCompleteSharedGoldCharacter, 
     getCountCube, 
     getCubeList, 
+    getCubeStatues, 
     getDayName, 
     getDiffByContent, 
     getHaveBoundGolds, 
@@ -1011,46 +1014,18 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         className="w-[18px] h-[18px]"/>
                                     <span>큐브 - 총합 {getAllCubeCount(character)}장</span>
                                 </span>}>
-                                    <Table removeWrapper>
-                                        <TableHeader>
-                                            <TableColumn>큐브명</TableColumn>
-                                            <TableColumn>개수</TableColumn>
-                                            <TableColumn className="w-[10px]">관리</TableColumn>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {getCubeList(character.level, cubes).map((cube, idx) => (
-                                                <TableRow key={idx}>
-                                                    <TableCell>{cube.name}</TableCell>
-                                                    <TableCell>{getCountCube(character.cubelist, cube.id).toLocaleString()}장</TableCell>
-                                                    <TableCell>
-                                                        <div className="flex gap-2">
-                                                            <Button
-                                                                size="sm"
-                                                                variant="flat"
-                                                                color="danger"
-                                                                isDisabled={getCountCube(character.cubelist, cube.id) <= 0}
-                                                                onPress={async () => {
-                                                                    await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, false);
-                                                                }}>감소</Button>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="flat"
-                                                                color="success"
-                                                                isDisabled={getCountCube(character.cubelist, cube.id) >= 9999}
-                                                                onPress={async () => {
-                                                                    await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, true);
-                                                                }}>증가</Button>
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
+                                <div>
+                                    <Tabs fullWidth aria-label="cube-tabs">
+                                        <Tab key="setting" title="개수">
+                                            <CubeCountComponent checklist={checklist} character={character} cubes={cubes} dispatch={dispatch}/>
+                                        </Tab>
+                                        <Tab key="statue" title="보상">
+                                            <CubeStatueComponent character={character} cubes={cubes}/>
+                                        </Tab>
+                                    </Tabs>
+                                </div>
                                 </AccordionItem>
                             </Accordion>
-                            <div>
-                                
-                            </div>
                         </CardFooter>
                     </Card>
                 ))}
@@ -1712,5 +1687,94 @@ function WeekContentComponent({
                     )}>추가</Button>
             </div>
         </>
+    )
+}
+
+// 큐브 갯수 확인 컴포넌트
+type CubeCountComponentProps = {
+    checklist: CheckCharacter[],
+    character: CheckCharacter,
+    cubes: Cube[],
+    dispatch: AppDispatch
+}
+function CubeCountComponent({ checklist, character, cubes, dispatch }: CubeCountComponentProps) {
+    return (
+        <Table removeWrapper>
+            <TableHeader>
+                <TableColumn>큐브명</TableColumn>
+                <TableColumn>개수</TableColumn>
+                <TableColumn className="w-[10px]">관리</TableColumn>
+            </TableHeader>
+            <TableBody>
+                {getCubeList(character.level, cubes).map((cube, idx) => (
+                    <TableRow key={idx}>
+                        <TableCell>{cube.name}</TableCell>
+                        <TableCell>{getCountCube(character.cubelist, cube.id).toLocaleString()}장</TableCell>
+                        <TableCell>
+                            <div className="flex gap-2">
+                                <Button
+                                    size="sm"
+                                    variant="flat"
+                                    color="danger"
+                                    isDisabled={getCountCube(character.cubelist, cube.id) <= 0}
+                                    onPress={async () => {
+                                        await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, false);
+                                    }}>감소</Button>
+                                <Button
+                                    size="sm"
+                                    variant="flat"
+                                    color="success"
+                                    isDisabled={getCountCube(character.cubelist, cube.id) >= 9999}
+                                    onPress={async () => {
+                                        await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, true);
+                                    }}>증가</Button>
+                            </div>
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    )
+}
+
+// 큐브 현황 컴포넌트
+type CubeStatueComponentProps = {
+    character: CheckCharacter,
+    cubes: Cube[]
+}
+function CubeStatueComponent({ character, cubes }: CubeStatueComponentProps) {
+    const cells: any = (statue: CubeStatue) => {
+        console.log(`cell : ${statue.cubeCount.length+1}`);
+        return [
+            <TableCell key="level">Lv.{statue.level}</TableCell>,
+            ...statue.cubeCount.map((count, idx) => (
+            <TableCell key={idx}>{count.count}개</TableCell>
+            )),
+        ];
+    }
+    const columns: any = () => {
+        console.log(`col : ${getColumnsByCubeTiers(cubes).length+1}`);
+        return (
+            <>
+                <TableColumn>보석 레벨</TableColumn>
+                {getColumnsByCubeTiers(cubes).map((tier: number, index: number) => (
+                    <TableColumn key={index}>T{tier}</TableColumn>
+                ))}
+            </>
+        )
+    }
+    return (
+        <Table removeWrapper>
+            <TableHeader>
+                {columns()}
+            </TableHeader>
+            <TableBody>
+                {getCubeStatues(character, cubes).map((statue, index) => (
+                    <TableRow key={index}>
+                        {cells(statue)}
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
     )
 }

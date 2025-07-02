@@ -5,7 +5,9 @@ import { NextRequest, NextResponse } from "next/server";
 export type Cube = {
     id: string,
     name: string,
-    level: number
+    level: number,
+    tier: number,
+    reward: number
 }
 
 export async function GET(_req: NextRequest) {
@@ -14,7 +16,9 @@ export async function GET(_req: NextRequest) {
         const cubes: Cube[] = snapshot.docs.map(doc => ({
             id: doc.id,
             name: doc.data().name,
-            level: Number(doc.data().level)
+            level: Number(doc.data().level),
+            tier: doc.data().tier ? Number(doc.data().tier) : 0,
+            reward: doc.data().reward ? Number(doc.data().reward) : 0
         }));
         return NextResponse.json(cubes);
     } catch(error) {

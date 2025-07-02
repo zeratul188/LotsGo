@@ -342,7 +342,9 @@ export async function getCubes(): Promise<Cube[]> {
     const cubes: Cube[] = snapshot.docs.map(doc => ({
         id: doc.id,
         name: doc.data().name,
-        level: Number(doc.data().level)
+        level: Number(doc.data().level),
+        tier: doc.data().tier ? Number(doc.data().tier) : 0,
+        reward: doc.data().reward ? Number(doc.data().reward) : 0
     }));
     cubes.sort((a, b) => a.level - b.level);
     return cubes;
@@ -1869,4 +1871,96 @@ export function getAllContentOtherGold(bosses: Boss[], checklist: CheckCharacter
         sumGold += character.otherGold;
     }
     return sumGold
+}
+
+// 티어 칼럼의 배열을 반환하는 함수
+export function getColumnsByCubeTiers(cubes: Cube[]): number[] {
+    const results: number[] = [];
+    for (const cube of cubes) {
+        if (!results.includes(cube.tier)) {
+            results.push(cube.tier);
+        }
+    }
+    return results;
+}
+
+// 큐브 현황 가져오기
+export type CubeStatue = {
+    level: number,
+    cubeCount: CubeCount[]
+}
+type CubeCount = {
+    tier: number,
+    count: number
+}
+export function getCubeStatues(character: CheckCharacter, cubes: Cube[]): CubeStatue[] {
+    const tiers: number[] = getColumnsByCubeTiers(cubes);
+    const allCounts: CubeCount[] = [];
+    for (const tier of tiers) {
+        const newCount: CubeCount = {
+            tier: tier,
+            count: 0
+        }
+        allCounts.push(newCount);
+    }
+    for (const data of character.cubelist) {
+        if (data.count > 0) {
+            const item = getCubeCountByID(cubes, data.id);
+            if (item) {
+                const index = allCounts.findIndex(c => c.tier === item.tier);
+                if (index !== -1) {
+                    const all = item.count * data.count;
+                    allCounts[index].count += all;
+                }
+            }
+        }
+    }
+    const statues: CubeStatue[] = [];
+    for (let i = 1; i <= 10; i++) {
+        const cubeCount: CubeCount[] = [];
+        for (const count of allCounts) {
+            const newCount: CubeCount = {
+                tier: count.tier,
+                count: 0
+            }
+            if (count.count > 0) {
+                const remainGems = count.count % 3;
+                newCount.count = remainGems;
+                count.count = Math.floor(count.count / 3);
+            }
+            cubeCount.push(newCount);
+        }
+        if (!isNotRemainGems(cubeCount)) {
+            const newStatue: CubeStatue = {
+                level: i,
+                cubeCount: cubeCount
+            }
+            statues.push(newStatue);
+        }
+    }
+    console.log(statues);
+    return statues;
+}
+
+// 보석 개수가 모든 티어가 0일 경우
+function isNotRemainGems(counts: CubeCount[]): boolean {
+    for (const count of counts) {
+        if (count.count > 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// 큐브 ID로 보석 티어와 개수 가져오기
+function getCubeCountByID(cubes: Cube[], id: string): CubeCount | null {
+    const cube = cubes.find(item => item.id === id);
+    if (cube) {
+        const cubeCount: CubeCount = {
+            tier: cube.tier,
+            count: cube.reward
+        }
+        return cubeCount;
+    }
+    return null;
 }
