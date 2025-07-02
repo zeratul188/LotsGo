@@ -32,8 +32,8 @@ export function useDeleteUser(
                     });
                     if (deleteRes.ok) {
                         const user = auth.currentUser;
-                        if (user && data.email) {
-                            const credenital = EmailAuthProvider.credential(data.email, password);
+                        if (user && data.decryptEmail) {
+                            const credenital = EmailAuthProvider.credential(data.decryptEmail, password);
                             reauthenticateWithCredential(user, credenital)
                                 .then(() => deleteUser(user))
                                 .then(() => {

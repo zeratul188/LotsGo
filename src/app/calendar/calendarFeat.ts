@@ -34,9 +34,11 @@ export async function getGuildName(): Promise<string> {
 
     if (lostarkRes.ok) {
         const data = await lostarkRes.json();
-        const guildName = data.GuildName;
+        if (data) {
+            const guildName = data.GuildName ?? '';
 
-        return guildName ? guildName : '';
+            return guildName ? guildName : '';
+        }
     }
 
     return '';
