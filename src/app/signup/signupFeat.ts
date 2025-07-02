@@ -7,6 +7,9 @@ import { addToast } from "@heroui/react";
 import { hashValue } from "@/utiils/bcrypt";
 import { useRouter } from "next/navigation";
 import type { SetStateFn } from "@/utiils/utils";
+import { decrypt, encrypt } from "@/utiils/crypto";
+
+const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
 export type Character = {
     nickname: string,
@@ -48,7 +51,7 @@ export function useClickDuplicateEmailCheck(
         });
         const snapshot = await getDocs(collection(firestore, 'members'));
         const emailList: string[] = snapshot.docs
-            .map(doc => doc.data().email)
+            .map(doc => decrypt(doc.data().email, secretKey))
             .filter((email): email is string => typeof email === 'string');
         if (emailList.includes(member.email)) {
             addToast({
@@ -382,7 +385,7 @@ export function useOnClickSignup(
                 await addDoc(collection(firestore, 'members'), {
                     uid: user.uid,
                     id: member.id,
-                    email: member.email.trim(),
+                    email: encrypt(member.email.trim(), secretKey),
                     character: member.character,
                     password: hashedPassword,
                     expeditions: expedition

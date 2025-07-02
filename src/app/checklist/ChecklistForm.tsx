@@ -1061,6 +1061,19 @@ function SettingButton({ size, checklist, characterIndex, dispatch }: SettingBut
                         await handleCheckGold(checklist, characterIndex, !checklist[characterIndex].isGold, dispatch);
                     }}>{checklist[characterIndex].isGold ? "골드 지정 해제" : "골드 지정"}</DropdownItem>
                 <DropdownItem 
+                    key="gold"
+                    startContent={
+                        <Image 
+                            src="/icons/cube.png" 
+                            width={18} 
+                            height={18} 
+                            alt="cubeicon"
+                            className="w-[18px] h-[18px]"/>
+                    }
+                    onPress={async () => {
+                        alert('testing');
+                    }}>큐브 초기화</DropdownItem>
+                <DropdownItem 
                     key="delete"
                     color="danger"
                     className="text-danger"
