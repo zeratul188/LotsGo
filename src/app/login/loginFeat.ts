@@ -93,6 +93,7 @@ export async function login(
         resultEmail = `${user.id.trim()}@whitetusk.com`;
     } else {
         resultEmail = decrypt(data.userData.email, secretKey);
+        console.log(resultEmail);
     }
 
     await signInWithEmailAndPassword(auth, resultEmail, user.password.trim())
