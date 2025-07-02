@@ -10,7 +10,6 @@ export default function TwoLineAd({ isLoaded }: { isLoaded: boolean }) {
             try {
                 (window as any).adsbygoogle = (window as any).adsbygoogle || [];
                 (window as any).adsbygoogle.push({});
-                console.log('pushed ad');
                 pushed.current = true;
             } catch (e) {
                 console.error(`Adsense error : `, e);

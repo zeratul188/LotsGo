@@ -5,6 +5,8 @@ import { hashValue } from "@/utiils/bcrypt";
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "firebase/auth";
 import { auth } from "@/utiils/firebase";
 
+const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
+
 // 비밀번호 변경 활성화 여부
 export function isDisableButton(
     nowPassword: string,
@@ -54,8 +56,8 @@ export function useChangePassword(
                 });
                 if (editRes.ok) {
                     const user = auth.currentUser;
-                    if (user && data.email) {
-                        const credenital = EmailAuthProvider.credential(data.email, nowPassword);
+                    if (user && data.decryptEmail) {
+                        const credenital = EmailAuthProvider.credential(data.decryptEmail, nowPassword);
                         reauthenticateWithCredential(user, credenital)
                             .then(() => updatePassword(user, newPassword))
                             .then(() => {
@@ -69,6 +71,12 @@ export function useChangePassword(
                                 setConfirmPassword('');
                             })
                             .catch((err) => console.error("에러 발생", err));
+                    } else {
+                        addToast({
+                            title: "알 수 없는 오류",
+                            description: `알 수 없는 오류가 발생하였습니다.`,
+                            color: "danger"
+                        });
                     }
                 } else {
                     addToast({
