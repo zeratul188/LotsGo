@@ -14,7 +14,9 @@ export async function loadCubes(
         const cubes: Cube[] = snapshot.docs.map(doc => ({
             id: doc.id,
             name: doc.data().name,
-            level: Number(doc.data().level)
+            level: Number(doc.data().level),
+            tier: doc.data().tier ? Number(doc.data().tier) : 0,
+            reward: doc.data().reward ? Number(doc.data().reward) : 0
         }));
         cubes.sort((a, b) => a.level - b.level);
         setCubes(cubes);
@@ -33,10 +35,14 @@ export async function loadCubes(
 export function useOnAddCube(
     inputName: string, 
     inputLevel: number, 
+    inputTier: number,
+    inputReward: number,
     cubes: Cube[],
     setCubes: SetStateFn<Cube[]>,
     setInputName: SetStateFn<string>,
-    setInputLevel: SetStateFn<number>
+    setInputLevel: SetStateFn<number>,
+    setInputTier: SetStateFn<number>,
+    setInputReward: SetStateFn<number>
 ) {
     return async () => {
         if (inputName.trim() === '') {
@@ -50,7 +56,9 @@ export function useOnAddCube(
         try {
             const cube = {
                 name: inputName,
-                level: inputLevel
+                level: inputLevel,
+                tier: inputTier,
+                reward: inputReward
             }
             const addRef = await addDoc(collection(firestore, 'cube'), cube);
             addToast({
@@ -61,7 +69,9 @@ export function useOnAddCube(
             const newCube: Cube = {
                 id: addRef.id,
                 name: inputName,
-                level: inputLevel
+                level: inputLevel,
+                tier: inputTier,
+                reward: inputReward
             }
             const newCubes: Cube[] = [...(cubes || []), newCube];
             newCubes.sort((a, b) => a.level - b.level);
@@ -76,6 +86,8 @@ export function useOnAddCube(
         }
         setInputName('');
         setInputLevel(0);
+        setInputTier(0);
+        setInputReward(0);
     }
 }
 

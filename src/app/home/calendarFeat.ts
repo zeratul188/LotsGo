@@ -215,10 +215,12 @@ function filterTodayItems(rewardItem: any): boolean {
 function filterTodayIslands(island: any): boolean {
     let isFinded = false;
     const today = new Date();
-    for (const time of island.StartTimes) {
-        const islandTime = new Date(time);
-        if (isToday(today, islandTime)) {
-            isFinded = true;
+    if (island.StartTimes) {
+        for (const time of island.StartTimes) {
+            const islandTime = new Date(time);
+            if (isToday(today, islandTime)) {
+                isFinded = true;
+            }
         }
     }
     return isFinded;
