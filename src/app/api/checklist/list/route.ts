@@ -186,6 +186,13 @@ export async function POST(req: NextRequest) {
                     checklist: updatedChecklist
                 });
                 return NextResponse.json({ message: '데이터 수정이 정상적으로 처리도었습니다.' }, { status: 200 });
+            case 'reset-cube':
+                characterIndex = body.characterIndex;
+                updatedChecklist[characterIndex].cubelist = [];
+                await updateDoc(docRef, {
+                    checklist: updatedChecklist
+                });
+                return NextResponse.json({ message: '데이터 수정이 정상적으로 처리도었습니다.' }, { status: 200 });
             default: 
                 return NextResponse.json({ message: '처리 종류를 선택하지 않았습니다.' }, { status: 400 });
         }

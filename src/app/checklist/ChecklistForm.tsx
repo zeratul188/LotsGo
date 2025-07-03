@@ -74,6 +74,7 @@ import {
     handleRemoveCharacter, 
     handleRemoveDayList, 
     handleRemoveWeekList, 
+    handleResetCube, 
     handleSelectCharacter, 
     handleWeekListCheck, 
     isBiweeklyContent, 
@@ -1061,7 +1062,7 @@ function SettingButton({ size, checklist, characterIndex, dispatch }: SettingBut
                         await handleCheckGold(checklist, characterIndex, !checklist[characterIndex].isGold, dispatch);
                     }}>{checklist[characterIndex].isGold ? "골드 지정 해제" : "골드 지정"}</DropdownItem>
                 <DropdownItem 
-                    key="gold"
+                    key="reset-cube"
                     startContent={
                         <Image 
                             src="/icons/cube.png" 
@@ -1071,7 +1072,9 @@ function SettingButton({ size, checklist, characterIndex, dispatch }: SettingBut
                             className="w-[18px] h-[18px]"/>
                     }
                     onPress={async () => {
-                        alert('testing');
+                        if (confirm('큐브 데이터를 삭제하시겠습니까? 한번 삭제한 데이터를 복구하실 수 없습니다.')) {
+                            await handleResetCube(checklist, characterIndex, dispatch);
+                        }
                     }}>큐브 초기화</DropdownItem>
                 <DropdownItem 
                     key="delete"

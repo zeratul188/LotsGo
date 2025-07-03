@@ -12,6 +12,7 @@ import {
     editWeekList, 
     removeCharacter, 
     removeWeek, 
+    resetCube, 
     saveData, 
     saveRest 
 } from "../store/checklistSlice";
@@ -1963,4 +1964,33 @@ function getCubeCountByID(cubes: Cube[], id: string): CubeCount | null {
         return cubeCount;
     }
     return null;
+}
+
+// 큐브 초기화
+export async function handleResetCube(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    dispatch: AppDispatch
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    dispatch(resetCube(characterIndex));
+    const editRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'reset-cube',
+            characterIndex: characterIndex
+        })
+    });
+    if (!editRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+    }
 }

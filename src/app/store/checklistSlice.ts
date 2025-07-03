@@ -179,6 +179,11 @@ const checklistSlice = createSlice({
         calculateOtherGold(state, action: PayloadAction<CalculateOtherGold>) {
             const characterIndex = action.payload.characterIndex;
             state.checklist[characterIndex].otherGold = action.payload.otherGold;
+        },
+        // 큐브 초기화
+        resetCube(state, action: PayloadAction<number>) {
+            const characterIndex = action.payload;
+            state.checklist[characterIndex].cubelist = [];
         }
     }
 })
@@ -196,6 +201,7 @@ export const {
     editCube,
     checkGold,
     removeCharacter,
-    calculateOtherGold
+    calculateOtherGold,
+    resetCube
 } = checklistSlice.actions;
 export default checklistSlice.reducer;
