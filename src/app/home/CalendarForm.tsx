@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { formatTimeLeft, getNextIslandTime, isHaveGold, Island, loadCalendar, loadEvents, loadNotices, LostarkEvent, Notice } from "./calendarFeat";
-import { LoadingComponent } from "../UtilsCompnents";
 import { 
     Button,
     Card, CardBody, CardFooter, CardHeader, 
@@ -60,30 +59,37 @@ function EventComponent({ events }: EventComponentProps) {
             </div>
             <Divider className="mt-4"/>
             <ScrollShadow className="w-full h-[600px] sm:h-[500px] pt-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {events.map((event, index) => (
-                        <Card 
-                            key={index} 
-                            isPressable
-                            onPress={() => window.open(event.link, '_blank')}>
-                            <CardBody className="overflow-visible p-0">
-                                <Image
-                                    alt={`event-${index}`}
-                                    className="w-full object-cover h-[180px]"
-                                    radius="md"
-                                    shadow="sm"
-                                    src={event.thumbnail}
-                                    width="100%"/>
-                            </CardBody>
-                            <CardFooter>
-                                <div className="w-full text-left">
-                                    <p className="text-lg truncate">{event.title}</p>
-                                    <p className="fadedtext text-sm truncate">{getStringByDate(event.startDate)} ~ {getStringByDate(event.endDate)}</p>
-                                </div>
-                            </CardFooter>
-                        </Card>
-                    ))}
-                </div>
+                {events.length > 0 ? (
+                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {events.map((event, index) => (
+                            <Card 
+                                key={index} 
+                                isPressable
+                                onPress={() => window.open(event.link, '_blank')}>
+                                <CardBody className="overflow-visible p-0">
+                                    <Image
+                                        alt={`event-${index}`}
+                                        className="w-full object-cover h-[180px]"
+                                        radius="md"
+                                        shadow="sm"
+                                        src={event.thumbnail}
+                                        width="100%"/>
+                                </CardBody>
+                                <CardFooter>
+                                    <div className="w-full text-left">
+                                        <p className="text-lg truncate">{event.title}</p>
+                                        <p className="fadedtext text-sm truncate">{getStringByDate(event.startDate)} ~ {getStringByDate(event.endDate)}</p>
+                                    </div>
+                                </CardFooter>
+                            </Card>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="w-full h-[240px] flex flex-col items-center justify-center">
+                        <p className="text-xl fadedtext">이벤트 정보가 없습니다.</p>
+                        <p className="text-sm fadedtext mt-2">로스트아크 점검 시간에는 데이터를 확인할 수 없습니다.</p>
+                    </div>
+                )}
             </ScrollShadow>
         </div>
     )
@@ -110,19 +116,26 @@ function NoticeComponent({ notices }: NoticeComponentProps) {
                 </Button>
             </div>
             <Divider className="mt-4"/>
-            <ScrollShadow className="w-full h-[500px]">
-                {notices.map((notice, index) => (
-                    <a href={notice.link} key={index} target="_blank">
-                        <div className={clsx(
-                            "w-full pr-2 pl-2 pt-4 pb-4 hover:bg-gray-100 dark:hover:bg-[#222222]",
-                            index !== 0 ? "border-t-1 border-[#dddddd] dark:border-[#222222]" : ""
-                        )}>
-                            <p className="text-md truncate">{notice.title}</p>
-                            <p className="fadedtext text-sm truncate">{getStringByDate(notice.date)}</p>
-                        </div>
-                    </a>
-                ))}
-            </ScrollShadow>
+            {notices.length > 0 ? (
+                <ScrollShadow className="w-full h-[500px]">
+                    {notices.map((notice, index) => (
+                        <a href={notice.link} key={index} target="_blank">
+                            <div className={clsx(
+                                "w-full pr-2 pl-2 pt-4 pb-4 hover:bg-gray-100 dark:hover:bg-[#222222]",
+                                index !== 0 ? "border-t-1 border-[#dddddd] dark:border-[#222222]" : ""
+                            )}>
+                                <p className="text-md truncate">{notice.title}</p>
+                                <p className="fadedtext text-sm truncate">{getStringByDate(notice.date)}</p>
+                            </div>
+                        </a>
+                    ))}
+                </ScrollShadow>
+            ) : (
+                <div className="w-full h-[240px] flex flex-col items-center justify-center">
+                    <p className="text-xl fadedtext">공지사항 정보가 없습니다.</p>
+                    <p className="text-sm fadedtext mt-2">로스트아크 점검 시간에는 데이터를 확인할 수 없습니다.</p>
+                </div>
+            )}
         </div>
     )
 }
