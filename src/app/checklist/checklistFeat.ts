@@ -12,6 +12,7 @@ import {
     editWeekList, 
     removeCharacter, 
     removeWeek, 
+    resetCube, 
     saveData, 
     saveRest 
 } from "../store/checklistSlice";
@@ -1938,7 +1939,6 @@ export function getCubeStatues(character: CheckCharacter, cubes: Cube[]): CubeSt
             statues.push(newStatue);
         }
     }
-    console.log(statues);
     return statues;
 }
 
@@ -1963,4 +1963,100 @@ function getCubeCountByID(cubes: Cube[], id: string): CubeCount | null {
         return cubeCount;
     }
     return null;
+}
+
+// 큐브 초기화
+export async function handleResetCube(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    dispatch: AppDispatch
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser.id;
+    dispatch(resetCube(characterIndex));
+    const editRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'reset-cube',
+            characterIndex: characterIndex
+        })
+    });
+    if (!editRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+    }
+}
+
+// 특정 캐릭터의 특정 큐브 갯수 반환 함수
+export function getCubeCountByCharacter(character: CheckCharacter, cube: Cube): number {
+    const cubeItem = character.cubelist.find(item => item.id === cube.id);
+    if (cubeItem) {
+        return cubeItem.count;
+    }
+    return 0;
+}
+
+// 특정 큐브의 전체 캐릭터의 큐브 개수를 반환하는 함수
+export function getCubeCountByChecklist(checklist: CheckCharacter[], cube: Cube): number {
+    let sum = 0;
+    for (const character of checklist) {
+        const cubeItem = character.cubelist.find(item => item.id === cube.id);
+        if (cubeItem) {
+            sum += cubeItem.count;
+        }
+    }
+    return sum;
+}
+
+// 보석 레벨 별 보석 개수 반환 함수
+export function getGemCountByCharacter(character: CheckCharacter, cubes: Cube[], tier: number): number[] {
+    let sum = 0;
+    for (const data of character.cubelist) {
+        if (data.count > 0) {
+            const item = getCubeCountByID(cubes, data.id);
+            if (item) {
+                if (item.tier === tier) {
+                    const all = item.count * data.count;
+                    sum += all;
+                }
+            }
+        }
+    }
+    const gems: number[] = [];
+    for (let i = 1; i <= 10; i++) {
+        gems.push(sum % 3);
+        sum = Math.floor(sum / 3);
+    }
+    return gems;
+}
+
+// 보석 레벨 별 전체 캐릭터의 보석 개수 반환 함수
+export function getGemCountByChecklist(checklist: CheckCharacter[], cubes: Cube[], tier: number): number[] {
+    let sum = 0;
+    for (const character of checklist) {
+        for (const data of character.cubelist) {
+            if (data.count > 0) {
+                const item = getCubeCountByID(cubes, data.id);
+                if (item) {
+                    if (item.tier === tier) {
+                        const all = item.count * data.count;
+                        sum += all;
+                    }
+                }
+            }
+        }
+    }
+    const gems: number[] = [];
+    for (let i = 1; i <= 10; i++) {
+        gems.push(sum % 3);
+        sum = Math.floor(sum / 3);
+    }
+    return gems;
 }
