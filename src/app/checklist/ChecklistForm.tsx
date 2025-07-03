@@ -49,10 +49,14 @@ import {
     getCompleteGoldCharacter, 
     getCompleteSharedGoldCharacter, 
     getCountCube, 
+    getCubeCountByCharacter, 
+    getCubeCountByChecklist, 
     getCubeList, 
     getCubeStatues, 
     getDayName, 
     getDiffByContent, 
+    getGemCountByCharacter, 
+    getGemCountByChecklist, 
     getHaveBoundGolds, 
     getHaveGolds, 
     getHaveSharedGolds, 
@@ -126,6 +130,7 @@ export function useChecklistForm() {
     const [life, setLife] = useState(0);
     const [max, setMax] = useState(0);
     const [isBlessing, setBlessing] = useState(false);
+    const [isShowCubeDetail, setShowCubeDetail] = useState(false)
 
     return {
         isLoading, setLoading,
@@ -136,7 +141,8 @@ export function useChecklistForm() {
         cubes, setCubes,
         life, setLife,
         isBlessing, setBlessing,
-        max, setMax
+        max, setMax,
+        isShowCubeDetail, setShowCubeDetail
     }
 }
 
@@ -1760,7 +1766,6 @@ type CubeStatueComponentProps = {
 }
 function CubeStatueComponent({ character, cubes }: CubeStatueComponentProps) {
     const cells: any = (statue: CubeStatue) => {
-        console.log(`cell : ${statue.cubeCount.length+1}`);
         return [
             <TableCell key="level">Lv.{statue.level}</TableCell>,
             ...statue.cubeCount.map((count, idx) => (
@@ -1769,7 +1774,6 @@ function CubeStatueComponent({ character, cubes }: CubeStatueComponentProps) {
         ];
     }
     const columns: any = () => {
-        console.log(`col : ${getColumnsByCubeTiers(cubes).length+1}`);
         return (
             <>
                 <TableColumn>보석 레벨</TableColumn>
@@ -1790,6 +1794,195 @@ function CubeStatueComponent({ character, cubes }: CubeStatueComponentProps) {
                         {cells(statue)}
                     </TableRow>
                 ))}
+            </TableBody>
+        </Table>
+    )
+}
+
+// 큐브 현황 컴포넌트
+type CubeDetailComponentProps = {
+    checklist: CheckCharacter[],
+    cubes: Cube[]
+}
+export function CubeDetailComponent({ checklist, cubes }: CubeDetailComponentProps) {
+    return (
+        <div className="w-full mt-4">
+            <p className="text-xl mb-2">큐브 전체 현황</p>
+            <Tabs aria-label="cube-detail">
+                <Tab key="setting" title="개수">
+                    <div className="max-w-full w-full overflow-x-auto">
+                        <CubeDetailCount checklist={checklist} cubes={cubes}/>
+                    </div>
+                </Tab>
+                <Tab key="statue" title="보상">
+                    <div className="max-w-full w-full overflow-x-auto">
+                        <CubeDetailGems checklist={checklist} cubes={cubes}/>
+                    </div>
+                </Tab>
+            </Tabs>
+        </div>
+    )
+}
+
+// 완성되는 보석 개수 가져오기
+function CubeDetailGems({ checklist, cubes }: CubeDetailComponentProps) {
+    const [tier, setTier] = useState(0);
+    const [selected, setSelected] = useState('');
+
+    useEffect(() => {
+        if (getColumnsByCubeTiers(cubes).length > 0) {
+            setTier(getColumnsByCubeTiers(cubes).reverse()[0]);
+            setSelected(`${getColumnsByCubeTiers(cubes).reverse()[0]}`);
+        }
+    }, []);
+
+    useEffect(() => {
+        setTier(Number(selected));
+    }, [selected])
+
+    const columns: any = () => {
+        return (
+            <>
+                <TableColumn>캐릭터 명</TableColumn>
+                {[...Array(10)].map((_, index) => (
+                    <TableColumn key={index}>{index+1}레벨 보석</TableColumn>
+                ))}
+            </>
+        )
+    }
+    const cells: any = (character: CheckCharacter) => {
+        return [
+            <TableCell key="level">{character.nickname}</TableCell>,
+            ...getGemCountByCharacter(character, cubes, tier).map((gem, idx) => (
+                <TableCell key={idx}>
+                    <Chip 
+                        size="sm" 
+                        color={gem > 0 ? 'primary' : 'default'} 
+                        variant="flat" 
+                        className="min-w-full text-center">
+                        {gem}
+                    </Chip>
+                </TableCell>
+            )),
+        ];
+    }
+    const allCells: any = () => {
+        return [
+            <TableCell key="all">전체</TableCell>,
+            ...getGemCountByChecklist(checklist, cubes, tier).map((gem, idx) => (
+                <TableCell key={idx}>
+                    <Chip 
+                        size="sm" 
+                        color={gem > 0 ? 'success' : 'default'} 
+                        variant="flat" 
+                        className="min-w-full text-center">
+                        {gem}
+                    </Chip>
+                </TableCell>
+            )),
+        ];
+    }
+    return (
+        <>
+            <RadioGroup 
+                color="primary" 
+                label="보석 티어 선택" 
+                defaultValue={getColumnsByCubeTiers(cubes).reverse()[0].toString()}
+                orientation="horizontal"
+                value={selected}
+                onValueChange={setSelected}>
+                {getColumnsByCubeTiers(cubes).reverse().map((t, index) => (
+                    <Radio key={index} value={`${t}`}>{t}티어</Radio>
+                ))}
+            </RadioGroup>
+            <div className="max-w-full w-full overflow-x-auto mt-4">
+                <Table 
+                    removeWrapper 
+                    className="min-w-full w-[1120px]">
+                    <TableHeader>
+                        {columns()}
+                    </TableHeader>
+                    <TableBody>
+                        <>
+                            {checklist.map((character, index) => (
+                                <TableRow key={index}>
+                                    {cells(character)}
+                                </TableRow>
+                            ))}
+                            <TableRow key="all" className="border-t-1 border-[#dddddd] dark:border-[#333333]">
+                                {allCells()}
+                            </TableRow>
+                        </>
+                    </TableBody>
+                </Table>
+            </div>
+        </>
+    )
+}
+
+// 전체 큐브 갯수 가져오기
+function CubeDetailCount({ checklist, cubes }: CubeDetailComponentProps) {
+    const columns: any = () => {
+        return (
+            <>
+                <TableColumn>캐릭터 명</TableColumn>
+                {cubes.map((cube, index) => (
+                    <TableColumn key={index}>{cube.name}</TableColumn>
+                ))}
+            </>
+        )
+    }
+    const cells: any = (character: CheckCharacter) => {
+        return [
+            <TableCell key="level">{character.nickname}</TableCell>,
+            ...cubes.map((cube, idx) => (
+                <TableCell key={idx}>
+                    <Chip 
+                        size="sm" 
+                        color={getCubeCountByCharacter(character, cube) > 0 ? 'primary' : 'default'} 
+                        variant="flat" 
+                        className="min-w-full text-center">
+                        {getCubeCountByCharacter(character, cube)}
+                    </Chip>
+                </TableCell>
+            )),
+        ];
+    }
+    const allCells: any = () => {
+        return [
+            <TableCell key="all">전체</TableCell>,
+            ...cubes.map((cube, idx) => (
+                <TableCell key={idx}>
+                    <Chip 
+                        size="sm" 
+                        color={getCubeCountByChecklist(checklist, cube) > 0 ? 'success' : 'default'} 
+                        variant="flat" 
+                        className="min-w-full text-center">
+                        {getCubeCountByChecklist(checklist, cube)}
+                    </Chip>
+                </TableCell>
+            )),
+        ];
+    }
+    return (
+        <Table 
+            removeWrapper 
+            className="min-w-full"
+            style={{ width: `${(cubes.length+1) * 100}px` }}>
+            <TableHeader>
+                {columns()}
+            </TableHeader>
+            <TableBody>
+                <>
+                    {checklist.map((character, index) => (
+                        <TableRow key={index}>
+                            {cells(character)}
+                        </TableRow>
+                    ))}
+                    <TableRow key="all" className="border-t-1 border-[#dddddd] dark:border-[#333333]">
+                        {allCells()}
+                    </TableRow>
+                </>
             </TableBody>
         </Table>
     )
