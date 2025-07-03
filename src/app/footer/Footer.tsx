@@ -32,26 +32,6 @@ export default function Footer() {
                         }}>
                         Lot's Go 디스코드
                     </Button>
-                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                        <Button
-                            fullWidth
-                            radius="sm"
-                            as={Link}
-                            size="sm"
-                            href="/policy"
-                            variant="flat">
-                            개인정보 처리방침
-                        </Button>
-                        <Button
-                            fullWidth
-                            radius="sm"
-                            as={Link}
-                            size="sm"
-                            href="/terms"
-                            variant="flat">
-                            이용약관
-                        </Button>
-                    </div>
                     <Popover>
                         <PopoverTrigger>
                             <Button

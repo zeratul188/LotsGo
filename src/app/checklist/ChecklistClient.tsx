@@ -1,5 +1,5 @@
 'use client'
-import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal } from "./ChecklistForm"
+import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent } from "./ChecklistForm"
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
 import { checkLogin, getBosses, getCubes, loadChecklist } from "./checklistFeat";
@@ -9,10 +9,11 @@ import { useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { CheckCharacter } from "../store/checklistSlice";
 import { Character } from "../store/loginSlice";
-import { addToast } from "@heroui/react";
+import { addToast, Button } from "@heroui/react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
+import clsx from "clsx";
 
 const BoxAd = dynamic(() => import('../ad/BoxAd'), { ssr: false });
 const LineAd = dynamic(() => import('../ad/LineAd'), { ssr: false });
@@ -86,10 +87,28 @@ export default function ChecklistClient() {
             ) : <></>}
             {checklistForm.isLoading ? <LoadingComponent heightStyle="min-h-[calc(100vh-65px)]"/> : (
                 <div>
-                    <SelectServer 
-                        checklist={checklist} 
-                        server={checklistForm.server}
-                        setServer={checklistForm.setServer}/>
+                    <div className="w-full flex flex-col sm:flex-row gap-2 sm:items-center">
+                        <div className="grow">
+                            <SelectServer 
+                                checklist={checklist} 
+                                server={checklistForm.server}
+                                setServer={checklistForm.setServer}/>
+                        </div>
+                        <Button
+                            radius="sm"
+                            color={checklistForm.isShowCubeDetail ? 'default' : 'primary'}
+                            variant="shadow"
+                            onPress={() => {
+                                checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail);
+                            }}>
+                            큐브 현황 {checklistForm.isShowCubeDetail ? '닫기' : "보기"}
+                        </Button>
+                    </div>
+                    <div className={clsx(
+                        checklistForm.isShowCubeDetail ? 'block' : 'hidden'
+                    )}>
+                        <CubeDetailComponent checklist={checklist} cubes={checklistForm.cubes}/>
+                    </div>
                     <ChecklistComponent 
                         checklist={checklist} 
                         server={checklistForm.server}
