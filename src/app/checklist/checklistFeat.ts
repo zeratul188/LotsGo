@@ -33,13 +33,7 @@ export function getIndexByNickname(checklist: CheckCharacter[], nickname: string
 export function checkLogin(): boolean {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const isAdministrator = localStorage.getItem('isAdministrator');
     if (!storedUser) {
-        addToast({
-            title: isAdministrator ? "관리자 이용 불가" : "이용 불가",
-            description: isAdministrator ? "관리자 계정은 해당 기능을 이용하실 수 없습니다." : `로그인을 해야만 이용 가능합니다.`,
-            color: "danger"
-        });
         return false;
     }
     return true;
