@@ -1,6 +1,6 @@
 'use client'
 import { useEffect } from "react";
-import { useCalendarForm, WeekComponent } from "./CalendarForm"
+import { NotLoginedComponent, useCalendarForm, WeekComponent } from "./CalendarForm"
 import { addToast, Divider } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { loadBosses, loadGuild, loadWorks, removeAutoCalendarsByGuild, removeAutoCalendarsByWorks } from "./calendarFeat";
@@ -17,16 +17,6 @@ export default function CalendarClient() {
     useEffect(() => {
         const auth = getAuth();
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                addToast({
-                    title: "이용 불가",
-                    description: `로그인을 해야만 이용 가능합니다.`,
-                    color: "danger"
-                });
-                router.push('/login');
-                return;
-            }
-
             const isAdministrator = localStorage.getItem('isAdministrator');
             if (isAdministrator === 'true') {
                 addToast({
@@ -37,17 +27,20 @@ export default function CalendarClient() {
                 router.push('/');
                 return;
             }
-
-            user.getIdToken().then(() => {
-                const loadData = async () => {
-                    const guildPromise = loadGuild(calendarForm.setGuild);
-                    const bossPromise = loadBosses(calendarForm.setBosses);
-                    const workPromise = loadWorks(calendarForm.setWorks);
-                    await Promise.all([guildPromise, bossPromise, workPromise]);
-                    calendarForm.setLoading(false);
-                }
-                loadData();
-            });
+            
+            if (user) {
+                calendarForm.setLogined(true);
+                user.getIdToken().then(() => {
+                    const loadData = async () => {
+                        const guildPromise = loadGuild(calendarForm.setGuild);
+                        const bossPromise = loadBosses(calendarForm.setBosses);
+                        const workPromise = loadWorks(calendarForm.setWorks);
+                        await Promise.all([guildPromise, bossPromise, workPromise]);
+                        calendarForm.setLoading(false);
+                    }
+                    loadData();
+                });
+            }
         });
         return () => unsubscribe();
     }, []);
@@ -57,20 +50,26 @@ export default function CalendarClient() {
             await removeAutoCalendarsByWorks(calendarForm.works, calendarForm.setWorks);
             calendarForm.setResetWorks(true);
         }
-        if (!calendarForm.resetWorks) {
+        if (!calendarForm.resetWorks && calendarForm.isLogined) {
             settingData();
         }
-    }, [calendarForm.works]);
+    }, [calendarForm.works, calendarForm.isLogined]);
 
     useEffect(() => {
         const settingData = async () => {
             await removeAutoCalendarsByGuild(calendarForm.guild, calendarForm.setGuild);
             calendarForm.setResetGuild(true);
         }
-        if (!calendarForm.resetGuild && calendarForm.guild) {
+        if (!calendarForm.resetGuild && calendarForm.guild && calendarForm.isLogined) {
             settingData();
         }
-    }, [calendarForm.guild]);
+    }, [calendarForm.guild, calendarForm.isLogined]);
+    
+    if (!calendarForm.isLogined) {
+        return (
+            <NotLoginedComponent/>
+        )
+    }
 
     return (
         <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">

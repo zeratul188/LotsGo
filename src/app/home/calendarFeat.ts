@@ -22,7 +22,7 @@ export type LostarkEvent = {
 }
 
 // 로스트아크 API로부터 이벤트 정보 가져오는 함수
-export async function loadEvents(setEvents: SetStateFn<LostarkEvent[]>) {
+export async function loadEvents(setEvents: SetStateFn<LostarkEvent[]>, setNotLoaded: SetStateFn<boolean>) {
     const eventLostarkRes = await fetch(`/api/lostark?value=null&code=4`);
     if (eventLostarkRes.ok) {
         const events: LostarkEvent[] = [];
@@ -38,6 +38,8 @@ export async function loadEvents(setEvents: SetStateFn<LostarkEvent[]>) {
             events.push(newEvent);
         }
         setEvents(events);
+    } else {
+        setNotLoaded(true);
     }
 }
 
@@ -46,7 +48,8 @@ export async function loadCalendar(
     setIslands: SetStateFn<Island[]>,
     setIslandTime: SetStateFn<Date | null>,
     setGate: SetStateFn<ContentData | null>,
-    setBoss: SetStateFn<ContentData | null>
+    setBoss: SetStateFn<ContentData | null>,
+    setNotLoaded: SetStateFn<boolean>
 ) {
     const gamecontentLostarkRes = await fetch(`/api/lostark?value=null&code=2`);
     if (gamecontentLostarkRes.ok) {
@@ -138,6 +141,7 @@ export async function loadCalendar(
                 description: `로스트아크가 점검중입니다.`,
                 color: "danger"
             });
+            setNotLoaded(true);
         } else {
             console.error(`Unable to load calendars data. (Error Status : ${gamecontentLostarkRes.status})`);
         }
@@ -159,7 +163,7 @@ export type Notice = {
 }
 
 // 로스트아크 API로부터 공지사항 데이터를 가져오는 함수
-export async function loadNotices(setNotices: SetStateFn<Notice[]>) {
+export async function loadNotices(setNotices: SetStateFn<Notice[]>, setNotLoaded: SetStateFn<boolean>) {
     const noticeLostarkRes = await fetch(`/api/lostark?value=null&code=3`);
     if (noticeLostarkRes.ok) {
         const notices: Notice[] = [];
@@ -174,6 +178,8 @@ export async function loadNotices(setNotices: SetStateFn<Notice[]>) {
             notices.push(newNotice);
         }
         setNotices(notices);
+    } else {
+        setNotLoaded(true);
     }
 }
 

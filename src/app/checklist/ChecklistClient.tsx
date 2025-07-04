@@ -1,5 +1,5 @@
 'use client'
-import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent } from "./ChecklistForm"
+import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent, NotLoginedComponent } from "./ChecklistForm"
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
 import { checkLogin, getBosses, getCubes, loadChecklist } from "./checklistFeat";
@@ -47,13 +47,8 @@ export default function ChecklistClient() {
             }
             loadCubes();
         })
-        if (!checkLogin()) {
-            addToast({
-                title: "이용 불가",
-                description: `로그인을 해야만 이용 가능합니다.`,
-                color: "danger"
-            });
-            router.push('/login');
+        if (checkLogin()) {
+            checklistForm.setLogined(true);
         }
         const isAdministrator = localStorage.getItem('isAdministrator');
         if (isAdministrator === 'true') {
@@ -65,6 +60,12 @@ export default function ChecklistClient() {
             router.push('/');
         }
     }, []);
+
+    if (!checklistForm.isLogined) {
+        return (
+            <NotLoginedComponent/>
+        )
+    }
 
     return (
         <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto relative">

@@ -135,7 +135,7 @@ export function SearchComponent({ setSearched, setLoading, setNickname }: Search
     return (
         <div className="w-full h-[300px] flex justify-center items-center flex-col">
             <h1 className="text-4xl sm:text-5xl font-bold">전투 정보실</h1>
-            <h2 className="text-xl sm:text-2xl mt-4">캐릭터명을 입력 후 검색해주세요.</h2>
+            <h2 className="text-xl sm:text-xl mt-4">캐릭터 정보를 확인하기 위해서 캐릭터명을 입력 후 검색해주세요.</h2>
             <div className="w-full sm:w-[500px] flex gap-3 mt-8 flex-col sm:flex-row">
                 <Input
                     size="lg"
@@ -1640,5 +1640,23 @@ export function NotFoundComponent({ nickname, setSearched, setLoading, setNickna
                 </Button>
             </div>
         </div>
+    )
+}
+
+// 전투 정보실 설명 컴포넌트
+export function InfomationComponent() {
+    return (
+        <Card radius="sm" className="border-2 border-[#e7a65c] dark:border-[#946c3f] bg-[#f1e8d4] dark:bg-[#1d150b] mt-8">
+            <CardBody>
+                <div>
+                    <h3 className="text-xl">전투 정보실은 캐릭터의 전투 정보를 검색하고 확인할 수 있습니다.</h3>
+                    <ul className="list-disc pl-4 mt-2">
+                        <li>검색한 캐릭터들의 장비, 특성, 전투력 등 캐릭터 정보를 확인할 수 있습니다.</li>
+                        <li>로그인 하시면 내 원정대 캐릭터 정보를 바로 확인할 수 있도록 목록을 확인할 수 있습니다.</li>
+                        <li>최근에 기록된 캐릭터들을 7일간 기록하여 최근에 기록한 캐릭터 정보를 다시 확인할 수 있습니다.</li>
+                    </ul>
+                </div>
+            </CardBody>
+        </Card>
     )
 }

@@ -27,7 +27,8 @@ import {
     PopoverContent,
     NumberInput,
     ModalFooter,
-    Switch
+    Switch,
+    Link
 } from "@heroui/react";
 import Image from "next/image";
 import { 
@@ -130,7 +131,8 @@ export function useChecklistForm() {
     const [life, setLife] = useState(0);
     const [max, setMax] = useState(0);
     const [isBlessing, setBlessing] = useState(false);
-    const [isShowCubeDetail, setShowCubeDetail] = useState(false)
+    const [isShowCubeDetail, setShowCubeDetail] = useState(false);
+    const [isLogined, setLogined] = useState(false);
 
     return {
         isLoading, setLoading,
@@ -142,7 +144,8 @@ export function useChecklistForm() {
         life, setLife,
         isBlessing, setBlessing,
         max, setMax,
-        isShowCubeDetail, setShowCubeDetail
+        isShowCubeDetail, setShowCubeDetail,
+        isLogined, setLogined
     }
 }
 
@@ -1985,5 +1988,326 @@ function CubeDetailCount({ checklist, cubes }: CubeDetailComponentProps) {
                 </>
             </TableBody>
         </Table>
+    )
+}
+
+// 비 로그인 시 표시되는 컴포넌트
+type Sample = {
+    name: string,
+    isSelected: boolean
+}
+export function NotLoginedComponent() {
+    const datas: Sample[] = [
+        {
+            name: '카제로스 레이드 - 3막 모르둠 하드',
+            isSelected: false
+        },
+        {
+            name: '카제로스 레이드 - 2막 아브렐슈드 하드',
+            isSelected: true
+        },
+        {
+            name: '카제로스 레이드 - 1막 에기르 하드',
+            isSelected: false
+        },
+        {
+            name: '군단장 레이드 - 카멘 하드 1~3관',
+            isSelected: false
+        }
+    ]
+    const [samples, setSamples] = useState<Sample[]>(datas);
+    const [isA, setA] = useState(false);
+    const [isB, setB] = useState(true);
+    return (
+        <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
+            <div className="w-[max-content] mt-8 sm:mt-30 flex flex-col items-center mx-auto">
+                <h2 className="w-[max-content] text-2xl sm:text-4xl font-bold">숙제 기능은 로그인 이후 이용 가능합니다.</h2>
+                <p className="mt-4 sm:mt-8 text-center">
+                    이 페이지는 로스트아크 캐릭터의 숙제 진행 상황을 시각화하여 확인할 수 있는 기능을 제공합니다.<br/>
+                    로그인하시면 직접 사용하는 캐릭터 정보를 기반으로 자동으로 데이터를 조회하고,<br/>
+                    주간 골드 수급, 큐브, 레이드, 생활 등 콘텐츠를 편리하게 확인할 수 있습니다.<br/>
+                    로스트아크의 반복 콘텐츠를 효율적으로 정리하고 싶다면 지금 로그인해보세요.
+                </p>
+                <Button
+                    as={Link}
+                    showAnchorIcon
+                    href="/login"
+                    color="primary"
+                    radius="sm"
+                    size="lg"
+                    variant="shadow"
+                    className="mt-10">
+                    로그인 이동
+                </Button>
+            </div>
+            <Divider className="mt-10 mb-10"/>
+            <div className="w-full sm:w-[640px] mx-auto">
+                <h3 className="mb-4 text-xl">숙제 기능에서의 캐릭터 예시</h3>
+                <Card fullWidth radius="sm">
+                    <CardHeader>
+                        <div className="w-full flex flex-col md960:flex-row items-center gap-2">
+                            <div className="w-full flex grow-1 flex-row md960:flex-col items-center">
+                                <div className="grow-1 w-full">
+                                    <div className="flex gap-2 items-center">
+                                        <Chip size="sm" color="warning" className={clsx(
+                                            "h-auto pt-0.5 pb-0.5 text-white dark:text-black"
+                                        )}>골드 지정</Chip>
+                                        <span className="fadedtext text-sm">@카단 · 창술사 · Lv.1740</span>
+                                    </div>
+                                    <div className="flex gap-2 items-center">
+                                        <span className="text-xl">홍길동</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <Popover showArrow>
+                                <PopoverTrigger>
+                                    <div className="w-full md960:w-[330px]">
+                                        <Tooltip showArrow content="클릭하면 부수입을 설정하실 수 있습니다.">
+                                            <Progress 
+                                                aria-label="all-gold"
+                                                size="sm"
+                                                color="warning"
+                                                label={(
+                                                    <div className="flex items-center">
+                                                        <Image 
+                                                            src="/icons/gold.png" 
+                                                            width={14} 
+                                                            height={14} 
+                                                            alt="goldicon"
+                                                            className="w-[16px] h-[16px]"/>
+                                                        <span className="ml-1 text-md">74000 / 90800</span>
+                                                    </div>
+                                                )}
+                                                showValueLabel
+                                                radius="sm"
+                                                value={74000}
+                                                maxValue={90800}
+                                                className="w-full cursor-pointer"/>
+                                        </Tooltip>
+                                    </div>
+                                </PopoverTrigger>
+                                <PopoverContent>
+                                    <div className="w-full sm300:w-[300px] pt-2">
+                                        <span className="text-sm fadedtext">콘텐츠 골드 획득량</span>
+                                        <Progress 
+                                            aria-label="all-gold"
+                                            size="sm"
+                                            color="primary"
+                                            label={(
+                                                <div className="flex items-center">
+                                                    <Image 
+                                                        src="/icons/gold.png" 
+                                                        width={14} 
+                                                        height={14} 
+                                                        alt="goldicon"
+                                                        className="w-[16px] h-[16px]"/>
+                                                    <span className="ml-1 text-md">40000 / 90800</span>
+                                                </div>
+                                            )}
+                                            showValueLabel
+                                            radius="sm"
+                                            value={40000}
+                                            maxValue={90800}
+                                            className="w-full mb-2"/>
+                                        <span className="text-sm fadedtext">귀속 골드 획득량</span>
+                                        <Progress 
+                                            aria-label="all-gold"
+                                            size="sm"
+                                            color="warning"
+                                            label={(
+                                                <div className="flex items-center">
+                                                    <Image 
+                                                        src="/icons/gold.png" 
+                                                        width={14} 
+                                                        height={14} 
+                                                        alt="goldicon"
+                                                        className="w-[16px] h-[16px]"/>
+                                                    <span className="ml-1 text-md">10800 / 90800</span>
+                                                </div>
+                                            )}
+                                            showValueLabel
+                                            radius="sm"
+                                            value={10800}
+                                            maxValue={90800}
+                                            className="w-full mb-2"/>
+                                        <span className="text-sm fadedtext">부수입</span>
+                                        <Progress 
+                                            aria-label="all-gold"
+                                            size="sm"
+                                            color="secondary"
+                                            label={(
+                                                <div className="flex items-center">
+                                                    <Image 
+                                                        src="/icons/gold.png" 
+                                                        width={14} 
+                                                        height={14} 
+                                                        alt="goldicon"
+                                                        className="w-[16px] h-[16px]"/>
+                                                    <span className="ml-1 text-md">20000 / 90800</span>
+                                                </div>
+                                            )}
+                                            showValueLabel
+                                            radius="sm"
+                                            value={20000}
+                                            maxValue={90800}
+                                            className="w-full mb-4"/>
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+                    </CardHeader>
+                    <Divider/>
+                    <CardBody>
+                        <div className="w-full flex flex-col md960:flex-row gap-2">
+                            <div className="grow">
+                                <Chip 
+                                    color="success" 
+                                    size="sm" 
+                                    variant="flat" 
+                                    radius="sm"
+                                    className="min-w-full text-center">일일 콘텐츠</Chip>
+                                <div 
+                                    className={clsx(
+                                        "max-w-full w-full mt-2 box-border p-1.5 pt-0.5",
+                                        isA ? "outline-2 outline-yellow-400 dark:outline-yellow-700 rounded-md bg-yellow-400/20 dark:bg-yellow-700/20" : ''
+                                    )}>
+                                    <Checkbox
+                                        size="sm"
+                                        color="warning"
+                                        lineThrough
+                                        radius="full"
+                                        isSelected={isA}
+                                        onValueChange={setA}
+                                        className="p-0 pl-2">
+                                        쿠르잔 전선
+                                    </Checkbox>
+                                    <div className={clsx(
+                                        "w-full h-[18px] relative mt-1",
+                                    )}>
+                                        <span className="w-full text-center text-[#444444] dark:text-[#aaaaaa] text-sm absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">휴식 게이지</span>
+                                            <div className="flex w-full h-full gap-1">
+                                            {Array.from({ length: 5 }).map((_, index) => (
+                                                <div key={index} className="grow h-full flex">
+                                                    <div className={clsx(
+                                                        "grow border-1 border-r-0 border-gray-300 dark:border-gray-700",
+                                                        index === 0 ? 'rounded-l-full' : '',
+                                                        4 >= (2*index + 1) ? 'bg-green-300 dark:bg-green-700' : "bg-[#111111]/15 dark:bg-[#111111]/30"
+                                                    )}/>
+                                                    <div className={clsx(
+                                                        "grow border-1 border-l-0 border-gray-300 dark:border-gray-700",
+                                                        index === 4 ? 'rounded-r-full' : '',
+                                                        4 >= (2*index + 2) ? 'bg-green-300 dark:bg-green-700' : "bg-[#111111]/15 dark:bg-[#111111]/30"
+                                                    )}/>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div 
+                                    className={clsx(
+                                        "max-w-full w-full mt-2 box-border p-1.5 pt-0.5",
+                                        isB ? "outline-2 outline-yellow-400 dark:outline-yellow-700 rounded-md bg-yellow-400/20 dark:bg-yellow-700/20" : ""
+                                    )}>
+                                    <Checkbox
+                                        size="sm"
+                                        color="warning"
+                                        lineThrough
+                                        radius="full"
+                                        isSelected={isB}
+                                        onValueChange={setB}
+                                        className="p-0 pl-2">
+                                        가디언 토벌
+                                    </Checkbox>
+                                    <div className={clsx(
+                                        "w-full h-[18px] relative mt-1",
+                                    )}>
+                                        <span className="w-full text-center text-[#444444] dark:text-[#aaaaaa] text-sm absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">휴식 게이지</span>
+                                            <div className="flex w-full h-full gap-1">
+                                            {Array.from({ length: 5 }).map((_, index) => (
+                                                <div key={index} className="grow h-full flex">
+                                                    <div className={clsx(
+                                                        "grow border-1 border-r-0 border-gray-300 dark:border-gray-700",
+                                                        index === 0 ? 'rounded-l-full' : '',
+                                                        5 >= (2*index + 1) ? 'bg-green-300 dark:bg-green-700' : "bg-[#111111]/15 dark:bg-[#111111]/30"
+                                                    )}/>
+                                                    <div className={clsx(
+                                                        "grow border-1 border-l-0 border-gray-300 dark:border-gray-700",
+                                                        index === 4 ? 'rounded-r-full' : '',
+                                                        5 >= (2*index + 2) ? 'bg-green-300 dark:bg-green-700' : "bg-[#111111]/15 dark:bg-[#111111]/30"
+                                                    )}/>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                <Button 
+                                    color="primary" 
+                                    variant="light" 
+                                    fullWidth 
+                                    size="sm" 
+                                    startContent={<AddIcon size={16}/>}
+                                    className="mt-4">추가</Button>
+                            </div>
+                            <Divider className="block md960:hidden"/>
+                            <Divider orientation="vertical" className="hidden md960:block"/>
+                            <div className="grow-2">
+                                <Chip 
+                                    color="secondary" 
+                                    size="sm" 
+                                    variant="flat" 
+                                    radius="sm"
+                                    className="min-w-full text-center">주간 콘텐츠</Chip>
+                                <div className="pl-2.5">
+                                    {samples.map((item, idx) => (
+                                        <div key={idx}>
+                                            <Checkbox
+                                                lineThrough
+                                                size="sm"
+                                                radius="full"
+                                                isSelected={item.isSelected}
+                                                className={clsx(
+                                                    "max-w-full w-full mt-3 box-border p-1.5",
+                                                    item.isSelected ? 'outline-2 outline-blue-400 dark:outline-blue-800 rounded-md bg-blue-400/20 dark:bg-blue-800/20' : ''
+                                                )}
+                                                onValueChange={(isSelected) => {
+                                                    const copyArray = structuredClone(samples);
+                                                    copyArray[idx].isSelected = isSelected;
+                                                    setSamples(copyArray);
+                                                }}>
+                                                <span className="flex items-center gap-1">
+                                                    <span>{item.name}</span>
+                                                </span>
+                                            </Checkbox>
+                                        </div>
+                                    ))}
+                                </div>
+                                <Button 
+                                    color="primary" 
+                                    variant="light" 
+                                    fullWidth 
+                                    size="sm" 
+                                    startContent={<AddIcon size={16}/>}
+                                    className="mt-4">추가</Button>
+                            </div>
+                        </div>
+                    </CardBody>
+                </Card>
+                <div className="mt-8">
+                    <h3 className="text-xl">숙제 주요 기능</h3>
+                    <ul className="list-disc pl-4">
+                        <li className="font-bold">⚔️ 일일 & 주간 숙제 기록</li>
+                        <p>각 캐릭터의 카오스 던전, 가디언 토벌, 에포나, 레이드 등 주요 콘텐츠 진행 상황을 기록할 수 있습니다.</p>
+                        <li className="font-bold">📊 캐릭터별 숙제 진행률 시각화</li>
+                        <p>각 캐릭터의 숙제 완료 비율을 퍼센트로 확인할 수 있어, 숙제 누락 방지에 도움이 됩니다.</p>
+                        <li className="font-bold">🧙 서버별 캐릭터 정렬</li>
+                        <p>선택한 서버 기준으로 캐릭터들을 구분하고 한눈에 볼 수 있는 인터페이스를 제공합니다.</p>
+                        <li className="font-bold">💰 골드 수급량 추적 기능</li>
+                        <p>주간 골드 수급 목표 대비 현재 달성률을 자동 계산하여 보여줍니다.</p>
+                        <li className="font-bold">💎 큐브 관리</li>
+                        <p>단순 콘텐츠 외에도 큐브의 개수를 기록할 수 있으며, 가지고 있는 큐브가 몇개의 보석을 얻을 수 있는지 확인할 수 있습니다.</p>
+                    </ul>
+                </div>
+            </div>
+        </div>
     )
 }
