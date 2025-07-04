@@ -2020,8 +2020,8 @@ export function NotLoginedComponent() {
     const [isB, setB] = useState(true);
     return (
         <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
-            <div className="w-[max-content] mt-8 sm:mt-30 flex flex-col items-center mx-auto">
-                <h2 className="w-[max-content] text-2xl sm:text-4xl font-bold">숙제 기능은 로그인 이후 이용 가능합니다.</h2>
+            <div className="w-full sm:w-[max-content] mt-8 sm:mt-30 flex flex-col items-center mx-auto">
+                <h2 className="w-full sm:w-[max-content] text-xl sm:text-4xl font-bold text-center">숙제 기능은 로그인 이후 이용 가능합니다.</h2>
                 <p className="mt-4 sm:mt-8 text-center">
                     이 페이지는 로스트아크 캐릭터의 숙제 진행 상황을 시각화하여 확인할 수 있는 기능을 제공합니다.<br/>
                     로그인하시면 직접 사용하는 캐릭터 정보를 기반으로 자동으로 데이터를 조회하고,<br/>

@@ -99,19 +99,6 @@ export default function CharacterClient() {
                         setLoading={characterForm.setLoading}
                         setNickname={characterForm.setNickname}/>
                 </div>
-                {isMobile ? (
-                    <div className="w-full flex justify-center px-4">
-                        <div className="w-full max-w-[360px] min-h-[100px] mt-8">
-                            <BoxAd isLoaded={true}/>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="w-full flex justify-center px-4 overflow-hidden mt-8">
-                        <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px] mt-8">
-                            <LineAd isLoaded={true}/>
-                        </div>
-                    </div>
-                )}
             </div>
         )
     }
