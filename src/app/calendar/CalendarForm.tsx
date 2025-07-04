@@ -672,8 +672,8 @@ export default function BigComponent({ works, guild, setWorks, setGuild }: BigCo
 export function NotLoginedComponent() {
     return (
         <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
-            <div className="w-[max-content] mt-8 sm:mt-30 flex flex-col items-center mx-auto">
-                <h2 className="w-[max-content] text-2xl sm:text-4xl font-bold">일정 관리 기능은 로그인 이후 이용 가능합니다.</h2>
+            <div className="w-full sm:w-[max-content] mt-8 sm:mt-30 flex flex-col items-center mx-auto">
+                <h2 className="w-full sm:w-[max-content] text-xl sm:text-4xl font-bold text-center">일정 관리 기능은 로그인 이후 이용 가능합니다.</h2>
                 <p className="mt-4 sm:mt-8 text-center">
                     길드 및 개인 일정을 효율적으로 정리할 수 있는 로스트아크 유저용 캘린더 기능입니다.<br/>
                     로그인 후 직접 일정을 추가하고, 주간 콘텐츠를 자동으로 확인할 수 있습니다.
