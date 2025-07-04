@@ -382,14 +382,17 @@ type CalendarComponentProps = {
 }
 export default function CalendarComponent({ setLoaded }: CalendarComponentProps) {
     const calendarForm = useCalendarForm();
+    const [isNotLoaded, setNotLoaded] = useState(false);
 
     useEffect(() => {
         const loadData = async () => {
-            const calenderPromise = loadCalendar(calendarForm.setIslands, calendarForm.setIslandTime, calendarForm.setGate, calendarForm.setBoss);
-            const noticePromise =  loadNotices(calendarForm.setNotices);
-            const eventPromise = loadEvents(calendarForm.setEvents);
+            const calenderPromise = loadCalendar(calendarForm.setIslands, calendarForm.setIslandTime, calendarForm.setGate, calendarForm.setBoss, setNotLoaded);
+            const noticePromise =  loadNotices(calendarForm.setNotices, setNotLoaded);
+            const eventPromise = loadEvents(calendarForm.setEvents, setNotLoaded);
             await Promise.all([calenderPromise, noticePromise, eventPromise]);
-            setLoaded(true);
+            if (!isNotLoaded) {
+                setLoaded(true);
+            }
         }
         loadData();
     }, []);

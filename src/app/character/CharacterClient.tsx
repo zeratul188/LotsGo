@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from "react";
 import { LoadingComponent } from "../UtilsCompnents";
-import { AbilityComponent, ExpeditionComponent, HistoryComponent, NotFoundComponent, ProfileComponent, SearchComponent, useCharacterForm } from "./CharacterForm"
+import { AbilityComponent, ExpeditionComponent, HistoryComponent, InfomationComponent, NotFoundComponent, ProfileComponent, SearchComponent, useCharacterForm } from "./CharacterForm"
 import { useSearchParams } from "next/navigation";
 import { Button, Divider, Input, Tab, Tabs, Tooltip } from "@heroui/react";
 import { handleSearch, loadProfile, useClickUpdate } from "./characterFeat";
@@ -88,12 +88,8 @@ export default function CharacterClient() {
                     setLoading={characterForm.setLoading}
                     setNickname={characterForm.setNickname}/>
                 <Divider/>
-                <div className="w-full flex justify-center overflow-hidden">
-                    <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px] mt-8">
-                        <LineAd isLoaded={true}/>
-                    </div>
-                </div>
-                <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 mx-auto mt-10">
+                <InfomationComponent/>
+                <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 mx-auto mt-4">
                     <HistoryComponent 
                         setSearched={characterForm.setSearched} 
                         setLoading={characterForm.setLoading}

@@ -32,7 +32,8 @@ import {
     Textarea,
     Popover,
     PopoverTrigger,
-    PopoverContent
+    PopoverContent,
+    Link
 } from "@heroui/react";
 import {DateValue, getLocalTimeZone, now} from "@internationalized/date";
 import { getWeekContents, getWeekDifficultys } from "../checklist/checklistFeat";
@@ -47,6 +48,7 @@ export function useCalendarForm() {
     const [isLoading, setLoading] = useState(true);
     const [resetWorks, setResetWorks] = useState(false);
     const [resetGuild, setResetGuild] = useState(false);
+    const [isLogined, setLogined] = useState(false);
 
     return {
         guild, setGuild,
@@ -54,7 +56,8 @@ export function useCalendarForm() {
         isLoading, setLoading,
         works, setWorks,
         resetWorks, setResetWorks,
-        resetGuild, setResetGuild
+        resetGuild, setResetGuild,
+        isLogined, setLogined
     }
 }
 
@@ -664,4 +667,41 @@ export default function BigComponent({ works, guild, setWorks, setGuild }: BigCo
             </div>
         </div>
     );
+}
+
+export function NotLoginedComponent() {
+    return (
+        <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
+            <div className="w-[max-content] mt-8 sm:mt-30 flex flex-col items-center mx-auto">
+                <h2 className="w-[max-content] text-2xl sm:text-4xl font-bold">일정 관리 기능은 로그인 이후 이용 가능합니다.</h2>
+                <p className="mt-4 sm:mt-8 text-center">
+                    길드 및 개인 일정을 효율적으로 정리할 수 있는 로스트아크 유저용 캘린더 기능입니다.<br/>
+                    로그인 후 직접 일정을 추가하고, 주간 콘텐츠를 자동으로 확인할 수 있습니다.
+                </p>
+                <Button
+                    as={Link}
+                    showAnchorIcon
+                    href="/login"
+                    color="primary"
+                    radius="sm"
+                    size="lg"
+                    variant="shadow"
+                    className="mt-10">
+                    로그인 이동
+                </Button>
+            </div>
+            <Divider className="mt-10 mb-10"/>
+            <div className="w-full sm:w-[640px] mx-auto">
+                <h3 className="text-xl">일정 주요 기능</h3>
+                <ul className="list-disc pl-4">
+                    <li className="font-bold">🗓 개인 일정 기록 및 확인</li>
+                    <p>지인 또는 개인이 기억해야 할 일정을 기록하고 확인할 수 있습니다.</p>
+                    <li className="font-bold">👥 길드원들과 공유되는 공동 일정 관리</li>
+                    <p>대표 캐릭터가 가입된 길드 단위로 주간 콘텐츠, 이벤트 일정을 공유하여 구성원 전체가 한눈에 확인할 수 있습니다.</p>
+                    <li className="font-bold">🧹 일정 자동 관리</li>
+                    <p>이미 시간이 지난 일정은 별도로 삭제하지 않아도 자동으로 삭제하며 관리해줍니다.</p>
+                </ul>
+            </div>
+        </div>
+    )
 }
