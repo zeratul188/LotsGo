@@ -3,7 +3,7 @@ import CharacterClient from "./CharacterClient";
 
 export const metadata: Metadata = {
     title: '전투정보실 · 로츠고 Lot\'s Go',
-    description: '로스트아크의 캐릭터 장비, 보석, 트라이포드, 카드 세팅 등 상세 정보를 확인할 수 있어요.',
+    description: '전투정보실을 통해 캐릭터의 장비, 각인, 보석, 카드, 아바타, 원정대 등 다양한 전투 세팅을 확인할 수 있습니다. 다른 유저의 세팅도 검색하고 비교할 수 있어 효율적인 세팅 구성이 가능합니다.',
 };
 
 export default function Character() {
