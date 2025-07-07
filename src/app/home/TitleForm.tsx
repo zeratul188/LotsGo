@@ -52,7 +52,7 @@ export default function TitleComponent() {
             </div>
             <div className="w-[300px] sm:w-[500px] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
                 <LogoComponent/>
-                <p className="text-lg sm:text-2xl mb-4 sm:mb-8">로스트아크 숙제 관리 및 정보 사이트</p>
+                <h1 className="text-lg sm:text-2xl mb-4 sm:mb-8">로스트아크 숙제 관리 및 정보 사이트</h1>
                 <Input 
                     size="lg"
                     radius="sm"
