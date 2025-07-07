@@ -35,11 +35,13 @@ export function LogoComponent() {
                 src="title(L).png" 
                 width={340} 
                 className="dark:hidden cursor-pointer"
+                alt="로츠고 로고 이미지"
                 onClick={() => location.href = '/'}/>
             <Image 
                 src="title(D).png" 
                 width={340} 
                 className="hidden dark:block cursor-pointer"
+                alt="로츠고 로고 이미지"
                 onClick={() => location.href = '/'}/>
         </div>
     )

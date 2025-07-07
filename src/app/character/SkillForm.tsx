@@ -170,7 +170,8 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                         {skill.rune ? <Image
                                             src={skill.rune.icon}
                                             width={28}
-                                            height={28}/> : <></>}
+                                            height={28}
+                                            alt="스킬에 장착된 룬 이미지"/> : <></>}
                                     </div>
                                     <p className={`${getColorTextByGrade(skill.rune ? skill.rune.grade : '')}`}>{skill.rune ? `${skill.rune.grade} ${skill.rune.name}` : '-'}</p>
                                 </div>
@@ -183,7 +184,8 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                                         <Image
                                                             src={skill.attackGem!.icon}
                                                             width={40}
-                                                            height={40}/>
+                                                            height={40}
+                                                            alt="스킬에 장착된 겁화/멸화 이미지"/>
                                                     ) : <></>}
                                                 </div>
                                                 {skill.attackGem ? (
@@ -214,7 +216,8 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                                         <Image
                                                             src={skill.timeGem!.icon}
                                                             width={40}
-                                                            height={40}/>
+                                                            height={40}
+                                                            alt="스킬에 장착된 작열/홍염 이미지"/>
                                                     ) : <></>}
                                                 </div>
                                                 {skill.timeGem ? (

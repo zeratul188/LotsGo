@@ -44,7 +44,7 @@ export default function TitleComponent() {
             <div className=" w-full lg1280:w-[1280px] h-[260px] sm:h-[340px] md960:h-[500px] [mask-image:linear-gradient(to_bottom,black,black,black,transparent)] lg1280:[mask-image:linear-gradient(to_right,transparent,black,black,transparent),linear-gradient(to_bottom,black,black,black,transparent)] [mask-composite:intersect]">
                 <Image
                     src="/mainbg.jpg"
-                    alt="mainbg"
+                    alt="주요 배경 이미지"
                     width={500}
                     height={500}
                     className="w-full lg1280:x-[1920px] h-full object-cover"/>
