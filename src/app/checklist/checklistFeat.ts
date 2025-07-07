@@ -73,8 +73,15 @@ export async function loadChecklist(
         const lifeDate = new Date(lifeObj.date.seconds * 1000 + lifeObj.date.nanoseconds / 1_000_000);
         const diffMs = today.getTime() - lifeDate.getTime();
         const diffSeconds = Math.round(diffMs / 1000);
-        const upValue = lifeObj.isBlessing ? 0.055 : 0.05;
-        let life = lifeObj.life + diffSeconds * upValue;
+        const avgPlayTime = 3; // 유저들의 하루 로아 플레이 추정 시간
+        const onlineRatio = avgPlayTime / 24;
+        const offlineRatio = 1 - onlineRatio;
+        let life = 0;
+        if (lifeObj.isBlessing) {
+            life = lifeObj.life + (diffSeconds * onlineRatio) * 0.055 + (diffSeconds * offlineRatio) * 0.05;
+        } else {
+            life = lifeObj.life + diffSeconds * 0.05;
+        }
         if (life > lifeObj.max) life = lifeObj.max;
         if (diffSeconds > 0) {
             const lifeRes = await fetch(`/api/checklist/life`, {
@@ -905,7 +912,6 @@ export function useOnClickSaveRestValue(
     setLoadingSave: SetStateFn<boolean>,
     dungeon: number,
     boss: number,
-    quest: number,
     onClose: () => void
 ) {
     const userStr = localStorage.getItem('user');
@@ -918,7 +924,7 @@ export function useOnClickSaveRestValue(
         dungeonUsing: 0,
         bossBonus: boss,
         bossUsing: 0,
-        questBonus: quest,
+        questBonus: 0,
         questUsing: 0
     }
     return async () => {
