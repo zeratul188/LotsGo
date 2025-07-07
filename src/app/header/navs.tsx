@@ -160,10 +160,12 @@ export function NavBrand() {
                     src="icon(L).png" 
                     width={40} 
                     className="dark:hidden cursor-pointer"
+                    alt="타이틀 이미지 (라이트 버전)"
                     onClick={() => location.href = '/'}/>
                 <Image 
                     src="icon(D).png" 
                     width={40} 
+                    alt="타이틀 이미지 (어두운 버전)"
                     className="hidden dark:block cursor-pointer"
                     onClick={() => location.href = '/'}/>
             </div>
@@ -171,11 +173,13 @@ export function NavBrand() {
                 <Image 
                     src="title(L).png" 
                     width={200} 
+                    alt="타이틀 이미지 (라이트 버전)"
                     className="dark:hidden cursor-pointer"
                     onClick={() => location.href = '/'}/>
                 <Image 
                     src="title(D).png" 
                     width={200} 
+                    alt="타이틀 이미지 (어두운 버전)"
                     className="hidden dark:block cursor-pointer"
                     onClick={() => location.href = '/'}/>
             </div>

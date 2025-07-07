@@ -73,7 +73,8 @@ export function PointComponent({ file }: PointComponentProps) {
                                                 <Image
                                                     src={collectEquipments[0].icon}
                                                     width={26}
-                                                    height={26}/>
+                                                    height={26}
+                                                    alt="수집형 아이템 1"/>
                                             ) : <></>}
                                         </div>
                                         <div>
@@ -100,7 +101,8 @@ export function PointComponent({ file }: PointComponentProps) {
                                                 <Image
                                                     src={collectEquipments[1].icon}
                                                     width={26}
-                                                    height={26}/>
+                                                    height={26}
+                                                    alt="수집형 아이템 2"/>
                                             ) : <></>}
                                         </div>
                                         <div>

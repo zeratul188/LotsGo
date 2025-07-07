@@ -68,7 +68,7 @@ function EventComponent({ events }: EventComponentProps) {
                                 onPress={() => window.open(event.link, '_blank')}>
                                 <CardBody className="overflow-visible p-0">
                                     <Image
-                                        alt={`event-${index}`}
+                                        alt={event.title}
                                         className="w-full object-cover h-[180px]"
                                         radius="md"
                                         shadow="sm"
@@ -119,7 +119,7 @@ function NoticeComponent({ notices }: NoticeComponentProps) {
             {notices.length > 0 ? (
                 <ScrollShadow className="w-full h-[500px]">
                     {notices.map((notice, index) => (
-                        <a href={notice.link} key={index} target="_blank">
+                        <a href={notice.link} key={index} target="_blank" rel="noopener noreferrer">
                             <div className={clsx(
                                 "w-full pr-2 pl-2 pt-4 pb-4 hover:bg-gray-100 dark:hover:bg-[#222222]",
                                 index !== 0 ? "border-t-1 border-[#dddddd] dark:border-[#222222]" : ""
@@ -194,7 +194,7 @@ function IslandComponent({ islands, islandTime }: IslandComponentProps) {
                                     src={island.icon} 
                                     width={36}
                                     height={36} 
-                                    alt={`island-${index}`} 
+                                    alt={island.name} 
                                     radius="sm"/>
                                 <p className="grow">{island.name}</p>
                                 <Chip 
@@ -220,7 +220,7 @@ function IslandComponent({ islands, islandTime }: IslandComponentProps) {
                                                             src={item.icon} 
                                                             width={28}
                                                             height={28} 
-                                                            alt={`item-${index}`} 
+                                                            alt={item.name} 
                                                             radius="sm"
                                                             className="w-full h-full object-cover"/>
                                                     </div>
@@ -233,7 +233,7 @@ function IslandComponent({ islands, islandTime }: IslandComponentProps) {
                                                                 src={item.icon} 
                                                                 width={28}
                                                                 height={28} 
-                                                                alt={`item-${index}`} 
+                                                                alt={item.name} 
                                                                 radius="sm"
                                                                 className="w-full h-full object-cover"/>
                                                         </div>
@@ -318,7 +318,7 @@ function ContentComponent({ gate, boss }: ContentComponentProps) {
                                 src={gate.imgSrc} 
                                 width={36}
                                 height={36} 
-                                alt={`gate-icon`} 
+                                alt="카오스게이트"
                                 radius="sm"/>
                             <p className="grow">카오스 게이트</p>
                             <div className="w-[max-content] flex gap-5 sm:gap-10 items-center">
@@ -349,7 +349,7 @@ function ContentComponent({ gate, boss }: ContentComponentProps) {
                                 src={boss.imgSrc} 
                                 width={36}
                                 height={36} 
-                                alt={`boss-icon`} 
+                                alt="필드보스"
                                 radius="sm"/>
                             <p className="grow">필드보스</p>
                             <div className="w-[max-content] flex gap-5 sm:gap-10 items-center">
