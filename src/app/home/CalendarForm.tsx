@@ -119,7 +119,7 @@ function NoticeComponent({ notices }: NoticeComponentProps) {
             {notices.length > 0 ? (
                 <ScrollShadow className="w-full h-[500px]">
                     {notices.map((notice, index) => (
-                        <a href={notice.link} key={index} target="_blank">
+                        <a href={notice.link} key={index} target="_blank" rel="noopener noreferrer">
                             <div className={clsx(
                                 "w-full pr-2 pl-2 pt-4 pb-4 hover:bg-gray-100 dark:hover:bg-[#222222]",
                                 index !== 0 ? "border-t-1 border-[#dddddd] dark:border-[#222222]" : ""

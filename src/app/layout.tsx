@@ -16,6 +16,22 @@ export const metadata: Metadata = {
   }
 };
 
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "로츠고",
+  "url": "https://lotsgo.kr",
+  "applicationCategory": "ProductivityApplication",
+  "operatingSystem": "All",
+  "inLanguage": "ko",
+  "description": "로스트아크 유저를 위한 숙제 체크, 길드 일정, 전투 정보 확인 기능까지 제공하는 종합 관리 도구입니다.",
+  "creator": {
+    "@type": "Organization",
+    "name": "Lotsgo",
+    "url": "https://lotsgo.kr"
+  }
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -48,6 +64,12 @@ export default function RootLayout({
             </Providers>
           </StoreClient>
         </ClientOnly>
+        <Script
+          id="structured-data-webapp"
+          type="application/ld+json"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
