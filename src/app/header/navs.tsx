@@ -277,7 +277,7 @@ export function ProfileContent(props: SwitchProps) {
     const {theme, setTheme} = useTheme();
     const {Component, slots, isSelected, getBaseProps, getInputProps, getWrapperProps } = useSwitch({
         ...props,
-        defaultSelected: theme === 'light'
+        defaultSelected: theme !== 'light'
     });
     return (
         <>
