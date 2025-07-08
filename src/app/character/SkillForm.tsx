@@ -44,7 +44,7 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                     <div className="w-full md960:w-[max-content] md960:grow flex gap-2 items-center">
                         <p className="text-lg grow text-left">스킬</p>
                         {AvgSkillPowers(skills) !== '' ? (
-                            <Popover showArrow>
+                            <Popover showArrow disableAnimation>
                                 <PopoverTrigger>
                                     <Chip radius="sm" color="primary" className="cursor-pointer">무력 평균 {AvgSkillPowers(skills)}</Chip>
                                 </PopoverTrigger>
@@ -72,7 +72,7 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                             </Popover>
                         ) : <></>}
                         {getAllDestory(skills) > 0 ? (
-                            <Popover showArrow>
+                            <Popover showArrow disableAnimation>
                                 <PopoverTrigger>
                                     <Chip radius="sm" color="secondary" className="cursor-pointer">총 파괴 {getAllDestory(skills)}</Chip>
                                 </PopoverTrigger>

@@ -184,7 +184,6 @@ export async function loadProfile(
 
     const cacheRes = await fetch(`/api/caches/characters?nickname=${nickname}`);
     if (cacheRes.ok) {
-        console.log(`loaded caches!`);
         const data = await cacheRes.json();
         const today = new Date();
         const history: CharacterHistory = {
