@@ -170,7 +170,7 @@ export default function CharacterClient() {
                             </Tab>
                         )}
                     </Tabs>
-                    {!characterForm.isLoading ? isMobile ? (
+                    {!characterForm.isLoading && !characterForm.isNothing && characterForm.file.profile ? isMobile ? (
                         <div className="w-full flex justify-center px-4">
                             <div className="w-full max-w-[360px] min-h-[100px] mt-4">
                                 <BoxAd isLoaded={!characterForm.isLoading}/>
