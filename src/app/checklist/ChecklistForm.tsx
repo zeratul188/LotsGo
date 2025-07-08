@@ -743,7 +743,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         radius="sm"
                                         value={getCompleteGoldCharacter(bosses, character)+character.otherGold}
                                         maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
-                                        className="w-full cursor-pointer"/>
+                                        className="w-full"/>
                                     <Popover 
                                         showArrow
                                         onClose={() => {
