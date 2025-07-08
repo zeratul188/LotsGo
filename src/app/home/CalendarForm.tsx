@@ -378,9 +378,10 @@ function ContentComponent({ gate, boss }: ContentComponentProps) {
 
 // 일정 (모험섬, 필드보스 등) 컴포넌트
 type CalendarComponentProps = {
-    setLoaded: SetStateFn<boolean>
+    setLoaded: SetStateFn<boolean>,
+    setShowAd: SetStateFn<boolean>
 }
-export default function CalendarComponent({ setLoaded }: CalendarComponentProps) {
+export default function CalendarComponent({ setLoaded, setShowAd }: CalendarComponentProps) {
     const calendarForm = useCalendarForm();
     const [isNotLoaded, setNotLoaded] = useState(false);
 
@@ -396,6 +397,12 @@ export default function CalendarComponent({ setLoaded }: CalendarComponentProps)
         }
         loadData();
     }, []);
+
+    useEffect(() => {
+        if (calendarForm.events.length > 0 && calendarForm.notices.length > 0 && calendarForm.gate && calendarForm.boss) {
+            setShowAd(true);
+        }
+    }, [calendarForm.events, calendarForm.notices, calendarForm.gate, calendarForm.boss])
     
     return (
         <div className="w-full mt-10">

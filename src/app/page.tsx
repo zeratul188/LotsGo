@@ -14,6 +14,7 @@ const TwoLineAd = dynamic(() => import('./ad/TwoLineAd'), { ssr: false });
 export default function Home() {
   const isMobile = useMobileQuery();
   const [isLoaded, setLoaded] = React.useState(false);
+  const [isShowAd, setShowAd] = React.useState(false);
 
   return (
     <div className="w-full min-h-[calc(100vh-65px)]">
@@ -22,8 +23,8 @@ export default function Home() {
         <NotLoginComponent/>
         <ChecklistComponent/>
         <TodoComponent/>
-        <CalendarComponent setLoaded={setLoaded}/>
-        {isLoaded ? isMobile ? (
+        <CalendarComponent setLoaded={setLoaded} setShowAd={setShowAd}/>
+        {isLoaded && isShowAd ? isMobile ? (
           <div className="w-full flex justify-center px-4">
             <div className="w-full max-w-[360px] min-h-[100px] mt-8">
               <BoxAd isLoaded={isLoaded}/>
