@@ -33,6 +33,7 @@ export async function handleSelectCharacter(
     setExpedition: SetStateFn<ExpeditionCharacter[]>,
     dispatch: AppDispatch
 ) {
+
     if (expedition[index].isCharacter) {
         addToast({
             title: "변경 불가",
@@ -80,12 +81,17 @@ export async function handleSelectCharacter(
         }
         newExpeditions.push(newChracter);
     }
-    const loginUser: LoginUser = {
-        id: id,
-        expedition: newExpeditions,
-        character: expedition[index].nickname
+    const localData = localStorage.getItem('user');
+    if (localData) {
+        const localUser = JSON.parse(localData);
+         const loginUser: LoginUser = {
+            id: id,
+            expedition: newExpeditions,
+            character: expedition[index].nickname,
+            apiKey: localUser.apiKey ? localUser.apiKey : null
+        }
+        localStorage.setItem('user', JSON.stringify(loginUser));
     }
-    localStorage.setItem('user', JSON.stringify(loginUser));
     addToast({
         title: "변경 완료",
         description: `대표 캐릭터를 변경하였습니다.`,
@@ -180,12 +186,17 @@ export function useClickUpdate(
                     setExpedition(newSettingExpeditions);
                     const defaultCharacter: Character | undefined = newSettingExpeditions.find(character => character.isCharacter);
                     const defaultNickname = defaultCharacter ? defaultCharacter.nickname : 'null';
-                    const loginUser: LoginUser = {
-                        id: id,
-                        expedition: newExpedition,
-                        character: defaultNickname
+                    const localData = localStorage.getItem('user');
+                    if (localData) {
+                        const localUser = JSON.parse(localData);
+                        const loginUser: LoginUser = {
+                            id: id,
+                            expedition: newExpedition,
+                            character: defaultNickname,
+                            apiKey: localUser.apiKey ? localUser.apiKey : null
+                        }
+                        localStorage.setItem('user', JSON.stringify(loginUser));
                     }
-                    localStorage.setItem('user', JSON.stringify(loginUser));
                     addToast({
                         title: "갱신 완료",
                         description: `캐릭터들의 정볼를 갱신하였습니다.`,

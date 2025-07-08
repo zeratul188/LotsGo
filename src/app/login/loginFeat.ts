@@ -114,7 +114,8 @@ export async function login(
                     const loginUser: LoginUser = {
                         id: user.id,
                         expedition: data.expedition,
-                        character: data.userData ? data.userData.nickname : ''
+                        character: data.userData ? data.userData.nickname : '',
+                        apiKey: data.userData.apiKey ? data.userData.apiKey : null
                     }
                     dispatch(logined(loginUser));
                     dispatch(switchAdministrator(data.isAdministrator));

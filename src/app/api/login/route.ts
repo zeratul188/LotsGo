@@ -11,7 +11,8 @@ type User = {
     password: string,
     email: string,
     expeditions: Array<Character>,
-    nickname: string
+    nickname: string,
+    apiKey: string | null
 }
 
 export async function POST(req: NextRequest) {
@@ -38,13 +39,15 @@ export async function POST(req: NextRequest) {
             password: targetDoc.data().password,
             email: targetDoc.data().email,
             expeditions: targetDoc.data().expeditions,
-            nickname: targetDoc.data().character
+            nickname: targetDoc.data().character,
+            apiKey: targetDoc.data().apiKey ? targetDoc.data().apiKey : null
         } : {
             id: "",
             password: "",
             email: '',
             expeditions: [],
-            nickname: ""
+            nickname: "",
+            apiKey: null
         }
         const expedition: Array<Character> = !snapshot.empty ? userData.expeditions : [];
         const result = {
