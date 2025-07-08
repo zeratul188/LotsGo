@@ -36,11 +36,13 @@ export function LogoComponent() {
             <Image 
                 src="title(L).png" 
                 width={340} 
-                className="dark:hidden cursor-pointer"/>
+                className="dark:hidden cursor-pointer"
+                alt="로츠고 로고 이미지"/>
             <Image 
                 src="title(D).png" 
                 width={340} 
-                className="hidden dark:block cursor-pointer"/>
+                className="hidden dark:block cursor-pointer"
+                alt="로츠고 로고 이미지"/>
         </>
     )
 }

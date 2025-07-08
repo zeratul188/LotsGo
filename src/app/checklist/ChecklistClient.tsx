@@ -79,7 +79,7 @@ export default function ChecklistClient() {
                 setBlessing={checklistForm.setBlessing}
                 max={checklistForm.max}
                 setMax={checklistForm.setMax}/>
-            {!checklistForm.isLoading ? (
+            {!checklistForm.isLoading && checklist.length > 0 ? (
                 <div className="w-full flex justify-center overflow-hidden md960:pt-[110px]">
                     <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px] mt-8">
                         <LineAd isLoaded={!checklistForm.isLoading}/>
@@ -127,7 +127,7 @@ export default function ChecklistClient() {
                         bosses={checklistForm.bosses}/>
                 </div>
             )}
-            {!checklistForm.isLoading ? isMobile ? (
+            {!checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
                 <div className="w-full flex justify-center px-4">
                     <div className="w-full max-w-[360px] min-h-[100px] mt-8">
                     <BoxAd isLoaded={!checklistForm.isLoading}/>

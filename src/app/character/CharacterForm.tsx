@@ -1106,6 +1106,7 @@ function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
                                         size="sm"
                                         radius="sm"
                                         variant="flat"
+                                        color="danger"
                                         className="mt-2">
                                         {gem.level} {getGemSimpleTailName(gem)}
                                     </Chip>
@@ -1139,6 +1140,7 @@ function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
                                         size="sm"
                                         radius="sm"
                                         variant="flat"
+                                        color="success"
                                         className="mt-2">
                                         {gem.level} {getGemSimpleTailName(gem)}
                                     </Chip>
@@ -1522,7 +1524,7 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
                                 height={24}
                                 radius="sm"
                                 alt="arkpassvie-icon"/>
-                            <p className="fadedtext text-sm">{item.tier}티어</p>
+                            <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
                             <p className="text-sm">Lv.{item.level}</p>
                             <p className="grow text-sm">{item.name}</p>
                         </div>
@@ -1554,7 +1556,7 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
                                 height={24}
                                 radius="sm"
                                 alt="arkpassvie-icon"/>
-                            <p className="fadedtext text-sm">{item.tier}티어</p>
+                            <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
                             <p className="text-sm">Lv.{item.level}</p>
                             <p className="grow text-sm">{item.name}</p>
                         </div>
@@ -1586,7 +1588,7 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
                                 height={24}
                                 radius="sm"
                                 alt="arkpassvie-icon"/>
-                            <p className="fadedtext text-sm">{item.tier}티어</p>
+                            <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
                             <p className="text-sm">Lv.{item.level}</p>
                             <p className="grow text-sm">{item.name}</p>
                         </div>
