@@ -2,7 +2,9 @@ import { SetStateFn } from "@/utiils/utils";
 import { changeChracter, Character, LoginUser, saveExpedition } from "../store/loginSlice";
 import { addToast } from "@heroui/react";
 import { AppDispatch, RootState } from "../store/store";
-import { useSelector } from "react-redux";
+import { decrypt } from "@/utiils/crypto";
+
+const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
 // 초기 데이터 가져오기
 export type ExpeditionCharacter = {
@@ -33,6 +35,7 @@ export async function handleSelectCharacter(
     setExpedition: SetStateFn<ExpeditionCharacter[]>,
     dispatch: AppDispatch
 ) {
+
     if (expedition[index].isCharacter) {
         addToast({
             title: "변경 불가",
@@ -80,12 +83,17 @@ export async function handleSelectCharacter(
         }
         newExpeditions.push(newChracter);
     }
-    const loginUser: LoginUser = {
-        id: id,
-        expedition: newExpeditions,
-        character: expedition[index].nickname
+    const localData = localStorage.getItem('user');
+    if (localData) {
+        const localUser = JSON.parse(localData);
+         const loginUser: LoginUser = {
+            id: id,
+            expedition: newExpeditions,
+            character: expedition[index].nickname,
+            apiKey: localUser.apiKey ? localUser.apiKey : null
+        }
+        localStorage.setItem('user', JSON.stringify(loginUser));
     }
-    localStorage.setItem('user', JSON.stringify(loginUser));
     addToast({
         title: "변경 완료",
         description: `대표 캐릭터를 변경하였습니다.`,
@@ -101,9 +109,13 @@ export function useClickUpdate(
     setExpedition: SetStateFn<ExpeditionCharacter[]>,
     dispatch: AppDispatch
 ) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
+    
     return async () => {
         setLoading(true);
-        const lostarkRes = await fetch(`/api/lostark?value=${nickname}&code=0`);
+        const lostarkRes = await fetch(`/api/lostark?value=${nickname}&code=0&key=${decryptedApiKey}`);
         if (!lostarkRes.ok) {
             if (lostarkRes.status === 503) {
                 addToast({
@@ -180,12 +192,17 @@ export function useClickUpdate(
                     setExpedition(newSettingExpeditions);
                     const defaultCharacter: Character | undefined = newSettingExpeditions.find(character => character.isCharacter);
                     const defaultNickname = defaultCharacter ? defaultCharacter.nickname : 'null';
-                    const loginUser: LoginUser = {
-                        id: id,
-                        expedition: newExpedition,
-                        character: defaultNickname
+                    const localData = localStorage.getItem('user');
+                    if (localData) {
+                        const localUser = JSON.parse(localData);
+                        const loginUser: LoginUser = {
+                            id: id,
+                            expedition: newExpedition,
+                            character: defaultNickname,
+                            apiKey: localUser.apiKey ? localUser.apiKey : null
+                        }
+                        localStorage.setItem('user', JSON.stringify(loginUser));
                     }
-                    localStorage.setItem('user', JSON.stringify(loginUser));
                     addToast({
                         title: "갱신 완료",
                         description: `캐릭터들의 정볼를 갱신하였습니다.`,

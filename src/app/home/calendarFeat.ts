@@ -1,6 +1,8 @@
 import { SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
 import { ContentData } from "./CalendarForm";
+import { LoginUser } from "../store/loginSlice";
+import { decrypt } from "@/utiils/crypto";
 
 export type IslandItem = {
     name: string,
@@ -21,9 +23,15 @@ export type LostarkEvent = {
     endDate: Date
 }
 
+const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
+
 // 로스트아크 API로부터 이벤트 정보 가져오는 함수
 export async function loadEvents(setEvents: SetStateFn<LostarkEvent[]>, setNotLoaded: SetStateFn<boolean>) {
-    const eventLostarkRes = await fetch(`/api/lostark?value=null&code=4`);
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
+
+    const eventLostarkRes = await fetch(`/api/lostark?value=null&code=4&key=${decryptedApiKey}`);
     if (eventLostarkRes.ok) {
         const events: LostarkEvent[] = [];
         const data = await eventLostarkRes.json();
@@ -51,7 +59,11 @@ export async function loadCalendar(
     setBoss: SetStateFn<ContentData | null>,
     setNotLoaded: SetStateFn<boolean>
 ) {
-    const gamecontentLostarkRes = await fetch(`/api/lostark?value=null&code=2`);
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
+
+    const gamecontentLostarkRes = await fetch(`/api/lostark?value=null&code=2&key=${decryptedApiKey}`);
     if (gamecontentLostarkRes.ok) {
         const islands: Island[] = [];
         const data = await gamecontentLostarkRes.json();
@@ -164,7 +176,11 @@ export type Notice = {
 
 // 로스트아크 API로부터 공지사항 데이터를 가져오는 함수
 export async function loadNotices(setNotices: SetStateFn<Notice[]>, setNotLoaded: SetStateFn<boolean>) {
-    const noticeLostarkRes = await fetch(`/api/lostark?value=null&code=3`);
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
+
+    const noticeLostarkRes = await fetch(`/api/lostark?value=null&code=3&key=${decryptedApiKey}`);
     if (noticeLostarkRes.ok) {
         const notices: Notice[] = [];
         const data = await noticeLostarkRes.json();

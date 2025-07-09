@@ -9,6 +9,12 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const value = searchParams.get('value');
     const code = searchParams.get('code');
+    const key = searchParams.get('key');
+    let apiKey = API_KEY;
+
+    if (key && key !== 'null') {
+        apiKey = key;
+    }
 
     if (!value || !code) {
         return NextResponse.json({ error: '값 없음' }, { status: 400 });
@@ -32,7 +38,7 @@ export async function GET(req: NextRequest) {
     try {
         const result = await axios.get(`${LOSTARK_API_BASE}${links[Number(code)]}`, {
             headers: {
-                Authorization: `bearer ${API_KEY}`
+                Authorization: `bearer ${apiKey}`
             }
         });
         return NextResponse.json(result.data);

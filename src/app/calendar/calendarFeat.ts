@@ -7,6 +7,7 @@ import { addToast, Selection } from "@heroui/react";
 import { ShowWeek, WeekBox } from "./CalendarForm";
 import { DateValue, getLocalTimeZone } from "@internationalized/date";
 import { getWeekContents, getWeekDifficultys } from "../checklist/checklistFeat";
+import { decrypt } from "@/utiils/crypto";
 
 export type Calendar = {
     name: string,
@@ -20,17 +21,20 @@ export type Guild = {
     calendars: Calendar[]
 }
 
+const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
+
 // 로그인된 캐릭터의 길드명 반환 함수
 export async function getGuildName(): Promise<string> {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
     const id = storedUser.id;
 
     const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));
     const snapshot = await getDocs(q);
     const characterName = snapshot.docs[0].data().character;
 
-    const lostarkRes = await fetch(`/api/lostark?value=${characterName}&code=1`);
+    const lostarkRes = await fetch(`/api/lostark?value=${characterName}&code=1&key=${decryptedApiKey}`);
 
     if (lostarkRes.ok) {
         const data = await lostarkRes.json();
