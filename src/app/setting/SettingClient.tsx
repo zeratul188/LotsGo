@@ -7,12 +7,18 @@ import { useRouter } from "next/navigation";
 import { checkLogin } from "../checklist/checklistFeat";
 import ChangePasswordComponent from "./ChangePasswordForm";
 import DeleteComponent from "./DeleteForm";
+import APIComponent from "./ApiForm";
 
 const tabs = [
     {
         key: 'expeditions',
         title: '내 원정대',
         component: <ExpeditionsComponent/>
+    },
+    {
+        key: 'apikey',
+        title: '로스트아크 API 키',
+        component: <APIComponent/>
     },
     {
         key: 'change-password',

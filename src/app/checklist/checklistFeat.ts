@@ -23,6 +23,9 @@ import { Character, LoginUser } from "../store/loginSlice";
 import { Cube } from "../api/checklist/cube/route";
 import { collection, getDocs } from "firebase/firestore";
 import { firestore } from "@/utiils/firebase";
+import { decrypt } from "@/utiils/crypto";
+
+const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
 // 닉네임으로 index 찾기 함수
 export function getIndexByNickname(checklist: CheckCharacter[], nickname: string): number {
@@ -1480,12 +1483,13 @@ export function useClickUpdatedCharacters(
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser.id;
+    const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
     const newChecklist = checklist.map(item => ({ ...item }));
     const prevChecklist = checklist.map(item => ({ ...item }));
     return async () => {
         setLoading(true);
         for (const character of newChecklist) {
-            const lostarkRes = await fetch(`/api/lostark?value=${character.nickname}&code=1`);
+            const lostarkRes = await fetch(`/api/lostark?value=${character.nickname}&code=1&key=${decryptedApiKey}`);
             if (lostarkRes.ok) {
                 const data = await lostarkRes.json();
                 if (data !== null && data !== undefined) {
@@ -1555,7 +1559,7 @@ export function useClickLoadCharacters(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
     return async () => {
         if (value.trim().length < 2) {
             addToast({
@@ -1567,7 +1571,7 @@ export function useClickLoadCharacters(
         }
         value = value.trim();
         setLoadingSearch(true);
-        const lostarkRes = await fetch(`/api/lostark?value=${value}&code=0`);
+        const lostarkRes = await fetch(`/api/lostark?value=${value}&code=0&key=${decryptedApiKey}`);
         if (!lostarkRes.ok) {
             if (lostarkRes.status === 503) {
                 addToast({
