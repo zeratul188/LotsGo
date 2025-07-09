@@ -2,7 +2,9 @@ import { SetStateFn } from "@/utiils/utils";
 import { changeChracter, Character, LoginUser, saveExpedition } from "../store/loginSlice";
 import { addToast } from "@heroui/react";
 import { AppDispatch, RootState } from "../store/store";
-import { useSelector } from "react-redux";
+import { decrypt } from "@/utiils/crypto";
+
+const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
 // 초기 데이터 가져오기
 export type ExpeditionCharacter = {
@@ -107,9 +109,13 @@ export function useClickUpdate(
     setExpedition: SetStateFn<ExpeditionCharacter[]>,
     dispatch: AppDispatch
 ) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
+    
     return async () => {
         setLoading(true);
-        const lostarkRes = await fetch(`/api/lostark?value=${nickname}&code=0`);
+        const lostarkRes = await fetch(`/api/lostark?value=${nickname}&code=0&key=${decryptedApiKey}`);
         if (!lostarkRes.ok) {
             if (lostarkRes.status === 503) {
                 addToast({

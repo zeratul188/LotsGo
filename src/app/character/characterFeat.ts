@@ -4,6 +4,10 @@ import { load } from 'cheerio'
 import data from "@/data/characters/data.json";
 import { CharacterHistory, saveHistory, updateHistory } from "./history";
 import { Badge } from "../api/administrator/badge/route";
+import { LoginUser } from "../store/loginSlice";
+import { decrypt } from "@/utiils/crypto";
+
+const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
 export type CharacterFile = {
     profile: any,
@@ -38,10 +42,14 @@ export function useClickUpdate(
     combat: number
 ) {
     return async () => {
+        const userStr = localStorage.getItem('user');
+        const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+        const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
+        
         if (nickname) {
             setLoadingUpdate(true);
             setGems([]);
-            const lostarkRes = await fetch(`/api/lostark?value=${nickname}&code=5`);
+            const lostarkRes = await fetch(`/api/lostark?value=${nickname}&code=5&key=${decryptedApiKey}`);
             if (!lostarkRes.ok) {
                 addToast({
                     title: "불러오기 오류",
@@ -52,7 +60,7 @@ export function useClickUpdate(
                 const data = await lostarkRes.json();
                 const newFile = structuredClone(file);
                 if (data) {
-                    const expeditionRes = await fetch(`/api/lostark?value=${nickname}&code=0`);
+                    const expeditionRes = await fetch(`/api/lostark?value=${nickname}&code=0&key=${decryptedApiKey}`);
                     if (!lostarkRes.ok) {
                         addToast({
                             title: "불러오기 오류",
@@ -243,8 +251,12 @@ export async function loadProfile(
             isPassed = true;
         }
     }
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
+
     if (res.status === 401 || isPassed) {
-        const lostarkRes = await fetch(`/api/lostark?value=${nickname}&code=5`);
+        const lostarkRes = await fetch(`/api/lostark?value=${nickname}&code=5&key=${decryptedApiKey}`);
         if (!lostarkRes.ok) {
             addToast({
                 title: "불러오기 오류",
@@ -259,7 +271,7 @@ export async function loadProfile(
         const data = await lostarkRes.json();
         const newFile = structuredClone(file);
         if (data) {
-            const expeditionRes = await fetch(`/api/lostark?value=${nickname}&code=0`);
+            const expeditionRes = await fetch(`/api/lostark?value=${nickname}&code=0&key=${decryptedApiKey}`);
             if (!lostarkRes.ok) {
                 addToast({
                     title: "불러오기 오류",

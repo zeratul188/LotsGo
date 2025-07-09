@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     const key = searchParams.get('key');
     let apiKey = API_KEY;
 
-    if (key) {
+    if (key && key !== 'null') {
         apiKey = key;
     }
 
