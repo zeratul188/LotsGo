@@ -2,6 +2,7 @@
 import { Tab, Tabs } from "@heroui/react";
 import CalcComponent from "./CalcComponent";
 import { useMobileQuery } from "@/utiils/utils";
+import RelicsComponent from "./RelicsComponent";
 
 export default function AddonsClient() {
     const isMobile = useMobileQuery();
@@ -14,7 +15,7 @@ export default function AddonsClient() {
         {
             key: 'exotics',
             title: '유물 각인서 시세',
-            component: null
+            component: <RelicsComponent/>
         }
     ]
 

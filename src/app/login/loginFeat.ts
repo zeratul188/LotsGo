@@ -115,7 +115,7 @@ export async function login(
                         id: user.id,
                         expedition: data.expedition,
                         character: data.userData ? data.userData.nickname : '',
-                        apiKey: data.userData.apiKey ? data.userData.apiKey : null
+                        apiKey: data.userData ? data.userData.apiKey ? data.userData.apiKey : null : null
                     }
                     dispatch(logined(loginUser));
                     dispatch(switchAdministrator(data.isAdministrator));
