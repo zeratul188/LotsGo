@@ -11,5 +11,6 @@ if (!admin.apps.length) {
   });
 }
 
+export const adminDatabase = admin.database();
 export const adminDB = admin.firestore();
 export const adminAuth = admin.auth(); 

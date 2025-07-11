@@ -13,8 +13,6 @@ export default function CalendarClient() {
     const calendarForm = useCalendarForm();
     const router = useRouter();
     const isMobile = useMobileQuery();
-    const [isLoadedWeeks, setLoadedWeeks] = useState(false);
-    const [isLoadedDates, setLoadedDates] = useState(false);
 
     useEffect(() => {
         const auth = getAuth();
