@@ -108,7 +108,7 @@ export const writeRelicsBookPrice = functions.https.onRequest(async (req, res) =
       snapshotRelics.forEach((doc) => {
         const data = doc.data();
         if (item.name === data.name) {
-          const list: RelicList[] = data.list;
+          let list: RelicList[] = data.list;
           const today = new Date();
           const newList: RelicList = {
             year: today.getFullYear(),
@@ -119,6 +119,16 @@ export const writeRelicsBookPrice = functions.https.onRequest(async (req, res) =
           const findIndex = data.list.findIndex((i: any) => i.year === newList.year && i.month === newList.month && i.day === newList.day );
           if (findIndex === -1) {
             list.push(newList);
+
+            //1년이 지난 데이터 삭제
+            const now = new Date();
+            const oneYearAgo = new Date(now);
+            oneYearAgo.setFullYear(now.getFullYear() - 1);
+            list = list.filter(item => {
+              const itemDate = new Date(item.year, item.month - 1, item.day);
+              return itemDate >= oneYearAgo;
+            })
+
             const docRef = storeRelicsRef.doc(doc.id);
             batch.update(docRef, { list: list });
           }
@@ -266,4 +276,4 @@ export const resetDayChecklist = functions.https.onRequest(async (req, res) => {
 });
 
 // firebase functions:secrets:set LOSTARK_API_KEY
-// firebase deploy --only functions:updateRelicsBook
+// firebase deploy --only functions:writeRelicsBookPrice
