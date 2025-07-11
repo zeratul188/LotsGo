@@ -1,10 +1,158 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import axios from 'axios';
+import { onRequest } from "firebase-functions/v2/https";
 
 admin.initializeApp();
 const firestore = admin.firestore();
 const database = admin.database();
 
+type RelicBook = {
+  name: string,
+  icon: string,
+  price: number
+}
+
+// 1시간마다 최신 유물 각인서 가격 저장하기
+export const updateRelicsBook = onRequest({
+    secrets: ['LOSTARK_API_KEY']
+}, async (req, res) =>  {
+  try {
+    const url = "https://developer-lostark.game.onstove.com/markets/items";
+    const apiKey = process.env.LOSTARK_API_KEY;
+
+    let page = 1;
+    const allItems: RelicBook[] = [];
+    const body = {
+      Sort: "CURRENTMINPRICE",
+      CategoryCode: 40000,
+      ItemGrade: "유물",
+      SortCondition: "DESC",
+    };
+
+    while(true) {
+      console.log(`📄 페이지 ${page} 요청 중...`);
+
+      const res = await axios.post(
+        url,
+        { ...body, PageNo: page },
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json"
+          }
+        }
+      )
+
+      const items = res.data.Items;
+      if (!items || items.length === 0) {
+        break;
+      }
+
+      for (const item of items) {
+        const newItem: RelicBook = {
+          name: item.Name,
+          icon: item.Icon,
+          price: item.CurrentMinPrice
+        }
+        allItems.push(newItem);
+      }
+
+      const pageSize = res.data.PageSize;
+      if (pageSize) {
+        if (items.length < pageSize) {
+          break;
+        }
+      } else {
+        break;
+      }
+
+      page++;
+    }
+
+    const relicsRef = database.ref('/relics');
+    await relicsRef.set(allItems);
+
+    res.send("✅ 데이터 적용 완료");
+  } catch (error) {
+    console.error('Reset failed:', error);
+    res.status(500).send('Reset failed');
+  }
+})
+
+type RelicList = {
+  year: number,
+  month: number,
+  day: number,
+  price: number
+}
+type RelicItem = {
+  name: string,
+  list: RelicList[]
+}
+
+// 매일 12시 30분에 유각 시세 기록하기
+export const writeRelicsBookPrice = functions.https.onRequest(async (req, res) => {
+  try {
+    const relicsRef = database.ref('/relics');
+    const relicsSnapshot = await relicsRef.once('value');
+    const relics = relicsSnapshot.val();
+    const relicsArray: RelicBook[] = Object.values(relics);
+
+    const storeRelicsRef = firestore.collection('relics');
+    const snapshotRelics = await storeRelicsRef.get();
+    const batch = firestore.batch();
+
+    for (const item of relicsArray) {
+      let isFound = false;
+      snapshotRelics.forEach((doc) => {
+        const data = doc.data();
+        if (item.name === data.name) {
+          const list: RelicList[] = data.list;
+          const today = new Date();
+          const newList: RelicList = {
+            year: today.getFullYear(),
+            month: today.getMonth()+1,
+            day: today.getDate(),
+            price: item.price
+          }
+          const findIndex = data.list.findIndex((i: any) => i.year === newList.year && i.month === newList.month && i.day === newList.day );
+          if (findIndex === -1) {
+            list.push(newList);
+            const docRef = storeRelicsRef.doc(doc.id);
+            batch.update(docRef, { list: list });
+          }
+          isFound = true;
+        }
+      });
+      if (!isFound) {
+        const list: RelicList[] = [];
+        const today = new Date();
+        const newList: RelicList = {
+          year: today.getFullYear(),
+          month: today.getMonth()+1,
+          day: today.getDate(),
+          price: item.price
+        }
+        list.push(newList);
+        const newItem: RelicItem = {
+          name: item.name,
+          list: list
+        }
+        const newDocRef = storeRelicsRef.doc();
+        batch.create(newDocRef, newItem);
+      }
+    }
+
+    await batch.commit();
+    res.status(200).send('✅ 데이터 적용 완료');
+  } catch (error) {
+    console.error('Reset failed:', error);
+    res.status(500).send('Reset failed');
+  }
+})
+
+// 매주 6시에 주간 숙제 초기화 함수
 export const resetWeekChecklist = functions.https.onRequest(async (req, res) => {
   try {
     const biweeklyRef = database.ref('/checklist/biweekly');
@@ -53,6 +201,7 @@ export const resetWeekChecklist = functions.https.onRequest(async (req, res) => 
   }
 });
 
+// 매일 6시에 일일 숙제 초기화 함수
 export const resetDayChecklist = functions.https.onRequest(async (req, res) => {
   try {
     const membersRef = firestore.collection('members');
@@ -115,3 +264,6 @@ export const resetDayChecklist = functions.https.onRequest(async (req, res) => {
     res.status(500).send('Reset failed');
   }
 });
+
+// firebase functions:secrets:set LOSTARK_API_KEY
+// firebase deploy --only functions:updateRelicsBook

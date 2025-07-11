@@ -12,8 +12,8 @@ export default function AddonsClient() {
             component: <CalcComponent/>
         },
         {
-            key: 'party',
-            title: '파티 조율',
+            key: 'exotics',
+            title: '유물 각인서 시세',
             component: null
         }
     ]
