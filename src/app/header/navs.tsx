@@ -20,6 +20,8 @@ import { SettingIcon } from "../icons/SettingIcon";
 import CalIcon from "@/Icons/CalIcon";
 import CharacterIcon from "@/Icons/CharacterIcon";
 import { useRouter } from "next/navigation";
+import Addons from "../addons/page";
+import AddonIcon from "@/Icons/AddonIcon";
 
 // 헤더 메뉴
 const menuItems = [
@@ -37,6 +39,11 @@ const menuItems = [
         item: "전투정보실",
         link: '/character',
         icon: <CharacterIcon/>
+    },
+    {
+        item: "부가 기능",
+        link: '/addons',
+        icon: <AddonIcon className="w-6 h-6"/>
     }
 ];
 // 헤더 메뉴 - 로그인한 상태
@@ -204,6 +211,11 @@ export function NavContents() {
             <NavbarItem>
                 <Link color="foreground" href="/character">
                     전투정보실
+                </Link>
+            </NavbarItem>
+            <NavbarItem>
+                <Link color="foreground" href="/addons">
+                    부가 기능
                 </Link>
             </NavbarItem>
         </>
