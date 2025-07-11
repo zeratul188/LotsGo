@@ -15,6 +15,11 @@ export type RelicBook = {
     list: RelicList[]
 }
 
+export type ChartData = {
+    date: string,
+    price: number
+}
+
 // 유물 각인서 데이터 불러오기
 export async function loadBooks(setRelics: SetStateFn<RelicBook[]>, setLoading: SetStateFn<boolean>) {
     const res = await fetch('/api/relics');
@@ -41,4 +46,24 @@ export function getUndoPrice(relic: RelicBook): number {
 // 가격 변동 값 가져오기
 export function getDiffPrice(relic: RelicBook): number {
     return relic.price - getUndoPrice(relic);
+}
+
+// 차트 데이터 형식 변환 - 2개월 단위
+export function formatMonthData(relic: RelicBook | null): ChartData[] {
+    if (!relic) return [];
+    const datas: ChartData[] = [];
+    for (const item of relic.list) {
+        const date = `${item.month.toString().padStart(2, '0')}-${item.day.toString().padStart(2, '0')}`;
+        const newData: ChartData = {
+            date: date,
+            price: item.price
+        }
+        datas.push(newData);
+    }
+    const newData: ChartData = {
+        date: "현재",
+        price: relic.price
+    }
+    datas.push(newData);
+    return datas;
 }
