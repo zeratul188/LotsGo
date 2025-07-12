@@ -61,9 +61,49 @@ export function formatMonthData(relic: RelicBook | null): ChartData[] {
         datas.push(newData);
     }
     const newData: ChartData = {
-        date: "현재",
+        date: "현재", 
         price: relic.price
     }
     datas.push(newData);
     return datas;
+}
+
+// 3개월간 최고 골드값 가져오기
+export function getMaxGoldByBook(relic: RelicBook | null): number {
+    if (!relic) return 0;
+    const filteredList = relic.list.filter((item) => {
+        const date = new Date(item.year, item.month - 1, item.day);
+        const now = new Date();
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(now.getMonth() - 3);
+        return date > threeMonthsAgo;
+    });
+    filteredList.push({
+        day: 0,
+        month: 0,
+        year: 0,
+        price: relic.price
+    });
+    const max = Math.max(...filteredList.map(d => d.price));
+    return max;
+}
+
+// 3개월간 최저 골드값 가져오기
+export function getMinGoldByBook(relic: RelicBook | null): number {
+    if (!relic) return 0;
+    const filteredList = relic.list.filter((item) => {
+        const date = new Date(item.year, item.month - 1, item.day);
+        const now = new Date();
+        const threeMonthsAgo = new Date();
+        threeMonthsAgo.setMonth(now.getMonth() - 3);
+        return date > threeMonthsAgo;
+    });
+    filteredList.push({
+        day: 0,
+        month: 0,
+        year: 0,
+        price: relic.price
+    });
+    const min = Math.min(...filteredList.map(d => d.price));
+    return min;
 }

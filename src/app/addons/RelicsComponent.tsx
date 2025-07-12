@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react"
-import { ChartData, formatMonthData, getDiffPrice, getUndoPrice, loadBooks, RelicBook } from "./relicsFeat";
+import { ChartData, formatMonthData, getDiffPrice, getMaxGoldByBook, getMinGoldByBook, getUndoPrice, loadBooks, RelicBook } from "./relicsFeat";
 import { LoadingComponent } from "../UtilsCompnents";
 import Image from "next/image";
-import { Button, Chip, Divider, Modal, ModalBody, ModalContent, ModalHeader, Tab, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tabs, useDisclosure } from "@heroui/react";
+import { Button, Card, CardBody, Chip, Divider, Modal, ModalBody, ModalContent, ModalHeader, Tab, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tabs, useDisclosure } from "@heroui/react";
 import clsx from "clsx";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { useMobileQuery } from "@/utiils/utils";
@@ -38,7 +38,10 @@ function MonthChart({ selectedRelic }: MonthChartProps) {
                     <LineChart width={data.length * itemSize < bigSize ? bigSize : data.length * itemSize} height={400} data={data}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="date" />
-                        <Tooltip content={<CustomTooltip/>}/>
+                        <YAxis
+                            domain={['dataMin', 'dataMax']}
+                            hide={true}/>
+                        <Tooltip content={<CustomTooltip data={data}/>}/>
                         <Line type="monotone" dataKey="price" stroke="#338EF7" strokeWidth={2} dot={{ r: 4 }} />
                     </LineChart>
                 </div>
@@ -49,7 +52,7 @@ function MonthChart({ selectedRelic }: MonthChartProps) {
 
 function YAxisComponent({ data }: { data: ChartData[] }) {
     const max = Math.max(...data.map(d => d.price));
-    const min = 0;
+    const min = Math.min(...data.map(d => d.price));
     const steps = 4;
 
     const stepSize = (max - min) / steps;
@@ -66,9 +69,13 @@ function YAxisComponent({ data }: { data: ChartData[] }) {
     )
 }
 
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip({ active, payload, label, data }: any) {
     if (active && payload && payload.length) {
         const price = payload[0].value;
+
+        const currentIndex = data.findIndex((item: any) => item.date === label);
+        const prevPrice = currentIndex > 0 ? data[currentIndex - 1].price : null;
+        const diff = prevPrice !== null ? price - prevPrice : 0;
 
         return (
         <div className="rounded-lg border-1 border-[#eeeeee] dark:border-[#333333] px-3 py-2 bg-white dark:bg-[#1a1a1a] flex gap-1 items-center">
@@ -81,6 +88,10 @@ function CustomTooltip({ active, payload, label }: any) {
                     alt="goldicon"
                     className="w-[16px] h-[16px]"/>
                 <span className="text-sm">{price?.toLocaleString()}</span>
+                <span className={clsx(
+                    "text-sm ml-2",
+                    diff > 0 ? 'text-green-700 dark:text-green-400' : diff < 0 ? 'text-red-700 dark:text-red-400' : 'fadedtext'
+                )}>{diff > 0 ? '+ ' : diff < 0 ? '- ' : ''}{Math.abs(diff).toLocaleString()}</span>
             </div>
         </div>
         );
@@ -116,8 +127,40 @@ function ChartModal({ selectedRelic, isOpen, onOpenChange }: ChartModalProps) {
                         </ModalHeader>
                         <Divider/>
                         <ModalBody>
-                            <div className="w-full mt-2">
+                            <div className="w-full mt-2 mb-4 pt-4">
                                 <MonthChart selectedRelic={selectedRelic}/>
+                                <div className="w-full grid sm:grid-cols-2 gap-3 mt-3">
+                                    <Card radius="sm">
+                                        <CardBody>
+                                            <div className="w-full flex gap-1 items-center">
+                                                <Chip radius="sm" variant="flat">3개월 최고 가격</Chip>
+                                                <div className="grow"/>
+                                                <Image 
+                                                    src="/icons/gold.png" 
+                                                    width={14} 
+                                                    height={14} 
+                                                    alt="goldicon"
+                                                    className="w-[18px] h-[18px]"/>
+                                                <span className="text-[14pt]">{getMaxGoldByBook(selectedRelic).toLocaleString()}</span>
+                                            </div>
+                                        </CardBody>
+                                    </Card>
+                                    <Card radius="sm">
+                                        <CardBody>
+                                            <div className="w-full flex gap-1 items-center">
+                                                <Chip radius="sm" variant="flat">3개월 최저 가격</Chip>
+                                                <div className="grow"/>
+                                                <Image 
+                                                    src="/icons/gold.png" 
+                                                    width={14} 
+                                                    height={14} 
+                                                    alt="goldicon"
+                                                    className="w-[18px] h-[18px]"/>
+                                                <span className="text-[14pt]">{getMinGoldByBook(selectedRelic).toLocaleString()}</span>
+                                            </div>
+                                        </CardBody>
+                                    </Card>
+                                </div>
                             </div>
                         </ModalBody>
                     </>
