@@ -34,9 +34,17 @@ function MonthChart({ selectedRelic }: MonthChartProps) {
         <div className="w-full flex">
             <YAxisComponent data={data} />
             <div ref={scrollRef} className="w-full overflow-x-auto">
-                <div style={{ width: `${data.length * itemSize}px`, minWidth: '100%' }}>
-                    <LineChart width={data.length * itemSize < bigSize ? bigSize : data.length * itemSize} height={400} data={data}>
-                        <CartesianGrid strokeDasharray="3 3" />
+                <div style={{ width: `${data.length * itemSize}px`, minWidth: '100%' }} className="relative pt-2 pb-2">
+                    <div style={{ width: data.length * itemSize < bigSize ? `${bigSize}px` : `${data.length * itemSize}px` }} className="h-[calc(100%-51px)] absolute top-2 left-0 flex flex-col justify-between">
+                        {Array.from({ length: 5 }).map((_, index) => (
+                            <div key={index} className={clsx(
+                                "border border-dashed border-[#d0d0d0] dark:border-[#686868] w-full h-[1px]",
+                                index === 4 ? 'border-0' : ''
+                            )}/>
+                        ))}
+                    </div>
+                    <LineChart width={data.length * itemSize < bigSize ? bigSize : data.length * itemSize} height={389} data={data}>
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false}/>
                         <XAxis dataKey="date" />
                         <YAxis
                             domain={['dataMin', 'dataMax']}
@@ -63,7 +71,7 @@ function YAxisComponent({ data }: { data: ChartData[] }) {
     return (
         <div className="w-[58px] h-[400px] flex flex-col justify-between pb-7">
             {ticks.map((tick, idx) => (
-                <div key={idx}>{tick.toLocaleString()}</div>
+                <div key={idx} className="w-full text-right text-sm pr-1">{tick.toLocaleString()}</div>
             ))}
         </div>
     )
