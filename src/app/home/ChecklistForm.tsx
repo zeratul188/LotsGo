@@ -1,20 +1,24 @@
 import { useEffect, useState } from "react";
 import { CheckCharacter } from "../store/checklistSlice";
-import { getUnfinishedChecklist, getUnfinishedContents, isLogin, loadChecklist } from "./checklistFeat";
+import { ChecklistData, isLogin, loadChecklist } from "./checklistFeat";
 import { LoadingComponent } from "../UtilsCompnents";
 import { Boss } from "../api/checklist/boss/route";
 import { getAllCountChecklist, getAllGolds, getBosses, getCompleteChecklist, getHaveGolds } from "../checklist/checklistFeat";
 import { 
     Button,
-    Card, CardBody, CardHeader, 
-    Chip, 
-    Divider, 
+    Card, CardBody,
+    Pagination,
     Progress,
-    ScrollShadow
+    Table,
+    TableBody,
+    TableCell,
+    TableColumn,
+    TableHeader,
+    TableRow
 } from "@heroui/react";
 import Image from "next/image";
-import CheckIcon from "@/Icons/CheckIcon";
 import { useRouter } from "next/navigation";
+import clsx from "clsx";
 
 // state 관리
 function useChecklistForm() {
@@ -23,13 +27,15 @@ function useChecklistForm() {
     const [isLogin, setLogin] = useState(false);
     const [bosses, setBosses] = useState<Boss[]>([]);
     const [isAdministrator, setAdministrator] = useState(false);
+    const [datas, setDatas] = useState<ChecklistData[]>([]);
 
     return {
         checklist, setChecklist,
         isLoading, setLoading,
         isLogin, setLogin,
         bosses, setBosses,
-        isAdministrator, setAdministrator
+        isAdministrator, setAdministrator,
+        datas, setDatas
     }
 }
 
@@ -37,6 +43,8 @@ function useChecklistForm() {
 export default function ChecklistComponent() {
     const checklistForm = useChecklistForm();
     const router = useRouter();
+    const [page, setPage] = useState(1);
+    const countByPage = 10;
     
     useEffect(() => {
         checklistForm.setLogin(isLogin());
@@ -57,7 +65,7 @@ export default function ChecklistComponent() {
     useEffect(() => {
         const loadData = async () => {
             if (checklistForm.isLogin) {
-                await loadChecklist(checklistForm.setChecklist, checklistForm.setLoading);
+                await loadChecklist(checklistForm.setChecklist, checklistForm.setLoading, checklistForm.setDatas, checklistForm.bosses);
             }
         }
         loadData();
@@ -71,23 +79,11 @@ export default function ChecklistComponent() {
     }
 
     return (
-        <div className="mb-5 flex flex-col sm:flex-row gap-5 w-full">
-            <Card radius="sm" className="min-w-[360px]">
-                <CardHeader>
-                    <div className="w-full flex gap-1 items-center">
-                        <p className="text-xl grow">남은 숙제 현황</p>
-                        <Button
-                            radius="sm"
-                            size="sm"
-                            variant="flat"
-                            onPress={() => router.push('/checklist')}>
-                            이동
-                        </Button>
-                    </div>
-                </CardHeader>
-                <Divider/>
+        <div className="w-full mb-5">
+            <Card fullWidth radius="sm">
                 <CardBody>
-                    <div>
+                    <div className="w-full flex flex-col sm:flex-row gap-4 sm:gap-8 sm:items-center">
+                        <p className="text-xl sm:grow">남은 숙제 현황</p>
                         <Progress 
                             aria-label="all-gold"
                             size="md"
@@ -107,7 +103,7 @@ export default function ChecklistComponent() {
                             radius="sm"
                             value={getHaveGolds(checklistForm.bosses, checklistForm.checklist)}
                             maxValue={getAllGolds(checklistForm.bosses, checklistForm.checklist)}
-                            className="w-full"/>
+                            className="w-full sm:w-[360px]"/>
                         <Progress 
                             aria-label="all-gold"
                             size="md"
@@ -117,42 +113,56 @@ export default function ChecklistComponent() {
                             radius="sm"
                             value={getCompleteChecklist(checklistForm.checklist)}
                             maxValue={getAllCountChecklist(checklistForm.checklist)}
-                            className="w-full mt-4"/>
+                            className="w-full sm:w-[360px]"/>
+                        <Button
+                            radius="sm"
+                            variant="flat"
+                            onPress={() => router.push('/checklist')}
+                            className="w-full sm:w-[max-content]">
+                            페이지 이동
+                        </Button>
                     </div>
                 </CardBody>
             </Card>
-            <div className="grow w-full overflow-x-hidden hover:overflow-x-auto">
-                {getUnfinishedChecklist(checklistForm.checklist).length > 0 ? (
-                    <ScrollShadow orientation="horizontal">
-                        <div className="flex gap-5">
-                            {getUnfinishedChecklist(checklistForm.checklist).map((character, index) => (
-                                <div key={index} className="w-[250px] shrink-0">
-                                    <p className="w-full text-center font-bold text-md">{character.nickname}</p>
-                                    <Divider className="mt-1 mb-2"/>
-                                    <div className="mt-2">
-                                        <ScrollShadow className="h-[150px]" hideScrollBar>
-                                            {getUnfinishedContents(character).map((content, idx) => (
-                                                <Chip 
-                                                    key={idx}
-                                                    size="sm" 
-                                                    variant="flat" 
-                                                    className="min-w-full text-center mb-2">
-                                                    {content}
-                                                </Chip>
-                                            ))}
-                                        </ScrollShadow>
-                                    </div>
-                                </div>
+            <div className="w-full overflow-x-auto scrollbar-hide mt-4">
+                <div className="w-[700px] min-[701px]:w-full">
+                    <Table fullWidth removeWrapper radius="sm">
+                        <TableHeader>
+                            <TableColumn>콘텐츠명</TableColumn>
+                            <TableColumn>난이도</TableColumn>
+                            <TableColumn>캐릭터명</TableColumn>
+                            <TableColumn>캐릭터 레벨</TableColumn>
+                            <TableColumn>골드 획득 가능 여부</TableColumn>
+                        </TableHeader>
+                        <TableBody emptyContent="✔️ 남은 숙제가 없거나 데이터가 존재하지 않습니다.">
+                            {checklistForm.datas.slice((page-1)*countByPage, page*countByPage).map((item, index) => (
+                                <TableRow key={index}>
+                                    <TableCell>{item.contentName}</TableCell>
+                                    <TableCell>{item.difficulty}</TableCell>
+                                    <TableCell>{item.nickname}</TableCell>
+                                    <TableCell>Lv.{item.level}</TableCell>
+                                    <TableCell>
+                                        <p className={clsx( 
+                                            item.isGold ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
+                                        )}>{item.isGold ? '획득 가능' : "획득 불가"}</p>
+                                    </TableCell>
+                                </TableRow>
                             ))}
-                        </div>
-                    </ScrollShadow>
-                ) : (
-                    <div className="w-full h-[100px] sm:h-full flex gap-2 items-center justify-center">
-                        <CheckIcon size={36}/>
-                        <p className="text-md sm:text-xl fadedtext">골드 받는 모든 숙제를 완료하였습니다.</p>
-                    </div>
-                )}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
+            {checklistForm.datas.length > 0 && Math.ceil(checklistForm.datas.length / countByPage) > 1 ? (
+                <div className="w-full flex justify-center mt-2">
+                    <Pagination
+                        isCompact
+                        showControls
+                        color="primary"
+                        page={page}
+                        total={Math.ceil(checklistForm.datas.length / countByPage)}
+                        onChange={setPage}/>
+                </div>
+            ) : <></>}
         </div>
     )
 }
