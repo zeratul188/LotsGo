@@ -37,7 +37,7 @@ export default function CalcComponent() {
 
     return (
         <div className="w-full">
-            <div className="w-full grid sm:grid-cols-[1fr_2fr] gap-4">
+            <div className="w-full grid sm:grid-cols-[2fr_3fr] gap-4">
                 <div>
                     <div className="w-full flex gap-2 items-end">
                         <NumberInput
@@ -86,6 +86,7 @@ export default function CalcComponent() {
                             <TableColumn>:</TableColumn>
                             <TableColumn>입찰가 골드</TableColumn>
                             <TableColumn>이익 골드</TableColumn>
+                            <TableColumn>분배금</TableColumn>
                         </TableHeader>
                         <TableBody>
                             <TableRow 
@@ -112,7 +113,7 @@ export default function CalcComponent() {
                                             width={14} 
                                             height={14} 
                                             alt="goldicon"
-                                            className="w-[16px] h-[16px]"/>
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
                                         <span>{formatGold(gold * (person - 1) / person)}</span>
                                     </div>
                                 </TableCell>
@@ -123,8 +124,19 @@ export default function CalcComponent() {
                                             width={14} 
                                             height={14} 
                                             alt="goldicon"
-                                            className="w-[16px] h-[16px]"/>
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
                                         <span>{formatGold(gold - (gold * (person - 1) / person))}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex gap-1 items-center">
+                                        <Image 
+                                            src="/icons/gold.png" 
+                                            width={14} 
+                                            height={14} 
+                                            alt="goldicon"
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
+                                        <span>{formatGold((gold * (person - 1) / person) / (person - 1))}</span>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -152,7 +164,7 @@ export default function CalcComponent() {
                                             width={14} 
                                             height={14} 
                                             alt="goldicon"
-                                            className="w-[16px] h-[16px]"/>
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
                                         <span>{formatGold(getBreakpointGold(gold, person))}</span>
                                     </div>
                                 </TableCell>
@@ -163,8 +175,19 @@ export default function CalcComponent() {
                                             width={14} 
                                             height={14} 
                                             alt="goldicon"
-                                            className="w-[16px] h-[16px]"/>
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
                                         <span>0</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex gap-1 items-center">
+                                        <Image 
+                                            src="/icons/gold.png" 
+                                            width={14} 
+                                            height={14} 
+                                            alt="goldicon"
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
+                                        <span>{formatGold(getBreakpointGold(gold, person) / (person - 1))}</span>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -192,7 +215,7 @@ export default function CalcComponent() {
                                             width={14} 
                                             height={14} 
                                             alt="goldicon"
-                                            className="w-[16px] h-[16px]"/>
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
                                         <span>{formatGold(getBreakpointGold(gold, person) / 1.1)}</span>
                                     </div>
                                 </TableCell>
@@ -203,8 +226,19 @@ export default function CalcComponent() {
                                             width={14} 
                                             height={14} 
                                             alt="goldicon"
-                                            className="w-[16px] h-[16px]"/>
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
                                         <span>{formatGold(getBreakpointGold(gold, person) - (getBreakpointGold(gold, person) / 1.1))}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex gap-1 items-center">
+                                        <Image 
+                                            src="/icons/gold.png" 
+                                            width={14} 
+                                            height={14} 
+                                            alt="goldicon"
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
+                                        <span>{formatGold((getBreakpointGold(gold, person) / 1.1) / (person - 1))}</span>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -232,7 +266,7 @@ export default function CalcComponent() {
                                             width={14} 
                                             height={14} 
                                             alt="goldicon"
-                                            className="w-[16px] h-[16px]"/>
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
                                         <span>{formatGold(getBreakpointGold(gold, person) / 1.025)}</span>
                                     </div>
                                 </TableCell>
@@ -243,8 +277,19 @@ export default function CalcComponent() {
                                             width={14} 
                                             height={14} 
                                             alt="goldicon"
-                                            className="w-[16px] h-[16px]"/>
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
                                         <span>{formatGold(getBreakpointGold(gold, person) - (getBreakpointGold(gold, person) / 1.025))}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex gap-1 items-center">
+                                        <Image 
+                                            src="/icons/gold.png" 
+                                            width={14} 
+                                            height={14} 
+                                            alt="goldicon"
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
+                                        <span>{formatGold((getBreakpointGold(gold, person) / 1.025) / (person - 1))}</span>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -272,7 +317,7 @@ export default function CalcComponent() {
                                             width={14} 
                                             height={14} 
                                             alt="goldicon"
-                                            className="w-[16px] h-[16px]"/>
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
                                         <span>{formatGold(getBreakpointGold(gold, person) / 1.05)}</span>
                                     </div>
                                 </TableCell>
@@ -283,8 +328,19 @@ export default function CalcComponent() {
                                             width={14} 
                                             height={14} 
                                             alt="goldicon"
-                                            className="w-[16px] h-[16px]"/>
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
                                         <span>{formatGold(getBreakpointGold(gold, person) - (getBreakpointGold(gold, person) / 1.05))}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex gap-1 items-center">
+                                        <Image 
+                                            src="/icons/gold.png" 
+                                            width={14} 
+                                            height={14} 
+                                            alt="goldicon"
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
+                                        <span>{formatGold((getBreakpointGold(gold, person) / 1.05) / (person - 1))}</span>
                                     </div>
                                 </TableCell>
                             </TableRow>
@@ -312,7 +368,7 @@ export default function CalcComponent() {
                                             width={14} 
                                             height={14} 
                                             alt="goldicon"
-                                            className="w-[16px] h-[16px]"/>
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
                                         <span>{formatGold(getBreakpointGold(gold, person) / 1.075)}</span>
                                     </div>
                                 </TableCell>
@@ -323,8 +379,19 @@ export default function CalcComponent() {
                                             width={14} 
                                             height={14} 
                                             alt="goldicon"
-                                            className="w-[16px] h-[16px]"/>
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
                                         <span>{formatGold(getBreakpointGold(gold, person) - (getBreakpointGold(gold, person) / 1.075))}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex gap-1 items-center">
+                                        <Image 
+                                            src="/icons/gold.png" 
+                                            width={14} 
+                                            height={14} 
+                                            alt="goldicon"
+                                            className="w-[16px] h-[16px] hidden sm:flex"/>
+                                        <span>{formatGold((getBreakpointGold(gold, person) / 1.075) / (person - 1))}</span>
                                     </div>
                                 </TableCell>
                             </TableRow>
