@@ -29,7 +29,8 @@ import {
     ModalFooter,
     Switch,
     Link,
-    Avatar
+    Avatar,
+    Pagination
 } from "@heroui/react";
 import Image from "next/image";
 import { 
@@ -86,6 +87,7 @@ import {
     isBiweeklyContent, 
     isCheckBiweeklyContent, 
     isHaveCharacter, 
+    loadDatas, 
     SearchCharacter, 
     useChangeBlessing, 
     useClickLife, 
@@ -114,6 +116,7 @@ import {
   Draggable
 } from '@hello-pangea/dnd';
 import { getImgByJob } from "../character/expeditionFeat";
+import { ChecklistData } from "../home/checklistFeat";
 
 // state 관리
 export type ModalData = {
@@ -134,6 +137,7 @@ export function useChecklistForm() {
     const [max, setMax] = useState(0);
     const [isBlessing, setBlessing] = useState(false);
     const [isShowCubeDetail, setShowCubeDetail] = useState(false);
+    const [isShowList, setShowList] = useState(false);
     const [isLogined, setLogined] = useState(false);
 
     return {
@@ -147,7 +151,8 @@ export function useChecklistForm() {
         isBlessing, setBlessing,
         max, setMax,
         isShowCubeDetail, setShowCubeDetail,
-        isLogined, setLogined
+        isLogined, setLogined,
+        isShowList, setShowList
     }
 }
 
@@ -2303,6 +2308,94 @@ export function NotLoginedComponent() {
                     </ul>
                 </div>
             </div>
+        </div>
+    )
+}
+
+// 남은 숙제 현황 컴포넌트
+type RemainChecklistComponentProps = {
+    checklist: CheckCharacter[],
+    bosses: Boss[]
+}
+export function RemainChecklistComponent({ checklist, bosses }: RemainChecklistComponentProps) {
+    const [datas, setDatas] = useState<ChecklistData[]>([]);
+    const [results, setResults] = useState<ChecklistData[]>([]);
+    const [value, setValue] = useState<Selection>(new Set([]));
+    const [page, setPage] = useState(1);
+    const countByPage = 10;
+
+    useEffect(() => {
+        loadDatas(checklist, bosses, value, setDatas, setResults);
+    }, [checklist]);
+
+    useEffect(() => {
+        if (datas.length > 0) {
+            const valueList = Array.from(value);
+            if (valueList.length === 0) {
+                setResults(datas);
+            } else {
+                const selectedIndex = Number(valueList[0]);
+                const contentName = bosses.sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(boss => boss.name)[selectedIndex];
+                const list = datas.filter((item) => item.contentName === contentName);
+                setResults(list);
+            }
+            setPage(1);
+        }
+    }, [value]);
+
+    return (
+        <div className="w-full mt-4">
+            <Select
+                label="콘텐츠 선택"
+                placeholder="콘텐츠를 선택하세요."
+                selectedKeys={value}
+                radius="sm"
+                size="sm"
+                onSelectionChange={setValue}
+                className="w-full sm:w-[300px]">
+                {bosses.sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(boss => boss.name).map((boss, index) => (
+                    <SelectItem key={index}>{boss}</SelectItem>
+                ))}
+            </Select>
+            <div className="w-full overflow-x-auto scrollbar-hide mt-4">
+                <div className="w-[700px] min-[701px]:w-full">
+                    <Table fullWidth removeWrapper radius="sm">
+                        <TableHeader>
+                            <TableColumn>콘텐츠명</TableColumn>
+                            <TableColumn>난이도</TableColumn>
+                            <TableColumn>캐릭터명</TableColumn>
+                            <TableColumn>캐릭터 레벨</TableColumn>
+                            <TableColumn>골드 획득 가능 여부</TableColumn>
+                        </TableHeader>
+                        <TableBody emptyContent="✔️ 남은 숙제가 없거나 데이터가 존재하지 않습니다.">
+                            {results.slice((page-1)*countByPage, page*countByPage).map((item, index) => (
+                                <TableRow key={index}>
+                                    <TableCell>{item.contentName}</TableCell>
+                                    <TableCell>{item.difficulty}</TableCell>
+                                    <TableCell>{item.nickname}</TableCell>
+                                    <TableCell>Lv.{item.level}</TableCell>
+                                    <TableCell>
+                                        <p className={clsx( 
+                                            item.isGold ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
+                                        )}>{item.isGold ? '획득 가능' : "획득 불가"}</p>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+            </div>
+            {results.length > 0 && Math.ceil(results.length / countByPage) > 1 ? (
+                <div className="w-full flex justify-center mt-2">
+                    <Pagination
+                        isCompact
+                        showControls
+                        color="primary"
+                        page={page}
+                        total={Math.ceil(results.length / countByPage)}
+                        onChange={setPage}/>
+                </div>
+            ) : <></>}
         </div>
     )
 }

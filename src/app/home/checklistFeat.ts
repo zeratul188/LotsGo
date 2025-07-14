@@ -75,7 +75,7 @@ export async function loadChecklist(
     setLoading(false);
 }
 
-function getLevelByContent(bosses: Boss[], contentName: string, difficulty: string): number {
+export function getLevelByContent(bosses: Boss[], contentName: string, difficulty: string): number {
     for (const boss of bosses) {
         if (boss.name === contentName) {
             for (const diff of boss.difficulty) {

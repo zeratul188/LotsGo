@@ -1,5 +1,5 @@
 'use client'
-import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent, NotLoginedComponent } from "./ChecklistForm"
+import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent, NotLoginedComponent, RemainChecklistComponent } from "./ChecklistForm"
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
 import { checkLogin, getBosses, getCubes, loadChecklist } from "./checklistFeat";
@@ -88,13 +88,22 @@ export default function ChecklistClient() {
             ) : <></>}
             {checklistForm.isLoading ? <LoadingComponent heightStyle="min-h-[calc(100vh-65px)]"/> : (
                 <div>
-                    <div className="w-full flex flex-col sm:flex-row gap-2 sm:items-center">
+                    <div className="w-full flex flex-col sm:flex-row gap-3 sm:items-center">
                         <div className="grow">
                             <SelectServer 
                                 checklist={checklist} 
                                 server={checklistForm.server}
                                 setServer={checklistForm.setServer}/>
                         </div>
+                        <Button
+                            radius="sm"
+                            color={checklistForm.isShowList ? 'default' : 'primary'}
+                            variant="shadow"
+                            onPress={() => {
+                                checklistForm.setShowList(!checklistForm.isShowList);
+                            }}>
+                            남은 숙제 현황 {checklistForm.isShowList ? '닫기' : "보기"}
+                        </Button>
                         <Button
                             radius="sm"
                             color={checklistForm.isShowCubeDetail ? 'default' : 'primary'}
@@ -104,6 +113,11 @@ export default function ChecklistClient() {
                             }}>
                             큐브 현황 {checklistForm.isShowCubeDetail ? '닫기' : "보기"}
                         </Button>
+                    </div>
+                    <div className={clsx(
+                        checklistForm.isShowList ? 'block' : 'hidden'
+                    )}>
+                        <RemainChecklistComponent checklist={checklist} bosses={checklistForm.bosses}/>
                     </div>
                     <div className={clsx(
                         checklistForm.isShowCubeDetail ? 'block' : 'hidden'

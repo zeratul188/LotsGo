@@ -24,6 +24,7 @@ import { Cube } from "../api/checklist/cube/route";
 import { collection, getDocs } from "firebase/firestore";
 import { firestore } from "@/utiils/firebase";
 import { decrypt } from "@/utiils/crypto";
+import { ChecklistData, getLevelByContent } from "../home/checklistFeat";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
@@ -2063,4 +2064,40 @@ export function getGemCountByChecklist(checklist: CheckCharacter[], cubes: Cube[
         sum = Math.floor(sum / 3);
     }
     return gems;
+}
+
+// 남은 숙제 데이터 불러오기
+export function loadDatas(
+    checklist: CheckCharacter[], 
+    bosses: Boss[], 
+    value: any,
+    setDatas: SetStateFn<ChecklistData[]>,
+    setResults: SetStateFn<ChecklistData[]>
+) {
+    const datas: ChecklistData[] = [];
+    for (const character of checklist) {
+        for (const content of character.checklist) {
+            if (!content.isCheck && !content.isDisable) {
+                const newData: ChecklistData = {
+                    nickname: character.nickname,
+                    level: character.level,
+                    contentName: content.name,
+                    difficulty: content.difficulty,
+                    isGold: content.isGold
+                }
+                datas.push(newData);
+            }
+        }
+    }
+    datas.sort((a, b) => getLevelByContent(bosses, b.contentName, b.difficulty) - getLevelByContent(bosses, a.contentName, a.difficulty));
+    setDatas(datas);
+    const valueList = Array.from(value);
+    if (valueList.length === 0) {
+        setResults(datas);
+    } else {
+        const selectedIndex = Number(valueList[0]);
+        const contentName = bosses.sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(boss => boss.name)[selectedIndex];
+        const list: ChecklistData[] = datas.filter((item) => item.contentName === contentName);
+        setResults(list);
+    }
 }
