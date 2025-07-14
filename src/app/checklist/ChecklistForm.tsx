@@ -28,7 +28,8 @@ import {
     NumberInput,
     ModalFooter,
     Switch,
-    Link
+    Link,
+    Avatar
 } from "@heroui/react";
 import Image from "next/image";
 import { 
@@ -112,6 +113,7 @@ import {
   Droppable,
   Draggable
 } from '@hello-pangea/dnd';
+import { getImgByJob } from "../character/expeditionFeat";
 
 // state 관리
 export type ModalData = {
@@ -695,32 +697,37 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                     <Card key={index} fullWidth radius="sm">
                         <CardHeader>
                             <div className="w-full flex flex-col md960:flex-row items-center gap-2">
-                                <div className="w-full flex grow-1 flex-row md960:flex-col items-center">
-                                    <div className="grow-1 w-full">
-                                        <div className="flex gap-2 items-center">
-                                            <Chip size="sm" color="warning" className={clsx(
-                                                character.isGold ? 'block' : 'hidden',
-                                                "h-auto pt-0.5 pb-0.5 text-white dark:text-black"
-                                            )}>골드 지정</Chip>
+                                <div className="w-full grow flex gap-4 items-center">
+                                    <div className="flex flex-col gap-2 items-center">
+                                        <Avatar isBordered size="md" color={character.isGold ? 'warning' : 'default'} src={getImgByJob(character.job)}/>
+                                        <Chip size="sm" variant="flat" radius="sm" color="warning" className={clsx(
+                                            "text-[8pt] p-0.5",
+                                            character.isGold ? 'hidden sm:flex' : 'hidden'
+                                        )}>
+                                            골드 지정
+                                        </Chip>
+                                    </div>
+                                    <div className="flex grow flex-row md960:flex-col items-center">
+                                        <div className="grow-1 w-full">
                                             <span className="fadedtext text-sm">@{character.server} · {character.job} · Lv.{character.level}</span>
-                                        </div>
-                                        <div className="flex gap-2 items-center">
-                                            <span className="text-xl">{character.nickname}</span>
-                                            <div className="hidden md960:block">
-                                                <SettingButton 
-                                                    size={16} 
-                                                    checklist={checklist} 
-                                                    characterIndex={getIndexByNickname(checklist, character.nickname)}
-                                                    dispatch={dispatch}/>
+                                            <div className="flex gap-2 items-center">
+                                                <span className="text-xl">{character.nickname}</span>
+                                                <div className="hidden md960:block">
+                                                    <SettingButton 
+                                                        size={16} 
+                                                        checklist={checklist} 
+                                                        characterIndex={getIndexByNickname(checklist, character.nickname)}
+                                                        dispatch={dispatch}/>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div className="block md960:hidden">
-                                        <SettingButton 
-                                            size={26} 
-                                            checklist={checklist} 
-                                            characterIndex={getIndexByNickname(checklist, character.nickname)}
-                                            dispatch={dispatch}/>
+                                        <div className="block md960:hidden">
+                                            <SettingButton 
+                                                size={24} 
+                                                checklist={checklist} 
+                                                characterIndex={getIndexByNickname(checklist, character.nickname)}
+                                                dispatch={dispatch}/>
+                                        </div>
                                     </div>
                                 </div>
                                 <div className="w-full md960:w-[330px]">
