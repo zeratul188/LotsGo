@@ -216,21 +216,11 @@ export async function loadProfile(
     if (res.ok) {
         const data = await res.json();
         const basedDate = new Date(data.date.seconds * 1000 + data.date.nanoseconds / 1_000_000);
-        const threeDaysInMs = 3 * 24 * 60 * 60 * 1000;
+        const threeDaysInMs = 7 * 24 * 60 * 60 * 1000;
         const now = new Date();
         const hasPassed3Days = (now.getTime() - basedDate.getTime()) >= threeDaysInMs;
 
         if (!hasPassed3Days) {
-            await fetch('/api/caches/characters', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    nickname: nickname,
-                    file: data.file,
-                    expeditions: data.expeditions,
-                    combatPower: data.combatPower
-                })
-            });
             const today = new Date();
             const history: CharacterHistory = {
                 nickname: nickname,
@@ -245,6 +235,16 @@ export async function loadProfile(
             setLoading(false);
             setNothing(false);
             setCombat(Number(data.combatPower));
+            await fetch('/api/caches/characters', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nickname: nickname,
+                    file: data.file,
+                    expeditions: data.expeditions,
+                    combatPower: data.combatPower
+                })
+            });
             return;
         } else {
             savedCombat = Number(data.combatPower);
@@ -305,6 +305,10 @@ export async function loadProfile(
             newFile.skills = data.ArmorySkills;
             newFile.collects = data.Collectibles;
             newFile.avatars = data.ArmoryAvatars;
+            setFile(newFile);
+            setNothing(false);
+            setExpeditions(newExpeditions);
+            setLoading(false);
             await fetch('/api/caches/characters', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -341,10 +345,6 @@ export async function loadProfile(
                     setCombat(nowCombat);
                 }
                 saveHistory(history);
-                setLoading(false);
-                setFile(newFile);
-                setNothing(false);
-                setExpeditions(newExpeditions);
                 return;
             }
         }
