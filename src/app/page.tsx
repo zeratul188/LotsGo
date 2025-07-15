@@ -7,6 +7,7 @@ import TitleComponent from "./home/TitleForm";
 import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
 import NotLoginComponent from "./home/NotLoginForm";
+import UpdateComponent from "./home/UpdateForm";
 
 const BoxAd = dynamic(() => import('./ad/BoxAd'), { ssr: false });
 const TwoLineAd = dynamic(() => import('./ad/TwoLineAd'), { ssr: false });
@@ -20,9 +21,10 @@ export default function Home() {
     <div className="w-full min-h-[calc(100vh-65px)]">
       <TitleComponent/>
       <div className="p-5 w-full max-w-[1280px] mx-auto pb-20">
-        <NotLoginComponent/>
         <ChecklistComponent/>
         <TodoComponent/>
+        <UpdateComponent/>
+        <NotLoginComponent/>
         <CalendarComponent setLoaded={setLoaded} setShowAd={setShowAd}/>
         {isLoaded && isShowAd ? isMobile ? (
           <div className="w-full flex justify-center px-4">

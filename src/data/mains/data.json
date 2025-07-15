@@ -1,0 +1,23 @@
+[
+    {
+        "url": "/main/main3.webp",
+        "title": "카멘 익스트림",
+        "sub": "익스트림 레이드",
+        "color": "#0F3067",
+        "isBlack": false
+    },
+    {
+        "url": "/main/main2.webp",
+        "title": "승리의 빛 : 발키리",
+        "sub": "신규 클래스",
+        "color": "#FFEB5A",
+        "isBlack": true
+    },
+    {
+        "url": "/main/main1.webp",
+        "title": "3막 : 칠흑, 폭풍의 밤",
+        "sub": "카제로스 레이드",
+        "color": "#F3B600",
+        "isBlack": false
+    }
+]

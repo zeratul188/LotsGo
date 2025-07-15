@@ -70,8 +70,10 @@ export const updateRelicsBook = onRequest({
       page++;
     }
 
-    const relicsRef = database.ref('/relics');
-    await relicsRef.set(allItems);
+    if (allItems.length > 0) {
+      const relicsRef = database.ref('/relics');
+      await relicsRef.set(allItems);
+    }
 
     res.send("✅ 데이터 적용 완료");
   } catch (error) {
@@ -276,4 +278,4 @@ export const resetDayChecklist = functions.https.onRequest(async (req, res) => {
 });
 
 // firebase functions:secrets:set LOSTARK_API_KEY
-// firebase deploy --only functions:writeRelicsBookPrice
+// firebase deploy --only functions:updateRelicsBook
