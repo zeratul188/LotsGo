@@ -23,8 +23,8 @@ export default function Home() {
       <div className="p-5 w-full max-w-[1280px] mx-auto pb-20">
         <ChecklistComponent/>
         <TodoComponent/>
-        <UpdateComponent/>
         <NotLoginComponent/>
+        <UpdateComponent/>
         <CalendarComponent setLoaded={setLoaded} setShowAd={setShowAd}/>
         {isLoaded && isShowAd ? isMobile ? (
           <div className="w-full flex justify-center px-4">
