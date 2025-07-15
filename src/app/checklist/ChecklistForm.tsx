@@ -695,11 +695,11 @@ type ChecklistProps = {
 export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch, onOpen, setModalData }: ChecklistProps) {
     const [inputOtherGold, setInputOtherGold] = useState(0);
     return (
-        <div className="mt-5 grid grid-cols-1 md960:grid-cols-2 gap-4">
+        <div className="w-full min-[541px]:w-[max-content] mt-5 grid grid-cols-1 min-[1137px]:grid-cols-2 min-[1713px]:grid-cols-3 min-[2289px]:grid-cols-4 min-[2865px]:grid-cols-5 min-[3441px]:grid-cols-6 gap-4 mx-auto">
             {checklist
                 .filter((character) => character.server === server || server === '전체')
                 .map((character, index) => (
-                    <Card key={index} fullWidth radius="sm">
+                    <Card key={index} fullWidth radius="sm" className="w-full min-[561px]:w-[560px]">
                         <CardHeader>
                             <div className="w-full flex flex-col md960:flex-row items-center gap-2">
                                 <div className="w-full grow flex gap-4 items-center">

@@ -68,17 +68,19 @@ export default function ChecklistClient() {
     }
 
     return (
-        <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto relative">
-            <ChecklistStatue 
-                checklist={checklist} 
-                bosses={checklistForm.bosses}
-                dispatch={dispatch}
-                life={checklistForm.life}
-                isBlessing={checklistForm.isBlessing}
-                setLife={checklistForm.setLife}
-                setBlessing={checklistForm.setBlessing}
-                max={checklistForm.max}
-                setMax={checklistForm.setMax}/>
+        <div className="min-h-[calc(100vh-65px)] p-5 w-full relative">
+            <div className="w-full max-w-[1280px] mx-auto">
+                <ChecklistStatue 
+                    checklist={checklist} 
+                    bosses={checklistForm.bosses}
+                    dispatch={dispatch}
+                    life={checklistForm.life}
+                    isBlessing={checklistForm.isBlessing}
+                    setLife={checklistForm.setLife}
+                    setBlessing={checklistForm.setBlessing}
+                    max={checklistForm.max}
+                    setMax={checklistForm.setMax}/>
+            </div>
             {!checklistForm.isLoading && checklist.length > 0 ? (
                 <div className="w-full flex justify-center overflow-hidden md960:pt-[110px]">
                     <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px] mt-8">
@@ -88,41 +90,43 @@ export default function ChecklistClient() {
             ) : <></>}
             {checklistForm.isLoading ? <LoadingComponent heightStyle="min-h-[calc(100vh-65px)]"/> : (
                 <div>
-                    <div className="w-full flex flex-col sm:flex-row gap-3 sm:items-center">
-                        <div className="grow">
-                            <SelectServer 
-                                checklist={checklist} 
-                                server={checklistForm.server}
-                                setServer={checklistForm.setServer}/>
+                    <div className="w-full max-w-[1280px] mx-auto">
+                        <div className="w-full flex flex-col sm:flex-row gap-3 sm:items-center">
+                            <div className="grow">
+                                <SelectServer 
+                                    checklist={checklist} 
+                                    server={checklistForm.server}
+                                    setServer={checklistForm.setServer}/>
+                            </div>
+                            <Button
+                                radius="sm"
+                                color={checklistForm.isShowList ? 'default' : 'primary'}
+                                variant="shadow"
+                                onPress={() => {
+                                    checklistForm.setShowList(!checklistForm.isShowList);
+                                }}>
+                                남은 숙제 현황 {checklistForm.isShowList ? '닫기' : "보기"}
+                            </Button>
+                            <Button
+                                radius="sm"
+                                color={checklistForm.isShowCubeDetail ? 'default' : 'primary'}
+                                variant="shadow"
+                                onPress={() => {
+                                    checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail);
+                                }}>
+                                큐브 현황 {checklistForm.isShowCubeDetail ? '닫기' : "보기"}
+                            </Button>
                         </div>
-                        <Button
-                            radius="sm"
-                            color={checklistForm.isShowList ? 'default' : 'primary'}
-                            variant="shadow"
-                            onPress={() => {
-                                checklistForm.setShowList(!checklistForm.isShowList);
-                            }}>
-                            남은 숙제 현황 {checklistForm.isShowList ? '닫기' : "보기"}
-                        </Button>
-                        <Button
-                            radius="sm"
-                            color={checklistForm.isShowCubeDetail ? 'default' : 'primary'}
-                            variant="shadow"
-                            onPress={() => {
-                                checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail);
-                            }}>
-                            큐브 현황 {checklistForm.isShowCubeDetail ? '닫기' : "보기"}
-                        </Button>
-                    </div>
-                    <div className={clsx(
-                        checklistForm.isShowList ? 'block' : 'hidden'
-                    )}>
-                        <RemainChecklistComponent checklist={checklist} bosses={checklistForm.bosses}/>
-                    </div>
-                    <div className={clsx(
-                        checklistForm.isShowCubeDetail ? 'block' : 'hidden'
-                    )}>
-                        <CubeDetailComponent checklist={checklist} cubes={checklistForm.cubes}/>
+                        <div className={clsx(
+                            checklistForm.isShowList ? 'block' : 'hidden'
+                        )}>
+                            <RemainChecklistComponent checklist={checklist} bosses={checklistForm.bosses}/>
+                        </div>
+                        <div className={clsx(
+                            checklistForm.isShowCubeDetail ? 'block' : 'hidden'
+                        )}>
+                            <CubeDetailComponent checklist={checklist} cubes={checklistForm.cubes}/>
+                        </div>
                     </div>
                     <ChecklistComponent 
                         checklist={checklist} 
@@ -141,19 +145,21 @@ export default function ChecklistClient() {
                         bosses={checklistForm.bosses}/>
                 </div>
             )}
-            {!checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
-                <div className="w-full flex justify-center px-4">
-                    <div className="w-full max-w-[360px] min-h-[100px] mt-8">
-                    <BoxAd isLoaded={!checklistForm.isLoading}/>
+            <div className="w-full max-w-[1280px] mx-auto">
+                {!checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
+                    <div className="w-full flex justify-center px-4">
+                        <div className="w-full max-w-[360px] min-h-[100px] mt-8">
+                        <BoxAd isLoaded={!checklistForm.isLoading}/>
+                        </div>
                     </div>
-                </div>
-            ) : (
-                <div className="w-full flex justify-center px-4 overflow-hidden mt-8">
-                    <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px] mt-8">
-                        <LineAd isLoaded={!checklistForm.isLoading}/>
+                ) : (
+                    <div className="w-full flex justify-center px-4 overflow-hidden mt-8">
+                        <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px] mt-8">
+                            <LineAd isLoaded={!checklistForm.isLoading}/>
+                        </div>
                     </div>
-                </div>
-            ) : <></>}
+                ) : <></>}
+            </div>
         </div>
     )
 }
