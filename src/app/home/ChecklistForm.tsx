@@ -9,16 +9,12 @@ import {
     Card, CardBody,
     Pagination,
     Progress,
-    Table,
-    TableBody,
-    TableCell,
-    TableColumn,
-    TableHeader,
-    TableRow
+    Tooltip
 } from "@heroui/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
+import CheckIcon from "@/Icons/CheckIcon";
 
 // state 관리
 function useChecklistForm() {
@@ -124,36 +120,40 @@ export default function ChecklistComponent() {
                     </div>
                 </CardBody>
             </Card>
-            <div className="w-full overflow-x-auto scrollbar-hide mt-4">
-                <div className="w-[700px] min-[701px]:w-full">
-                    <Table fullWidth removeWrapper radius="sm">
-                        <TableHeader>
-                            <TableColumn>콘텐츠명</TableColumn>
-                            <TableColumn>난이도</TableColumn>
-                            <TableColumn>캐릭터명</TableColumn>
-                            <TableColumn>캐릭터 레벨</TableColumn>
-                            <TableColumn>골드 획득 가능 여부</TableColumn>
-                        </TableHeader>
-                        <TableBody emptyContent="✔️ 남은 숙제가 없거나 데이터가 존재하지 않습니다.">
-                            {checklistForm.datas.slice((page-1)*countByPage, page*countByPage).map((item, index) => (
-                                <TableRow key={index}>
-                                    <TableCell>{item.contentName}</TableCell>
-                                    <TableCell>{item.difficulty}</TableCell>
-                                    <TableCell>{item.nickname}</TableCell>
-                                    <TableCell>Lv.{item.level}</TableCell>
-                                    <TableCell>
-                                        <p className={clsx( 
-                                            item.isGold ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
-                                        )}>{item.isGold ? '획득 가능' : "획득 불가"}</p>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
+            <div className="w-full mt-4 grid grid-cols-2 min-[617px]:grid-cols-3 min-[925px]:grid-cols-4 min-[1233px]:grid-cols-5 gap-2">
+                {checklistForm.datas.slice((page-1)*countByPage, page*countByPage).map((item, index) => (
+                    <Tooltip key={index} showArrow content={<div className={clsx(
+                        item.isGold ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
+                    )}>
+                        {item.isGold ? '골드 획득 가능' : "골드 획득 불가"}
+                    </div>}>
+                        <Card shadow="sm" radius="sm" className={clsx(
+                            "border-l-4",
+                            item.isGold ? "border-[#F3B600]" : "border-[#cccccc] dark:border-[#333333]"
+                        )}>
+                            <CardBody className="py-2.5 sm:py-3 px-1.5 sm:px-2">
+                                <div>
+                                    <p className="text-[8pt] sm:text-[10pt] font-bold">{item.contentName} {item.difficulty}</p>
+                                    <div className="w-full flex gap-1">
+                                        <p className="grow text-[7pt] sm:text-[9pt]">{item.nickname}</p>
+                                        <p className="fadedtext text-[7pt] sm:text-[9pt]">Lv.{item.level}</p>
+                                    </div>
+                                </div>
+                            </CardBody>
+                        </Card>
+                    </Tooltip>
+                ))}
             </div>
+            {checklistForm.datas.length === 0 ? (
+                <div className="w-full h-[140px] sm:h-[240px] fadedtext flex justify-center items-center">
+                    <div className="flex gap-2 items-center">
+                        <CheckIcon size={24}/>
+                        <p className="text-md sm:text-xl">남은 숙제가 없거나 데이터가 존재하지 않습니다.</p>
+                    </div>
+                </div>
+            ) : <></>}
             {checklistForm.datas.length > 0 && Math.ceil(checklistForm.datas.length / countByPage) > 1 ? (
-                <div className="w-full flex justify-center mt-2">
+                <div className="w-full flex justify-center mt-4">
                     <Pagination
                         isCompact
                         showControls
