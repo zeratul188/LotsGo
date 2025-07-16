@@ -117,6 +117,7 @@ import {
 } from '@hello-pangea/dnd';
 import { getImgByJob } from "../character/expeditionFeat";
 import { ChecklistData } from "../home/checklistFeat";
+import CheckIcon from "@/Icons/CheckIcon";
 
 // state 관리
 export type ModalData = {
@@ -175,6 +176,7 @@ function PositionModal({ isOpenModalPosition, onOpenChangePosition, checklist, d
 
     return (
         <Modal
+            radius="sm"
             isDismissable={false}
             isOpen={isOpenModalPosition}
             onOpenChange={onOpenChangePosition}>
@@ -465,7 +467,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                         className="mb-0">축복</Checkbox>
                                 </Tooltip>
                                 <div className="grow flex justify-end">
-                                    <Popover showArrow placement="bottom">
+                                    <Popover showArrow disableAnimation placement="bottom">
                                         <PopoverTrigger>
                                             <Button
                                                 size="sm"
@@ -475,7 +477,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                                 수정
                                             </Button>
                                         </PopoverTrigger>
-                                        <PopoverContent>
+                                        <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
                                             <div className="w-[240px] p-2">
                                                 <p className="mb-2">생명의 기운 조정</p>
                                                 <NumberInput
@@ -497,6 +499,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                                     onValueChange={setNewMax}/>
                                                 <Button
                                                     fullWidth
+                                                    radius="sm"
                                                     color="primary"
                                                     className="mt-3"
                                                     onPress={onClickLife}>
@@ -550,6 +553,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                 checklist={checklist}
                 dispatch={dispatch}/>
             <Modal
+                radius="sm"
                 isDismissable={false}
                 isOpen={isOpen}
                 onOpenChange={onOpenChange}
@@ -758,6 +762,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         className="w-full"/>
                                     <Popover 
                                         showArrow
+                                        disableAnimation
                                         onClose={() => {
                                             setInputOtherGold(0);
                                         }}>
@@ -772,7 +777,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                 부수입 설정 및 골드량
                                             </Button>
                                         </PopoverTrigger>
-                                        <PopoverContent>
+                                        <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
                                             <div className="w-full sm300:w-[300px] pt-2">
                                                 <span className="text-sm fadedtext">콘텐츠 골드 획득량</span>
                                                 <Progress 
@@ -1214,6 +1219,7 @@ export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dis
     if (modalData.characterIndex !== -1) {
         return (
             <Modal
+                radius="sm"
                 isDismissable={false}
                 isOpen={isOpen}
                 onOpenChange={onOpenChange}>
@@ -1448,7 +1454,6 @@ function WeekModalContent({ checklist, index, dispatch, bosses, onClose }: WeekM
     const [content, setContent] = useState<Selection>(new Set([]));
     const [difficulty, setDifficulty] = useState<Selection>(new Set([]));
     const [isGold, setGold] = useState(false);
-    const [isDisableGold, setDisableGold] = useState(false);
 
     useEffect(() => {
         if (getTakeGold(checklist[index].checklist) >= 3) {
@@ -1460,14 +1465,11 @@ function WeekModalContent({ checklist, index, dispatch, bosses, onClose }: WeekM
                         bosses)
                 ) {
                     setGold(true);
-                    setDisableGold(false);
                 } else {
                     setGold(false);
-                    setDisableGold(true);
                 }
             } else {
                 setGold(false);
-                setDisableGold(true);
             }
         } else {
             if (Array.from(content)[0] && Array.from(difficulty)[0]) {
@@ -1478,14 +1480,11 @@ function WeekModalContent({ checklist, index, dispatch, bosses, onClose }: WeekM
                         bosses)
                 ) {
                     setGold(false);
-                    setDisableGold(true);
                 } else {
                     setGold(true);
-                    setDisableGold(false);
                 }
             } else {
                 setGold(true);
-                setDisableGold(false);
             }
         }
     }, [difficulty]);
@@ -1505,8 +1504,7 @@ function WeekModalContent({ checklist, index, dispatch, bosses, onClose }: WeekM
                         setContent={setContent}
                         setDifficulty={setDifficulty}
                         isGold={isGold}
-                        setGold={setGold}
-                        isDisableGold={isDisableGold}/>
+                        setGold={setGold}/>
                 </Tab>
                 <Tab key="list" title="기타">
                     <WeekListComponent
@@ -1540,6 +1538,7 @@ function WeekListComponent({ checklist, index, dispatch, onClose }: WeekListComp
             <Input
                 fullWidth
                 isRequired
+                radius="sm"
                 label="숙제"
                 placeholder="2~15자 안으로 작성하세요."
                 maxLength={15}
@@ -1547,6 +1546,7 @@ function WeekListComponent({ checklist, index, dispatch, onClose }: WeekListComp
                 onValueChange={setInputValue}/>
             <Button
                 fullWidth
+                radius="sm"
                 isLoading={isLoadingAdd}
                 isDisabled={inputValue.trim() === ''}
                 color="primary"
@@ -1588,8 +1588,7 @@ type WeekContentComponentProps = {
     setContent: SetStateFn<Selection>,
     setDifficulty : SetStateFn<Selection>,
     isGold: boolean,
-    setGold: SetStateFn<boolean>,
-    isDisableGold: boolean
+    setGold: SetStateFn<boolean>
 }
 function WeekContentComponent({
     checklist,
@@ -1599,8 +1598,7 @@ function WeekContentComponent({
     onClose,
     content, setContent,
     difficulty, setDifficulty,
-    isGold, setGold,
-    isDisableGold
+    isGold, setGold
 }: WeekContentComponentProps) {
     const [isLoadingAdd, setLoadingAdd] = useState(false);
     return (
@@ -1680,12 +1678,12 @@ function WeekContentComponent({
                 )}>
                     <Checkbox
                         color="warning"
-                        isDisabled={isDisableGold}
                         isSelected={isGold}
                         onValueChange={setGold}>골드 체크</Checkbox>
                 </div>
                 <Button 
                     fullWidth
+                    radius="sm"
                     color="primary"
                     isLoading={isLoadingAdd}
                     onPress={async () => {
@@ -2335,7 +2333,18 @@ export function RemainChecklistComponent({ checklist, bosses }: RemainChecklistC
                 setResults(datas);
             } else {
                 const selectedIndex = Number(valueList[0]);
-                const contentName = bosses.sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(boss => boss.name)[selectedIndex];
+                const contentName = bosses.sort((a, b) => {
+                    const bDiff = bosses.find(boss => boss.name === b.name);
+                    const aDiff = bosses.find(boss => boss.name === a.name);
+                    let bValue = 0, aValue = 0;
+                    if (bDiff){
+                        bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
+                    }
+                    if (aDiff) {
+                        aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
+                    }
+                    return bValue - aValue;
+                }).map(boss => boss.name)[selectedIndex];
                 const list = datas.filter((item) => item.contentName === contentName);
                 setResults(list);
             }
@@ -2353,38 +2362,53 @@ export function RemainChecklistComponent({ checklist, bosses }: RemainChecklistC
                 size="sm"
                 onSelectionChange={setValue}
                 className="w-full sm:w-[300px]">
-                {bosses.sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(boss => boss.name).map((boss, index) => (
+                {bosses.sort((a, b) => {
+                    const bDiff = bosses.find(boss => boss.name === b.name);
+                    const aDiff = bosses.find(boss => boss.name === a.name);
+                    let bValue = 0, aValue = 0;
+                    if (bDiff){
+                        bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
+                    }
+                    if (aDiff) {
+                        aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
+                    }
+                    return bValue - aValue;
+                }).map(boss => boss.name).map((boss, index) => (
                     <SelectItem key={index}>{boss}</SelectItem>
                 ))}
             </Select>
-            <div className="w-full overflow-x-auto scrollbar-hide mt-4">
-                <div className="w-[700px] min-[701px]:w-full">
-                    <Table fullWidth removeWrapper radius="sm">
-                        <TableHeader>
-                            <TableColumn>콘텐츠명</TableColumn>
-                            <TableColumn>난이도</TableColumn>
-                            <TableColumn>캐릭터명</TableColumn>
-                            <TableColumn>캐릭터 레벨</TableColumn>
-                            <TableColumn>골드 획득 가능 여부</TableColumn>
-                        </TableHeader>
-                        <TableBody emptyContent="✔️ 남은 숙제가 없거나 데이터가 존재하지 않습니다.">
-                            {results.slice((page-1)*countByPage, page*countByPage).map((item, index) => (
-                                <TableRow key={index}>
-                                    <TableCell>{item.contentName}</TableCell>
-                                    <TableCell>{item.difficulty}</TableCell>
-                                    <TableCell>{item.nickname}</TableCell>
-                                    <TableCell>Lv.{item.level}</TableCell>
-                                    <TableCell>
-                                        <p className={clsx( 
-                                            item.isGold ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
-                                        )}>{item.isGold ? '획득 가능' : "획득 불가"}</p>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </div>
+            <div className="w-full mt-4 grid grid-cols-2 min-[617px]:grid-cols-3 min-[925px]:grid-cols-4 min-[1233px]:grid-cols-5 gap-2">
+                {results.slice((page-1)*countByPage, page*countByPage).map((item, index) => (
+                    <Tooltip key={index} showArrow content={<div className={clsx(
+                        item.isGold ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
+                    )}>
+                        {item.isGold ? '골드 획득 가능' : "골드 획득 불가"}
+                    </div>}>
+                        <Card shadow="sm" radius="sm" className={clsx(
+                            "border-l-4",
+                            item.isGold ? "border-[#F3B600]" : "border-[#cccccc] dark:border-[#333333]"
+                        )}>
+                            <CardBody className="py-2.5 sm:py-3 px-1.5 sm:px-2">
+                                <div>
+                                    <p className="text-[8pt] sm:text-[10pt] font-bold">{item.contentName} {item.difficulty}</p>
+                                    <div className="w-full flex gap-1">
+                                        <p className="grow text-[7pt] sm:text-[9pt]">{item.nickname}</p>
+                                        <p className="fadedtext text-[7pt] sm:text-[9pt]">Lv.{item.level}</p>
+                                    </div>
+                                </div>
+                            </CardBody>
+                        </Card>
+                    </Tooltip>
+                ))}
             </div>
+            {results.length === 0 ? (
+                <div className="w-full h-[140px] fadedtext flex justify-center items-center">
+                    <div className="flex gap-2 items-center">
+                        <CheckIcon size={24}/>
+                        <p className="text-md sm:text-xl">남은 숙제가 없거나 데이터가 존재하지 않습니다.</p>
+                    </div>
+                </div>
+            ) : <></>}
             {results.length > 0 && Math.ceil(results.length / countByPage) > 1 ? (
                 <div className="w-full flex justify-center mt-2">
                     <Pagination
@@ -2393,7 +2417,8 @@ export function RemainChecklistComponent({ checklist, bosses }: RemainChecklistC
                         color="primary"
                         page={page}
                         total={Math.ceil(results.length / countByPage)}
-                        onChange={setPage}/>
+                        onChange={setPage}
+                        className="mt-2"/>
                 </div>
             ) : <></>}
         </div>

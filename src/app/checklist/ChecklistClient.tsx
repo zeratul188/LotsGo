@@ -9,7 +9,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { CheckCharacter } from "../store/checklistSlice";
 import { Character } from "../store/loginSlice";
-import { addToast, Button } from "@heroui/react";
+import { addToast, Button, ButtonGroup } from "@heroui/react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
@@ -98,24 +98,24 @@ export default function ChecklistClient() {
                                     server={checklistForm.server}
                                     setServer={checklistForm.setServer}/>
                             </div>
-                            <Button
-                                radius="sm"
-                                color={checklistForm.isShowList ? 'default' : 'primary'}
-                                variant="shadow"
-                                onPress={() => {
-                                    checklistForm.setShowList(!checklistForm.isShowList);
-                                }}>
-                                남은 숙제 현황 {checklistForm.isShowList ? '닫기' : "보기"}
-                            </Button>
-                            <Button
-                                radius="sm"
-                                color={checklistForm.isShowCubeDetail ? 'default' : 'primary'}
-                                variant="shadow"
-                                onPress={() => {
-                                    checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail);
-                                }}>
-                                큐브 현황 {checklistForm.isShowCubeDetail ? '닫기' : "보기"}
-                            </Button>
+                            <ButtonGroup fullWidth={isMobile}>
+                                <Button
+                                    radius="sm"
+                                    color={checklistForm.isShowList ? 'default' : 'primary'}
+                                    onPress={() => {
+                                        checklistForm.setShowList(!checklistForm.isShowList);
+                                    }}>
+                                    남은 숙제 현황 {checklistForm.isShowList ? '닫기' : "보기"}
+                                </Button>
+                                <Button
+                                    radius="sm"
+                                    color={checklistForm.isShowCubeDetail ? 'default' : 'primary'}
+                                    onPress={() => {
+                                        checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail);
+                                    }}>
+                                    큐브 현황 {checklistForm.isShowCubeDetail ? '닫기' : "보기"}
+                                </Button>
+                            </ButtonGroup>
                         </div>
                         <div className={clsx(
                             checklistForm.isShowList ? 'block' : 'hidden'
