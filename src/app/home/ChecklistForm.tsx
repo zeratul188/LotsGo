@@ -75,7 +75,7 @@ export default function ChecklistComponent() {
             <Card fullWidth radius="sm">
                 <CardBody>
                     <div className="w-full flex flex-col sm:flex-row gap-4 sm:gap-8 sm:items-center">
-                        <p className="text-xl sm:grow">남은 숙제 현황</p>
+                        <p className="text-xl sm:grow">숙제 현황</p>
                         <Progress 
                             aria-label="all-gold"
                             size="md"
