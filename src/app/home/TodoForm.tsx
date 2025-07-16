@@ -127,7 +127,7 @@ export function TodoComponent() {
                                 className="min-w-full text-center">
                                 {formatKoreanDate(week.date)}
                             </Chip>
-                            <div className="w-full max-h-[200px] h-[200px] overflow-y-scroll scrollbar-hide mt-2">
+                            <div className="w-full max-h-[120px] h-[120px] overflow-y-scroll scrollbar-hide mt-2">
                                 {getCalendarByWeek(week, todoForm.works, todoForm.guild).map((box, idx) => (
                                     <div key={idx} className={clsx(
                                         "rounded-md border-2 pl-2 pr-2 pt-1 pb-1 mb-2",

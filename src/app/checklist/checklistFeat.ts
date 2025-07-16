@@ -1243,7 +1243,18 @@ export function getWeekContents(bosses: Boss[]): WeekContent[] {
             name: boss.name
         });
     }
-    contents.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+    contents.sort((a, b) => {
+        const bDiff = bosses.find(boss => boss.name === b.name);
+        const aDiff = bosses.find(boss => boss.name === a.name);
+        let bValue = 0, aValue = 0;
+        if (bDiff){
+            bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
+        }
+        if (aDiff) {
+            aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
+        }
+        return bValue - aValue;
+    });
     return contents;
 }
 
