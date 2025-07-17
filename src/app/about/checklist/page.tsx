@@ -1,7 +1,7 @@
-export default function About() {
+export default function Checklist() {
     return (
         <div className="w-full">
-            intro
+            숙제 기능
         </div>
     )
 }

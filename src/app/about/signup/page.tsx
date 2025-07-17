@@ -1,7 +1,7 @@
-export default function About() {
+export default function Signup() {
     return (
         <div className="w-full">
-            intro
+            회원가입
         </div>
     )
 }

@@ -1,7 +1,7 @@
-export default function About() {
+export default function Calender() {
     return (
         <div className="w-full">
-            intro
+            일정 기능
         </div>
     )
 }

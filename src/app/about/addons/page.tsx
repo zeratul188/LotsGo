@@ -1,7 +1,7 @@
-export default function About() {
+export default function Addons() {
     return (
         <div className="w-full">
-            intro
+            도구 기능
         </div>
     )
 }
