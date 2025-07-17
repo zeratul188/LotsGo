@@ -1,6 +1,7 @@
 import { ContentData } from "./CalendarForm";
-import { LoginUser } from "../store/loginSlice";
-import { decrypt } from "@/utiils/crypto";
+import dayjs, { Dayjs } from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 
 export type IslandItem = {
     name: string,
@@ -17,11 +18,12 @@ export type LostarkEvent = {
     title: string,
     thumbnail: string,
     link: string,
-    startDate: Date,
-    endDate: Date
+    startDate: string,
+    endDate: string
 }
 
-const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 // 로스트아크 API로부터 이벤트 정보 가져오는 함수
 export async function loadEvents(apikey: string | undefined): Promise<LostarkEvent[]> {
@@ -35,12 +37,14 @@ export async function loadEvents(apikey: string | undefined): Promise<LostarkEve
         const events: LostarkEvent[] = [];
         const data = await eventLostarkRes.json();
         for (const event of data) {
+            const startKstDayjs = dayjs.tz(event.StartDate, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul');
+            const endKstDayjs = dayjs.tz(event.EndDate, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul');
             const newEvent: LostarkEvent = {
                 title: event.Title,
                 thumbnail: event.Thumbnail,
                 link: event.Link,
-                startDate: new Date(event.StartDate),
-                endDate: new Date(event.EndDate)
+                startDate: startKstDayjs.format(),
+                endDate: endKstDayjs.format()
             }
             events.push(newEvent);
         }
@@ -53,7 +57,7 @@ export type CalendarData = {
     gate: ContentData | null,
     boss: ContentData | null,
     islands: Island[],
-    islandTime: Date | null,
+    islandTime: Dayjs | null,
     isInspection: boolean
 }
 
@@ -78,14 +82,13 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
         const data = await gamecontentLostarkRes.json();
         const islandsData = data.filter((item: any) => item.CategoryName === '모험 섬');
         const todayIslands = islandsData.filter(filterTodayIslands);
-        const today = new Date();
+        const today = dayjs().tz('Asia/Seoul');
         if (todayIslands.length !== 0) {
-            let minTimes = new Date();
-            minTimes.setFullYear(9999);
+            let minTimes = dayjs().tz('Asia/Seoul').year(9999);
             for (const island of todayIslands) {
                 for (const time of island.StartTimes) {
-                    const islandDate = new Date(time);
-                    if (minTimes.getTime() > islandDate.getTime() && isToday(today, islandDate)) {
+                    const islandDate = dayjs.tz(time, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul');
+                    if (islandDate.isBefore(minTimes) && isToday(today, islandDate)) {
                         minTimes = islandDate;
                     }
                 }
@@ -93,7 +96,7 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
             for (const island of todayIslands) {
                 let isPassed = false;
                 for (const time of island.StartTimes) {
-                    const islandDate = new Date(time);
+                    const islandDate = dayjs.tz(time, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul')  // time은 "2025-07-17T11:00:00" (KST로 해석됨)
                     if (isSameDate(minTimes, islandDate)) {
                         isPassed = true;
                     }
@@ -117,18 +120,18 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
         const bossData = data.find((item: any) => item.CategoryName === '필드보스');
         if (bossData) {
             const imgSrc = bossData.ContentsIcon;
-            const nowDate = new Date();
-            let saveDate: Date | null = null;
+            const nowDate = dayjs().tz('Asia/Seoul');
+            let saveDate: Dayjs | null = null;
             for (const item of bossData.StartTimes) {
-                const itemDate = new Date(item);
-                const diffMs = Math.abs(itemDate.getTime() - nowDate.getTime());
+                const itemDate = dayjs.tz(item, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul')  // time은 "2025-07-17T11:00:00" (KST로 해석됨)
+                const diffMs = Math.abs(itemDate.valueOf() - nowDate.valueOf());
                 const isOver3Hours = diffMs >= 3 * 60 * 60 * 1000;
-                if (nowDate.getTime() < itemDate.getTime() && !isOver3Hours) {
+                if (nowDate.valueOf() < itemDate.valueOf() && !isOver3Hours) {
                     saveDate = itemDate;
                     break;
                 }
             }
-            bossContentData.date = saveDate;
+            bossContentData.date = saveDate ? saveDate.format() : null;
             bossContentData.imgSrc = imgSrc;
         }
         calendarData.boss = bossContentData;
@@ -139,19 +142,19 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
         const gateData = data.find((item: any) => item.CategoryName === '카오스게이트');
         if (gateData) {
             const imgSrc = gateData.ContentsIcon;
-            const nowDate = new Date();
-            let saveDate: Date | null = null;
+            const nowDate = dayjs().tz('Asia/Seoul');
+            let saveDate: Dayjs | null = null;
             for (const item of gateData.StartTimes) {
-                const itemDate = new Date(item);
-                itemDate.setMinutes(itemDate.getMinutes() + 10);
-                const diffMs = Math.abs(itemDate.getTime() - nowDate.getTime());
+                const itemDate = dayjs.tz(item, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul')  // time은 "2025-07-17T11:00:00" (KST로 해석됨)
+                itemDate.minute(itemDate.minute() + 10);
+                const diffMs = Math.abs(itemDate.valueOf() - nowDate.valueOf());
                 const isOver3Hours = diffMs >= 3 * 60 * 60 * 1000;
-                if (nowDate.getTime() < itemDate.getTime() && !isOver3Hours) {
+                if (nowDate.valueOf() < itemDate.valueOf() && !isOver3Hours) {
                     saveDate = itemDate;
                     break;
                 }
             }
-            gateContentData.date = saveDate;
+            gateContentData.date = saveDate ? saveDate.format() : null;
             gateContentData.imgSrc = imgSrc;
         }
         calendarData.gate = gateContentData;
@@ -167,16 +170,16 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
 }
 
 //모험섬 시간 일치 여부
-function isSameDate(aDate: Date, bDate: Date): boolean {
-    return aDate.getFullYear() === bDate.getFullYear() &&
-        aDate.getMonth() === bDate.getMonth() &&
-        aDate.getDate() === bDate.getDate() &&
-        aDate.getHours() === bDate.getHours();
+function isSameDate(aDate: Dayjs, bDate: Dayjs): boolean {
+    return aDate.year() === bDate.year() &&
+        aDate.month() === bDate.month() &&
+        aDate.date() === bDate.date() &&
+        aDate.hour() === bDate.hour();
 }
 
 export type Notice = {
     title: string,
-    date: Date,
+    date: string,
     link: string
 }
 
@@ -193,9 +196,10 @@ export async function loadNotices(apikey: string | undefined): Promise<Notice[]>
         const data = await noticeLostarkRes.json();
         const slicedData = data.slice(0, 20);
         for (const notice of slicedData) {
+            const eventDate = dayjs.tz(notice.Date, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul');
             const newNotice: Notice = {
                 title: notice.Title,
-                date: new Date(notice.Date),
+                date: eventDate.format(),
                 link: notice.Link
             }
             notices.push(newNotice);
@@ -226,9 +230,9 @@ function getRewardItems(rewardItems: any): IslandItem[] {
 function filterTodayItems(rewardItem: any): boolean {
     let isFinded = false;
     if (rewardItem.StartTimes !== null) {
-        const today = new Date();
+        const today = dayjs().tz('Asia/Seoul');
         for (const time of rewardItem.StartTimes) {
-            const itemTime = new Date(time);
+            const itemTime = dayjs.tz(time, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul')  // time은 "2025-07-17T11:00:00" (KST로 해석됨)
             if (isToday(today, itemTime)) {
                 isFinded = true;
             }
@@ -242,10 +246,10 @@ function filterTodayItems(rewardItem: any): boolean {
 // 오늘의 모험섬인지 확인하는 필터
 function filterTodayIslands(island: any): boolean {
     let isFinded = false;
-    const today = new Date();
+    const today = dayjs().tz('Asia/Seoul');
     if (island.StartTimes) {
         for (const time of island.StartTimes) {
-            const islandTime = new Date(time);
+            const islandTime = dayjs.tz(time, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul');
             if (isToday(today, islandTime)) {
                 isFinded = true;
             }
@@ -255,26 +259,25 @@ function filterTodayIslands(island: any): boolean {
 }
 
 // 두 날짜를 비교하여 현재 시간 이후인 오늘의 날짜인지 여부 확인
-function isToday(today: Date, islandTime: Date): boolean {
-    if (today.getFullYear() === islandTime.getFullYear() && 
-        today.getMonth() === islandTime.getMonth() &&
-        today.getDate() === islandTime.getDate()) {
-        const todayTimes = today.getHours()*3600 + today.getMinutes()*60 + today.getSeconds();
-        const islandTimes = islandTime.getHours()*3600 + islandTime.getMinutes()*60 + islandTime.getSeconds();
+function isToday(today: Dayjs, islandTime: Dayjs): boolean {
+    if (today.year() === islandTime.year() && 
+        today.month() === islandTime.month() &&
+        today.date() === islandTime.date()) {
+        const todayTimes = today.hour()*3600 + today.minute()*60 + today.second();
+        const islandTimes = islandTime.hour()*3600 + islandTime.minute()*60 + islandTime.second();
         return islandTimes >= todayTimes;
     }
     return false;
 }
 
 // 다음 모험섬 시간 출력
-export function getNextIslandTime(islandTime: Date | null): string {
-    if (islandTime) {
-        const hourStr = String(islandTime.getHours()).padStart(2, '0');
-        const minuteStr = String(islandTime.getMinutes()).padStart(2, '0');
-        const secondStr = String(islandTime.getSeconds()).padStart(2, '0');
-        return `${hourStr}:${minuteStr}:${secondStr}`;
-    }
-    return '일정 없음';
+export function getNextIslandTime(islandTime: Dayjs | null): string {
+    if (!islandTime) return '일정 없음';
+    const time = dayjs(islandTime);
+    const hourStr = String(time.hour()).padStart(2, '0');
+    const minuteStr = String(time.minute()).padStart(2, '0');
+    const secondStr = String(time.second()).padStart(2, '0');
+    return `${hourStr}:${minuteStr}:${secondStr}`;
 }
 
 // 남은 시간 문자열 출력 (00:00:00 형식)

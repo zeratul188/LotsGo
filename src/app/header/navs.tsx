@@ -20,8 +20,8 @@ import { SettingIcon } from "../icons/SettingIcon";
 import CalIcon from "@/Icons/CalIcon";
 import CharacterIcon from "@/Icons/CharacterIcon";
 import { useRouter } from "next/navigation";
-import Addons from "../addons/page";
 import AddonIcon from "@/Icons/AddonIcon";
+import GuideBookIcon from "@/Icons/GuidIcon";
 
 // 헤더 메뉴
 const menuItems = [
@@ -41,9 +41,14 @@ const menuItems = [
         icon: <CharacterIcon/>
     },
     {
-        item: "부가 기능",
+        item: "도구",
         link: '/addons',
         icon: <AddonIcon className="w-6 h-6"/>
+    },
+    {
+        item: "가이드",
+        link: '/about',
+        icon: <GuideBookIcon className="w-6 h-6"/>
     }
 ];
 // 헤더 메뉴 - 로그인한 상태
@@ -215,7 +220,12 @@ export function NavContents() {
             </NavbarItem>
             <NavbarItem>
                 <Link color="foreground" href="/addons">
-                    부가 기능
+                    도구
+                </Link>
+            </NavbarItem>
+            <NavbarItem>
+                <Link color="foreground" href="/about">
+                    가이드
                 </Link>
             </NavbarItem>
         </>
