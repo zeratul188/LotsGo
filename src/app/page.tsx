@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
-export default async function Home(props: any) {
+export default async function Home() {
   const cookieStore = cookies();
   const cookieApiKey = (await cookieStore).get('userApiKey')?.value;
   let apiKey = undefined;
@@ -24,7 +24,7 @@ export default async function Home(props: any) {
       gate={calendarData.gate}
       boss={calendarData.boss}
       islands={calendarData.islands}
-      islandTime={calendarData.islandTime}
+      islandTime={calendarData.islandTime ? calendarData.islandTime.format() : null}
       isInspection={calendarData.isInspection}
       notices={notices}
       events={events}/>

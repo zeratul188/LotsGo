@@ -8,6 +8,7 @@ import ChecklistComponent from "./home/ChecklistForm";
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import { Island, LostarkEvent, Notice } from "./home/calendarFeat";
+import dayjs, { Dayjs } from "dayjs";
 
 const BoxAd = dynamic(() => import('./ad/BoxAd'), { ssr: false });
 const TwoLineAd = dynamic(() => import('./ad/TwoLineAd'), { ssr: false });
@@ -16,7 +17,7 @@ type HomeProps = {
   gate: ContentData | null;
   boss: ContentData | null;
   islands: Island[];
-  islandTime: Date | null;
+  islandTime: string | null;
   isInspection: boolean;
   notices: Notice[];
   events: LostarkEvent[];
@@ -36,7 +37,7 @@ export default function HomeClient({ gate, boss, islands, islandTime, isInspecti
                 gate={gate}
                 boss={boss}
                 islands={islands}
-                islandTime={islandTime}
+                islandTime={dayjs(islandTime)}
                 isInspection={isInspection}
                 notices={notices}
                 events={events}
