@@ -1,5 +1,3 @@
-import { SetStateFn } from "@/utiils/utils";
-import { addToast } from "@heroui/react";
 import { ContentData } from "./CalendarForm";
 import { LoginUser } from "../store/loginSlice";
 import { decrypt } from "@/utiils/crypto";
@@ -26,12 +24,13 @@ export type LostarkEvent = {
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
 // 로스트아크 API로부터 이벤트 정보 가져오는 함수
-export async function loadEvents(setEvents: SetStateFn<LostarkEvent[]>, setNotLoaded: SetStateFn<boolean>) {
-    const userStr = localStorage.getItem('user');
-    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
-
-    const eventLostarkRes = await fetch(`/api/lostark?value=null&code=4&key=${decryptedApiKey}`);
+export async function loadEvents(apikey: string | undefined): Promise<LostarkEvent[]> {
+    let eventLostarkRes = null;
+    if (apikey) {
+        eventLostarkRes = await fetch(`https://www.lotsgo.kr/api/lostark?value=null&code=4&key=${apikey}`);
+    } else {
+        eventLostarkRes = await fetch(`https://www.lotsgo.kr/api/lostark?value=null&code=4`);
+    }
     if (eventLostarkRes.ok) {
         const events: LostarkEvent[] = [];
         const data = await eventLostarkRes.json();
@@ -45,25 +44,35 @@ export async function loadEvents(setEvents: SetStateFn<LostarkEvent[]>, setNotLo
             }
             events.push(newEvent);
         }
-        setEvents(events);
-    } else {
-        setNotLoaded(true);
+        return events;
     }
+    return [];
+}
+
+export type CalendarData = {
+    gate: ContentData | null,
+    boss: ContentData | null,
+    islands: Island[],
+    islandTime: Date | null,
+    isInspection: boolean
 }
 
 // 로스트아크 API로부터 캘린더 정보 가져오는 함수
-export async function loadCalendar(
-    setIslands: SetStateFn<Island[]>,
-    setIslandTime: SetStateFn<Date | null>,
-    setGate: SetStateFn<ContentData | null>,
-    setBoss: SetStateFn<ContentData | null>,
-    setNotLoaded: SetStateFn<boolean>
-) {
-    const userStr = localStorage.getItem('user');
-    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
+export async function loadCalendar(apikey: string | undefined): Promise<CalendarData> {
+    const calendarData: CalendarData = {
+        gate: null,
+        boss: null,
+        islands: [],
+        islandTime: null,
+        isInspection: false
+    }
 
-    const gamecontentLostarkRes = await fetch(`/api/lostark?value=null&code=2&key=${decryptedApiKey}`);
+    let gamecontentLostarkRes = null;
+    if (apikey) {
+        gamecontentLostarkRes = await fetch(`https://www.lotsgo.kr/api/lostark?value=null&code=2&key=${apikey}`);
+    } else {
+        gamecontentLostarkRes = await fetch(`https://www.lotsgo.kr/api/lostark?value=null&code=2`);
+    }
     if (gamecontentLostarkRes.ok) {
         const islands: Island[] = [];
         const data = await gamecontentLostarkRes.json();
@@ -98,8 +107,8 @@ export async function loadCalendar(
                     islands.push(newIsland);
                 }
             }
-            setIslandTime(minTimes);
-            setIslands(islands);
+            calendarData.islandTime = minTimes;
+            calendarData.islands = islands;
         }
         const bossContentData: ContentData | null = {
             date: null,
@@ -122,7 +131,7 @@ export async function loadCalendar(
             bossContentData.date = saveDate;
             bossContentData.imgSrc = imgSrc;
         }
-        setBoss(bossContentData);
+        calendarData.boss = bossContentData;
         const gateContentData: ContentData | null = {
             date: null,
             imgSrc: ''
@@ -145,19 +154,16 @@ export async function loadCalendar(
             gateContentData.date = saveDate;
             gateContentData.imgSrc = imgSrc;
         }
-        setGate(gateContentData);
+        calendarData.gate = gateContentData;
     } else {
         if (gamecontentLostarkRes.status === 500) {
-            addToast({
-                title: "서버 점검",
-                description: `로스트아크가 점검중입니다.`,
-                color: "danger"
-            });
-            setNotLoaded(true);
+            calendarData.isInspection = true;
+            console.error(`서버 점검 (Error Status : ${gamecontentLostarkRes.status})`);
         } else {
             console.error(`Unable to load calendars data. (Error Status : ${gamecontentLostarkRes.status})`);
         }
     }
+    return calendarData;
 }
 
 //모험섬 시간 일치 여부
@@ -175,12 +181,13 @@ export type Notice = {
 }
 
 // 로스트아크 API로부터 공지사항 데이터를 가져오는 함수
-export async function loadNotices(setNotices: SetStateFn<Notice[]>, setNotLoaded: SetStateFn<boolean>) {
-    const userStr = localStorage.getItem('user');
-    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
-
-    const noticeLostarkRes = await fetch(`/api/lostark?value=null&code=3&key=${decryptedApiKey}`);
+export async function loadNotices(apikey: string | undefined): Promise<Notice[]> {
+    let noticeLostarkRes = null;
+    if (apikey) {
+        noticeLostarkRes = await fetch(`https://www.lotsgo.kr/api/lostark?value=null&code=3&key=${apikey}`);
+    } else {
+        noticeLostarkRes = await fetch(`https://www.lotsgo.kr/api/lostark?value=null&code=3`);
+    }
     if (noticeLostarkRes.ok) {
         const notices: Notice[] = [];
         const data = await noticeLostarkRes.json();
@@ -193,10 +200,9 @@ export async function loadNotices(setNotices: SetStateFn<Notice[]>, setNotLoaded
             }
             notices.push(newNotice);
         }
-        setNotices(notices);
-    } else {
-        setNotLoaded(true);
+        return notices;
     }
+    return [];
 }
 
 // 획득 아이템 반환 함수

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { formatTimeLeft, getNextIslandTime, isHaveGold, Island, loadCalendar, loadEvents, loadNotices, LostarkEvent, Notice } from "./calendarFeat";
+import { formatTimeLeft, getNextIslandTime, isHaveGold, Island, LostarkEvent, Notice } from "./calendarFeat";
 import { 
     Button,
     Card, CardBody, CardFooter, CardHeader, 
@@ -42,7 +42,10 @@ type EventComponentProps = {
     events: LostarkEvent[]
 }
 function EventComponent({ events }: EventComponentProps) {
-    const getStringByDate = (date: Date) => `${date.getFullYear()}년 ${date.getMonth()+1}월 ${date.getDate()}일`;
+    const getStringByDate = (date: Date) => {
+        if (!date || !(date instanceof Date)) return '';
+        return `${date.getFullYear()}년 ${date.getMonth()+1}월 ${date.getDate()}일`;
+    };
     return (
         <div className="col-span-2">
             <div className="flex gap-1 items-center">
@@ -100,7 +103,10 @@ type NoticeComponentProps = {
     notices: Notice[]
 }
 function NoticeComponent({ notices }: NoticeComponentProps) {
-    const getStringByDate = (date: Date) => `${date.getFullYear()}년 ${date.getMonth()+1}월 ${date.getDate()}일`;
+    const getStringByDate = (date: Date) => {
+        if (!date || !(date instanceof Date)) return '';
+        return `${date.getFullYear()}년 ${date.getMonth()+1}월 ${date.getDate()}일`;
+    };
     return (
         <div>
             <div className="flex gap-1 items-center">
@@ -378,40 +384,34 @@ function ContentComponent({ gate, boss }: ContentComponentProps) {
 
 // 일정 (모험섬, 필드보스 등) 컴포넌트
 type CalendarComponentProps = {
+    gate: ContentData | null,
+    boss: ContentData | null,
+    islands: Island[],
+    islandTime: Date | null,
+    isInspection: boolean,
+    notices: Notice[],
+    events: LostarkEvent[],
     setLoaded: SetStateFn<boolean>,
     setShowAd: SetStateFn<boolean>
 }
-export default function CalendarComponent({ setLoaded, setShowAd }: CalendarComponentProps) {
-    const calendarForm = useCalendarForm();
-    const [isNotLoaded, setNotLoaded] = useState(false);
+export default function CalendarComponent({ gate, boss, islands, islandTime, isInspection, notices, events, setLoaded, setShowAd }: CalendarComponentProps) {
 
     useEffect(() => {
-        const loadData = async () => {
-            const calenderPromise = loadCalendar(calendarForm.setIslands, calendarForm.setIslandTime, calendarForm.setGate, calendarForm.setBoss, setNotLoaded);
-            const noticePromise =  loadNotices(calendarForm.setNotices, setNotLoaded);
-            const eventPromise = loadEvents(calendarForm.setEvents, setNotLoaded);
-            await Promise.all([calenderPromise, noticePromise, eventPromise]);
-            if (!isNotLoaded) {
-                setLoaded(true);
-            }
-        }
-        loadData();
-    }, []);
-
-    useEffect(() => {
-        if (calendarForm.events.length > 0 && calendarForm.notices.length > 0 && calendarForm.gate && calendarForm.boss) {
+        if (events.length > 0 && notices.length > 0 && gate && boss) {
             setShowAd(true);
+            setLoaded(true);
         }
-    }, [calendarForm.events, calendarForm.notices, calendarForm.gate, calendarForm.boss])
+    }, [])
     
     return (
         <div className="w-full mt-10">
-            <ContentComponent gate={calendarForm.gate} boss={calendarForm.boss}/>
-            <IslandComponent islands={calendarForm.islands} islandTime={calendarForm.islandTime}/>
+            <ContentComponent gate={gate} boss={boss}/>
+            <IslandComponent islands={islands} islandTime={islandTime}/>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-8">
-                <NoticeComponent notices={calendarForm.notices}/>
-                <EventComponent events={calendarForm.events}/>
+                <NoticeComponent notices={notices}/>
+                <EventComponent events={events}/>
             </div>
         </div>
     )
 }
+
