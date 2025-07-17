@@ -263,6 +263,7 @@ function ContentComponent({ gate, boss, gateDate, bossDate }: ContentComponentPr
         const gateInterval = setInterval(() => {
             if (gate) {
                 if (gateDate) {
+                    const now = dayjs().tz('Asia/Seoul');
                     const diff = gateDate.valueOf() - now.valueOf();
                     if (diff <= 0) {
                         setGateTimeLeft(0);
@@ -278,12 +279,13 @@ function ContentComponent({ gate, boss, gateDate, bossDate }: ContentComponentPr
             }
         }, 1000);
         return () => clearInterval(gateInterval)
-    }, [gate]);
+    }, [gateDate]);
 
     useEffect(() => {
         const bossInterval = setInterval(() => {
             if (boss) {
                 if (bossDate) {
+                    const now = dayjs().tz('Asia/Seoul');
                     const diff = bossDate.valueOf() - now.valueOf();
                     if (diff <= 0) {
                         setBossTimeLeft(0);
@@ -299,7 +301,7 @@ function ContentComponent({ gate, boss, gateDate, bossDate }: ContentComponentPr
             }
         }, 1000);
         return () => clearInterval(bossInterval)
-    }, [boss]);
+    }, [bossDate]);
 
     return (
         <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
