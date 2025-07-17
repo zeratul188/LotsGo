@@ -3,6 +3,7 @@ import { editApiKey, LoginUser } from "../store/loginSlice";
 import { AppDispatch } from "../store/store";
 import { addToast } from "@heroui/react";
 import { encrypt } from "@/utiils/crypto";
+import Cookies from 'js-cookie';
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
@@ -51,6 +52,11 @@ export async function handleInsertKey(
                 apiKey: encryptApiKey
             }
             localStorage.setItem('user', JSON.stringify(loginUser));
+            Cookies.set('userApiKey', encryptApiKey, {
+                path: '/',
+                secure: true,
+                sameSite: 'lax',
+            });
         }
         addToast({
             title: "등록 완료",
