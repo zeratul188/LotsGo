@@ -1,6 +1,7 @@
 import { ContentData } from "./CalendarForm";
-import { LoginUser } from "../store/loginSlice";
-import { decrypt } from "@/utiils/crypto";
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 
 export type IslandItem = {
     name: string,
@@ -21,7 +22,8 @@ export type LostarkEvent = {
     endDate: Date
 }
 
-const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 // 로스트아크 API로부터 이벤트 정보 가져오는 함수
 export async function loadEvents(apikey: string | undefined): Promise<LostarkEvent[]> {
@@ -78,13 +80,16 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
         const data = await gamecontentLostarkRes.json();
         const islandsData = data.filter((item: any) => item.CategoryName === '모험 섬');
         const todayIslands = islandsData.filter(filterTodayIslands);
-        const today = new Date();
+        const kstDayjs = dayjs().tz('Asia/Seoul');
+        const today = kstDayjs.toDate();
         if (todayIslands.length !== 0) {
-            let minTimes = new Date();
+            const minKstDayjs = dayjs().tz('Asia/Seoul');
+            let minTimes = minKstDayjs.toDate();
             minTimes.setFullYear(9999);
             for (const island of todayIslands) {
                 for (const time of island.StartTimes) {
-                    const islandDate = new Date(time);
+                    const kstDay = dayjs.tz(time, 'Asia/Seoul')  // time은 "2025-07-17T11:00:00" (KST로 해석됨)
+                    const islandDate = kstDay.toDate();
                     if (minTimes.getTime() > islandDate.getTime() && isToday(today, islandDate)) {
                         minTimes = islandDate;
                     }
@@ -93,7 +98,8 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
             for (const island of todayIslands) {
                 let isPassed = false;
                 for (const time of island.StartTimes) {
-                    const islandDate = new Date(time);
+                    const kstDay = dayjs.tz(time, 'Asia/Seoul')  // time은 "2025-07-17T11:00:00" (KST로 해석됨)
+                    const islandDate = kstDay.toDate();
                     if (isSameDate(minTimes, islandDate)) {
                         isPassed = true;
                     }
@@ -117,10 +123,12 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
         const bossData = data.find((item: any) => item.CategoryName === '필드보스');
         if (bossData) {
             const imgSrc = bossData.ContentsIcon;
-            const nowDate = new Date();
+            const nowKstDayjs = dayjs().tz('Asia/Seoul');
+            const nowDate = nowKstDayjs.toDate();
             let saveDate: Date | null = null;
             for (const item of bossData.StartTimes) {
-                const itemDate = new Date(item);
+                const kstDay = dayjs.tz(item, 'Asia/Seoul')  // time은 "2025-07-17T11:00:00" (KST로 해석됨)
+                const itemDate = kstDay.toDate();
                 const diffMs = Math.abs(itemDate.getTime() - nowDate.getTime());
                 const isOver3Hours = diffMs >= 3 * 60 * 60 * 1000;
                 if (nowDate.getTime() < itemDate.getTime() && !isOver3Hours) {
@@ -139,7 +147,8 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
         const gateData = data.find((item: any) => item.CategoryName === '카오스게이트');
         if (gateData) {
             const imgSrc = gateData.ContentsIcon;
-            const nowDate = new Date();
+            const kstDayjs = dayjs().tz('Asia/Seoul');
+            const nowDate = kstDayjs.toDate();
             let saveDate: Date | null = null;
             for (const item of gateData.StartTimes) {
                 const itemDate = new Date(item);
@@ -226,7 +235,8 @@ function getRewardItems(rewardItems: any): IslandItem[] {
 function filterTodayItems(rewardItem: any): boolean {
     let isFinded = false;
     if (rewardItem.StartTimes !== null) {
-        const today = new Date();
+        const kstDayjs = dayjs().tz('Asia/Seoul');
+        const today = kstDayjs.toDate();
         for (const time of rewardItem.StartTimes) {
             const itemTime = new Date(time);
             if (isToday(today, itemTime)) {
@@ -242,7 +252,8 @@ function filterTodayItems(rewardItem: any): boolean {
 // 오늘의 모험섬인지 확인하는 필터
 function filterTodayIslands(island: any): boolean {
     let isFinded = false;
-    const today = new Date();
+    const kstDayjs = dayjs().tz('Asia/Seoul');
+    const today = kstDayjs.toDate();
     if (island.StartTimes) {
         for (const time of island.StartTimes) {
             const islandTime = new Date(time);
