@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { addToast } from "@heroui/react";
 import { signOut } from 'firebase/auth';
 import { auth } from '@/utiils/firebase';
+import Cookies from 'js-cookie';
 
 export default function StoreClient({children}: { children: React.ReactNode }) {
     const dispatch = useDispatch<AppDispatch>();
@@ -33,6 +34,9 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
             if (res.status === 401) {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
+                Cookies.remove('userApiKey', {
+                    path: '/',
+                });
                 dispatch(logout());
                 await signOut(auth);
                 addToast({

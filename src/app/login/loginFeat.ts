@@ -11,6 +11,7 @@ import { auth, firestore } from "@/utiils/firebase";
 import { collection, doc, getDocs, limit, query, updateDoc, where } from "firebase/firestore";
 import { hashValue } from "@/utiils/bcrypt";
 import { decrypt } from "@/utiils/crypto";
+import Cookies from 'js-cookie';
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
@@ -122,6 +123,11 @@ export async function login(
                     localStorage.setItem('token', data.token);
                     localStorage.setItem('user', JSON.stringify(loginUser));
                     localStorage.setItem('isAdministrator', data.isAdministrator);
+                    Cookies.set('userApiKey', loginUser.apiKey ?? '', {
+                        path: '/',
+                        secure: true,
+                        sameSite: 'lax',
+                    });
 
                     setLoading(false);
                     setIdDuplicated(false);

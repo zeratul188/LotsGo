@@ -1,44 +1,24 @@
-'use client'
-import * as React from "react";
-import CalendarComponent from "./home/CalendarForm";
-import ChecklistComponent from "./home/ChecklistForm";
-import { TodoComponent } from "./home/TodoForm";
-import TitleComponent from "./home/TitleForm";
-import { useMobileQuery } from "@/utiils/utils";
-import dynamic from "next/dynamic";
-import NotLoginComponent from "./home/NotLoginForm";
-import UpdateComponent from "./home/UpdateForm";
+import { loadCalendar, loadEvents, loadNotices } from "./home/calendarFeat";
+import HomeClient from "./HomeClient";
+import Cookies from 'js-cookie';
 
-const BoxAd = dynamic(() => import('./ad/BoxAd'), { ssr: false });
-const TwoLineAd = dynamic(() => import('./ad/TwoLineAd'), { ssr: false });
+export default async function Home(props: any) {
+  const apiKey = Cookies.get('userApiKey');
 
-export default function Home() {
-  const isMobile = useMobileQuery();
-  const [isLoaded, setLoaded] = React.useState(false);
-  const [isShowAd, setShowAd] = React.useState(false);
+  const [calendarData, notices, events] = await Promise.all([
+      loadCalendar(apiKey),
+      loadNotices(apiKey),
+      loadEvents(apiKey)
+  ]);
 
   return (
-    <div className="w-full min-h-[calc(100vh-65px)]">
-      <div className="p-5 w-full max-w-[1280px] mx-auto pb-20">
-        <UpdateComponent/>
-        <ChecklistComponent/>
-        <TodoComponent/>
-        <NotLoginComponent/>
-        <CalendarComponent setLoaded={setLoaded} setShowAd={setShowAd}/>
-        {isLoaded && isShowAd ? isMobile ? (
-          <div className="w-full flex justify-center px-4">
-            <div className="w-full max-w-[360px] min-h-[100px] mt-8">
-              <BoxAd isLoaded={isLoaded}/>
-            </div>
-          </div>
-        ) : (
-          <div className="w-full flex justify-center px-4">
-            <div className="w-full mt-8">
-              <TwoLineAd isLoaded={isLoaded}/>
-            </div>
-          </div>
-        ) : <></>}
-      </div>
-    </div>
-  );
+    <HomeClient
+      gate={calendarData.gate}
+      boss={calendarData.boss}
+      islands={calendarData.islands}
+      islandTime={calendarData.islandTime}
+      isInspection={calendarData.isInspection}
+      notices={notices}
+      events={events}/>
+  )
 }

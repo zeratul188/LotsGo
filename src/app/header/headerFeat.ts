@@ -5,6 +5,7 @@ import type { AppDispatch } from "../store/store";
 import { logout } from "../store/loginSlice";
 import { signOut } from "firebase/auth";
 import { auth } from "@/utiils/firebase";
+import Cookies from 'js-cookie';
 
 type Key = string | number;
 
@@ -21,6 +22,9 @@ export function useOnActionProfile() {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 localStorage.removeItem('isAdministrator');
+                Cookies.remove('userApiKey', {
+                    path: '/',
+                });
                 dispatch(logout());
                 signOut(auth);
                 addToast({
