@@ -1,9 +1,17 @@
+import { decrypt } from "@/utiils/crypto";
 import { loadCalendar, loadEvents, loadNotices } from "./home/calendarFeat";
 import HomeClient from "./HomeClient";
-import Cookies from 'js-cookie';
+import { cookies } from 'next/headers';
+
+const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
 export default async function Home(props: any) {
-  const apiKey = Cookies.get('userApiKey');
+  const cookieStore = cookies();
+  const cookieApiKey = (await cookieStore).get('userApiKey')?.value;
+  let apiKey = undefined;
+  if (cookieApiKey) {
+    apiKey = decrypt(cookieApiKey, secretKey);
+  }
 
   const [calendarData, notices, events] = await Promise.all([
       loadCalendar(apiKey),
