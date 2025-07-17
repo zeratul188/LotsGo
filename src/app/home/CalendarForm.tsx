@@ -12,29 +12,11 @@ import {
 } from "@heroui/react";
 import { getBackgroundByGrade, getColorTextByGrade, SetStateFn } from "@/utiils/utils";
 import clsx from "clsx";
+import dayjs, { Dayjs, isDayjs } from "dayjs";
 
 export type ContentData = {
-    date: Date | null,
+    date: string | null,
     imgSrc: string
-}
-
-// state 관리
-function useCalendarForm() {
-    const [islands, setIslands] = useState<Island[]>([]);
-    const [islandTime, setIslandTime] = useState<Date | null>(null);
-    const [notices, setNotices] = useState<Notice[]>([]);
-    const [events, setEvents] = useState<LostarkEvent[]>([]);
-    const [gate, setGate] = useState<ContentData | null>(null);
-    const [boss, setBoss] = useState<ContentData | null>(null);
-
-    return {
-        islands, setIslands,
-        islandTime, setIslandTime,
-        notices, setNotices,
-        events, setEvents,
-        gate, setGate,
-        boss, setBoss
-    }
 }
 
 // 이벤트 컴포넌트
@@ -42,9 +24,9 @@ type EventComponentProps = {
     events: LostarkEvent[]
 }
 function EventComponent({ events }: EventComponentProps) {
-    const getStringByDate = (date: Date) => {
-        if (!date || !(date instanceof Date)) return '';
-        return `${date.getFullYear()}년 ${date.getMonth()+1}월 ${date.getDate()}일`;
+    const getStringByDate = (date: Dayjs) => {
+        if (!isDayjs(date)) return '';
+        return `${date.year()}년 ${date.month()+1}월 ${date.date()}일`;
     };
     return (
         <div className="col-span-2">
@@ -81,7 +63,7 @@ function EventComponent({ events }: EventComponentProps) {
                                 <CardFooter>
                                     <div className="w-full text-left">
                                         <p className="text-lg truncate">{event.title}</p>
-                                        <p className="fadedtext text-sm truncate">{getStringByDate(event.startDate)} ~ {getStringByDate(event.endDate)}</p>
+                                        <p className="fadedtext text-sm truncate">{getStringByDate(dayjs(event.startDate))} ~ {getStringByDate(dayjs(event.endDate))}</p>
                                     </div>
                                 </CardFooter>
                             </Card>
@@ -103,9 +85,9 @@ type NoticeComponentProps = {
     notices: Notice[]
 }
 function NoticeComponent({ notices }: NoticeComponentProps) {
-    const getStringByDate = (date: Date) => {
-        if (!date || !(date instanceof Date)) return '';
-        return `${date.getFullYear()}년 ${date.getMonth()+1}월 ${date.getDate()}일`;
+    const getStringByDate = (date: Dayjs) => {
+        if (!isDayjs(date)) return '';
+        return `${date.year()}년 ${date.month()+1}월 ${date.date()}일`;
     };
     return (
         <div>
@@ -131,7 +113,7 @@ function NoticeComponent({ notices }: NoticeComponentProps) {
                                 index !== 0 ? "border-t-1 border-[#dddddd] dark:border-[#222222]" : ""
                             )}>
                                 <p className="text-md truncate">{notice.title}</p>
-                                <p className="fadedtext text-sm truncate">{getStringByDate(notice.date)}</p>
+                                <p className="fadedtext text-sm truncate">{getStringByDate(dayjs(notice.date))}</p>
                             </div>
                         </a>
                     ))}
@@ -149,15 +131,17 @@ function NoticeComponent({ notices }: NoticeComponentProps) {
 // 모험섬 컴포넌트
 type IslandComponentProps = {
     islands: Island[],
-    islandTime: Date | null
+    islandTime: Dayjs | null
 }
 function IslandComponent({ islands, islandTime }: IslandComponentProps) {
-    const [timeLeft, setTimeLeft] = useState(() => islandTime !== null ? islandTime?.getTime() - Date.now() : 0);
+    const now = dayjs().tz('Asia/Seoul');
+    const [timeLeft, setTimeLeft] = useState(() => islandTime !== null ? islandTime?.valueOf() - now.valueOf() : 0);
 
     useEffect(() => {
         const interval = setInterval(() => {
             if (islandTime !== null) {
-                const diff = islandTime?.getTime() - Date.now();
+                const now = dayjs().tz('Asia/Seoul');
+                const diff = islandTime?.valueOf() - now.valueOf();
                 if (diff <= 0) {
                     setTimeLeft(0);
                     clearInterval(interval);
@@ -266,17 +250,20 @@ function IslandComponent({ islands, islandTime }: IslandComponentProps) {
 // 카오스게이트, 필드보스 컴포넌트
 type ContentComponentProps = {
     gate: ContentData | null,
-    boss: ContentData | null
+    boss: ContentData | null,
+    gateDate: Dayjs | null,
+    bossDate: Dayjs | null
 }
-function ContentComponent({ gate, boss }: ContentComponentProps) {
-    const [gateTimeLeft, setGateTimeLeft] = useState(() => gate ? gate.date ? gate.date.getTime() - Date.now() : 0 : 0);
-    const [bossTimeLeft, setBossTimeLeft] = useState(() => boss ? boss.date ? boss.date.getTime() - Date.now() : 0 : 0);
+function ContentComponent({ gate, boss, gateDate, bossDate }: ContentComponentProps) {
+    const now = dayjs().tz('Asia/Seoul');
+    const [gateTimeLeft, setGateTimeLeft] = useState(() => gate ? gateDate ? gateDate.valueOf() - now.valueOf() : 0 : 0);
+    const [bossTimeLeft, setBossTimeLeft] = useState(() => boss ? bossDate ? bossDate.valueOf() - now.valueOf() : 0 : 0);
 
     useEffect(() => {
         const gateInterval = setInterval(() => {
             if (gate) {
-                if (gate.date) {
-                    const diff = gate.date.getTime() - Date.now();
+                if (gateDate) {
+                    const diff = gateDate.valueOf() - now.valueOf();
                     if (diff <= 0) {
                         setGateTimeLeft(0);
                         clearInterval(gateInterval);
@@ -296,8 +283,8 @@ function ContentComponent({ gate, boss }: ContentComponentProps) {
     useEffect(() => {
         const bossInterval = setInterval(() => {
             if (boss) {
-                if (boss.date) {
-                    const diff = boss.date.getTime() - Date.now();
+                if (bossDate) {
+                    const diff = bossDate.valueOf() - now.valueOf();
                     if (diff <= 0) {
                         setBossTimeLeft(0);
                         clearInterval(bossInterval);
@@ -332,15 +319,15 @@ function ContentComponent({ gate, boss }: ContentComponentProps) {
                                     <p className="text-[8pt] fadedtext">다음 일정</p>
                                     <p className={clsx(
                                         "w-[max-content] text-lg",
-                                        getNextIslandTime(gate.date) === '일정 없음' ? 'fadedtext' : ''
-                                    )}>{getNextIslandTime(gate.date)}</p>
+                                        getNextIslandTime(gateDate) === '일정 없음' ? 'fadedtext' : ''
+                                    )}>{getNextIslandTime(gateDate)}</p>
                                 </div>
                                 <div className="grow text-left flex flex-col">
                                     <p className="text-[8pt] fadedtext">남은 시간</p>
                                     <p className={clsx(
                                         "text-lg w-[max-content]",
-                                        gateTimeLeft !== 0 ? '' : gate.date ? 'text-red-500' : 'fadedtext'
-                                    )}>{gateTimeLeft !== 0 ? formatTimeLeft(gateTimeLeft) : gate.date ? "출현" : '일정 없음'}</p>
+                                        gateTimeLeft !== 0 ? '' : gateDate ? 'text-red-500' : 'fadedtext'
+                                    )}>{gateTimeLeft !== 0 ? formatTimeLeft(gateTimeLeft) : gateDate ? "출현" : '일정 없음'}</p>
                                 </div>
                             </div>
                         </div>
@@ -363,15 +350,15 @@ function ContentComponent({ gate, boss }: ContentComponentProps) {
                                     <p className="text-[8pt] fadedtext">다음 일정</p>
                                     <p className={clsx(
                                         "w-[max-content] text-lg",
-                                        getNextIslandTime(boss.date) === '일정 없음' ? 'fadedtext' : ''
-                                    )}>{getNextIslandTime(boss.date)}</p>
+                                        getNextIslandTime(bossDate) === '일정 없음' ? 'fadedtext' : ''
+                                    )}>{getNextIslandTime(bossDate)}</p>
                                 </div>
                                 <div className="grow text-left flex flex-col">
                                     <p className="text-[8pt] fadedtext">남은 시간</p>
                                     <p className={clsx(
                                         "text-lg w-[max-content]",
-                                        bossTimeLeft !== 0 ? '' : boss.date ? 'text-red-500' : 'fadedtext'
-                                    )}>{bossTimeLeft !== 0 ? formatTimeLeft(bossTimeLeft) : boss.date ? "출현" : "일정 없음"}</p>
+                                        bossTimeLeft !== 0 ? '' : bossDate ? 'text-red-500' : 'fadedtext'
+                                    )}>{bossTimeLeft !== 0 ? formatTimeLeft(bossTimeLeft) : bossDate ? "출현" : "일정 없음"}</p>
                                 </div>
                             </div>
                         </div>
@@ -387,7 +374,7 @@ type CalendarComponentProps = {
     gate: ContentData | null,
     boss: ContentData | null,
     islands: Island[],
-    islandTime: Date | null,
+    islandTime: Dayjs | null,
     isInspection: boolean,
     notices: Notice[],
     events: LostarkEvent[],
@@ -405,7 +392,11 @@ export default function CalendarComponent({ gate, boss, islands, islandTime, isI
     
     return (
         <div className="w-full mt-10">
-            <ContentComponent gate={gate} boss={boss}/>
+            <ContentComponent 
+                gate={gate} 
+                boss={boss} 
+                gateDate={gate ? gate.date ? dayjs(gate.date) : null : null}
+                bossDate={boss ? boss.date ? dayjs(boss.date) : null : null}/>
             <IslandComponent islands={islands} islandTime={islandTime}/>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-8">
                 <NoticeComponent notices={notices}/>

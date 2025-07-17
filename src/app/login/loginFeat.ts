@@ -129,7 +129,6 @@ export async function login(
                         sameSite: 'lax',
                     });
 
-                    setLoading(false);
                     setIdDuplicated(false);
                     setPasswordNotMatch(false);
 
