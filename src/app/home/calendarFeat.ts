@@ -37,12 +37,16 @@ export async function loadEvents(apikey: string | undefined): Promise<LostarkEve
         const events: LostarkEvent[] = [];
         const data = await eventLostarkRes.json();
         for (const event of data) {
+            const startKstDayjs = dayjs.tz(event.StartDate, 'Asia/Seoul');
+            const startDate = startKstDayjs.toDate();
+            const endKstDayjs = dayjs.tz(event.EndDate, 'Asia/Seoul');
+            const endDate = endKstDayjs.toDate();
             const newEvent: LostarkEvent = {
                 title: event.Title,
                 thumbnail: event.Thumbnail,
                 link: event.Link,
-                startDate: new Date(event.StartDate),
-                endDate: new Date(event.EndDate)
+                startDate: startDate,
+                endDate: endDate
             }
             events.push(newEvent);
         }
@@ -151,7 +155,8 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
             const nowDate = kstDayjs.toDate();
             let saveDate: Date | null = null;
             for (const item of gateData.StartTimes) {
-                const itemDate = new Date(item);
+                const kstDay = dayjs.tz(item, 'Asia/Seoul')  // time은 "2025-07-17T11:00:00" (KST로 해석됨)
+                const itemDate = kstDay.toDate();
                 itemDate.setMinutes(itemDate.getMinutes() + 10);
                 const diffMs = Math.abs(itemDate.getTime() - nowDate.getTime());
                 const isOver3Hours = diffMs >= 3 * 60 * 60 * 1000;
@@ -202,9 +207,11 @@ export async function loadNotices(apikey: string | undefined): Promise<Notice[]>
         const data = await noticeLostarkRes.json();
         const slicedData = data.slice(0, 20);
         for (const notice of slicedData) {
+            const eventKstDayjs = dayjs.tz(notice.Date, 'Asia/Seoul');
+            const eventDate = eventKstDayjs.toDate();
             const newNotice: Notice = {
                 title: notice.Title,
-                date: new Date(notice.Date),
+                date: eventDate,
                 link: notice.Link
             }
             notices.push(newNotice);
@@ -238,7 +245,8 @@ function filterTodayItems(rewardItem: any): boolean {
         const kstDayjs = dayjs().tz('Asia/Seoul');
         const today = kstDayjs.toDate();
         for (const time of rewardItem.StartTimes) {
-            const itemTime = new Date(time);
+            const kstDay = dayjs.tz(time, 'Asia/Seoul')  // time은 "2025-07-17T11:00:00" (KST로 해석됨)
+            const itemTime = kstDay.toDate();
             if (isToday(today, itemTime)) {
                 isFinded = true;
             }
@@ -256,7 +264,8 @@ function filterTodayIslands(island: any): boolean {
     const today = kstDayjs.toDate();
     if (island.StartTimes) {
         for (const time of island.StartTimes) {
-            const islandTime = new Date(time);
+            const kstDay = dayjs.tz(time, 'Asia/Seoul')  // time은 "2025-07-17T11:00:00" (KST로 해석됨)
+            const islandTime = kstDay.toDate();
             if (isToday(today, islandTime)) {
                 isFinded = true;
             }
