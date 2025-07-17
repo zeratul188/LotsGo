@@ -92,22 +92,22 @@ export default function AboutLayout({ children }: { children: React.ReactNode })
     const [title, setTitle] = useState('사이트 소개');
     return (
         <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto flex flex-col sm:flex-row">
-            <aside className="w-64 border-r border-[#dddddd] dark:border-[#444444] p-2 hidden sm:block">
+            <aside className="sticky top-16 h-[calc(100vh-65px)] w-64 border-r border-[#dddddd] dark:border-[#444444] p-2 hidden sm:block">
                 <Navs isMobile={false} onClose={() => {}} setTitle={setTitle}/>
             </aside>
             <div className="block sm:hidden w-full">
-                <div className="w-full flex gap-2 items-center">
+                <div className="w-full flex gap-3 items-center">
                     <div className="cursor-pointer rounded-xl" onClick={onOpen}>
-                        <MenuIcon className="w-5 h-5"/>
+                        <MenuIcon className="w-7 h-7"/>
                     </div>
-                    <p>{title}</p>
+                    <p className="text-xl">{title}</p>
                 </div>
                 <Divider className="mt-4"/>
                 <Drawer radius="none" placement="left" isOpen={isOpen} size="xs" onOpenChange={onOpenChange}>
                     <DrawerContent>
                         {(onClose) => (
                             <>
-                                <DrawerHeader>메뉴 선택</DrawerHeader>
+                                <DrawerHeader>로츠고(Lot's Go) 가이드</DrawerHeader>
                                 <DrawerBody>
                                     <Navs isMobile={true} onClose={onClose} setTitle={setTitle}/>
                                 </DrawerBody>
@@ -116,7 +116,7 @@ export default function AboutLayout({ children }: { children: React.ReactNode })
                     </DrawerContent>
                 </Drawer>
             </div>
-            <main className="flex-1 px-4 py-2">{children}</main>
+            <main className="flex-1 sm:px-4 py-2 mt-4 sm:mt-0">{children}</main>
         </div>
     )
 }
