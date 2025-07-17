@@ -86,6 +86,7 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
         const todayIslands = islandsData.filter(filterTodayIslands);
         const kstDayjs = dayjs().tz('Asia/Seoul');
         const today = kstDayjs.toDate();
+        console.log(today);
         if (todayIslands.length !== 0) {
             const minKstDayjs = dayjs().tz('Asia/Seoul');
             let minTimes = minKstDayjs.toDate();
