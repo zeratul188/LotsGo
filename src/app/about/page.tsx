@@ -52,7 +52,7 @@ export default function About() {
                 <li>닉네임을 입력하면 장비, 전투력, 각인, 보석, 스킬, 내실 포인트, 원정대 등 캐릭터의 정보를 확인할 수 있습니다.</li>
                 <li>초월, 엘릭서, 악세 연마 효과, 팔찌 효과 등 중요한 요소는 간단하게 표현하여 쉽게 표현할 수 있습니다.</li>
             </ul>
-            <Image src="/about/intro2.webp" alt="로츠고 숙제 화면 예시" width={800} height={0} className="w-full sm:w-1/2 h-auto rounded-xl mt-2"/>
+            <Image src="/about/intro2.webp" alt="로츠고 전투정보실 예시" width={800} height={0} className="w-full sm:w-1/2 h-auto rounded-xl mt-2"/>
         </div>
     )
 }
