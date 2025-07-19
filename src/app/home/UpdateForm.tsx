@@ -28,7 +28,7 @@ export default function UpdateComponent() {
             <div className="w-full aspect-[3/1] relative">
                 <motion.div
                     className={clsx(
-                        "w-full h-full sm:h-1/2 rounded-xl p-5 sm:p-10 flex flex-col gap-1 justify-center sm:justify-end absolute bottom-0",
+                        "w-full h-full sm:h-1/2 rounded-xl p-5 sm:p-10 flex flex-col gap-1 justify-center min-[1101px]:justify-end absolute bottom-0",
                         data[page - 1].isBlack ? "text-black" : "text-white"
                     )}
                     animate={{ backgroundColor: data[page - 1].color }}
@@ -41,13 +41,13 @@ export default function UpdateComponent() {
                         page={page}
                         total={data.length}
                         classNames={{
-                        wrapper: "z-3 hidden sm:flex",
+                        wrapper: "z-3 hidden min-[1101px]:flex",
                         item: "bg-white/20 text-black/50 cursor-pointer",
                         cursor: "bg-white/50 text-black",
                         }}
                         onChange={setPage}
                     />
-                    <div className="grow" />
+                    <div className="grow hidden min-[1101px]:block" />
                     <p className="text-md sm:text-lg z-2">{data[page - 1].sub}</p>
                     <p className="text-xl sm:text-3xl font-bold z-2">{data[page - 1].title}</p>
                 </motion.div>
