@@ -162,14 +162,17 @@ function IslandComponent({ islands, islandTime }: IslandComponentProps) {
                 <div className="w-full sm:w-[max-content] flex gap-10 items-center">
                     <div className="grow">
                         <p className="text-[8pt] fadedtext">다음 일정</p>
-                        <p className="w-[max-content] text-lg">{getNextIslandTime(islandTime)}</p>
+                        <p className={clsx(
+                            "w-[max-content] text-lg",
+                            islands.length > 0 ? "" : 'fadedtext'
+                        )}>{islands.length > 0 ? getNextIslandTime(islandTime) : '일정 없음'}</p>
                     </div>
                     <div className="grow text-right sm:text-left flex flex-col items-end">
                         <p className="text-[8pt] fadedtext">남은 시간</p>
                         <p className={clsx(
                             "text-lg w-[max-content]",
-                            timeLeft !== 0 ? '' : 'text-red-500'
-                        )}>{timeLeft !== 0 ? formatTimeLeft(timeLeft) : "모험섬 출현"}</p>
+                            timeLeft > 0 ? '' : islands.length > 0 ? 'text-red-500' : 'fadedtext'
+                        )}>{timeLeft > 0 ? formatTimeLeft(timeLeft) : islands.length > 0 ? "모험섬 출현" : '일정 없음'}</p>
                     </div>
                 </div>
             </div>

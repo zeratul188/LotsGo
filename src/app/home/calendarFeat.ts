@@ -145,8 +145,7 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
             const nowDate = dayjs().tz('Asia/Seoul');
             let saveDate: Dayjs | null = null;
             for (const item of gateData.StartTimes) {
-                const itemDate = dayjs.tz(item, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul')  // time은 "2025-07-17T11:00:00" (KST로 해석됨)
-                itemDate.minute(itemDate.minute() + 10);
+                const itemDate = dayjs.tz(item, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul').add(10, 'minute')
                 const diffMs = Math.abs(itemDate.valueOf() - nowDate.valueOf());
                 const isOver3Hours = diffMs >= 3 * 60 * 60 * 1000;
                 if (nowDate.valueOf() < itemDate.valueOf() && !isOver3Hours) {
