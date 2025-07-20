@@ -25,6 +25,7 @@ export default async function Home() {
       boss={calendarData.boss}
       islands={calendarData.islands}
       islandTime={calendarData.islandTime ? calendarData.islandTime.format() : null}
+      islandDatas={calendarData.islandDatas}
       isInspection={calendarData.isInspection}
       notices={notices}
       events={events}/>

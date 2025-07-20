@@ -2,6 +2,7 @@ import { ContentData } from "./CalendarForm";
 import dayjs, { Dayjs } from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
+import { SetStateFn } from "@/utiils/utils";
 
 export type IslandItem = {
     name: string,
@@ -58,7 +59,22 @@ export type CalendarData = {
     boss: ContentData | null,
     islands: Island[],
     islandTime: Dayjs | null,
+    islandDatas: IslandData[],
     isInspection: boolean
+}
+
+export type IslandData = {
+    name: string,
+    icon: string,
+    dates: string[],
+    rewards: RewardItem[]
+}
+
+export type RewardItem = {
+    name: string,
+    icon: string,
+    grade: string,
+    times: string[] | null
 }
 
 // 로스트아크 API로부터 캘린더 정보 가져오는 함수
@@ -68,6 +84,7 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
         boss: null,
         islands: [],
         islandTime: null,
+        islandDatas: [],
         isInspection: false
     }
 
@@ -79,8 +96,26 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
     }
     if (gamecontentLostarkRes.ok) {
         const islands: Island[] = [];
+        const islandDatas: IslandData[] = [];
         const data = await gamecontentLostarkRes.json();
         const islandsData = data.filter((item: any) => item.CategoryName === '모험 섬');
+        for (const item of islandsData) {
+            const dates: string[] = [];
+            if (item.StartTimes) {
+                for (const time of item.StartTimes) {
+                    const newTime: Dayjs = dayjs.tz(time, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul');
+                    dates.push(newTime.format());
+                }
+            }
+            const newData: IslandData = {
+                name: item.ContentsName,
+                icon: item.ContentsIcon,
+                dates: dates,
+                rewards: getRewardAllItems(item.RewardItems)
+            }
+            islandDatas.push(newData);
+        }
+        calendarData.islandDatas = islandDatas;
         const todayIslands = islandsData.filter(filterTodayIslands);
         const today = dayjs().tz('Asia/Seoul');
         if (todayIslands.length !== 0) {
@@ -145,8 +180,7 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
             const nowDate = dayjs().tz('Asia/Seoul');
             let saveDate: Dayjs | null = null;
             for (const item of gateData.StartTimes) {
-                const itemDate = dayjs.tz(item, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul')  // time은 "2025-07-17T11:00:00" (KST로 해석됨)
-                itemDate.minute(itemDate.minute() + 10);
+                const itemDate = dayjs.tz(item, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul').add(10, 'minute')
                 const diffMs = Math.abs(itemDate.valueOf() - nowDate.valueOf());
                 const isOver3Hours = diffMs >= 3 * 60 * 60 * 1000;
                 if (nowDate.valueOf() < itemDate.valueOf() && !isOver3Hours) {
@@ -296,4 +330,97 @@ export function isHaveGold(island: Island): boolean {
         if (item.name === '골드') return true;
     }
     return false;
+}
+
+// 1주일 날짜 반환 함수
+export function initialWeek(): Dayjs[] {
+    const result: Dayjs[] = [];
+    const today = dayjs().tz('Asia/Seoul');
+    const day = today.day();
+    const diffToWednesday = ((day - 3 + 7) % 7);
+    const wednesday = dayjs().tz('Asia/Seoul').date(today.date() - diffToWednesday);
+
+    for (let i = 0; i < 7; i++) {
+        const d = wednesday.clone().date(wednesday.date() + i);
+        result.push(d);
+    }
+
+    return result;
+}
+
+// 날짜 문구 출력 함수
+export function formatKoreanDate(date: Dayjs): string {
+    const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+    const dayName = days[date.day()];
+
+    const month = (date.month() + 1).toString().padStart(2, '0');
+    const day = date.date().toString().padStart(2, '0');
+
+    return `${dayName} (${month}월 ${day}일)`;
+}
+
+// 전체 모험섬 정보 가져올 경우 획득 아이템 반환 함수
+function getRewardAllItems(rewardItems: any): RewardItem[] {
+    const items: RewardItem[] = [];
+    for (const reward of rewardItems) {
+        for (const item of reward.Items) {
+            const dates: string[] = [];
+            if (item.StartTimes) {
+                for (const time of item.StartTimes) {
+                    const newTime: Dayjs = dayjs.tz(time, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul');
+                    dates.push(newTime.format());
+                }
+            }
+            const newItem: RewardItem = {
+                name: item.Name,
+                icon: item.Icon,
+                grade: item.Grade,
+                times: dates
+            }
+            items.push(newItem);
+        }
+    }
+    return items;
+}
+
+// 해당 날짜에서 골드 보상이 있는지 없는지 확인 여부
+export function isGoldIslands(targetDate: Dayjs, islandDatas: IslandData[]): boolean {
+    return islandDatas.some(data =>
+        data.dates.some(d => {
+            const dDate = dayjs(d);
+            return dDate.isSame(targetDate, 'day')
+        }) &&
+        data.rewards.some(r =>
+            r.name === '골드' &&
+            r.times ? r.times.some(t => {
+                const tDate = dayjs(t);
+                return tDate.isSame(targetDate, 'day')
+            }) : false
+        )
+    );
+}
+
+// 특정 날짜에 등장하는 모험섬 목록 필터 함수
+export function filterIslandData(week: Dayjs) {
+    return (data: IslandData) => data.dates.some(d => dayjs(d).isSame(week, 'day'));
+}
+
+// 해당 날짜의 모험섬이 골드섬인지 확인
+export function isGoldIsland(targetDate: Dayjs, islandDaata: IslandData): boolean {
+    return islandDaata.dates.some(d => {
+            const dDate = dayjs(d);
+            return dDate.isSame(targetDate, 'day')
+        }) &&
+        islandDaata.rewards.some(r =>
+            r.name === '골드' &&
+            r.times ? r.times.some(t => {
+                const tDate = dayjs(t);
+                return tDate.isSame(targetDate, 'day')
+            }) : false
+        )
+}
+
+// 특정 날짜의 모험섬 보상 필터
+export function filterRewardItem(week: Dayjs) {
+    return (item: RewardItem) => item.times ? item.times.some(d => dayjs(d).isSame(week, 'day')) : false;
 }
