@@ -8,6 +8,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";import BigComponent 
 import LineAd from "../ad/LineAd";
 import BoxAd from "../ad/BoxAd";
 import { useMobileQuery } from "@/utiils/utils";
+import { checkLogin } from "../checklist/checklistFeat";
 
 export default function CalendarClient() {
     const calendarForm = useCalendarForm();
@@ -15,6 +16,9 @@ export default function CalendarClient() {
     const isMobile = useMobileQuery();
 
     useEffect(() => {
+        if (checkLogin()) {
+            calendarForm.setLogined(true);
+        }
         const auth = getAuth();
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             const isAdministrator = localStorage.getItem('isAdministrator');
@@ -29,7 +33,6 @@ export default function CalendarClient() {
             }
             
             if (user) {
-                calendarForm.setLogined(true);
                 user.getIdToken().then(() => {
                     const loadData = async () => {
                         const guildPromise = loadGuild(calendarForm.setGuild);
