@@ -158,7 +158,7 @@ export function initialWeekData(
 }
 
 // 두개의 Date 년, 월, 일 같은지 여부
-function isSameDate(aDate: Date, bDate:Date): boolean {
+export function isSameDate(aDate: Date, bDate:Date): boolean {
     return aDate.getFullYear() === bDate.getFullYear() &&
         aDate.getMonth() === bDate.getMonth() &&
         aDate.getDate() === bDate.getDate();

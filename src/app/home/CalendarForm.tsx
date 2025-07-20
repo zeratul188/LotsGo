@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { formatTimeLeft, getNextIslandTime, isHaveGold, Island, LostarkEvent, Notice } from "./calendarFeat";
+import { filterIslandData, filterRewardItem, formatKoreanDate, formatTimeLeft, getNextIslandTime, initialWeek, isGoldIsland, isGoldIslands, isHaveGold, Island, IslandData, LostarkEvent, Notice } from "./calendarFeat";
 import { 
+    Accordion,
+    AccordionItem,
     Button,
     Card, CardBody, CardFooter, CardHeader, 
     Chip, 
@@ -131,11 +133,13 @@ function NoticeComponent({ notices }: NoticeComponentProps) {
 // 모험섬 컴포넌트
 type IslandComponentProps = {
     islands: Island[],
-    islandTime: Dayjs | null
+    islandTime: Dayjs | null,
+    islandDatas: IslandData[]
 }
-function IslandComponent({ islands, islandTime }: IslandComponentProps) {
+function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentProps) {
     const now = dayjs().tz('Asia/Seoul');
     const [timeLeft, setTimeLeft] = useState(() => islandTime !== null ? islandTime?.valueOf() - now.valueOf() : 0);
+    const weeks: Dayjs[] = initialWeek();
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -246,6 +250,59 @@ function IslandComponent({ islands, islandTime }: IslandComponentProps) {
                     <div className="w-full h-[140px] col-span-3 fadedtext flex items-center justify-center text-xl">오늘의 모험섬 일정은 없습니다.</div>
                 )}
             </div>
+            <div className="w-full overflow-x-auto scrollbar-hide mt-4">
+                <div className="min-w-[1200px] min-[1201px]:w-full grid grid-cols-7 gap-2">
+                    {weeks.map((week, index) => (
+                        <div key={index} className={clsx(
+                            index > 0 ? 'border-l-1 border-gray-200 dark:border-[#2a2a2a] pl-3' : ''
+                        )}>
+                            <Chip
+                                size="sm"
+                                variant="flat"
+                                radius="sm"
+                                color={isGoldIslands(week, islandDatas) ? "warning" : "primary"}
+                                className="min-w-full text-center">
+                                {week.isSame(now, 'day') ? "📅 " : ''}{formatKoreanDate(week)}
+                            </Chip>
+                            <div className="w-full max-h-[170px] h-[170px] overflow-y-auto mt-2 flex flex-col gap-2">
+                                <Accordion fullWidth>
+                                    {islandDatas.filter(filterIslandData(week)).map((data, idx) => (
+                                        <AccordionItem key={idx} hideIndicator title={
+                                            <div className="flex gap-2 items-center cursor-pointer">
+                                                <Image src={data.icon} alt={data.name} width={20} height={20} radius="sm"/>
+                                                <p className={clsx(
+                                                    "text-[9pt]",
+                                                    isGoldIsland(week, data) ? 'text-[#C4841D] dark:text-[#F7B750]' : ''
+                                                )}>{data.name}</p>
+                                            </div>
+                                        }>
+                                            <div className="w-full flex flex-col gap-2">
+                                                {data.rewards.filter(filterRewardItem(week)).map((reward, idx) => (
+                                                    <Chip 
+                                                        key={idx}
+                                                        radius="sm" 
+                                                        variant="flat"
+                                                        color={reward.name === '골드' ? 'warning' : 'default'}
+                                                        className="p-0.5 min-w-full">
+                                                        <div className="w-full flex gap-2 items-center">
+                                                            <Image src={reward.icon} alt={reward.name} width={16} height={16} radius="sm"/>
+                                                            <p className={clsx(
+                                                                getColorTextByGrade(reward.grade),
+                                                                'text-[7pt]'
+                                                            )}>{reward.name}</p>
+                                                        </div>
+                                                    </Chip>
+                                                ))}
+                                            </div>
+                                        </AccordionItem>    
+                                    ))}
+                                </Accordion>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+            <p className="fadedtext text-sm">모험섬의 보상이 골드가 있는 요일은 노란색으로 표시됩니다.</p>
         </div>
     )
 }
@@ -380,13 +437,14 @@ type CalendarComponentProps = {
     boss: ContentData | null,
     islands: Island[],
     islandTime: Dayjs | null,
+    islandDatas: IslandData[],
     isInspection: boolean,
     notices: Notice[],
     events: LostarkEvent[],
     setLoaded: SetStateFn<boolean>,
     setShowAd: SetStateFn<boolean>
 }
-export default function CalendarComponent({ gate, boss, islands, islandTime, isInspection, notices, events, setLoaded, setShowAd }: CalendarComponentProps) {
+export default function CalendarComponent({ gate, boss, islands, islandTime, islandDatas, isInspection, notices, events, setLoaded, setShowAd }: CalendarComponentProps) {
 
     useEffect(() => {
         if (events.length > 0 && notices.length > 0 && gate && boss) {
@@ -402,7 +460,7 @@ export default function CalendarComponent({ gate, boss, islands, islandTime, isI
                 boss={boss} 
                 gateDate={gate ? gate.date ? dayjs(gate.date) : null : null}
                 bossDate={boss ? boss.date ? dayjs(boss.date) : null : null}/>
-            <IslandComponent islands={islands} islandTime={islandTime}/>
+            <IslandComponent islands={islands} islandTime={islandTime} islandDatas={islandDatas}/>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-8">
                 <NoticeComponent notices={notices}/>
                 <EventComponent events={events}/>

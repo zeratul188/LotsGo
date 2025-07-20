@@ -7,7 +7,7 @@ import CalendarComponent, { ContentData } from "./home/CalendarForm";
 import ChecklistComponent from "./home/ChecklistForm";
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import { Island, LostarkEvent, Notice } from "./home/calendarFeat";
+import { Island, IslandData, LostarkEvent, Notice } from "./home/calendarFeat";
 import dayjs, { Dayjs } from "dayjs";
 
 const BoxAd = dynamic(() => import('./ad/BoxAd'), { ssr: false });
@@ -18,11 +18,12 @@ type HomeProps = {
   boss: ContentData | null;
   islands: Island[];
   islandTime: string | null;
+  islandDatas: IslandData[],
   isInspection: boolean;
   notices: Notice[];
   events: LostarkEvent[];
 };
-export default function HomeClient({ gate, boss, islands, islandTime, isInspection, notices, events }: HomeProps) {
+export default function HomeClient({ gate, boss, islands, islandTime, islandDatas, isInspection, notices, events }: HomeProps) {
     const isMobile = useMobileQuery();
     const [isLoaded, setLoaded] = useState(false);
     const [isShowAd, setShowAd] = useState(false);
@@ -38,6 +39,7 @@ export default function HomeClient({ gate, boss, islands, islandTime, isInspecti
                 boss={boss}
                 islands={islands}
                 islandTime={dayjs(islandTime)}
+                islandDatas={islandDatas}
                 isInspection={isInspection}
                 notices={notices}
                 events={events}
