@@ -110,7 +110,7 @@ export function TodoComponent() {
                     size="sm"
                     variant="flat"
                     onPress={() => router.push('/calendar')}>
-                    이동
+                    페이지 이동
                 </Button>
             </div>
             <Divider className="mb-4 block sm:hidden"/>
