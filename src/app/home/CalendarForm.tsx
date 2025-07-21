@@ -8,6 +8,7 @@ import {
     Chip, 
     Divider, 
     Image, 
+    Link, 
     Popover, PopoverContent, PopoverTrigger, 
     ScrollShadow, 
     Tooltip 
@@ -52,7 +53,9 @@ function EventComponent({ events }: EventComponentProps) {
                             <Card 
                                 key={index} 
                                 isPressable
-                                onPress={() => window.open(event.link, '_blank')}>
+                                as={Link}
+                                shadow="none"
+                                href={event.link}>
                                 <CardBody className="overflow-visible p-0">
                                     <Image
                                         alt={event.title}
@@ -183,7 +186,7 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {islands.length !== 0 ? (
                     islands.map((island, index) => (
-                        <Card key={index} radius="sm" className={clsx(
+                        <Card key={index} radius="sm" shadow="sm" className={clsx(
                             isHaveGold(island) ? "border-2 border-[#ccc923] dark:border-[#c0be2f] bg-[#f1f1d4] dark:bg-[#1d1c0b]" : ""
                         )}>
                             <CardBody>
@@ -375,7 +378,7 @@ function ContentComponent({ gate, boss, gateDate, bossDate }: ContentComponentPr
     return (
         <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
             {gate ? (
-                <Card radius="sm">
+                <Card shadow="sm" radius="sm">
                     <CardBody>
                         <div className="w-full flex gap-2 items-center">
                             <Image 
@@ -406,7 +409,7 @@ function ContentComponent({ gate, boss, gateDate, bossDate }: ContentComponentPr
                 </Card>
             ) : <></>}
             {boss ? (
-                <Card radius="sm">
+                <Card shadow="sm" radius="sm">
                     <CardBody>
                         <div className="w-full flex gap-2 items-center">
                             <Image 
