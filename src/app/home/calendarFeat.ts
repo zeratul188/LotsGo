@@ -271,8 +271,6 @@ function filterTodayItems(rewardItem: any): boolean {
                 isFinded = true;
             }
         }
-    } else {
-        isFinded = true;
     }
     return isFinded;
 }
