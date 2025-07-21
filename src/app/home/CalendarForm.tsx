@@ -186,33 +186,50 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
                         <Card key={index} radius="sm" className={clsx(
                             isHaveGold(island) ? "border-2 border-[#ccc923] dark:border-[#c0be2f] bg-[#f1f1d4] dark:bg-[#1d1c0b]" : ""
                         )}>
-                            <CardHeader className="flex gap-3">
-                                <Image 
-                                    src={island.icon} 
-                                    width={36}
-                                    height={36} 
-                                    alt={island.name} 
-                                    radius="sm"/>
-                                <p className="grow">{island.name}</p>
-                                <Chip 
-                                    color="warning" 
-                                    size="sm" 
-                                    className={clsx(
-                                        "text-white dark:text-black",
-                                        isHaveGold(island) ? 'flex' : 'hidden'
-                                    )}>골드 쌀섬</Chip>
-                            </CardHeader>
-                            <Divider/>
                             <CardBody>
-                                <>
-                                    <p className="fadedtext text-sm mb-2">보상 아이템</p>
-                                    <div className="grid grid-cols-7 sm:grid-cols-4 lg1200:grid-cols-7 gap-3">
-                                        {island.items.map((item, idx) => (
-                                            <div key={idx} className="flex items-center justify-center">
-                                                <Tooltip
-                                                    showArrow
-                                                    content={<p className={getColorTextByGrade(item.grade)}>{item.name}</p>}>
-                                                    <div className={`hidden sm:block w-[34px] h-[34px] aspect-square p-[3px] rounded-md ${getBackgroundByGrade(item.grade)}`}>
+                                <div className="w-full flex gap-2 items-center">
+                                    <Image 
+                                        src={island.icon} 
+                                        width={36}
+                                        height={36} 
+                                        alt={island.name} 
+                                        radius="sm"/>
+                                    <div className="grow flex gap-2 items-center">
+                                        <p>{island.name}</p>
+                                        <Chip 
+                                            size="sm"
+                                            radius="sm"
+                                            variant="flat"
+                                            color="warning"
+                                            className={clsx(
+                                                isHaveGold(island) ? 'flex' : 'hidden'
+                                            )}>
+                                            골드
+                                        </Chip>
+                                    </div>
+                                    {island.items.map((item, idx) => (
+                                        <div key={idx} className="flex items-center justify-center">
+                                            <Tooltip
+                                                showArrow
+                                                content={<p className={getColorTextByGrade(item.grade)}>{item.name}</p>}>
+                                                <div className={clsx(
+                                                    "hidden sm:block w-[34px] h-[34px] aspect-square p-[3px] rounded-md",
+                                                    getBackgroundByGrade(item.grade)
+
+                                                )}>
+                                                    <Image 
+                                                        src={item.icon} 
+                                                        width={28}
+                                                        height={28} 
+                                                        alt={item.name} 
+                                                        radius="sm"
+                                                        className="w-full h-full object-cover"/>
+                                                </div>
+                                            </Tooltip>
+                                            <Popover 
+                                                showArrow>
+                                                <PopoverTrigger>
+                                                    <div className={`block sm:hidden w-[34px] h-[34px] aspect-square p-[3px] rounded-md ${getBackgroundByGrade(item.grade)}`}>
                                                         <Image 
                                                             src={item.icon} 
                                                             width={28}
@@ -221,28 +238,14 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
                                                             radius="sm"
                                                             className="w-full h-full object-cover"/>
                                                     </div>
-                                                </Tooltip>
-                                                <Popover 
-                                                    showArrow>
-                                                    <PopoverTrigger>
-                                                        <div className={`block sm:hidden w-[34px] h-[34px] aspect-square p-[3px] rounded-md ${getBackgroundByGrade(item.grade)}`}>
-                                                            <Image 
-                                                                src={item.icon} 
-                                                                width={28}
-                                                                height={28} 
-                                                                alt={item.name} 
-                                                                radius="sm"
-                                                                className="w-full h-full object-cover"/>
-                                                        </div>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent>
-                                                        <p className={getColorTextByGrade(item.grade)}>{item.name}</p>
-                                                    </PopoverContent>
-                                                </Popover>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </>
+                                                </PopoverTrigger>
+                                                <PopoverContent>
+                                                    <p className={getColorTextByGrade(item.grade)}>{item.name}</p>
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+                                    ))}
+                                </div>
                             </CardBody>
                         </Card>
                     ))
@@ -258,13 +261,16 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
                         )}>
                             <Chip
                                 size="sm"
-                                variant="flat"
+                                variant={week.isSame(now, 'day') ? 'shadow' : 'bordered'}
                                 radius="sm"
                                 color={isGoldIslands(week, islandDatas) ? "warning" : "primary"}
-                                className="min-w-full text-center">
-                                {week.isSame(now, 'day') ? "📅 " : ''}{formatKoreanDate(week)}
+                                className={clsx(
+                                    "min-w-full text-center",
+                                    !week.isSame(now, 'day') ? isGoldIslands(week, islandDatas) ? "bg-[#FEFCE8] dark:bg-[#312107]" : "bg-[#E6F1FE] dark:bg-[#001731]" : ""
+                                )}>
+                                {formatKoreanDate(week)}
                             </Chip>
-                            <div className="w-full max-h-[170px] h-[170px] overflow-y-auto mt-2 flex flex-col gap-2">
+                            <div className="w-full max-h-[122px] h-[122px] overflow-y-auto mt-2 flex flex-col gap-2">
                                 <Accordion fullWidth>
                                     {islandDatas.filter(filterIslandData(week)).map((data, idx) => (
                                         <AccordionItem key={idx} hideIndicator title={
@@ -275,23 +281,26 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
                                                     isGoldIsland(week, data) ? 'text-[#C4841D] dark:text-[#F7B750]' : ''
                                                 )}>{data.name}</p>
                                             </div>
-                                        }>
-                                            <div className="w-full flex flex-col gap-2">
+                                        } classNames={{ trigger: "!py-2" }}>
+                                            <div className="w-full grid grid-cols-3 gap-1">
                                                 {data.rewards.filter(filterRewardItem(week)).map((reward, idx) => (
-                                                    <Chip 
-                                                        key={idx}
-                                                        radius="sm" 
-                                                        variant="flat"
-                                                        color={reward.name === '골드' ? 'warning' : 'default'}
-                                                        className="p-0.5 min-w-full">
-                                                        <div className="w-full flex gap-2 items-center">
-                                                            <Image src={reward.icon} alt={reward.name} width={16} height={16} radius="sm"/>
-                                                            <p className={clsx(
-                                                                getColorTextByGrade(reward.grade),
-                                                                'text-[7pt]'
-                                                            )}>{reward.name}</p>
+                                                    <div key={idx} className="flex justify-center items-center">
+                                                        <div className="hidden sm:block">
+                                                            <Tooltip showArrow content={<p className={clsx(getColorTextByGrade(reward.grade))}>{reward.name}</p>}>
+                                                                <Image src={reward.icon} alt={reward.name} width={20} height={20} radius="sm"/>
+                                                            </Tooltip>
                                                         </div>
-                                                    </Chip>
+                                                        <div className="block sm:hidden">
+                                                            <Popover showArrow>
+                                                                <PopoverTrigger>
+                                                                    <Image src={reward.icon} alt={reward.name} width={20} height={20} radius="sm"/>
+                                                                </PopoverTrigger>
+                                                                <PopoverContent>
+                                                                    <p className={clsx(getColorTextByGrade(reward.grade))}>{reward.name}</p>
+                                                                </PopoverContent>
+                                                            </Popover>
+                                                        </div>
+                                                    </div>
                                                 ))}
                                             </div>
                                         </AccordionItem>    
