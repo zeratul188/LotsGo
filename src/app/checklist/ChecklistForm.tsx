@@ -740,26 +740,76 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                     </div>
                                 </div>
                                 <div className="w-full md960:w-[330px]">
-                                    <Progress 
-                                        aria-label="all-gold"
-                                        size="sm"
-                                        color="warning"
-                                        label={(
-                                            <div className="flex items-center">
-                                                <Image 
-                                                    src="/icons/gold.png" 
-                                                    width={14} 
-                                                    height={14} 
-                                                    alt="goldicon"
-                                                    className="w-[16px] h-[16px]"/>
-                                                <span className="ml-1 text-md">{(getCompleteGoldCharacter(bosses, character)+character.otherGold).toLocaleString()} / {(getAllGoldCharacter(bosses, character)+character.otherGold).toLocaleString()}</span>
+                                    <Tooltip showArrow content={
+                                        <div className="w-[200px] p-1">
+                                            <div className="w-full flex gap-1 items-center">
+                                                <div className="w-[9px] h-[9px] rounded-full bg-green-500"/>
+                                                <p className="grow">콘텐츠</p>
+                                                <div className="flex items-center">
+                                                    <Image 
+                                                        src="/icons/gold.png" 
+                                                        width={14} 
+                                                        height={14} 
+                                                        alt="goldicon"
+                                                        className="w-[16px] h-[16px]"/>
+                                                    <span className="ml-1 text-md">{getCompleteSharedGoldCharacter(bosses, character).toLocaleString()}</span>
+                                                </div>
                                             </div>
-                                        )}
-                                        showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
-                                        radius="sm"
-                                        value={getCompleteGoldCharacter(bosses, character)+character.otherGold}
-                                        maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
-                                        className="w-full"/>
+                                            <div className="w-full flex gap-1 items-center mt-1">
+                                                <div className="w-[9px] h-[9px] rounded-full bg-yellow-500"/>
+                                                <p className="grow">귀속 골드</p>
+                                                <div className="flex items-center">
+                                                    <Image 
+                                                        src="/icons/gold.png" 
+                                                        width={14} 
+                                                        height={14} 
+                                                        alt="goldicon"
+                                                        className="w-[16px] h-[16px]"/>
+                                                    <span className="ml-1 text-md">{getCompleteBoundGoldCharacter(bosses, character).toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                            <div className="w-full flex gap-1 items-center mt-1">
+                                                <div className="w-[9px] h-[9px] rounded-full bg-purple-600"/>
+                                                <p className="grow">부수입</p>
+                                                <div className="flex items-center">
+                                                    <Image 
+                                                        src="/icons/gold.png" 
+                                                        width={14} 
+                                                        height={14} 
+                                                        alt="goldicon"
+                                                        className="w-[16px] h-[16px]"/>
+                                                    <span className="ml-1 text-md">{character.otherGold.toLocaleString()}</span>
+                                                </div>
+                                            </div>
+                                            <div className="w-full h-2 bg-gray-200 rounded-full relative overflow-hidden mt-2">
+                                                <div className="absolute top-0 left-0 h-full bg-[#dddddd] dark:bg-[#444444]" style={{ width: '100%' }}></div>
+                                                <div className="absolute top-0 left-0 h-full bg-purple-600" style={{ width: `${getAllGoldCharacter(bosses, character)+character.otherGold !== 0 ? Math.round(getCompleteSharedGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 + Math.round(getCompleteBoundGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 + Math.round(character.otherGold / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 : 0}%` }}></div>
+                                                <div className="absolute top-0 left-0 h-full bg-yellow-500" style={{ width: `${getAllGoldCharacter(bosses, character)+character.otherGold !== 0 ? Math.round(getCompleteSharedGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 + Math.round(getCompleteBoundGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 : 0}%` }}></div>
+                                                <div className="absolute top-0 left-0 h-full bg-green-500" style={{ width: `${getAllGoldCharacter(bosses, character)+character.otherGold !== 0 ? Math.round(getCompleteSharedGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 : 0}%` }}></div>
+                                            </div>
+                                        </div>
+                                    }>
+                                        <Progress 
+                                            aria-label="all-gold"
+                                            size="sm"
+                                            color="warning"
+                                            label={(
+                                                <div className="flex items-center">
+                                                    <Image 
+                                                        src="/icons/gold.png" 
+                                                        width={14} 
+                                                        height={14} 
+                                                        alt="goldicon"
+                                                        className="w-[16px] h-[16px]"/>
+                                                    <span className="ml-1 text-md">{(getCompleteGoldCharacter(bosses, character)+character.otherGold).toLocaleString()} / {(getAllGoldCharacter(bosses, character)+character.otherGold).toLocaleString()}</span>
+                                                </div>
+                                            )}
+                                            showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
+                                            radius="sm"
+                                            value={getCompleteGoldCharacter(bosses, character)+character.otherGold}
+                                            maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
+                                            className="w-full"/>
+                                    </Tooltip>
                                     <Popover 
                                         showArrow
                                         disableAnimation
