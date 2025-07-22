@@ -3,6 +3,7 @@ import { Tab, Tabs } from "@heroui/react";
 import CalcComponent from "./CalcComponent";
 import { useMobileQuery } from "@/utiils/utils";
 import RelicsComponent from "./RelicsComponent";
+import BusComponent from "./BusComponent";
 
 export default function AddonsClient() {
     const isMobile = useMobileQuery();
@@ -16,6 +17,11 @@ export default function AddonsClient() {
             key: 'exotics',
             title: '유물 각인서 시세',
             component: <RelicsComponent/>
+        },
+        {
+            key: 'bus',
+            title: '버스 계산기',
+            component: <BusComponent/>
         }
     ]
 
