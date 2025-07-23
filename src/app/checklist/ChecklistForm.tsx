@@ -140,6 +140,7 @@ export function useChecklistForm() {
     const [isShowCubeDetail, setShowCubeDetail] = useState(false);
     const [isShowList, setShowList] = useState(false);
     const [isLogined, setLogined] = useState(false);
+    const [biweekly, setBiweekly] = useState(0);
 
     return {
         isLoading, setLoading,
@@ -153,7 +154,8 @@ export function useChecklistForm() {
         max, setMax,
         isShowCubeDetail, setShowCubeDetail,
         isLogined, setLogined,
-        isShowList, setShowList
+        isShowList, setShowList,
+        biweekly, setBiweekly
     }
 }
 
@@ -694,9 +696,10 @@ type ChecklistProps = {
     cubes: Cube[],
     dispatch: AppDispatch,
     onOpen: () => void,
-    setModalData: SetStateFn<ModalData>
+    setModalData: SetStateFn<ModalData>,
+    biweekly: number
 }
-export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch, onOpen, setModalData }: ChecklistProps) {
+export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch, onOpen, setModalData, biweekly }: ChecklistProps) {
     const [inputOtherGold, setInputOtherGold] = useState(0);
     return (
         <div className="w-full min-[541px]:w-[max-content] mt-5 grid grid-cols-1 min-[1137px]:grid-cols-2 min-[1713px]:grid-cols-3 min-[2289px]:grid-cols-4 min-[2865px]:grid-cols-5 min-[3441px]:grid-cols-6 gap-4 mx-auto">
@@ -1035,6 +1038,9 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                                 )}>{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.boundGold ? getDiffByContent(bosses, item.name, item.difficulty)?.boundGold.toLocaleString() : 0 : 0}</p>
                                                             </div>
                                                         </div>
+                                                        {item.isBiweekly ? (
+                                                            <p className="fadedtext text-sm mt-2">현재 {biweekly % 2 === 0 ? '1주차' : '2주차'}입니다.</p>
+                                                        ) : <></>}
                                                     </div>
                                                     
                                                 }>

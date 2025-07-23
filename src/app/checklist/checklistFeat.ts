@@ -22,9 +22,10 @@ import { Boss, Difficulty } from "../api/checklist/boss/route";
 import { Character, LoginUser } from "../store/loginSlice";
 import { Cube } from "../api/checklist/cube/route";
 import { collection, getDocs } from "firebase/firestore";
-import { firestore } from "@/utiils/firebase";
+import { database, firestore } from "@/utiils/firebase";
 import { decrypt } from "@/utiils/crypto";
 import { ChecklistData, getLevelByContent } from "../home/checklistFeat";
+import { get, ref } from "firebase/database";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
@@ -51,11 +52,18 @@ export async function loadChecklist(
     bosses: Boss[],
     setLife: SetStateFn<number>,
     setBlessing: SetStateFn<boolean>,
-    setMax: SetStateFn<number>
+    setMax: SetStateFn<number>,
+    setBiweekly: SetStateFn<number>
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser.id;
+
+    const dataRef = ref(database, '/checklist/biweekly'); // 원하는 경로
+    const snapshot = await get(dataRef);
+    if (snapshot.exists()) {
+        setBiweekly(Number(snapshot.val()));
+    }
 
     const res = await fetch(`/api/checklist/list?id=${id}`);
 
@@ -2110,5 +2118,99 @@ export function loadDatas(
         const contentName = bosses.sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(boss => boss.name)[selectedIndex];
         const list: ChecklistData[] = datas.filter((item) => item.contentName === contentName);
         setResults(list);
+    }
+}
+
+// 수동 초기화 함수
+export async function handleResetChecklist(
+    checklist: CheckCharacter[], 
+    biweekly: number, 
+    dispatch: AppDispatch,
+    setLoadingReset: SetStateFn<boolean>
+) {
+    if (confirm('정말로 수동으로 초기화를 하시겠습니까? 한번 초기화한 작업은 되돌릴 수 없습니다.')) {
+        setLoadingReset(true);
+        const userStr = localStorage.getItem('user');
+        const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+        const id = storedUser.id;
+        const prevChecklist = checklist.map(item => ({ ...item }));
+        const updatedChecklist = checklist.map(section => {
+            const day = section.day || {};
+            const daylist = Array.isArray(section.daylist) ? section.daylist : [];
+
+            const currentDungeonBonus = day.dungeonBouus ?? 0;
+            const currentBossBonus = day.bossBonus ?? 0;
+            const currentQuestBonus = day.questBonus ?? 0;
+
+            const dungeon = day.dungeon ?? 0;
+            const boss = day.boss ?? 0;
+            const quest = day.quest ?? 0;
+
+            let newDungeonBonus = currentDungeonBonus + (1 - dungeon) * 20;
+            newDungeonBonus = Math.min(newDungeonBonus, 200);
+
+            let newBossBonus = currentBossBonus + (1 - boss) * 10;
+            newBossBonus = Math.min(newBossBonus, 100);
+
+            let newQuestBonus = currentQuestBonus + (3 - quest) * 10;
+            newQuestBonus = Math.min(newQuestBonus, 100);
+            const checklistSection = Array.isArray(section.checklist) ? section.checklist : [];
+            const weeklist = Array.isArray(section.weeklist) ? section.weeklist : [];
+            const updatedSection = {
+                ...section,
+                day: {
+                    dungeon: 0,
+                    dungeonBouus: newDungeonBonus,
+                    dungeonUsing: 0,
+                    boss: 0,
+                    bossBonus: newBossBonus,
+                    bossUsing: 0,
+                    quest: 0,
+                    questBonus: newQuestBonus,
+                    questUsing: 0
+                },
+                daylist: daylist.map((item: any) => ({
+                    ...item,
+                    isCheck: false
+                })),
+                checklist: checklistSection.map((item: any) => ({
+                    ...item,
+                    isDisable: item.isBiweekly && item.isCheck && (biweekly%2 === 1),
+                    isCheck: false
+                })),
+                otherGold: 0,
+                weeklist: weeklist.map((list: any) => ({
+                    ...list,
+                    isCheck: false
+                }))
+            }
+            return updatedSection;
+        });
+        dispatch(removeCharacter(updatedChecklist));
+        const updatedRes = await fetch(`/api/checklist/list`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: id,
+                checklist: checklist,
+                type: 'updated-checklist',
+                newChecklist: updatedChecklist
+            })
+        });
+        if (!updatedRes.ok) {
+            addToast({
+                title: "데이터 로드 오류 (콘텐츠)",
+                description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+                color: "danger"
+            });
+            dispatch(removeCharacter(prevChecklist));
+        } else {
+            addToast({
+                title: "초기화 완료",
+                description: `숙제 내용을 수동으로 초기화하였습니다.`,
+                color: "success"
+            });
+        }
+        setLoadingReset(false);
     }
 }
