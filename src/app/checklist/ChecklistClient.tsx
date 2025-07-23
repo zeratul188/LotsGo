@@ -145,7 +145,7 @@ export default function ChecklistClient() {
                         checklist={checklist}
                         dispatch={dispatch}
                         bosses={checklistForm.bosses}/>
-                    <p className="fadedtext text-sm mt-8">수요일 6시에 초기화되지 않았나요? 초기화되지 않았을 경우 한번 새로고침을 해보신 후 그래도 초기화가 되지 않았다면 아래 버튼을 눌러주세요.</p>
+                    <p className="fadedtext text-sm mt-8">수요일 6시에 초기화되지 않았나요?<br/>초기화되지 않았을 경우 한번 새로고침을 해보신 후 그래도 초기화가 되지 않았다면 아래 버튼을 눌러주세요.</p>
                     <Button
                         radius="sm"
                         color="danger"
