@@ -2,9 +2,9 @@
 import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent, NotLoginedComponent, RemainChecklistComponent } from "./ChecklistForm"
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
-import { checkLogin, getBosses, getCubes, loadChecklist } from "./checklistFeat";
+import { checkLogin, getBosses, getCubes, handleResetChecklist, loadChecklist } from "./checklistFeat";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { CheckCharacter } from "../store/checklistSlice";
@@ -25,11 +25,12 @@ export default function ChecklistClient() {
     const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
     const checklist: CheckCharacter[] = useSelector((state: RootState) => state.checklist.checklist);
     const isMobile = useMobileQuery();
+    const [isLoadingReset, setLoadingReset] = useState(false);
     
     useEffect(() => {
         if (!expedition || expedition.length === 0) return;
         if (checkLogin() && checklistForm.bosses.length !== 0) {
-            loadChecklist(checklistForm.setLoading, dispatch, expedition, checklistForm.bosses, checklistForm.setLife, checklistForm.setBlessing, checklistForm.setMax);
+            loadChecklist(checklistForm.setLoading, dispatch, expedition, checklistForm.bosses, checklistForm.setLife, checklistForm.setBlessing, checklistForm.setMax, checklistForm.setBiweekly);
         }
     }, [checklistForm.bosses, expedition]);
 
@@ -135,7 +136,8 @@ export default function ChecklistClient() {
                         cubes={checklistForm.cubes}
                         dispatch={dispatch}
                         onOpen={checklistForm.onOpen}
-                        setModalData={checklistForm.setModalData}/>
+                        setModalData={checklistForm.setModalData}
+                        biweekly={checklistForm.biweekly}/>
                     <ChecklistModal
                         isOpen={checklistForm.isOpen}
                         modalData={checklistForm.modalData}
@@ -143,6 +145,16 @@ export default function ChecklistClient() {
                         checklist={checklist}
                         dispatch={dispatch}
                         bosses={checklistForm.bosses}/>
+                    <p className="fadedtext text-sm mt-8">수요일 6시에 초기화되지 않았나요?<br/>초기화되지 않았을 경우 한번 새로고침을 해보신 후 그래도 초기화가 되지 않았다면 아래 버튼을 눌러주세요.</p>
+                    <Button
+                        radius="sm"
+                        color="danger"
+                        size="sm"
+                        className="mt-2"
+                        isLoading={isLoadingReset}
+                        onPress={async () => await handleResetChecklist(checklist, checklistForm.biweekly, dispatch, setLoadingReset)}>
+                        수동 초기화
+                    </Button>
                 </div>
             )}
             <div className="w-full max-w-[1280px] mx-auto">
