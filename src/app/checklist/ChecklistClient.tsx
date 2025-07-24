@@ -14,6 +14,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
+import Script from "next/script";
 
 const BoxAd = dynamic(() => import('../ad/BoxAd'), { ssr: false });
 const LineAd = dynamic(() => import('../ad/LineAd'), { ssr: false });
@@ -172,6 +173,10 @@ export default function ChecklistClient() {
                     </div>
                 ) : <></>}
             </div>
+            <Script
+                async
+                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
+                crossOrigin="anonymous"/>
         </div>
     )
 }

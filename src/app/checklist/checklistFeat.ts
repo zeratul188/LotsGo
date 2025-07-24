@@ -57,7 +57,7 @@ export async function loadChecklist(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
 
     const dataRef = ref(database, '/checklist/biweekly'); // 원하는 경로
     const snapshot = await get(dataRef);
@@ -239,7 +239,7 @@ export function useClickLife(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     return async () => {
         const lifeRes = await fetch(`/api/checklist/life`, {
             method: 'POST',
@@ -269,7 +269,7 @@ export function useClickLife(
 export function useChangeBlessing(life: number, max: number, setBlessing: SetStateFn<boolean>) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     return async (isSelected: boolean) => {
         const lifeRes = await fetch(`/api/checklist/life`, {
             method: 'POST',
@@ -608,7 +608,7 @@ export function useOnClickDayCheck(
     const onceRest = getMaxRestValue(type)/5;
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     return async () => {
         const updatedDay = { ...day };
         const prevDay = {...day};
@@ -692,7 +692,7 @@ export async function useOnClickWeekCheck(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     const updatedChecklist = {...checklist[characterIndex].checklist[checklistIndex]};
     const prevChecklist = {...updatedChecklist};
     updatedChecklist.isCheck = !updatedChecklist.isCheck;
@@ -737,7 +737,7 @@ export async function handleDayListCheck(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     const updatedList = {...checklist[characterIndex].daylist[listIndex]};
     const prevList = {...updatedList};
     updatedList.isCheck = !updatedList.isCheck;
@@ -782,7 +782,7 @@ export async function handleWeekListCheck(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     const updatedList = {...checklist[characterIndex].weeklist[listIndex]};
     const prevList = {...updatedList};
     updatedList.isCheck = !updatedList.isCheck;
@@ -829,7 +829,7 @@ export function useOnClickAddDayList(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     const prevList = checklist[characterIndex].daylist;
     const newList = [...checklist[characterIndex].daylist];
     return async () => {
@@ -877,7 +877,7 @@ export function useOnClickAddWeekList(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     const prevList = checklist[characterIndex].weeklist;
     const newList = [...checklist[characterIndex].weeklist];
     return (
@@ -928,7 +928,7 @@ export function useOnClickSaveRestValue(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     const prevDay = {...checklist[characterIndex].day};
     const newDay: Day = {
         ...checklist[characterIndex].day,
@@ -987,7 +987,7 @@ export async function handleRemoveWeekList(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     const prevList = checklist[characterIndex].weeklist;
     const newList = prevList.filter((_, i) => i !== listIndex);
     dispatch(editWeekList({
@@ -1027,7 +1027,7 @@ export async function handleRemoveDayList(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     const prevList = checklist[characterIndex].daylist;
     const newList = prevList.filter((_, i) => i !== listIndex);
     dispatch(editDayList({
@@ -1069,7 +1069,7 @@ export async function handleCheckGolds(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     let updatedChecklist = {
         ...checklist[characterIndex],
         checklist: checklist[characterIndex].checklist.map(item => ({ ...item }))
@@ -1138,7 +1138,7 @@ export async function useOnClickRemoveItem(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     const prevChecklist = checklist[characterIndex].checklist;
     const newChecklist = prevChecklist.filter((_, i) => i !== checklistIndex);
     dispatch(removeWeek({
@@ -1182,7 +1182,7 @@ export async function useOnClickAddItem(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     const prevChecklist = checklist[characterIndex].checklist;
     let newChecklist = [...checklist[characterIndex].checklist];
     newChecklist.push(addChecklist);
@@ -1372,7 +1372,7 @@ export async function handleControlCube(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     const cubelist = checklist[characterIndex].cubelist.map(item => ({ ...item }));
     const prevCubelist = checklist[characterIndex].cubelist.map(item => ({ ...item }));
     const findIndex = cubelist.findIndex(item => item.id === cubeID);
@@ -1422,7 +1422,7 @@ export async function handleCheckGold(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     const prevIsGold = checklist[characterIndex].isGold;
     dispatch(checkGold({
         characterIndex: characterIndex,
@@ -1461,7 +1461,7 @@ export async function handleRemoveCharacter(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     const removedCharacterName = checklist[characterIndex].nickname;
     const removedList = checklist.filter((_, index) => index !== characterIndex);
     const prevList = checklist.map(item => ({ ...item }));
@@ -1502,7 +1502,7 @@ export function useClickUpdatedCharacters(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
     const newChecklist = checklist.map(item => ({ ...item }));
     const prevChecklist = checklist.map(item => ({ ...item }));
@@ -1681,7 +1681,7 @@ export async function handleAddCharacter(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     const newChecklist = checklist.map(item => ({ ...item }));
     setLoadingAdd(true);
     for (const item of result) {
@@ -1751,7 +1751,7 @@ export async function handleCalculateOtherGold(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     const prevOtherGold = checklist[characterIndex].otherGold;
     let resultOtherGold = prevOtherGold;
     switch (type) {
@@ -1825,7 +1825,7 @@ export async function handleApplyPositions(
     setLoading(true);
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     const inputRes = await fetch(`/api/checklist/list`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1997,7 +1997,7 @@ export async function handleResetCube(
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
+    const id = storedUser ? storedUser.id : '';
     dispatch(resetCube(characterIndex));
     const editRes = await fetch(`/api/checklist/list`, {
         method: 'POST',
@@ -2132,7 +2132,7 @@ export async function handleResetChecklist(
         setLoadingReset(true);
         const userStr = localStorage.getItem('user');
         const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-        const id = storedUser.id;
+        const id = storedUser ? storedUser.id : '';
         const prevChecklist = checklist.map(item => ({ ...item }));
         const updatedChecklist = checklist.map(section => {
             const day = section.day || {};

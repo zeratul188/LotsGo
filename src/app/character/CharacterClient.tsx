@@ -12,6 +12,7 @@ import { AvatarComponent } from "./AvatarForm";
 import { ExpeditionsComponent } from "./ExpeditionForm";
 import LineAd from "../ad/LineAd";
 import BoxAd from "../ad/BoxAd";
+import Script from "next/script";
 
 export default function CharacterClient() {
     const characterForm = useCharacterForm();
@@ -184,6 +185,10 @@ export default function CharacterClient() {
                         </div>
                     ) : <></>}
                 </div>
+                <Script
+                    async
+                    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
+                    crossOrigin="anonymous"/>
             </div>
         </>
     )
