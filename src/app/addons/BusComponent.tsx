@@ -485,7 +485,7 @@ export default function BusComponent() {
             <CalcComponent/>
             <Divider className="mt-8 mb-8"/>
             <RelicComponent/>
-            <p className="mt-2">위 계산들은 거래에 사용되는 보석, 최초 입찰 금액(50골드)를 제외하고 계산되었습니다.</p>
+            <p className="mt-2">위 계산들은 최초 입찰 금액(50골드), 신뢰도로 인한 수수료를 제외하고 계산되었습니다.</p>
         </div>
     )
 }
