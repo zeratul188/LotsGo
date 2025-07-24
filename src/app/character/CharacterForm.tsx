@@ -38,6 +38,7 @@ import {
     Gem, 
     getAllElixir, 
     getAllPower, 
+    getBackgroundColorByStat, 
     getCardByIndex, 
     getCardGems, 
     getCardSetNames, 
@@ -49,8 +50,6 @@ import {
     getCountDekGems, 
     getGemByIndex, 
     getGemSimpleTailName, 
-    getHighStats, 
-    getLowStats, 
     getObjectByArmorType, 
     getParsedText, 
     getSmallGradeByAccessory, 
@@ -61,6 +60,7 @@ import {
     getTextByGrade, 
     getTextColorByGrade, 
     getUrlGemInImage, 
+    getWidthByStat, 
     handleSearch, 
     loadArkpassive, 
     loadCards, 
@@ -1361,48 +1361,27 @@ function StatComponent({ file }: ProfileComponentProps) {
                     </Tooltip>
                 </div>
                 <Divider className="mt-3 mb-3"/>
-                <div>
-                    {getHighStats(stat).map((item, index) => (
-                        <Tooltip
-                            key={index}
-                            showArrow
-                            placement={isMobile ? 'top' : 'left'}
-                            content={<div className="w-[340px] p-2">
-                                <ul className="list-disc pl-4">
-                                    {item.tooltip.map((line, idx) => (
-                                        <li key={idx}>{line}</li>
-                                    ))}
-                                </ul>
-                            </div>}>
-                            <Progress
-                                showValueLabel
-                                label={`${item.type} : ${item.value}`}
-                                value={item.value}
-                                maxValue={getSumStat(stat)}
-                                size="sm"
-                                className="mb-2"/>
-                        </Tooltip>
+                <div className="w-full grid grid-cols-3 gap-1">
+                    {stat.sort((a, b) => b.value - a.value).filter(item => item.type !== '최대 생명력' && item.type !== '공격력').map((item, index) => (
+                        <div key={index} className="w-full flex gap-1 items-center">
+                            <div className={clsx(
+                                "w-[9px] h-[9px] rounded-full",
+                                getBackgroundColorByStat(item.type)
+                            )}/>
+                            <p className="fadedtext text-sm mr-0.5">{item.type}</p>
+                            <p className={clsx(
+                                item.value >= 300 ? 'font-bold' : ""
+                            )}>{item.value}</p>
+                        </div>
                     ))}
-                    <div className="grid grid-cols-4 gap-2">
-                        {getLowStats(stat).map((item, index) => (
-                            <Tooltip
-                                key={index}
-                                showArrow
-                                placement={isMobile ? 'top' : 'left'}
-                                content={<div className="w-[340px] p-2">
-                                    <ul className="list-disc pl-4">
-                                        {item.tooltip.map((line, idx) => (
-                                            <li key={idx}>{line}</li>
-                                        ))}
-                                    </ul>
-                                </div>}>
-                                <div className="w-full flex gap-2 items-center">
-                                    <p className="fadedtext text-sm">{item.type}</p>
-                                    <p>{item.value}</p>
-                                </div>
-                            </Tooltip>
-                        ))}
-                    </div>
+                </div>
+                <div className="w-full h-2 bg-gray-200 rounded-full relative overflow-hidden mt-2">
+                    {stat.sort((a, b) => b.value - a.value).filter(item => item.type !== '최대 생명력' && item.type !== '공격력').reverse().map((item, idx) => (
+                        <div key={idx} className={clsx(
+                            "absolute top-0 left-0 h-full",
+                            getBackgroundColorByStat(item.type)
+                        )} style={{ width: `${Math.round(getWidthByStat(stat.sort((a, b) => b.value - a.value).filter(item => item.type !== '최대 생명력' && item.type !== '공격력').reverse(), idx) / getSumStat(stat) * 1000) / 10}%` }}></div>
+                    ))}
                 </div>
             </CardBody>
         </Card>
