@@ -1132,34 +1132,37 @@ export function getSumStat(stat: Stat[]): number {
     return sum;
 }
 
-// 스택 비중이 높은 스택 반환 함수
-export function getHighStats(stat: Stat[]): Stat[] {
-    const filterdStats = stat.filter(item => item.type !== '공격력' && item.type !== '최대 생명력');
-    let newStats: Stat[] = [];
-    for (const item of filterdStats) {
-        if (item.value >= 300) {
-            newStats.push(item);
-        }
-    }
-    newStats = newStats.sort((a, b) => b.value - a.value);
-    return newStats;
-}
-
-// 스택 비중이 낮은 스택 반환 함수
-export function getLowStats(stat: Stat[]): Stat[] {
-    const filterdStats = stat.filter(item => item.type !== '공격력' && item.type !== '최대 생명력');
-    const newStats: Stat[] = [];
-    for (const item of filterdStats) {
-        if (item.value < 300) {
-            newStats.push(item);
-        }
-    }
-    return newStats;
-}
-
 // 원하는 종류의 스택 반환 함수
 export function getStatByType(stat: Stat[], type: string): Stat | undefined {
     return stat.find(item => item.type === type);
+}
+
+// 특성에 따른 동그라미 색상
+export function getBackgroundColorByStat(type: string): string {
+    switch(type) {
+        case '신속':
+            return 'bg-blue-500';
+        case '치명':
+            return 'bg-red-500';
+        case '특화':
+            return 'bg-purple-500';
+        case '제압':
+            return 'bg-neutral-500';
+        case '숙련':
+            return 'bg-yellow-500';
+        case '인내':
+            return 'bg-green-500';
+    }
+    return 'bg-black';
+}
+
+// 특성 위치에 따른 가로길이 반환
+export function getWidthByStat(stat: Stat[], index: number): number {
+    let sum = getSumStat(stat);
+    for (let i = 0; i < index; i++) {
+        sum -= stat[i].value;
+    }
+    return sum;
 }
 
 // 각인 데이터 가져오기
