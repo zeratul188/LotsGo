@@ -13,6 +13,7 @@ import { ExpeditionsComponent } from "./ExpeditionForm";
 import LineAd from "../ad/LineAd";
 import BoxAd from "../ad/BoxAd";
 import Script from "next/script";
+import FixedLineAd from "../ad/FixedLineAd";
 
 export default function CharacterClient() {
     const characterForm = useCharacterForm();
@@ -120,10 +121,16 @@ export default function CharacterClient() {
         <>
             <div className="w-full">
                 <ProfileComponent file={characterForm.file} isBadge={characterForm.isBadge}/>
-                {!characterForm.isLoading ? (
+                {!characterForm.isLoading ? isMobile ? (
                     <div className="w-full flex justify-center px-4 overflow-hidden mt-4">
                         <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px]">
                             <LineAd isLoaded={!characterForm.isLoading}/>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="w-full flex justify-center mt-4 overflow-hidden">
+                        <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-4 mx-4">
+                            <FixedLineAd isLoaded={!characterForm.isLoading}/>
                         </div>
                     </div>
                 ) : <></>}
