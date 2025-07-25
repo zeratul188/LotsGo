@@ -1363,16 +1363,28 @@ function StatComponent({ file }: ProfileComponentProps) {
                 <Divider className="mt-3 mb-3"/>
                 <div className="w-full grid grid-cols-3 gap-1">
                     {stat.sort((a, b) => b.value - a.value).filter(item => item.type !== '최대 생명력' && item.type !== '공격력').map((item, index) => (
-                        <div key={index} className="w-full flex gap-1 items-center">
-                            <div className={clsx(
-                                "w-[9px] h-[9px] rounded-full",
-                                getBackgroundColorByStat(item.type)
-                            )}/>
-                            <p className="fadedtext text-sm mr-0.5">{item.type}</p>
-                            <p className={clsx(
-                                item.value >= 300 ? 'font-bold' : ""
-                            )}>{item.value}</p>
-                        </div>
+                        <Tooltip 
+                            key={index} 
+                            showArrow
+                            placement={isMobile ? 'top' : 'left'}
+                            content={<div className="w-[340px] p-2">
+                                <ul className="list-disc pl-4">
+                                    {item.tooltip.map((line, idx) => (
+                                        <li key={idx}>{line}</li>
+                                    ))}
+                                </ul>
+                            </div>}>
+                            <div className="w-full flex gap-1 items-center">
+                                <div className={clsx(
+                                    "w-[9px] h-[9px] rounded-full",
+                                    getBackgroundColorByStat(item.type)
+                                )}/>
+                                <p className="fadedtext text-sm mr-0.5">{item.type}</p>
+                                <p className={clsx(
+                                    item.value >= 300 ? 'font-bold' : ""
+                                )}>{item.value}</p>
+                            </div>
+                        </Tooltip>
                     ))}
                 </div>
                 <div className="w-full h-2 bg-gray-200 rounded-full relative overflow-hidden mt-2">

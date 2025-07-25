@@ -33,7 +33,8 @@ import {
     Popover,
     PopoverTrigger,
     PopoverContent,
-    Link
+    Link,
+    Tooltip
 } from "@heroui/react";
 import {DateValue, getLocalTimeZone, now} from "@internationalized/date";
 import { getWeekContents, getWeekDifficultys } from "../checklist/checklistFeat";
@@ -75,9 +76,10 @@ type WeekComponentProps = {
     guild: Guild | null,
     bosses: Boss[],
     setWorks: SetStateFn<Calendar[]>,
-    setGuild: SetStateFn<Guild | null>
+    setGuild: SetStateFn<Guild | null>,
+    isLogined: boolean
 }
-export function WeekComponent({ works, guild, bosses, setWorks, setGuild }: WeekComponentProps) {
+export function WeekComponent({ works, guild, bosses, setWorks, setGuild, isLogined }: WeekComponentProps) {
     const [weeks, setWeeks] = useState<WeekBox[]>([]);
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
 
@@ -102,13 +104,18 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild }: Week
             <div className="w-full">
                 <div className="flex gap-2 mb-4 items-center flex-col sm:flex-row">
                     <p className="text-2xl grow text-left w-full sm:w-[max-content]">이번 주 일정</p>
-                    <Button
-                        radius="sm"
-                        color="primary"
-                        className="w-full sm:w-[140px]"
-                        onPress={onOpen}>
-                        일정 추가
-                    </Button>
+                    <Tooltip showArrow content="로그인 이후 이용이 가능한 기능입니다.">
+                        <div className="w-full sm:w-[140px]">
+                            <Button
+                                radius="sm"
+                                color="primary"
+                                isDisabled={!isLogined}
+                                className="w-full"
+                                onPress={onOpen}>
+                                일정 추가
+                            </Button>
+                        </div>
+                    </Tooltip>
                 </div>
                 <Divider className="mb-4 block sm:hidden"/>
                 <div className="h-full hidden lg1200:grid grid-cols-7 gap-2">

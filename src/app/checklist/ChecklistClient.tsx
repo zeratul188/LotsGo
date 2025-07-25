@@ -1,5 +1,5 @@
 'use client'
-import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent, NotLoginedComponent, RemainChecklistComponent } from "./ChecklistForm"
+import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent, RemainChecklistComponent } from "./ChecklistForm"
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
 import { checkLogin, getBosses, getCubes, handleResetChecklist, loadChecklist } from "./checklistFeat";
@@ -14,11 +14,24 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
+import Script from "next/script";
+import NotLoginedComponent from "./NotLoginComponent";
+import iChecklist from '@/data/checklist/data.json';
+import iBosses from '@/data/bosses/data.json';
+import iCubes from '@/data/cubes/data.json';
+import { Boss } from "../api/checklist/boss/route";
+import { Cube } from "../api/checklist/cube/route";
+import FixedLineAd from "../ad/FixedLineAd";
 
 const BoxAd = dynamic(() => import('../ad/BoxAd'), { ssr: false });
 const LineAd = dynamic(() => import('../ad/LineAd'), { ssr: false });
 
+
 export default function ChecklistClient() {
+    const initialChecklist: CheckCharacter[] = iChecklist;
+    const initialBosses: Boss[] = iBosses;
+    const initialCubes: Cube[] = iCubes;
+
     const checklistForm = useChecklistForm();
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
@@ -34,6 +47,7 @@ export default function ChecklistClient() {
         }
     }, [checklistForm.bosses, expedition]);
 
+    3.
     useEffect(() => {
         const auth = getAuth();
         onAuthStateChanged(auth, async (user) => {
@@ -64,7 +78,10 @@ export default function ChecklistClient() {
 
     if (!checklistForm.isLogined) {
         return (
-            <NotLoginedComponent/>
+            <NotLoginedComponent 
+                initialChecklist={initialChecklist} 
+                initialBosses={initialBosses}
+                initialCubes={initialCubes}/>
         )
     }
 
@@ -82,10 +99,16 @@ export default function ChecklistClient() {
                     max={checklistForm.max}
                     setMax={checklistForm.setMax}/>
             </div>
-            {!checklistForm.isLoading && checklist.length > 0 ? (
+            {!checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
                 <div className="w-full flex justify-center overflow-hidden md960:pt-[110px]">
                     <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px] mt-8">
                         <LineAd isLoaded={!checklistForm.isLoading}/>
+                    </div>
+                </div>
+            ) : (
+                <div className="w-full flex justify-center overflow-hidden md960:mt-[140px]">
+                    <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-4">
+                        <FixedLineAd isLoaded={!checklistForm.isLoading}/>
                     </div>
                 </div>
             ) : <></>}
@@ -161,7 +184,7 @@ export default function ChecklistClient() {
                 {!checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
                     <div className="w-full flex justify-center px-4">
                         <div className="w-full max-w-[360px] min-h-[100px] mt-8">
-                        <BoxAd isLoaded={!checklistForm.isLoading}/>
+                            <BoxAd isLoaded={!checklistForm.isLoading}/>
                         </div>
                     </div>
                 ) : (
@@ -172,6 +195,10 @@ export default function ChecklistClient() {
                     </div>
                 ) : <></>}
             </div>
+            <Script
+                async
+                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
+                crossOrigin="anonymous"/>
         </div>
     )
 }

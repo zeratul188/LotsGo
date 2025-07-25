@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useRef } from "react"
 
-export default function LineAd({ isLoaded }: { isLoaded: boolean }) {
+export default function FixedLineAd({ isLoaded }: { isLoaded: boolean }) {
     const adRef = useRef<HTMLModElement>(null);
     const pushed = useRef(false);
     useEffect(() => {
@@ -21,14 +21,8 @@ export default function LineAd({ isLoaded }: { isLoaded: boolean }) {
         <ins
             ref={adRef} 
             className="adsbygoogle"
-            style={{ 
-                display: "block", 
-                width: '100%',
-                height: '100px' 
-            }}
+            style={{ display: "inline-block", width: 728, height: 90 }}
             data-ad-client="ca-pub-1236449818258742"
-            data-ad-slot="1198729070"
-            data-ad-format="auto"
-            data-full-width-responsive="true"></ins>
+            data-ad-slot="1198729070"></ins>
     )
 }

@@ -1,0 +1,58 @@
+[
+    {
+        "id": "VgvlljXPNqfRzwTYYEx6",
+        "name": "제 1 금제",
+        "level": 1250,
+        "tier": 3,
+        "reward": 21
+    },
+    {
+        "id": "L3h8SHEGRLi3nF0RlcMS",
+        "name": "제 2 금제",
+        "level": 1490,
+        "tier": 3,
+        "reward": 36
+    },
+    {
+        "id": "Y0LddnNSOSO3S1fjK4Gb",
+        "name": "제 3 금제",
+        "level": 1540,
+        "tier": 3,
+        "reward": 54
+    },
+    {
+        "id": "xzE3kPuDTbiR3H3OGhP6",
+        "name": "제 4 금제",
+        "level": 1580,
+        "tier": 3,
+        "reward": 72
+    },
+    {
+        "id": "LseW1LIUZWyHcLuED0y7",
+        "name": "제 5 금제",
+        "level": 1610,
+        "tier": 3,
+        "reward": 81
+    },
+    {
+        "id": "I0PgLJMGGA4dEjc8jONC",
+        "name": "제 1 해금",
+        "level": 1640,
+        "tier": 4,
+        "reward": 9
+    },
+    {
+        "id": "CSnUqt5qtXj21Fp6k3AJ",
+        "name": "제 2 해금",
+        "level": 1680,
+        "tier": 4,
+        "reward": 18
+    },
+    {
+        "id": "IjyJMV9dINgybtjbpi8K",
+        "name": "제 3 해금",
+        "level": 1700,
+        "tier": 4,
+        "reward": 24
+    }
+]

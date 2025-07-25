@@ -9,6 +9,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { Island, IslandData, LostarkEvent, Notice } from "./home/calendarFeat";
 import dayjs, { Dayjs } from "dayjs";
+import Script from "next/script";
 
 const BoxAd = dynamic(() => import('./ad/BoxAd'), { ssr: false });
 const TwoLineAd = dynamic(() => import('./ad/TwoLineAd'), { ssr: false });
@@ -59,6 +60,10 @@ export default function HomeClient({ gate, boss, islands, islandTime, islandData
                 </div>
             ) : <></>}
             </div>
+            <Script
+                async
+                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
+                crossOrigin="anonymous"/>
         </div>
     )
 }

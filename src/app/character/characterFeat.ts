@@ -91,6 +91,7 @@ export function useClickUpdate(
                         newFile.collects = data.Collectibles;
                         newFile.avatars = data.ArmoryAvatars;
                         
+                        const newCombatPower = Number(newFile.profile.CombatPower.replaceAll(',', ''));
                         await fetch('/api/caches/characters', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -98,7 +99,7 @@ export function useClickUpdate(
                                 nickname: nickname,
                                 file: newFile,
                                 expeditions: newExpeditions,
-                                combatPower: newFile.profile.CombatPower.replaceAll(',', '')
+                                combatPower: combat < newCombatPower ? newCombatPower : combat
                             })
                         });
 
