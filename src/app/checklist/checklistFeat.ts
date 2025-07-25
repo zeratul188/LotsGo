@@ -1177,7 +1177,6 @@ export async function useOnClickAddItem(
     addChecklist: Checklist,
     dispatch: AppDispatch,
     setLoadingAdd: SetStateFn<boolean>,
-    onClose: () => void,
     bosses: Boss[]
 ) {
     const userStr = localStorage.getItem('user');
@@ -1230,7 +1229,6 @@ export async function useOnClickAddItem(
         }));
     }
     setLoadingAdd(false);
-    onClose();
 }
 
 // 골드 받는 콘텐츠 개수 반환 함수

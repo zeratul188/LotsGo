@@ -1,5 +1,5 @@
 'use client'
-import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent, NotLoginedComponent, RemainChecklistComponent } from "./ChecklistForm"
+import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent, RemainChecklistComponent } from "./ChecklistForm"
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
 import { checkLogin, getBosses, getCubes, handleResetChecklist, loadChecklist } from "./checklistFeat";
@@ -15,11 +15,22 @@ import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
 import Script from "next/script";
+import NotLoginedComponent from "./NotLoginedComponent";
+import iChecklist from '@/data/checklist/data.json';
+import iBosses from '@/data/bosses/data.json';
+import iCubes from '@/data/cubes/data.json';
+import { Boss } from "../api/checklist/boss/route";
+import { Cube } from "../api/checklist/cube/route";
 
 const BoxAd = dynamic(() => import('../ad/BoxAd'), { ssr: false });
 const LineAd = dynamic(() => import('../ad/LineAd'), { ssr: false });
 
+
 export default function ChecklistClient() {
+    const initialChecklist: CheckCharacter[] = iChecklist;
+    const initialBosses: Boss[] = iBosses;
+    const initialCubes: Cube[] = iCubes;
+
     const checklistForm = useChecklistForm();
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
@@ -35,6 +46,7 @@ export default function ChecklistClient() {
         }
     }, [checklistForm.bosses, expedition]);
 
+    3.
     useEffect(() => {
         const auth = getAuth();
         onAuthStateChanged(auth, async (user) => {
@@ -65,7 +77,10 @@ export default function ChecklistClient() {
 
     if (!checklistForm.isLogined) {
         return (
-            <NotLoginedComponent/>
+            <NotLoginedComponent 
+                initialChecklist={initialChecklist} 
+                initialBosses={initialBosses}
+                initialCubes={initialCubes}/>
         )
     }
 
