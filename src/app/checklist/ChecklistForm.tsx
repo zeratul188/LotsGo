@@ -1756,7 +1756,7 @@ function WeekContentComponent({
                                 isDisable: false,
                                 isBiweekly: isBiweekly
                             }
-                            await useOnClickAddItem(checklist, index, addItem, dispatch, setLoadingAdd, onClose, bosses);
+                            await useOnClickAddItem(checklist, index, addItem, dispatch, setLoadingAdd, bosses);
                         }
                         
                     }}
@@ -1821,7 +1821,7 @@ type CubeStatueComponentProps = {
     character: CheckCharacter,
     cubes: Cube[]
 }
-function CubeStatueComponent({ character, cubes }: CubeStatueComponentProps) {
+export function CubeStatueComponent({ character, cubes }: CubeStatueComponentProps) {
     const cells: any = (statue: CubeStatue) => {
         return [
             <TableCell key="level">Lv.{statue.level}</TableCell>,

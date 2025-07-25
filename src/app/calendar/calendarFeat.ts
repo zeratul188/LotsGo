@@ -28,20 +28,22 @@ export async function getGuildName(): Promise<string> {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
-    const id = storedUser.id;
+    if (storedUser) {
+        const id = storedUser.id;
 
-    const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));
-    const snapshot = await getDocs(q);
-    const characterName = snapshot.docs[0].data().character;
+        const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));
+        const snapshot = await getDocs(q);
+        const characterName = snapshot.docs[0].data().character;
 
-    const lostarkRes = await fetch(`/api/lostark?value=${characterName}&code=1&key=${decryptedApiKey}`);
+        const lostarkRes = await fetch(`/api/lostark?value=${characterName}&code=1&key=${decryptedApiKey}`);
 
-    if (lostarkRes.ok) {
-        const data = await lostarkRes.json();
-        if (data) {
-            const guildName = data.GuildName ?? '';
+        if (lostarkRes.ok) {
+            const data = await lostarkRes.json();
+            if (data) {
+                const guildName = data.GuildName ?? '';
 
-            return guildName ? guildName : '';
+                return guildName ? guildName : '';
+            }
         }
     }
 
@@ -106,24 +108,26 @@ export async function loadBosses(setBosses: SetStateFn<Boss[]>) {
 export async function loadWorks(setWorks: SetStateFn<Calendar[]>) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    const id = storedUser.id;
-    const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));
-    const snapshot = await getDocs(q);
-    const data = snapshot.docs[0].data();
-    const works: Calendar[] = [];
-    if (data.calendars) {
-        for (const calender of data.calendars) {
-            const item: Calendar = {
-                name: calender.name,
-                date: calender.date.toDate(),
-                difficulty: calender.difficulty,
-                raidname: calender.raidname,
-                memo: calender.memo
+    if (storedUser) {
+        const id = storedUser.id;
+        const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));
+        const snapshot = await getDocs(q);
+        const data = snapshot.docs[0].data();
+        const works: Calendar[] = [];
+        if (data.calendars) {
+            for (const calender of data.calendars) {
+                const item: Calendar = {
+                    name: calender.name,
+                    date: calender.date.toDate(),
+                    difficulty: calender.difficulty,
+                    raidname: calender.raidname,
+                    memo: calender.memo
+                }
+                works.push(item);
             }
-            works.push(item);
         }
+        setWorks(works);
     }
-    setWorks(works);
 }
 
 // 주간 일정 데이터 초기화

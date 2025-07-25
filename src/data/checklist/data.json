@@ -1,0 +1,352 @@
+[
+    {
+        "nickname": "고스트141",
+        "level": 1740,
+        "job": "창술사",
+        "server": "카단",
+        "day": {
+            "bossUsing": 0,
+            "questUsing": 0,
+            "questBonus": 0,
+            "boss": 0,
+            "bossBonus": 0,
+            "dungeon": 0,
+            "dungeonBouus": 0,
+            "dungeonUsing": 0,
+            "quest": 0
+        },
+        "daylist": [],
+        "checklist": [
+            {
+                "name": "카제로스 레이드 - 3막 모르둠",
+                "isDisable": false,
+                "isCheck": false,
+                "isGold": true,
+                "isBiweekly": false,
+                "difficulty": "하드"
+            },
+            {
+                "name": "카제로스 레이드 - 2막 아브렐슈드",
+                "isBiweekly": false,
+                "isDisable": false,
+                "isGold": true,
+                "isCheck": false,
+                "difficulty": "하드"
+            },
+            {
+                "isGold": true,
+                "isCheck": false,
+                "difficulty": "하드",
+                "name": "카제로스 레이드 - 1막 에기르",
+                "isBiweekly": false,
+                "isDisable": false
+            }
+        ],
+        "weeklist": [],
+        "cube": 0,
+        "cubelist": [],
+        "isGold": true,
+        "otherGold": 0,
+        "position": 9999
+    },
+    {
+        "nickname": "칼란디르",
+        "level": 1713.33,
+        "job": "워로드",
+        "server": "카단",
+        "day": {
+            "dungeon": 0,
+            "bossBonus": 40,
+            "questBonus": 0,
+            "questUsing": 0,
+            "quest": 0,
+            "dungeonBouus": 100,
+            "dungeonUsing": 0,
+            "boss": 0,
+            "bossUsing": 0
+        },
+        "daylist": [],
+        "checklist": [
+            {
+                "name": "카제로스 레이드 - 3막 모르둠",
+                "difficulty": "하드",
+                "isGold": true,
+                "isBiweekly": false,
+                "isDisable": false,
+                "isCheck": false
+            },
+            {
+                "isBiweekly": false,
+                "name": "카제로스 레이드 - 2막 아브렐슈드",
+                "difficulty": "하드",
+                "isCheck": false,
+                "isGold": true,
+                "isDisable": false
+            },
+            {
+                "difficulty": "하드",
+                "isDisable": false,
+                "isBiweekly": false,
+                "isGold": true,
+                "isCheck": false,
+                "name": "카제로스 레이드 - 1막 에기르"
+            }
+        ],
+        "weeklist": [],
+        "cube": 0,
+        "cubelist": [],
+        "isGold": true,
+        "otherGold": 0,
+        "position": 9999
+    },
+    {
+        "nickname": "케니리우스",
+        "level": 1702.5,
+        "job": "홀리나이트",
+        "server": "카단",
+        "day": {
+            "dungeonUsing": 0,
+            "questUsing": 0,
+            "boss": 0,
+            "quest": 0,
+            "questBonus": 0,
+            "dungeonBouus": 0,
+            "dungeon": 0,
+            "bossUsing": 0,
+            "bossBonus": 0
+        },
+        "daylist": [],
+        "checklist": [
+            {
+                "isGold": true,
+                "name": "카제로스 레이드 - 3막 모르둠",
+                "difficulty": "하드",
+                "isDisable": false,
+                "isCheck": false,
+                "isBiweekly": false
+            },
+            {
+                "name": "카제로스 레 이드 - 2막 아브렐슈드",
+                "isGold": true,
+                "isBiweekly": false,
+                "isDisable": false,
+                "isCheck": false,
+                "difficulty": "하드"
+            },
+            {
+                "isGold": true,
+                "isDisable": false,
+                "isCheck": false,
+                "name": "카제로스 레이드 - 1막 에기르",
+                "difficulty": "하드",
+                "isBiweekly": false
+            }
+        ],
+        "weeklist": [],
+        "cube": 0,
+        "cubelist": [],
+        "isGold": true,
+        "otherGold": 0,
+        "position": 9999
+    },
+    {
+        "nickname": "고스트140",
+        "level": 1680.83,
+        "job": "창술사",
+        "server": "카단",
+        "day": {
+            "boss": 0,
+            "questBonus": 0,
+            "questUsing": 0,
+            "quest": 0,
+            "dungeonBouus": 0,
+            "dungeonUsing": 0,
+            "bossBonus": 0,
+            "dungeon": 0,
+            "bossUsing": 0
+        },
+        "daylist": [],
+        "checklist": [
+            {
+                "isGold": true,
+                "difficulty": "노말",
+                "name": "카제로스 레이드 - 3막 모르둠",
+                "isBiweekly": false,
+                "isDisable": false,
+                "isCheck": false
+            },
+            {
+                "isDisable": false,
+                "isGold": true,
+                "name": "카제로스 레이드 - 1막 에기르",
+                "difficulty": "하드",
+                "isBiweekly": false,
+                "isCheck": false
+            },
+            {
+                "difficulty": "노말",
+                "isBiweekly": false,
+                "isCheck": false,
+                "isDisable": false,
+                "isGold": true,
+                "name": "카제로스 레이드 - 2막 아브렐슈드"
+            }
+        ],
+        "weeklist": [],
+        "cube": 0,
+        "cubelist": [],
+        "isGold": true,
+        "otherGold": 0,
+        "position": 9999
+    },
+    {
+        "nickname": "민트초코한우소머리국밥",
+        "level": 1680.83,
+        "job": "블래스터",
+        "server": "카단",
+        "day": {
+            "bossUsing": 0,
+            "questBonus": 0,
+            "quest": 0,
+            "questUsing": 0,
+            "dungeonBouus": 0,
+            "boss": 0,
+            "dungeonUsing": 0,
+            "dungeon": 0,
+            "bossBonus": 0
+        },
+        "daylist": [],
+        "checklist": [
+            {
+                "isBiweekly": false,
+                "isGold": true,
+                "isCheck": false,
+                "name": "카제로스 레이드 - 3막 모르둠",
+                "isDisable": false,
+                "difficulty": "노말"
+            },
+            {
+                "isCheck": false,
+                "isBiweekly": false,
+                "difficulty": "하드",
+                "name": "카제로스 레이드 - 1막 에기르",
+                "isDisable": false,
+                "isGold": true
+            },
+            {
+                "name": "카제로스 레이드 - 2막 아브렐슈드",
+                "isCheck": false,
+                "difficulty": "노말",
+                "isGold": true,
+                "isDisable": false,
+                "isBiweekly": false
+            }
+        ],
+        "weeklist": [],
+        "cube": 0,
+        "cubelist": [],
+        "isGold": true,
+        "otherGold": 0,
+        "position": 9999
+    },
+    {
+        "nickname": "민트초코계란국",
+        "level": 1680.33,
+        "job": "호크아이",
+        "server": "카단",
+        "day": {
+            "dungeon": 0,
+            "boss": 0,
+            "bossUsing": 0,
+            "questBonus": 0,
+            "dungeonBouus": 0,
+            "dungeonUsing": 0,
+            "bossBonus": 0,
+            "questUsing": 0,
+            "quest": 0
+        },
+        "daylist": [],
+        "checklist": [
+            {
+                "name": "카제로스 레이드 - 3막 모르둠",
+                "difficulty": "노말",
+                "isDisable": false,
+                "isBiweekly": false,
+                "isGold": true,
+                "isCheck": false
+            },
+            {
+                "isDisable": false,
+                "name": "카제로스 레이드 - 1막 에기르",
+                "isGold": true,
+                "difficulty": "하드",
+                "isCheck": false,
+                "isBiweekly": false
+            },
+            {
+                "isDisable": false,
+                "difficulty": "노말",
+                "isCheck": false,
+                "isBiweekly": false,
+                "isGold": true,
+                "name": "카제로스 레이드 - 2막 아브렐슈드"
+            }
+        ],
+        "weeklist": [],
+        "cube": 0,
+        "cubelist": [],
+        "isGold": true,
+        "otherGold": 0,
+        "position": 9999
+    },
+    {
+        "nickname": "섭종직전라스트댄스",
+        "level": 1681.66,
+        "job": "발키리",
+        "server": "카단",
+        "day": {
+            "questUsing": 0,
+            "dungeon": 0,
+            "dungeonBouus": 0,
+            "bossUsing": 0,
+            "boss": 0,
+            "quest": 0,
+            "dungeonUsing": 0,
+            "bossBonus": 0,
+            "questBonus": 0
+        },
+        "daylist": [],
+        "checklist": [
+            {
+                "isDisable": false,
+                "isCheck": false,
+                "isGold": true,
+                "isBiweekly": false,
+                "name": "카제로스 레이드 - 3막 모르둠",
+                "difficulty": "노말"
+            },
+            {
+                "isBiweekly": false,
+                "name": "카제로스 레이드 - 1막 에기르",
+                "isDisable": false,
+                "difficulty": "하드",
+                "isCheck": false,
+                "isGold": true
+            },
+            {
+                "isBiweekly": false,
+                "name": "카제로스 레이드 - 2막 아브렐슈드",
+                "isDisable": false,
+                "isCheck": false,
+                "isGold": true,
+                "difficulty": "노말"
+            }
+        ],
+        "weeklist": [],
+        "cube": 0,
+        "cubelist": [],
+        "isGold": false,
+        "otherGold": 0,
+        "position": 9999
+    }
+]

@@ -1,0 +1,392 @@
+[
+    {
+        "id": "4m5Ap1eQcJaychTYbg4d",
+        "name": "어비스 던전 - 혼돈의 상아탑",
+        "difficulty": [
+            {
+                "difficulty": "싱글",
+                "level": 1600,
+                "boundGold": 2600,
+                "gold": 2600,
+                "isBiweekly": false
+            },
+            {
+                "difficulty": "노말",
+                "gold": 2600,
+                "isBiweekly": false,
+                "boundGold": 2600,
+                "level": 1600
+            },
+            {
+                "level": 1620,
+                "boundGold": 3630,
+                "difficulty": "하드",
+                "gold": 3600,
+                "isBiweekly": false
+            }
+        ]
+    },
+    {
+        "id": "7EjJ5HxbPr0HYEPbgzFO",
+        "name": "카제로스 레이드 - 1막 에기르",
+        "difficulty": [
+            {
+                "gold": 18000,
+                "difficulty": "노말",
+                "isBiweekly": false,
+                "boundGold": 0,
+                "level": 1660
+            },
+            {
+                "gold": 27500,
+                "isBiweekly": false,
+                "difficulty": "하드",
+                "boundGold": 0,
+                "level": 1680
+            }
+        ]
+    },
+    {
+        "id": "C4pdMqTDEd4XJbtiumlJ",
+        "name": "군단장 레이드 - 발탄",
+        "difficulty": [
+            {
+                "difficulty": "싱글",
+                "boundGold": 600,
+                "gold": 600,
+                "level": 1415,
+                "isBiweekly": false
+            },
+            {
+                "difficulty": "노말",
+                "boundGold": 600,
+                "isBiweekly": false,
+                "gold": 600,
+                "level": 1415
+            },
+            {
+                "gold": 900,
+                "difficulty": "하드",
+                "level": 1445,
+                "isBiweekly": false,
+                "boundGold": 900
+            }
+        ]
+    },
+    {
+        "id": "FoEtuEP1y7cEUDRgjA5H",
+        "name": "어비스 레이드 - 아르고스",
+        "difficulty": [
+            {
+                "difficulty": "노말",
+                "level": 1385,
+                "gold": 500,
+                "boundGold": 500,
+                "isBiweekly": false
+            }
+        ]
+    },
+    {
+        "id": "NQ18uuFRKDrxXxoZcBgL",
+        "name": "카멘 익스트림",
+        "difficulty": [
+            {
+                "level": 1690,
+                "difficulty": "노말",
+                "boundGold": 0,
+                "gold": 15000,
+                "isBiweekly": false
+            },
+            {
+                "isBiweekly": false,
+                "gold": 30000,
+                "level": 1720,
+                "difficulty": "하드",
+                "boundGold": 0
+            }
+        ]
+    },
+    {
+        "id": "ZF7S7pHdOGCi5LB3ESpn",
+        "name": "카제로스 레이드 - 3막 모르둠",
+        "difficulty": [
+            {
+                "level": 1680,
+                "difficulty": "노말",
+                "isBiweekly": false,
+                "boundGold": 0,
+                "gold": 28000
+            },
+            {
+                "isBiweekly": false,
+                "gold": 38000,
+                "level": 1700,
+                "boundGold": 0,
+                "difficulty": "하드"
+            }
+        ]
+    },
+    {
+        "id": "bXCeMN3vWk6CUQwLvdfv",
+        "name": "군단장 레이드 - 쿠크세이튼",
+        "difficulty": [
+            {
+                "level": 1475,
+                "boundGold": 1200,
+                "difficulty": "싱글",
+                "isBiweekly": false,
+                "gold": 1200
+            },
+            {
+                "difficulty": "노말",
+                "level": 1475,
+                "gold": 1200,
+                "isBiweekly": false,
+                "boundGold": 1200
+            }
+        ]
+    },
+    {
+        "id": "dCUIAh2baeilT7AhkChh",
+        "name": "어비스 던전 - 카양겔",
+        "difficulty": [
+            {
+                "level": 1540,
+                "boundGold": 1650,
+                "difficulty": "싱글",
+                "isBiweekly": false,
+                "gold": 1650
+            },
+            {
+                "boundGold": 1650,
+                "difficulty": "노말",
+                "gold": 1650,
+                "level": 1540,
+                "isBiweekly": false
+            },
+            {
+                "gold": 2150,
+                "isBiweekly": false,
+                "difficulty": "하드",
+                "boundGold": 2150,
+                "level": 1580
+            }
+        ]
+    },
+    {
+        "id": "eYP5WFusUalAR0wtMvM7",
+        "name": "에픽 레이드 - 베히모스",
+        "difficulty": [
+            {
+                "difficulty": "노말",
+                "boundGold": 0,
+                "level": 1640,
+                "gold": 8800,
+                "isBiweekly": false
+            }
+        ]
+    },
+    {
+        "id": "f0ez5M1PAO9HvNzZWbvh",
+        "name": "어비스던전 - 오레하",
+        "difficulty": [
+            {
+                "gold": 250,
+                "difficulty": "노말",
+                "level": 1325,
+                "boundGold": 250,
+                "isBiweekly": false
+            },
+            {
+                "difficulty": "하드",
+                "boundGold": 250,
+                "isBiweekly": false,
+                "gold": 250,
+                "level": 1370
+            }
+        ]
+    },
+    {
+        "id": "oGJxMV8VWutFzt6QwpU9",
+        "name": "카제로스 레이드 - 2막 아브렐슈드",
+        "difficulty": [
+            {
+                "boundGold": 0,
+                "gold": 21500,
+                "isBiweekly": false,
+                "difficulty": "노말",
+                "level": 1670
+            },
+            {
+                "boundGold": 0,
+                "level": 1690,
+                "gold": 30500,
+                "difficulty": "하드",
+                "isBiweekly": false
+            }
+        ]
+    },
+    {
+        "id": "qFTlOYgy0AluFy0m11aR",
+        "name": "카제로스 레이드 - 에키드나",
+        "difficulty": [
+            {
+                "boundGold": 3650,
+                "gold": 3650,
+                "difficulty": "싱글",
+                "isBiweekly": false,
+                "level": 1620
+            },
+            {
+                "isBiweekly": false,
+                "boundGold": 3650,
+                "level": 1620,
+                "gold": 3650,
+                "difficulty": "노말"
+            },
+            {
+                "boundGold": 0,
+                "isBiweekly": false,
+                "difficulty": "하드",
+                "gold": 8800,
+                "level": 1640
+            }
+        ]
+    },
+    {
+        "id": "uBwjzVr6U7LxzW35RJQb",
+        "name": "군단장 레이드 - 비아키스",
+        "difficulty": [
+            {
+                "gold": 800,
+                "level": 1430,
+                "boundGold": 800,
+                "isBiweekly": false,
+                "difficulty": "싱글"
+            },
+            {
+                "difficulty": "노말",
+                "boundGold": 800,
+                "isBiweekly": false,
+                "gold": 800,
+                "level": 1430
+            },
+            {
+                "level": 1460,
+                "isBiweekly": false,
+                "gold": 1200,
+                "difficulty": "하드",
+                "boundGold": 1200
+            }
+        ]
+    },
+    {
+        "id": "uGz6FmDHig3R3UIujysh",
+        "name": "군단장 레이드 - 일리아칸",
+        "difficulty": [
+            {
+                "difficulty": "싱글",
+                "boundGold": 2350,
+                "level": 1580,
+                "isBiweekly": false,
+                "gold": 2350
+            },
+            {
+                "gold": 2350,
+                "isBiweekly": false,
+                "level": 1580,
+                "boundGold": 2350,
+                "difficulty": "노말"
+            },
+            {
+                "isBiweekly": false,
+                "gold": 3000,
+                "difficulty": "하드",
+                "level": 1600,
+                "boundGold": 3000
+            }
+        ]
+    },
+    {
+        "id": "wrAQ5R97K4tT4C1bl9ya",
+        "name": "군단장 레이드 - 아브렐슈드",
+        "difficulty": [
+            {
+                "level": 1490,
+                "boundGold": 1500,
+                "isBiweekly": false,
+                "difficulty": "싱글 1-3관",
+                "gold": 1500
+            },
+            {
+                "isBiweekly": true,
+                "boundGold": 800,
+                "level": 1520,
+                "difficulty": "싱글 4관",
+                "gold": 800
+            },
+            {
+                "boundGold": 1500,
+                "gold": 1500,
+                "difficulty": "노말 1-3관",
+                "isBiweekly": false,
+                "level": 1490
+            },
+            {
+                "difficulty": "노말 4관",
+                "gold": 800,
+                "level": 1520,
+                "boundGold": 800,
+                "isBiweekly": true
+            },
+            {
+                "difficulty": "하드 1-3관",
+                "gold": 1800,
+                "level": 1540,
+                "boundGold": 1800,
+                "isBiweekly": false
+            },
+            {
+                "difficulty": "하드 4관",
+                "gold": 1000,
+                "level": 1560,
+                "isBiweekly": true,
+                "boundGold": 1000
+            }
+        ]
+    },
+    {
+        "id": "yYz43fIjbREbPXIfhSJO",
+        "name": "군단장 레이드 - 카멘",
+        "difficulty": [
+            {
+                "isBiweekly": false,
+                "difficulty": "싱글",
+                "boundGold": 3200,
+                "gold": 3200,
+                "level": 1610
+            },
+            {
+                "boundGold": 3200,
+                "isBiweekly": false,
+                "gold": 3200,
+                "level": 1610,
+                "difficulty": "노말"
+            },
+            {
+                "gold": 4000,
+                "difficulty": "하드 1-3관",
+                "isBiweekly": false,
+                "level": 1630,
+                "boundGold": 4000
+            },
+            {
+                "gold": 3650,
+                "boundGold": 3650,
+                "level": 1630,
+                "isBiweekly": true,
+                "difficulty": "하드 4관"
+            }
+        ]
+    }
+]
