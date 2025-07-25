@@ -64,12 +64,6 @@ export default function CalendarClient() {
             settingData();
         }
     }, [calendarForm.guild, calendarForm.isLogined]);
-    
-    if (!calendarForm.isLogined) {
-        return (
-            <NotLoginedComponent/>
-        )
-    }
 
     return (
         <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
@@ -78,17 +72,14 @@ export default function CalendarClient() {
                 guild={calendarForm.guild} 
                 bosses={calendarForm.bosses}
                 setWorks={calendarForm.setWorks}
-                setGuild={calendarForm.setGuild}/>
+                setGuild={calendarForm.setGuild}
+                isLogined={calendarForm.isLogined}/>
             <Divider className="mt-6 mb-4"/>
             <BigComponent 
                 works={calendarForm.works} 
                 guild={calendarForm.guild}
                 setWorks={calendarForm.setWorks}
                 setGuild={calendarForm.setGuild}/>
-            <Script
-                async
-                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
-                crossOrigin="anonymous"/>
         </div>
     )
 }
