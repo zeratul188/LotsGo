@@ -15,7 +15,7 @@ import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
 import Script from "next/script";
-import NotLoginedComponent from "./NotLoginedComponent";
+import NotLoginedComponent from "./NotLoginComponent";
 import iChecklist from '@/data/checklist/data.json';
 import iBosses from '@/data/bosses/data.json';
 import iCubes from '@/data/cubes/data.json';
