@@ -40,7 +40,7 @@ export type CheckCharacter = {
     cubelist: CubeList[],
     isGold: boolean,
     otherGold: number,
-    position: number,
+    position: number
 }
 type ChecklistState = {
     checklist: CheckCharacter[]
