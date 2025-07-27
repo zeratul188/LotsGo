@@ -168,19 +168,19 @@ export default function ChecklistClient() {
                         checklist={checklist}
                         dispatch={dispatch}
                         bosses={checklistForm.bosses}/>
-                    <p className="fadedtext text-sm mt-8">수요일 6시에 초기화되지 않았나요?<br/>초기화되지 않았을 경우 한번 새로고침을 해보신 후 그래도 초기화가 되지 않았다면 아래 버튼을 눌러주세요.</p>
-                    <Button
-                        radius="sm"
-                        color="danger"
-                        size="sm"
-                        className="mt-2"
-                        isLoading={isLoadingReset}
-                        onPress={async () => await handleResetChecklist(checklist, checklistForm.biweekly, dispatch, setLoadingReset)}>
-                        수동 초기화
-                    </Button>
                 </div>
             )}
             <div className="w-full max-w-[1280px] mx-auto">
+                <p className="fadedtext text-sm mt-8">수요일 6시에 초기화되지 않았나요?<br/>초기화되지 않았을 경우 한번 새로고침을 해보신 후 그래도 초기화가 되지 않았다면 아래 버튼을 눌러주세요.</p>
+                <Button
+                    radius="sm"
+                    color="danger"
+                    size="sm"
+                    className="mt-2"
+                    isLoading={isLoadingReset}
+                    onPress={async () => await handleResetChecklist(checklist, checklistForm.biweekly, dispatch, setLoadingReset)}>
+                    수동 초기화
+                </Button>
                 {!checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
                     <div className="w-full flex justify-center px-4">
                         <div className="w-full max-w-[360px] min-h-[100px] mt-8">
