@@ -761,5 +761,179 @@
             "small": "무공",
             "grade": "상"
         }
+    ],
+    "engravings": [
+        {
+            "name": "원한",
+            "url": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Buff/Buff_71.png"
+        },
+        {
+            "name": "예리한 둔기",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/achieve/achieve_03_40.png"
+        },
+        {
+            "name": "탈출의 명수",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_10.png"
+        },
+        {
+            "name": "강화 방패",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_239.png"
+        },
+        {
+            "name": "저주받은 인형",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_237.png"
+        },
+        {
+            "name": "아드레날린",
+            "url": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Ability/Ability_235.png"
+        },
+        {
+            "name": "돌격대장",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_210.png"
+        },
+        {
+            "name": "굳은 의지",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_44.png"
+        },
+        {
+            "name": "폭발물 전문가",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_121.png"
+        },
+        {
+            "name": "불굴",
+            "url": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Buff/Buff_66.png"
+        },
+        {
+            "name": "여신의 가호",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_229.png"
+        },
+        {
+            "name": "번개의 분노",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_191.png"
+        },
+        {
+            "name": "위기 모면",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_162.png"
+        },
+        {
+            "name": "실드관통",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_89.png"
+        },
+        {
+            "name": "부러진 뼈",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_94.png"
+        },
+        {
+            "name": "승부사",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_136.png"
+        },
+        {
+            "name": "긴급구조",
+            "url": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Ability/Ability_238.png"
+        },
+        {
+            "name": "약자 무시",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/achieve/achieve_04_30.png"
+        },
+        {
+            "name": "에테르 포식자",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_74.png"
+        },
+        {
+            "name": "분쇄의 주먹",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_83.png"
+        },
+        {
+            "name": "달인의 저력",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_147.png"
+        },
+        {
+            "name": "강령술",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_29.png"
+        },
+        {
+            "name": "정기 흡수",
+            "url": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Buff/Buff_65.png"
+        },
+        {
+            "name": "안정된 상태",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_105.png"
+        },
+        {
+            "name": "슈퍼 차지",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/achieve/achieve_06_14.png"
+        },
+        {
+            "name": "구슬동자",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_18.png"
+        },
+        {
+            "name": "급소 타격",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_168.png"
+        },
+        {
+            "name": "최대 마나 증가",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_122.png"
+        },
+        {
+            "name": "마나 효율 증가",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_166.png"
+        },
+        {
+            "name": "중갑 착용",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_46.png"
+        },
+        {
+            "name": "선수필승",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/achieve/achieve_08_62.png"
+        },
+        {
+            "name": "기습의 대가",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_148.png"
+        },
+        {
+            "name": "마나의 흐름",
+            "url": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Buff/Buff_63.png"
+        },
+        {
+            "name": "바리케이드",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_170.png"
+        },
+        {
+            "name": "각성",
+            "url": "https://cdn-lostark.game.onstove.com/efui_iconatlas/buff/buff_113.png"
+        },
+        {
+            "name": "결투의 대가",
+            "url": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Ability/Ability_224.png"
+        },
+        {
+            "name": "질량 증가",
+            "url": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Ability/Ability_231.png"
+        },
+        {
+            "name": "추진력",
+            "url": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Ability/Ability_232.png"
+        },
+        {
+            "name": "타격의 대가",
+            "url": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Ability/Ability_233.png"
+        },
+        {
+            "name": "시선 집중",
+            "url": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Ability/Ability_234.png"
+        },
+        {
+            "name": "속전속결",
+            "url": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Ability/Ability_236.png"
+        },
+        {
+            "name": "전문의",
+            "url": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Ability/Ability_237.png"
+        },
+        {
+            "name": "정밀 단도",
+            "url": "https://cdn-lostark.game.onstove.com/EFUI_IconAtlas/Ability/Ability_239.png"
+        }
     ]
 }

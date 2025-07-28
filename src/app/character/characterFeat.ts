@@ -1310,3 +1310,23 @@ export function getCharacterType(arkpassive: any | null): string {
     }
     return 'attack';
 }
+
+// 각인 이미지 링크 가져오기
+export function getEngravingSrcByName(name: string): string {
+    const obj = data.engravings.find(item => item.name === name);
+    if (obj) {
+        return obj.url;
+    }
+    return '/character/classimgs/nothing.png';
+}
+
+// 각인서 레벨에 따른 보석 반복 메시지 반환
+export function printEngravingLevel(level: number): string {
+    switch(level) {
+        case 1: return '◆◇◇◇';
+        case 2: return '◆◆◇◇';
+        case 3: return '◆◆◆◇';
+        case 4: return '◆◆◆◆';
+    }
+    return '◇◇◇◇';
+}
