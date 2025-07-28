@@ -758,7 +758,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                     </div>
                                 </div>
                                 <div className="w-full md960:w-[330px] px-2">
-                                    <Tooltip showArrow content={
+                                    <Tooltip showArrow delay={1500} content={
                                         <div className="w-[200px] p-1">
                                             <div className="w-full flex gap-1 items-center">
                                                 <div className="w-[9px] h-[9px] rounded-full bg-green-500"/>

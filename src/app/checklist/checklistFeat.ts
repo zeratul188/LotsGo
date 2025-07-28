@@ -153,16 +153,16 @@ export async function loadChecklist(
         const sortedChecklist = character.checklist.sort((a, b) => {
             const aDifficulty = bosses.find(item => item.name === a.name)?.difficulty;
             const aObj = aDifficulty ? aDifficulty.find(item => item.difficulty === a.difficulty) : null;
-            const aGold = aObj ? aObj.gold : 0;
+            const aLevel = aObj ? aObj.level : 0;
             const bDifficulty = bosses.find(item => item.name === b.name)?.difficulty;
             const bObj = bDifficulty ? bDifficulty.find(item => item.difficulty === b.difficulty) : null;
-            const bGold = bObj ? bObj.gold : 0;
+            const bLevel = bObj ? bObj.level : 0;
             if (!a.isGold && b.isGold) {
                 return 1;
             } else if (a.isGold && !b.isGold) {
                 return -1;
             } else {
-                return bGold - aGold;  
+                return bLevel - aLevel;  
             }
         });
         character.checklist = sortedChecklist;
