@@ -22,7 +22,13 @@ import iCubes from '@/data/cubes/data.json';
 import { Boss } from "../api/checklist/boss/route";
 import { Cube } from "../api/checklist/cube/route";
 import FixedLineAd from "../ad/FixedLineAd";
-import { defaultSettings, Settings } from "../api/setting/route";
+import { Settings } from "../api/setting/route";
+
+
+export const defaultSettings: Settings = {
+    isHideDayContent: false
+}
+
 
 const BoxAd = dynamic(() => import('../ad/BoxAd'), { ssr: false });
 const LineAd = dynamic(() => import('../ad/LineAd'), { ssr: false });

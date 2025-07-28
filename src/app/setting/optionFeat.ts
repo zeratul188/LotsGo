@@ -1,7 +1,8 @@
 import { SetStateFn } from "@/utiils/utils";
-import { defaultSettings, Settings } from "../api/setting/route";
+import { Settings } from "../api/setting/route";
 import { LoginUser } from "../store/loginSlice";
 import { addToast } from "@heroui/react";
+import { defaultSettings } from "../checklist/ChecklistClient";
 
 export async function loadSettings(setSettings: SetStateFn<Settings | null>) {
     const settingLocal = localStorage.getItem('userSettings');
