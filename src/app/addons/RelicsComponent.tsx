@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from "react"
 import { ChartData, formatMonthData, getDiffPrice, getMaxGoldByBook, getMinGoldByBook, getUndoPrice, loadBooks, RelicBook } from "./relicsFeat";
 import { LoadingComponent } from "../UtilsCompnents";
 import Image from "next/image";
-import { Button, Card, CardBody, Chip, Divider, Modal, ModalBody, ModalContent, ModalHeader, Tab, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tabs, useDisclosure } from "@heroui/react";
+import { Button, Card, CardBody, Chip, Divider, Modal, ModalBody, ModalContent, ModalHeader, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, useDisclosure } from "@heroui/react";
 import clsx from "clsx";
-import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useMobileQuery } from "@/utiils/utils";
+import { getEngravingSrcByName } from "../character/characterFeat";
 
 type MonthChartProps = {
     selectedRelic: RelicBook | null
@@ -125,11 +126,11 @@ function ChartModal({ selectedRelic, isOpen, onOpenChange }: ChartModalProps) {
                         <ModalHeader>
                             <div className="flex gap-2 items-center">
                                 <Image 
-                                    src={selectedRelic.icon} 
-                                    width={14} 
-                                    height={14} 
+                                    src={getEngravingSrcByName(selectedRelic.name.replaceAll(' 각인서', ''))} 
+                                    width={32} 
+                                    height={32} 
                                     alt="relic book icon"
-                                    className="w-[20px] h-[20px]"/>
+                                    className="w-[32px] h-[32px] rounded-md"/>
                                 <p className="text-relics text-[12pt]">{selectedRelic.name}</p>
                             </div>
                         </ModalHeader>
@@ -213,11 +214,11 @@ export default function RelicsComponent() {
                                 <TableCell>
                                     <div className="flex gap-2 items-center">
                                         <Image 
-                                            src={relic.icon} 
-                                            width={14} 
-                                            height={14} 
+                                            src={getEngravingSrcByName(relic.name.replaceAll(' 각인서', ''))} 
+                                            width={32} 
+                                            height={32} 
                                             alt="relic book icon"
-                                            className="w-[20px] h-[20px]"/>
+                                            className="w-[28px] h-[28px] rounded-md"/>
                                         <p className="text-relics text-[12pt]">{relic.name}</p>
                                     </div>
                                 </TableCell>
