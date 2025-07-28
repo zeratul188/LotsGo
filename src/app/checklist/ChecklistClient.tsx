@@ -96,6 +96,7 @@ export default function ChecklistClient() {
                 const res = await fetch(`/api/setting?id=${id}`);
                 if (res.ok) {
                     const settings: Settings = await res.json();
+                    localStorage.setItem('userSettings', JSON.stringify(settings));
                     checklistForm.setHideDayContent(settings.isHideDayContent);
                 } else {
                     addToast({
