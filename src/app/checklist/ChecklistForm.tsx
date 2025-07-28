@@ -141,6 +141,7 @@ export function useChecklistForm() {
     const [isShowList, setShowList] = useState(false);
     const [isLogined, setLogined] = useState(false);
     const [biweekly, setBiweekly] = useState(0);
+    const [isHideDayContent, setHideDayContent] = useState(false);
 
     return {
         isLoading, setLoading,
@@ -155,7 +156,8 @@ export function useChecklistForm() {
         isShowCubeDetail, setShowCubeDetail,
         isLogined, setLogined,
         isShowList, setShowList,
-        biweekly, setBiweekly
+        biweekly, setBiweekly,
+        isHideDayContent, setHideDayContent
     }
 }
 
@@ -697,18 +699,29 @@ type ChecklistProps = {
     dispatch: AppDispatch,
     onOpen: () => void,
     setModalData: SetStateFn<ModalData>,
-    biweekly: number
+    biweekly: number,
+    isHideDayContent: boolean
 }
-export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch, onOpen, setModalData, biweekly }: ChecklistProps) {
+export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch, onOpen, setModalData, biweekly, isHideDayContent }: ChecklistProps) {
     const [inputOtherGold, setInputOtherGold] = useState(0);
+    const isMobile = useMobileQuery();
     return (
-        <div className="w-full min-[541px]:w-[max-content] mt-5 grid grid-cols-1 min-[1137px]:grid-cols-2 min-[1713px]:grid-cols-3 min-[2289px]:grid-cols-4 min-[2865px]:grid-cols-5 min-[3441px]:grid-cols-6 gap-4 mx-auto">
+        <div className={clsx(
+            "w-full min-[541px]:w-[max-content] mt-5 grid gap-4 mx-auto",
+            isHideDayContent ? "grid-cols-1 min-[709]:grid-cols-2 min-[1055px]:grid-cols-3 min-[1401px]:grid-cols-4 min-[1747px]:grid-cols-5 min-[2093px]:grid-cols-6 min-[2439px]:grid-cols-7 min-[2785px]:grid-cols-8 min-[3131px]:grid-cols-9 min-[3477px]:grid-cols-10" : "grid-cols-1 min-[1137px]:grid-cols-2 min-[1713px]:grid-cols-3 min-[2289px]:grid-cols-4 min-[2865px]:grid-cols-5 min-[3441px]:grid-cols-6"
+        )}>
             {checklist
                 .filter((character) => character.server === server || server === '전체')
                 .map((character, index) => (
-                    <Card key={index} fullWidth radius="sm" className="w-full min-[561px]:w-[560px]">
+                    <Card key={index} fullWidth radius="sm" className={clsx(
+                        "w-full",
+                        isHideDayContent ? isMobile ? "" : "min-[331px]:w-[330px]" : "min-[561px]:w-[560px]"
+                    )}>
                         <CardHeader>
-                            <div className="w-full flex flex-col md960:flex-row items-center gap-2">
+                            <div className={clsx(
+                                "w-full flex items-center gap-2",
+                                isHideDayContent ? "flex-col" : "flex-col md960:flex-row"
+                            )}>
                                 <div className="w-full grow flex gap-4 items-center">
                                     <div className="flex flex-col gap-2 items-center">
                                         <Avatar isBordered size="md" color={character.isGold ? 'warning' : 'default'} src={getImgByJob(character.job)}/>
@@ -723,7 +736,9 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         <div className="grow-1 w-full">
                                             <span className="fadedtext text-sm">@{character.server} · {character.job} · Lv.{character.level}</span>
                                             <div className="flex gap-2 items-center">
-                                                <span className="text-xl">{character.nickname}</span>
+                                                <span className={clsx(
+                                                    isHideDayContent ? isMobile ? "text-xl" : "text-lg" : "text-xl"
+                                                )}>{character.nickname}</span>
                                                 <div className="hidden md960:block">
                                                     <SettingButton 
                                                         size={16} 
@@ -742,8 +757,8 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         </div>
                                     </div>
                                 </div>
-                                <div className="w-full md960:w-[330px]">
-                                    <Tooltip showArrow content={
+                                <div className="w-full md960:w-[330px] px-2">
+                                    <Tooltip showArrow delay={1500} content={
                                         <div className="w-[200px] p-1">
                                             <div className="w-full flex gap-1 items-center">
                                                 <div className="w-[9px] h-[9px] rounded-full bg-green-500"/>
@@ -941,7 +956,10 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                         <Divider/>
                         <CardBody>
                             <div className="w-full flex flex-col md960:flex-row gap-2">
-                                <div className="grow">
+                                <div className={clsx(
+                                    "grow",
+                                    isHideDayContent ? 'hidden' : 'block'
+                                )}>
                                     <Chip 
                                         color="success" 
                                         size="sm" 
@@ -985,8 +1003,12 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                             onOpen();
                                         }}>추가</Button>
                                 </div>
-                                <Divider className="block md960:hidden"/>
-                                <Divider orientation="vertical" className="hidden md960:block"/>
+                                <Divider className={clsx(
+                                    isHideDayContent ? 'hidden' : "block md960:hidden"
+                                )}/>
+                                <Divider orientation="vertical" className={clsx(
+                                    isHideDayContent ? 'hidden' : "hidden md960:block"
+                                )}/>
                                 <div className="grow-2">
                                     <Chip 
                                         color="secondary" 
@@ -1000,7 +1022,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                 key={idx}
                                                 showArrow
                                                 placement="left"
-                                                delay={1000}
+                                                delay={1500}
                                                 content={
                                                     <div className="p-1 min-w-[160px]">
                                                         <p className={clsx(

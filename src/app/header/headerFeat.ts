@@ -22,6 +22,7 @@ export function useOnActionProfile() {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 localStorage.removeItem('isAdministrator');
+                localStorage.removeItem('userSettings');
                 Cookies.remove('userApiKey', {
                     path: '/',
                 });

@@ -8,12 +8,18 @@ import { checkLogin } from "../checklist/checklistFeat";
 import ChangePasswordComponent from "./ChangePasswordForm";
 import DeleteComponent from "./DeleteForm";
 import APIComponent from "./ApiForm";
+import OptionComponent from "./OptionForm";
 
 const tabs = [
     {
         key: 'expeditions',
         title: '내 원정대',
         component: <ExpeditionsComponent/>
+    },
+    {
+        key: 'setting',
+        title: '기능 설정',
+        component: <OptionComponent/>
     },
     {
         key: 'apikey',
