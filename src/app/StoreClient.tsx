@@ -34,6 +34,7 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
             if (res.status === 401) {
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
+                localStorage.removeItem('userSettings');
                 Cookies.remove('userApiKey', {
                     path: '/',
                 });

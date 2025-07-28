@@ -8,8 +8,8 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { CheckCharacter } from "../store/checklistSlice";
-import { Character } from "../store/loginSlice";
-import { addToast, Button, ButtonGroup } from "@heroui/react";
+import { Character, LoginUser } from "../store/loginSlice";
+import { addToast, Button, ButtonGroup, Checkbox } from "@heroui/react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
@@ -22,6 +22,13 @@ import iCubes from '@/data/cubes/data.json';
 import { Boss } from "../api/checklist/boss/route";
 import { Cube } from "../api/checklist/cube/route";
 import FixedLineAd from "../ad/FixedLineAd";
+import { Settings } from "../api/setting/route";
+
+
+export const defaultSettings: Settings = {
+    isHideDayContent: false
+}
+
 
 const BoxAd = dynamic(() => import('../ad/BoxAd'), { ssr: false });
 const LineAd = dynamic(() => import('../ad/LineAd'), { ssr: false });
@@ -74,6 +81,32 @@ export default function ChecklistClient() {
             });
             router.push('/');
         }
+        const loadSettings = async () => {
+            const settingLocal = localStorage.getItem('userSettings');
+            if (settingLocal) {
+                const localSetting: Settings = JSON.parse(settingLocal);
+                const settings: Settings = { ...defaultSettings, ...localSetting};
+                checklistForm.setHideDayContent(settings.isHideDayContent);
+                return;
+            }
+            const userStr = localStorage.getItem('user');
+            const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+            if (storedUser) {
+                const id = storedUser.id;
+                const res = await fetch(`/api/setting?id=${id}`);
+                if (res.ok) {
+                    const settings: Settings = await res.json();
+                    checklistForm.setHideDayContent(settings.isHideDayContent);
+                } else {
+                    addToast({
+                        title: "로드 오류",
+                        description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+                        color: "danger"
+                    });
+                }
+            }
+        }
+        loadSettings();
     }, []);
 
     if (!checklistForm.isLogined) {
@@ -160,7 +193,8 @@ export default function ChecklistClient() {
                         dispatch={dispatch}
                         onOpen={checklistForm.onOpen}
                         setModalData={checklistForm.setModalData}
-                        biweekly={checklistForm.biweekly}/>
+                        biweekly={checklistForm.biweekly}
+                        isHideDayContent={checklistForm.isHideDayContent}/>
                     <ChecklistModal
                         isOpen={checklistForm.isOpen}
                         modalData={checklistForm.modalData}
@@ -168,19 +202,19 @@ export default function ChecklistClient() {
                         checklist={checklist}
                         dispatch={dispatch}
                         bosses={checklistForm.bosses}/>
-                    <p className="fadedtext text-sm mt-8">수요일 6시에 초기화되지 않았나요?<br/>초기화되지 않았을 경우 한번 새로고침을 해보신 후 그래도 초기화가 되지 않았다면 아래 버튼을 눌러주세요.</p>
-                    <Button
-                        radius="sm"
-                        color="danger"
-                        size="sm"
-                        className="mt-2"
-                        isLoading={isLoadingReset}
-                        onPress={async () => await handleResetChecklist(checklist, checklistForm.biweekly, dispatch, setLoadingReset)}>
-                        수동 초기화
-                    </Button>
                 </div>
             )}
             <div className="w-full max-w-[1280px] mx-auto">
+                <p className="fadedtext text-sm mt-8">수요일 6시에 초기화되지 않았나요?<br/>초기화되지 않았을 경우 한번 새로고침을 해보신 후 그래도 초기화가 되지 않았다면 아래 버튼을 눌러주세요.</p>
+                <Button
+                    radius="sm"
+                    color="danger"
+                    size="sm"
+                    className="mt-2"
+                    isLoading={isLoadingReset}
+                    onPress={async () => await handleResetChecklist(checklist, checklistForm.biweekly, dispatch, setLoadingReset)}>
+                    수동 초기화
+                </Button>
                 {!checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
                     <div className="w-full flex justify-center px-4">
                         <div className="w-full max-w-[360px] min-h-[100px] mt-8">
@@ -189,8 +223,10 @@ export default function ChecklistClient() {
                     </div>
                 ) : (
                     <div className="w-full flex justify-center px-4 overflow-hidden mt-8">
-                        <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px] mt-8">
-                            <LineAd isLoaded={!checklistForm.isLoading}/>
+                        <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-8">
+                            <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px]">
+                                <LineAd isLoaded={!checklistForm.isLoading}/>
+                            </div>
                         </div>
                     </div>
                 ) : <></>}

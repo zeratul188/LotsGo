@@ -167,34 +167,31 @@ export function NavMenu() {
 export function NavBrand() {
     return (
         <>
-            <div className="block sm:hidden">
+            <a href="/" className="block sm:hidden">
                 <Image 
                     src="icon(L).png" 
                     width={40} 
-                    className="dark:hidden cursor-pointer"
-                    alt="타이틀 이미지 (라이트 버전)"
-                    onClick={() => location.href = '/'}/>
+                    className="dark:hidden"
+                    alt="타이틀 이미지 (라이트 버전)"/>
                 <Image 
                     src="icon(D).png" 
                     width={40} 
                     alt="타이틀 이미지 (어두운 버전)"
-                    className="hidden dark:block cursor-pointer"
-                    onClick={() => location.href = '/'}/>
-            </div>
-            <div className="hidden sm:block">
+                    className="hidden dark:block"/>
+            </a>
+            <a href="/" className="hidden sm:block">
                 <Image 
                     src="title(L).png" 
                     width={200} 
                     alt="타이틀 이미지 (라이트 버전)"
-                    className="dark:hidden cursor-pointer"
+                    className="dark:hidden"
                     onClick={() => location.href = '/'}/>
                 <Image 
                     src="title(D).png" 
                     width={200} 
                     alt="타이틀 이미지 (어두운 버전)"
-                    className="hidden dark:block cursor-pointer"
-                    onClick={() => location.href = '/'}/>
-            </div>
+                    className="hidden dark:block"/>
+            </a>
         </>
     )
 }
@@ -258,6 +255,7 @@ function ProfileButton() {
             <Button
                 as={Link}
                 radius="sm"
+                variant="shadow"
                 className="bg-gradient-to-tr from-blue-700 to-pink-500 text-white shadow-lg"
                 href="/login">
                 로그인
