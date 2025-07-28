@@ -6,6 +6,10 @@ export type Settings = {
     isHideDayContent: boolean
 }
 
+export const defaultSettings: Settings = {
+    isHideDayContent: false
+}
+
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");

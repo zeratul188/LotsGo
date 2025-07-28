@@ -1,9 +1,16 @@
 import { SetStateFn } from "@/utiils/utils";
-import { Settings } from "../api/setting/route";
+import { defaultSettings, Settings } from "../api/setting/route";
 import { LoginUser } from "../store/loginSlice";
 import { addToast } from "@heroui/react";
 
 export async function loadSettings(setSettings: SetStateFn<Settings | null>) {
+    const settingLocal = localStorage.getItem('userSettings');
+    if (settingLocal) {
+        const localSetting: Settings = JSON.parse(settingLocal);
+        const settings: Settings = { ...defaultSettings, ...localSetting};
+        setSettings(settings);
+        return;
+    }
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     if (storedUser) {
@@ -11,7 +18,6 @@ export async function loadSettings(setSettings: SetStateFn<Settings | null>) {
         const res = await fetch(`/api/setting?id=${id}`);
         if (res.ok) {
             const settings: Settings = await res.json();
-            console.log(settings);
             setSettings(settings);
         } else {
             addToast({
@@ -42,6 +48,7 @@ export async function handleHideDayContent(
             })
         });
         if (res.ok) {
+            localStorage.setItem('userSettings', JSON.stringify(cloneSettings));
             setSettings(cloneSettings);
         } else {
             addToast({
