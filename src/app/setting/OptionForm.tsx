@@ -25,7 +25,7 @@ export default function OptionComponent() {
             <div className="flex gap-2 items-center py-2">
                 <div className="grow">
                     <h3 className="text-xl">일일 콘텐츠 숨기기</h3>
-                    <p className="fadedtext">캐릭터마다 일일 콘텐츠를 숨기며, 가로로 표현하는 캐릭터 수를 증가시킵니다.</p>
+                    <p className="fadedtext text-sm">캐릭터마다 일일 콘텐츠를 숨기며, 가로로 표현하는 캐릭터 수를 증가시킵니다.</p>
                 </div>
                 <Switch
                     size="lg"
