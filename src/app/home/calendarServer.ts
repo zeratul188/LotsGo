@@ -25,7 +25,7 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
             gate: data.gate,
             boss: data.boss,
             islands: data.islands,
-            islandTime: data.islandTime ? dayjs.tz(data.islandTime, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul') : null,
+            islandTime: data.islandTime ? dayjs(data.islandTime) : null,
             islandDatas: data.islandDatas.map((island: any) => ({
             ...island,
             dates: island.dates.map((dateStr: string) => dayjs.tz(dateStr, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul').format()),
