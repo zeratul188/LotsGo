@@ -141,6 +141,8 @@ type IslandComponentProps = {
 }
 function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentProps) {
     const now = dayjs().tz('Asia/Seoul');
+    console.log(islandTime);
+    console.log(islandTime !== null ? islandTime?.valueOf() - now.valueOf() : 0);
     const [timeLeft, setTimeLeft] = useState(() => islandTime !== null ? islandTime?.valueOf() - now.valueOf() : 0);
     const weeks: Dayjs[] = initialWeek();
 
