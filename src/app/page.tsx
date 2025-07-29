@@ -1,7 +1,7 @@
 import { decrypt } from "@/utiils/crypto";
-import { loadCalendar, loadEvents, loadNotices } from "./home/calendarFeat";
 import HomeClient from "./HomeClient";
 import { cookies } from 'next/headers';
+import { loadCalendar, loadEvents, loadNotices } from "./home/calendarServer";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
