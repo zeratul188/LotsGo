@@ -1014,10 +1014,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                         <Divider/>
                         <CardFooter className="pt-0 pb-0">
                             <div className="w-full">
-                                <div className={clsx(
-                                    "mt-3 mb-2 flex gap-2 items-end",
-                                    isHideDayContent ? 'flex-col' : 'flex-col sm:flex-row'
-                                )}>
+                                <div className="mt-3 mb-2 flex gap-2 items-end">
                                     <NumberInput
                                         fullWidth
                                         label="부수입 설정"
@@ -1029,35 +1026,26 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         onValueChange={(value: number) => {
                                             setInputOtherGold(prev => ({...prev, [character.nickname]: value}));
                                         }}/>
-                                    <div className={clsx(
-                                        "flex gap-2",
-                                        isHideDayContent ? 'w-full' : 'w-full sm:w-[max-content]'
-                                    )}>
-                                        <Button
-                                            variant="flat"
-                                            color="primary"
-                                            size="sm"
-                                            className="grow"
-                                            onPress={async () => {
-                                                await handleCalculateOtherGold(checklist, getIndexByNickname(checklist, character.nickname), 'apply', inputOtherGold[character.nickname] ?? 0, dispatch);
-                                            }}>덮어쓰기</Button>
+                                    <Tooltip showArrow content="부수입 빼기">
                                         <Button
                                             variant="flat"
                                             color="danger"
                                             size="sm"
-                                            className="grow"
+                                            className="w-8 h-8 min-w-8 min-h-0 p-0 text-sm"
                                             onPress={async () => {
                                                 await handleCalculateOtherGold(checklist, getIndexByNickname(checklist, character.nickname), 'minus', inputOtherGold[character.nickname] ?? 0, dispatch);
-                                            }}>빼기</Button>
+                                            }}>-</Button>
+                                    </Tooltip>
+                                    <Tooltip showArrow content="부수입 더하기">
                                         <Button
                                             variant="flat"
                                             color="success"
                                             size="sm"
-                                            className="grow"
+                                            className="w-8 h-8 min-w-8 min-h-0 p-0 text-sm"
                                             onPress={async () => {
                                                 await handleCalculateOtherGold(checklist, getIndexByNickname(checklist, character.nickname), 'add', inputOtherGold[character.nickname] ?? 0, dispatch);
-                                            }}>더하기</Button>
-                                    </div>
+                                            }}>+</Button>
+                                    </Tooltip>
                                 </div>
                                 <Divider/>
                                 <Accordion>
