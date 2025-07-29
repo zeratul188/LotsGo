@@ -1,4 +1,10 @@
 import Image from "next/image";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: '사이트 소개 · 로츠고 가이드',
+    description: '로츠고 사이트에 대해서 알아보세요. 로츠고 사이트의 주요 기능과 내용을 확인하세요.',
+};
 
 export default function About() {
     return (

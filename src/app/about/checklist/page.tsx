@@ -1,4 +1,11 @@
 import Image from "next/image";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: '숙제 · 로츠고 가이드',
+    description: '로츠고 사이트에서 숙제 기능을 어떻게 이용하는 방법에 대해서 알려드립니다.',
+};
+
 
 export default function Checklist() {
     return (

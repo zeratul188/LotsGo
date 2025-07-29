@@ -1,3 +1,4 @@
+'use client'
 import { 
     addToast,
     Button,
@@ -12,7 +13,7 @@ import { useEffect, useState } from "react"
 import Image from "next/image";
 import { CalData, formatGold, getBreakpointGold, loadData, useClickPersons, useClickResetDatas, useClickSaveData } from "./calcFeat";
 
-export default function CalcComponent() {
+export default function CalcClient() {
     const [gold, setGold] = useState(0);
     const [inputPerson, setInputPerson] = useState(10);
     const [person, setPerson] = useState(4);

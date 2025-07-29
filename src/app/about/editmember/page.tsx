@@ -1,4 +1,10 @@
 import Image from "next/image";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: '정보 변경 및 탈퇴 · 로츠고 가이드',
+    description: '로츠고를 이용하지 않아 회원 탈퇴 또는 비밀번호를 변경해야 하는 방법에 대해서 알려드립니다.',
+};
 
 export default function EditMember() {
     return (
@@ -14,4 +20,4 @@ export default function EditMember() {
             <p>한번 탈퇴한 계정은 다시 복구가 불가능합니다. 그리고 탈퇴한 이메일과 아이디로 다시 계정을 생성이 가능합니다.</p>
         </div>
     )
-}
+} 
