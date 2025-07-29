@@ -310,7 +310,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                 radius="sm"
                 className="md960:w-[calc(100vw-40px)] lg1280:w-[1240px] md960:fixed md960:top-[80px] md960:left-1/2 md960:-translate-x-1/2 md960:z-50">
                 <CardBody>
-                    <div className="w-full grid grid-cols-1 md960:grid-cols-[4fr_1px_3fr_1px_4fr] gap-2">
+                    <div className="w-full grid grid-cols-1 md960:grid-cols-[4fr_1px_3fr_1px_3fr] gap-2">
                         <div className="w-full flex flex-col sm:flex-row items-center gap-2">
                              <Progress 
                                 aria-label="all-gold"
@@ -1030,7 +1030,7 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                             setInputOtherGold(prev => ({...prev, [character.nickname]: value}));
                                         }}/>
                                     <div className={clsx(
-                                        "w-full flex gap-2",
+                                        "flex gap-2",
                                         isHideDayContent ? 'w-full' : 'w-full sm:w-[max-content]'
                                     )}>
                                         <Button
