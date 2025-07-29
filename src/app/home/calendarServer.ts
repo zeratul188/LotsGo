@@ -22,20 +22,93 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
     if (cached) {
         const data = JSON.parse(cached);
         const result: CalendarData = {
-            gate: data.gate,
-            boss: data.boss,
-            islands: data.islands,
-            islandTime: data.islandTime ? dayjs(data.islandTime) : null,
-            islandDatas: data.islandDatas.map((island: any) => ({
-            ...island,
-            dates: island.dates.map((dateStr: string) => dayjs.tz(dateStr, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul').format()),
-            rewards: island.rewards.map((reward: any) => ({
-                ...reward,
-                times: reward.times.map((timeStr: string) => dayjs.tz(timeStr, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul').format()),
-            }))
-            })),
-            isInspection: data.isInspection,
+            gate: null,
+            boss: null,
+            islands: [],
+            islandTime: null,
+            islandDatas: data.islandDatas,
+            isInspection: false
         }
+        const islandData = data.islandData;
+        if (islandData) {
+            const todayIslands = islandData.filter(filterTodayIslands);
+            const today = dayjs().tz('Asia/Seoul');
+            const islands: Island[] = [];
+            if (todayIslands.length !== 0) {
+                let minTimes = dayjs().tz('Asia/Seoul').year(9999);
+                for (const island of todayIslands) {
+                    for (const time of island.StartTimes) {
+                        const islandDate = dayjs.tz(time, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul');
+                        if (islandDate.isBefore(minTimes) && isToday(today, islandDate)) {
+                            minTimes = islandDate;
+                        }
+                    }
+                }
+                for (const island of todayIslands) {
+                    let isPassed = false;
+                    for (const time of island.StartTimes) {
+                        const islandDate = dayjs.tz(time, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul')  // time은 "2025-07-17T11:00:00" (KST로 해석됨)
+                        if (isSameDate(minTimes, islandDate)) {
+                            isPassed = true;
+                        }
+                    }
+                    if (isPassed) {
+                        const newIsland: Island = {
+                            name: island.ContentsName,
+                            icon: island.ContentsIcon,
+                            items: getRewardItems(island.RewardItems)
+                        }
+                        islands.push(newIsland);
+                    }
+                }
+                result.islandTime = minTimes;
+                result.islands = islands;
+            }
+        }
+        const bossData = data.bossData;
+        const bossContentData: ContentData | null = {
+            date: null,
+            imgSrc: ''
+        }
+        if (bossData) {
+            const imgSrc = bossData.ContentsIcon;
+            const nowDate = dayjs().tz('Asia/Seoul');
+            let saveDate: Dayjs | null = null;
+            for (const item of bossData.StartTimes) {
+                const itemDate = dayjs.tz(item, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul')  // time은 "2025-07-17T11:00:00" (KST로 해석됨)
+                const diffMs = Math.abs(itemDate.valueOf() - nowDate.valueOf());
+                const isOver3Hours = diffMs >= 3 * 60 * 60 * 1000;
+                if (nowDate.valueOf() < itemDate.valueOf() && !isOver3Hours) {
+                    saveDate = itemDate;
+                    break;
+                }
+            }
+            bossContentData.date = saveDate ? saveDate.format() : null;
+            bossContentData.imgSrc = imgSrc;
+        }
+        result.boss = bossContentData;
+        const gateData = data.gateData;
+        const gateContentData: ContentData | null = {
+            date: null,
+            imgSrc: ''
+        }
+        if (gateData) {
+            const imgSrc = gateData.ContentsIcon;
+            const nowDate = dayjs().tz('Asia/Seoul');
+            let saveDate: Dayjs | null = null;
+            for (const item of gateData.StartTimes) {
+                const itemDate = dayjs.tz(item, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul').add(10, 'minute')
+                const diffMs = Math.abs(itemDate.valueOf() - nowDate.valueOf());
+                const isOver3Hours = diffMs >= 3 * 60 * 60 * 1000;
+                if (nowDate.valueOf() < itemDate.valueOf() && !isOver3Hours) {
+                    saveDate = itemDate;
+                    break;
+                }
+            }
+            gateContentData.date = saveDate ? saveDate.format() : null;
+            gateContentData.imgSrc = imgSrc;
+        }
+        result.gate = gateContentData;
         return result;
     }
 
@@ -146,8 +219,10 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
 
         const TTL_TIME = 24 * 60 * 60; // 24시간 유효시간
         const newData = {
-            ...calendarData,
-            islandTime: calendarData.islandTime ? calendarData.islandTime.format() : null
+            islandDatas: calendarData.islandDatas,
+            islandData: islandsData,
+            bossData: bossData,
+            gateData: gateData
         }
         await redis.set('calendar', JSON.stringify(newData), "EX", TTL_TIME);
     } else {
