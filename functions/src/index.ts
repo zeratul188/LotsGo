@@ -2,6 +2,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import axios from 'axios';
 import { onRequest } from "firebase-functions/v2/https";
+import Redis from 'ioredis';
 
 admin.initializeApp();
 const firestore = admin.firestore();
@@ -276,6 +277,42 @@ export const resetDayChecklist = functions.https.onRequest(async (req, res) => {
     res.status(500).send('Reset failed');
   }
 });
+
+// 수요일 10시 10분에 캐시 데이터를 자동 삭제하는 기능 추가
+export const removeCacheCalendarData = onRequest({
+  secrets: ['REDIS_URL']
+}, async (req, res) => {
+  const redisUrl = process.env.REDIS_URL;
+
+  try {
+    if (!redisUrl) {
+      console.error('REDIS_URL is undefined');
+      res.status(500).send('Secrets failed');
+    } else {
+      const redis = new Redis(redisUrl!, {
+        lazyConnect: true,
+        maxRetriesPerRequest: 1,
+        connectTimeout: 5000,
+        tls: {}
+      });
+
+      redis.on('error', (err) => {
+        console.error('[Redis 오류 발생]', err);
+        res.status(500).send('Redis failed');
+      });
+
+      await redis.connect();
+      await redis.del('calendar');
+      await redis.del('events');
+      await redis.del('notices');
+      await redis.quit();
+      res.status(200).send('Caches reset complete');
+    }
+  } catch (error) {
+    console.error('Reset failed:', error);
+    res.status(500).send('Reset failed');
+  }
+})
 
 // firebase functions:secrets:set LOSTARK_API_KEY
 // firebase deploy --only functions:updateRelicsBook
