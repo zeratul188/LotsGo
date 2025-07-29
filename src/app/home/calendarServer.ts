@@ -25,13 +25,13 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
             gate: data.gate,
             boss: data.boss,
             islands: data.islands,
-            islandTime: data.islandTime ? dayjs.tz(data.islandTime, 'Asia/Seoul') : null,
+            islandTime: data.islandTime ? dayjs.tz(data.islandTime, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul') : null,
             islandDatas: data.islandDatas.map((island: any) => ({
             ...island,
-            dates: island.dates.map((dateStr: string) => dayjs.tz(dateStr, 'Asia/Seoul').format()),
+            dates: island.dates.map((dateStr: string) => dayjs.tz(dateStr, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul').format()),
             rewards: island.rewards.map((reward: any) => ({
                 ...reward,
-                times: reward.times.map((timeStr: string) => dayjs.tz(timeStr, 'Asia/Seoul').format()),
+                times: reward.times.map((timeStr: string) => dayjs.tz(timeStr, 'YYYY-MM-DDTHH:mm:ss', 'Asia/Seoul').format()),
             }))
             })),
             isInspection: data.isInspection,
@@ -145,7 +145,11 @@ export async function loadCalendar(apikey: string | undefined): Promise<Calendar
         calendarData.gate = gateContentData;
 
         const TTL_TIME = 24 * 60 * 60; // 24시간 유효시간
-        await redis.set('calendar', JSON.stringify(calendarData), "EX", TTL_TIME);
+        const newData = {
+            ...calendarData,
+            islandTime: calendarData.islandTime ? calendarData.islandTime.format() : null
+        }
+        await redis.set('calendar', JSON.stringify(newData), "EX", TTL_TIME);
     } else {
         if (gamecontentLostarkRes.status === 500) {
             calendarData.isInspection = true;
