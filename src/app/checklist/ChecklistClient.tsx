@@ -9,7 +9,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { CheckCharacter } from "../store/checklistSlice";
 import { Character, LoginUser } from "../store/loginSlice";
-import { addToast, Button, ButtonGroup, Checkbox } from "@heroui/react";
+import { addToast, Button, ButtonGroup } from "@heroui/react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
@@ -96,6 +96,7 @@ export default function ChecklistClient() {
                 const res = await fetch(`/api/setting?id=${id}`);
                 if (res.ok) {
                     const settings: Settings = await res.json();
+                    localStorage.setItem('userSettings', JSON.stringify(settings));
                     checklistForm.setHideDayContent(settings.isHideDayContent);
                 } else {
                     addToast({

@@ -310,7 +310,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                 radius="sm"
                 className="md960:w-[calc(100vw-40px)] lg1280:w-[1240px] md960:fixed md960:top-[80px] md960:left-1/2 md960:-translate-x-1/2 md960:z-50">
                 <CardBody>
-                    <div className="w-full grid grid-cols-1 md960:grid-cols-[4fr_1px_3fr_1px_4fr] gap-2">
+                    <div className="w-full grid grid-cols-1 md960:grid-cols-[4fr_1px_3fr_1px_3fr] gap-2">
                         <div className="w-full flex flex-col sm:flex-row items-center gap-2">
                              <Progress 
                                 aria-label="all-gold"
@@ -703,7 +703,7 @@ type ChecklistProps = {
     isHideDayContent: boolean
 }
 export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch, onOpen, setModalData, biweekly, isHideDayContent }: ChecklistProps) {
-    const [inputOtherGold, setInputOtherGold] = useState(0);
+    const [inputOtherGold, setInputOtherGold] = useState<{ [nickname: string]: number }>({});
     const isMobile = useMobileQuery();
     return (
         <div className={clsx(
@@ -757,195 +757,79 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                         </div>
                                     </div>
                                 </div>
-                                <div className="w-full md960:w-[330px] px-2">
-                                    <Tooltip showArrow delay={1500} content={
-                                        <div className="w-[200px] p-1">
-                                            <div className="w-full flex gap-1 items-center">
-                                                <div className="w-[9px] h-[9px] rounded-full bg-green-500"/>
-                                                <p className="grow">콘텐츠</p>
-                                                <div className="flex items-center">
-                                                    <Image 
-                                                        src="/icons/gold.png" 
-                                                        width={14} 
-                                                        height={14} 
-                                                        alt="goldicon"
-                                                        className="w-[16px] h-[16px]"/>
-                                                    <span className="ml-1 text-md">{getCompleteSharedGoldCharacter(bosses, character).toLocaleString()}</span>
-                                                </div>
-                                            </div>
-                                            <div className="w-full flex gap-1 items-center mt-1">
-                                                <div className="w-[9px] h-[9px] rounded-full bg-yellow-500"/>
-                                                <p className="grow">귀속 골드</p>
-                                                <div className="flex items-center">
-                                                    <Image 
-                                                        src="/icons/gold.png" 
-                                                        width={14} 
-                                                        height={14} 
-                                                        alt="goldicon"
-                                                        className="w-[16px] h-[16px]"/>
-                                                    <span className="ml-1 text-md">{getCompleteBoundGoldCharacter(bosses, character).toLocaleString()}</span>
-                                                </div>
-                                            </div>
-                                            <div className="w-full flex gap-1 items-center mt-1">
-                                                <div className="w-[9px] h-[9px] rounded-full bg-purple-600"/>
-                                                <p className="grow">부수입</p>
-                                                <div className="flex items-center">
-                                                    <Image 
-                                                        src="/icons/gold.png" 
-                                                        width={14} 
-                                                        height={14} 
-                                                        alt="goldicon"
-                                                        className="w-[16px] h-[16px]"/>
-                                                    <span className="ml-1 text-md">{character.otherGold.toLocaleString()}</span>
-                                                </div>
-                                            </div>
-                                            <div className="w-full h-2 bg-gray-200 rounded-full relative overflow-hidden mt-2">
-                                                <div className="absolute top-0 left-0 h-full bg-[#dddddd] dark:bg-[#444444]" style={{ width: '100%' }}></div>
-                                                <div className="absolute top-0 left-0 h-full bg-purple-600" style={{ width: `${getAllGoldCharacter(bosses, character)+character.otherGold !== 0 ? Math.round(getCompleteSharedGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 + Math.round(getCompleteBoundGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 + Math.round(character.otherGold / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 : 0}%` }}></div>
-                                                <div className="absolute top-0 left-0 h-full bg-yellow-500" style={{ width: `${getAllGoldCharacter(bosses, character)+character.otherGold !== 0 ? Math.round(getCompleteSharedGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 + Math.round(getCompleteBoundGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 : 0}%` }}></div>
-                                                <div className="absolute top-0 left-0 h-full bg-green-500" style={{ width: `${getAllGoldCharacter(bosses, character)+character.otherGold !== 0 ? Math.round(getCompleteSharedGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 : 0}%` }}></div>
-                                            </div>
-                                        </div>
-                                    }>
-                                        <Progress 
-                                            aria-label="all-gold"
-                                            size="sm"
-                                            color="warning"
-                                            label={(
-                                                <div className="flex items-center">
-                                                    <Image 
-                                                        src="/icons/gold.png" 
-                                                        width={14} 
-                                                        height={14} 
-                                                        alt="goldicon"
-                                                        className="w-[16px] h-[16px]"/>
-                                                    <span className="ml-1 text-md">{(getCompleteGoldCharacter(bosses, character)+character.otherGold).toLocaleString()} / {(getAllGoldCharacter(bosses, character)+character.otherGold).toLocaleString()}</span>
-                                                </div>
-                                            )}
-                                            showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
-                                            radius="sm"
-                                            value={getCompleteGoldCharacter(bosses, character)+character.otherGold}
-                                            maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
-                                            className="w-full"/>
-                                    </Tooltip>
-                                    <Popover 
-                                        showArrow
-                                        disableAnimation
-                                        onClose={() => {
-                                            setInputOtherGold(0);
-                                        }}>
+                                <div className={clsx(
+                                    "w-full h-full md960:w-[330px] flex items-start",
+                                    isHideDayContent ? 'px-4' : ''
+                                )}>
+                                    <Popover showArrow disableAnimation radius="sm">
                                         <PopoverTrigger>
-                                            <Button
-                                                fullWidth
+                                            <Progress 
+                                                aria-label="all-gold"
                                                 size="sm"
-                                                variant="flat"
-                                                radius="sm"
                                                 color="warning"
-                                                className="mt-2">
-                                                부수입 설정 및 골드량
-                                            </Button>
+                                                label={(
+                                                    <div className="flex items-center">
+                                                        <Image 
+                                                            src="/icons/gold.png" 
+                                                            width={14} 
+                                                            height={14} 
+                                                            alt="goldicon"
+                                                            className="w-[16px] h-[16px]"/>
+                                                        <span className="ml-1 text-md">{(getCompleteGoldCharacter(bosses, character)+character.otherGold).toLocaleString()} / {(getAllGoldCharacter(bosses, character)+character.otherGold).toLocaleString()}</span>
+                                                    </div>
+                                                )}
+                                                showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
+                                                radius="sm"
+                                                value={getCompleteGoldCharacter(bosses, character)+character.otherGold}
+                                                maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
+                                                className="w-full cursor-pointer"/>
                                         </PopoverTrigger>
                                         <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
-                                            <div className="w-full sm300:w-[300px] pt-2">
-                                                <span className="text-sm fadedtext">콘텐츠 골드 획득량</span>
-                                                <Progress 
-                                                    aria-label="all-gold"
-                                                    size="sm"
-                                                    color="primary"
-                                                    label={(
-                                                        <div className="flex items-center">
-                                                            <Image 
-                                                                src="/icons/gold.png" 
-                                                                width={14} 
-                                                                height={14} 
-                                                                alt="goldicon"
-                                                                className="w-[16px] h-[16px]"/>
-                                                            <span className="ml-1 text-md">{getCompleteSharedGoldCharacter(bosses, character).toLocaleString()} / {(getAllGoldCharacter(bosses, character)+character.otherGold).toLocaleString()}</span>
-                                                        </div>
-                                                    )}
-                                                    showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
-                                                    radius="sm"
-                                                    value={getCompleteSharedGoldCharacter(bosses, character)}
-                                                    maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
-                                                    className="w-full mb-2"/>
-                                                <span className="text-sm fadedtext">귀속 골드 획득량</span>
-                                                <Progress 
-                                                    aria-label="all-gold"
-                                                    size="sm"
-                                                    color="warning"
-                                                    label={(
-                                                        <div className="flex items-center">
-                                                            <Image 
-                                                                src="/icons/gold.png" 
-                                                                width={14} 
-                                                                height={14} 
-                                                                alt="goldicon"
-                                                                className="w-[16px] h-[16px]"/>
-                                                            <span className="ml-1 text-md">{getCompleteBoundGoldCharacter(bosses, character).toLocaleString()} / {(getAllGoldCharacter(bosses, character)+character.otherGold).toLocaleString()}</span>
-                                                        </div>
-                                                    )}
-                                                    showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
-                                                    radius="sm"
-                                                    value={getCompleteBoundGoldCharacter(bosses, character)}
-                                                    maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
-                                                    className="w-full mb-2"/>
-                                                <span className="text-sm fadedtext">부수입</span>
-                                                <Progress 
-                                                    aria-label="all-gold"
-                                                    size="sm"
-                                                    color="secondary"
-                                                    label={(
-                                                        <div className="flex items-center">
-                                                            <Image 
-                                                                src="/icons/gold.png" 
-                                                                width={14} 
-                                                                height={14} 
-                                                                alt="goldicon"
-                                                                className="w-[16px] h-[16px]"/>
-                                                            <span className="ml-1 text-md">{character.otherGold.toLocaleString()} / {(getAllGoldCharacter(bosses, character)+character.otherGold).toLocaleString()}</span>
-                                                        </div>
-                                                    )}
-                                                    showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
-                                                    radius="sm"
-                                                    value={character.otherGold}
-                                                    maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
-                                                    className="w-full mb-4"/>
-                                                <Divider className="mb-8"/>
-                                                <NumberInput
-                                                    fullWidth
-                                                    label={`부수입 : ${character.otherGold} 골드`}
-                                                    labelPlacement="outside"
-                                                    placeholder="0 ~ 999999999"
-                                                    maxValue={999999999}
-                                                    value={inputOtherGold}
-                                                    size="sm"
-                                                    onValueChange={setInputOtherGold}
-                                                    className="mb-4"/>
-                                                <div className="flex gap-2 mt-2 mb-2">
-                                                    <Button
-                                                        variant="flat"
-                                                        color="primary"
-                                                        size="sm"
-                                                        className="grow"
-                                                        onPress={async () => {
-                                                            await handleCalculateOtherGold(checklist, getIndexByNickname(checklist, character.nickname), 'apply', inputOtherGold, dispatch);
-                                                        }}>적용</Button>
-                                                    <Button
-                                                        variant="flat"
-                                                        color="danger"
-                                                        size="sm"
-                                                        className="grow"
-                                                        onPress={async () => {
-                                                            await handleCalculateOtherGold(checklist, getIndexByNickname(checklist, character.nickname), 'minus', inputOtherGold, dispatch);
-                                                        }}>빼기</Button>
-                                                    <Button
-                                                        variant="flat"
-                                                        color="success"
-                                                        size="sm"
-                                                        className="grow"
-                                                        onPress={async () => {
-                                                            await handleCalculateOtherGold(checklist, getIndexByNickname(checklist, character.nickname), 'add', inputOtherGold, dispatch);
-                                                        }}>더하기</Button>
+                                            <div className="w-[230px] p-1">
+                                                <div className="w-full flex gap-1 items-center">
+                                                    <div className="w-[9px] h-[9px] rounded-full bg-green-500"/>
+                                                    <p className="grow">콘텐츠</p>
+                                                    <div className="flex items-center">
+                                                        <Image 
+                                                            src="/icons/gold.png" 
+                                                            width={14} 
+                                                            height={14} 
+                                                            alt="goldicon"
+                                                            className="w-[16px] h-[16px]"/>
+                                                        <span className="ml-1 text-md">{getCompleteSharedGoldCharacter(bosses, character).toLocaleString()}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="w-full flex gap-1 items-center mt-1">
+                                                    <div className="w-[9px] h-[9px] rounded-full bg-yellow-500"/>
+                                                    <p className="grow">귀속 골드</p>
+                                                    <div className="flex items-center">
+                                                        <Image 
+                                                            src="/icons/gold.png" 
+                                                            width={14} 
+                                                            height={14} 
+                                                            alt="goldicon"
+                                                            className="w-[16px] h-[16px]"/>
+                                                        <span className="ml-1 text-md">{getCompleteBoundGoldCharacter(bosses, character).toLocaleString()}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="w-full flex gap-1 items-center mt-1">
+                                                    <div className="w-[9px] h-[9px] rounded-full bg-purple-600"/>
+                                                    <p className="grow">부수입</p>
+                                                    <div className="flex items-center">
+                                                        <Image 
+                                                            src="/icons/gold.png" 
+                                                            width={14} 
+                                                            height={14} 
+                                                            alt="goldicon"
+                                                            className="w-[16px] h-[16px]"/>
+                                                        <span className="ml-1 text-md">{character.otherGold.toLocaleString()}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="w-full h-2 bg-gray-200 rounded-full relative overflow-hidden mt-2">
+                                                    <div className="absolute top-0 left-0 h-full bg-[#dddddd] dark:bg-[#444444]" style={{ width: '100%' }}></div>
+                                                    <div className="absolute top-0 left-0 h-full bg-purple-600" style={{ width: `${getAllGoldCharacter(bosses, character)+character.otherGold !== 0 ? Math.round(getCompleteSharedGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 + Math.round(getCompleteBoundGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 + Math.round(character.otherGold / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 : 0}%` }}></div>
+                                                    <div className="absolute top-0 left-0 h-full bg-yellow-500" style={{ width: `${getAllGoldCharacter(bosses, character)+character.otherGold !== 0 ? Math.round(getCompleteSharedGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 + Math.round(getCompleteBoundGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 : 0}%` }}></div>
+                                                    <div className="absolute top-0 left-0 h-full bg-green-500" style={{ width: `${getAllGoldCharacter(bosses, character)+character.otherGold !== 0 ? Math.round(getCompleteSharedGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 : 0}%` }}></div>
                                                 </div>
                                             </div>
                                         </PopoverContent>
@@ -1129,28 +1013,76 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                         </CardBody>
                         <Divider/>
                         <CardFooter className="pt-0 pb-0">
-                            <Accordion>
-                                <AccordionItem key="0" title={<span className="flex gap-2 items-center cursor-pointer">
-                                    <Image 
-                                        src="/icons/cube.png" 
-                                        width={18} 
-                                        height={18} 
-                                        alt="cubeicon"
-                                        className="w-[18px] h-[18px]"/>
-                                    <span>큐브 - 총합 {getAllCubeCount(character)}장</span>
-                                </span>}>
-                                <div>
-                                    <Tabs fullWidth aria-label="cube-tabs">
-                                        <Tab key="setting" title="개수">
-                                            <CubeCountComponent checklist={checklist} character={character} cubes={cubes} dispatch={dispatch}/>
-                                        </Tab>
-                                        <Tab key="statue" title="보상">
-                                            <CubeStatueComponent character={character} cubes={cubes}/>
-                                        </Tab>
-                                    </Tabs>
+                            <div className="w-full">
+                                <div className={clsx(
+                                    "mt-3 mb-2 flex gap-2 items-end",
+                                    isHideDayContent ? 'flex-col' : 'flex-col sm:flex-row'
+                                )}>
+                                    <NumberInput
+                                        fullWidth
+                                        label="부수입 설정"
+                                        labelPlacement="outside"
+                                        placeholder="0 ~ 999999999"
+                                        maxValue={999999999}
+                                        size="sm"
+                                        value={inputOtherGold[character.nickname] ?? 0}
+                                        onValueChange={(value: number) => {
+                                            setInputOtherGold(prev => ({...prev, [character.nickname]: value}));
+                                        }}/>
+                                    <div className={clsx(
+                                        "flex gap-2",
+                                        isHideDayContent ? 'w-full' : 'w-full sm:w-[max-content]'
+                                    )}>
+                                        <Button
+                                            variant="flat"
+                                            color="primary"
+                                            size="sm"
+                                            className="grow"
+                                            onPress={async () => {
+                                                await handleCalculateOtherGold(checklist, getIndexByNickname(checklist, character.nickname), 'apply', inputOtherGold[character.nickname] ?? 0, dispatch);
+                                            }}>덮어쓰기</Button>
+                                        <Button
+                                            variant="flat"
+                                            color="danger"
+                                            size="sm"
+                                            className="grow"
+                                            onPress={async () => {
+                                                await handleCalculateOtherGold(checklist, getIndexByNickname(checklist, character.nickname), 'minus', inputOtherGold[character.nickname] ?? 0, dispatch);
+                                            }}>빼기</Button>
+                                        <Button
+                                            variant="flat"
+                                            color="success"
+                                            size="sm"
+                                            className="grow"
+                                            onPress={async () => {
+                                                await handleCalculateOtherGold(checklist, getIndexByNickname(checklist, character.nickname), 'add', inputOtherGold[character.nickname] ?? 0, dispatch);
+                                            }}>더하기</Button>
+                                    </div>
                                 </div>
-                                </AccordionItem>
-                            </Accordion>
+                                <Divider/>
+                                <Accordion>
+                                    <AccordionItem key="0" title={<span className="flex gap-2 items-center cursor-pointer">
+                                        <Image 
+                                            src="/icons/cube.png" 
+                                            width={18} 
+                                            height={18} 
+                                            alt="cubeicon"
+                                            className="w-[18px] h-[18px]"/>
+                                        <span>큐브 - 총합 {getAllCubeCount(character)}장</span>
+                                    </span>}>
+                                    <div>
+                                        <Tabs fullWidth aria-label="cube-tabs">
+                                            <Tab key="setting" title="개수">
+                                                <CubeCountComponent checklist={checklist} character={character} cubes={cubes} dispatch={dispatch}/>
+                                            </Tab>
+                                            <Tab key="statue" title="보상">
+                                                <CubeStatueComponent character={character} cubes={cubes}/>
+                                            </Tab>
+                                        </Tabs>
+                                    </div>
+                                    </AccordionItem>
+                                </Accordion>
+                            </div>
                         </CardFooter>
                     </Card>
                 ))}
@@ -1818,17 +1750,19 @@ function CubeCountComponent({ checklist, character, cubes, dispatch }: CubeCount
                                     variant="flat"
                                     color="danger"
                                     isDisabled={getCountCube(character.cubelist, cube.id) <= 0}
+                                    className="w-8 h-8 min-w-0 min-h-0 p-0 text-sm"
                                     onPress={async () => {
                                         await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, false);
-                                    }}>감소</Button>
+                                    }}>-</Button>
                                 <Button
                                     size="sm"
                                     variant="flat"
                                     color="success"
                                     isDisabled={getCountCube(character.cubelist, cube.id) >= 9999}
+                                    className="w-8 h-8 min-w-0 min-h-0 p-0 text-sm"
                                     onPress={async () => {
                                         await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, true);
-                                    }}>증가</Button>
+                                    }}>+</Button>
                             </div>
                         </TableCell>
                     </TableRow>

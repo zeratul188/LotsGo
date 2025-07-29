@@ -1435,14 +1435,14 @@ function EngravingComponent({ file }: ProfileComponentProps) {
                                 <p className="max-w-[320px]">{engraving.description}</p>
                             </div>}>
                             <div className={clsx(
-                                "flex gap-3 mb-2 rounded-md pt-1 pb-1 pl-2 pr-2 items-center",
+                                "flex gap-2 mb-2 rounded-md pt-1 pb-1 pl-2 pr-2 items-center",
                                 engraving.level >= 4 ? `${getBackgroundRightByGrade(engraving.grade)}` : ""
                             )}>
                                 <Image
                                     src={getEngravingSrcByName(engraving.name)}
                                     alt={engraving.name}
-                                    width={16}
-                                    height={16}
+                                    width={32}
+                                    height={32}
                                     className="w-6 h-6 rounded-md"/>
                                 <p className={`grow ${getColorTextByGrade(engraving.grade)}`}>{engraving.name}</p>
                                 {engraving.stoneLevel > 0 ? (

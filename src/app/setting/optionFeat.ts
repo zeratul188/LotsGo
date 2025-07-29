@@ -19,6 +19,7 @@ export async function loadSettings(setSettings: SetStateFn<Settings | null>) {
         const res = await fetch(`/api/setting?id=${id}`);
         if (res.ok) {
             const settings: Settings = await res.json();
+            localStorage.setItem('userSettings', JSON.stringify(settings));
             setSettings(settings);
         } else {
             addToast({
