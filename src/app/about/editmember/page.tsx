@@ -1,4 +1,10 @@
 import Image from "next/image";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: '정보 변경 및 탈퇴 · 로츠고 가이드',
+    description: '로츠고를 이용하지 않아 회원 탈퇴 또는 비밀번호를 변경해야 하는 방법에 대해서 알려드립니다.',
+};
 
 export default function EditMember() {
     return (

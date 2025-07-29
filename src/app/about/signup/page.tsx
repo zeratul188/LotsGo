@@ -1,4 +1,10 @@
 import Image from "next/image";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: '회원가입 · 로츠고 가이드',
+    description: '로츠고 사이트에 회원 가입을 하는 방법을 알려드립니다.',
+};
 
 export default function Signup() {
     return (

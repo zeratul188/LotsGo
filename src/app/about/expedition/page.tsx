@@ -1,4 +1,10 @@
 import Image from "next/image";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: '원정대 관리 · 로츠고 가이드',
+    description: '로츠고 사이트에서 개인 계정의 원정대 관리를 하는 방법에 대해서 알려드립니다.',
+};
 
 
 export default function Expedition() {
