@@ -1,12 +1,13 @@
+'use client'
 import { useEffect, useRef, useState } from "react"
 import { ChartData, formatMonthData, getDiffPrice, getMaxGoldByBook, getMinGoldByBook, getUndoPrice, loadBooks, RelicBook } from "./relicsFeat";
-import { LoadingComponent } from "../UtilsCompnents";
+import { LoadingComponent } from "../../UtilsCompnents";
 import Image from "next/image";
 import { Button, Card, CardBody, Chip, Divider, Modal, ModalBody, ModalContent, ModalHeader, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, useDisclosure } from "@heroui/react";
 import clsx from "clsx";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useMobileQuery } from "@/utiils/utils";
-import { getEngravingSrcByName } from "../character/characterFeat";
+import { getEngravingSrcByName } from "../../character/characterFeat";
 
 type MonthChartProps = {
     selectedRelic: RelicBook | null

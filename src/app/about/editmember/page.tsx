@@ -20,4 +20,4 @@ export default function EditMember() {
             <p>한번 탈퇴한 계정은 다시 복구가 불가능합니다. 그리고 탈퇴한 이메일과 아이디로 다시 계정을 생성이 가능합니다.</p>
         </div>
     )
-}
+} 

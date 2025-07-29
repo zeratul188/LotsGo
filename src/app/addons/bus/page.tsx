@@ -1,6 +1,7 @@
+'use client'
 import { addToast, Card, CardBody, CardHeader, Checkbox, Divider, NumberInput, Radio, RadioGroup } from "@heroui/react"
 import { useEffect, useState } from "react";
-import { formatGold, useClickPersons } from "./calcFeat";
+import { formatGold, useClickPersons } from "../calcFeat";
 import Image from "next/image";
 
 function CalcComponent() {
