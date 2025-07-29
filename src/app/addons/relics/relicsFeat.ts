@@ -1,6 +1,3 @@
-import { SetStateFn } from "@/utiils/utils"
-import { addToast } from "@heroui/react"
-
 export type RelicList = {
     year: number,
     month: number,
@@ -21,20 +18,14 @@ export type ChartData = {
 }
 
 // 유물 각인서 데이터 불러오기
-export async function loadBooks(setRelics: SetStateFn<RelicBook[]>, setLoading: SetStateFn<boolean>) {
-    const res = await fetch('/api/relics');
+export async function loadBooks(): Promise<RelicBook[]> {
+    const res = await fetch('https://www.lotsgo.kr/api/relics');
     if (!res.ok) {
-        addToast({
-            title: "로드 오류",
-            description: `데이터를 불러오는데 문제가 발생하였습니다.`,
-            color: "danger"
-        });
-        return;
+        return [];
     }
     const relicsBooks: RelicBook[] = await res.json();
     relicsBooks.sort((a, b) => b.price - a.price);
-    setRelics(relicsBooks);
-    setLoading(false);
+    return relicsBooks;
 }
 
 // 특정 유물 각인서 이전 가격 가져오기
