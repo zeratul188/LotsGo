@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import admin from "firebase-admin";
-import { RelicBook, RelicList } from "@/app/addons/relicsFeat";
+import { RelicBook, RelicList } from "@/app/addons/relics/relicsFeat";
 
 type Book = {
   name: string,

@@ -1,6 +1,7 @@
+'use client'
 import { addToast, Card, CardBody, CardHeader, Checkbox, Divider, NumberInput, Radio, RadioGroup } from "@heroui/react"
 import { useEffect, useState } from "react";
-import { formatGold, useClickPersons } from "./calcFeat";
+import { formatGold, useClickPersons } from "../calcFeat";
 import Image from "next/image";
 
 function CalcComponent() {
@@ -479,7 +480,7 @@ function RelicComponent() {
     )
 }
 
-export default function BusComponent() {
+export default function BusClient() {
     return (
         <div className="w-full">
             <CalcComponent/>

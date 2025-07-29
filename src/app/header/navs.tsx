@@ -169,25 +169,25 @@ export function NavBrand() {
         <>
             <a href="/" className="block sm:hidden">
                 <Image 
-                    src="icon(L).png" 
+                    src="/icon(L).png" 
                     width={40} 
                     className="dark:hidden"
                     alt="타이틀 이미지 (라이트 버전)"/>
                 <Image 
-                    src="icon(D).png" 
+                    src="/icon(D).png" 
                     width={40} 
                     alt="타이틀 이미지 (어두운 버전)"
                     className="hidden dark:block"/>
             </a>
             <a href="/" className="hidden sm:block">
                 <Image 
-                    src="title(L).png" 
+                    src="/title(L).png" 
                     width={200} 
                     alt="타이틀 이미지 (라이트 버전)"
                     className="dark:hidden"
                     onClick={() => location.href = '/'}/>
                 <Image 
-                    src="title(D).png" 
+                    src="/title(D).png" 
                     width={200} 
                     alt="타이틀 이미지 (어두운 버전)"
                     className="hidden dark:block"/>

@@ -703,7 +703,7 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                         <Divider/>
                         <CardFooter className="pt-0 pb-0">
                             <div className="w-full">
-                                <div className="flex gap-2 flex-col sm:flex-row items-end mt-3 mb-2">
+                                <div className="mt-3 mb-2 flex gap-2 items-end">
                                     <NumberInput
                                         fullWidth
                                         label={`부수입 : ${character.otherGold} 골드`}
@@ -715,32 +715,26 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                         onValueChange={(value: number) => {
                                             setInputOtherGold(prev => ({...prev, [character.nickname]: value}));
                                         }}/>
-                                    <div className="w-full sm:w-[max-content] flex gap-2">
-                                        <Button
-                                            variant="flat"
-                                            color="primary"
-                                            size="sm"
-                                            className="grow"
-                                            onPress={async () => {
-                                                handleSetOtherGold(checklist, setChecklist, index, inputOtherGold[character.nickname] ?? 0, 'set');
-                                            }}>적용</Button>
+                                    <Tooltip showArrow content="부수입 빼기">
                                         <Button
                                             variant="flat"
                                             color="danger"
                                             size="sm"
-                                            className="grow"
+                                            className="w-8 h-8 min-w-8 min-h-0 p-0 text-sm"
                                             onPress={async () => {
                                                 handleSetOtherGold(checklist, setChecklist, index, inputOtherGold[character.nickname] ?? 0, 'minus');
-                                            }}>빼기</Button>
+                                            }}>-</Button>
+                                    </Tooltip>
+                                    <Tooltip showArrow content="부수입 더하기">
                                         <Button
                                             variant="flat"
                                             color="success"
                                             size="sm"
-                                            className="grow"
+                                            className="w-8 h-8 min-w-8 min-h-0 p-0 text-sm"
                                             onPress={async () => {
                                                 handleSetOtherGold(checklist, setChecklist, index, inputOtherGold[character.nickname] ?? 0, 'add');
-                                            }}>더하기</Button>
-                                    </div>
+                                            }}>+</Button>
+                                    </Tooltip>
                                 </div>
                                 <Divider/>
                                 <Accordion>

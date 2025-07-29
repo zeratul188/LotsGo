@@ -1,12 +1,12 @@
+'use client'
 import { useEffect, useRef, useState } from "react"
-import { ChartData, formatMonthData, getDiffPrice, getMaxGoldByBook, getMinGoldByBook, getUndoPrice, loadBooks, RelicBook } from "./relicsFeat";
-import { LoadingComponent } from "../UtilsCompnents";
+import { ChartData, formatMonthData, getDiffPrice, getMaxGoldByBook, getMinGoldByBook, getUndoPrice, RelicBook } from "./relicsFeat";
 import Image from "next/image";
 import { Button, Card, CardBody, Chip, Divider, Modal, ModalBody, ModalContent, ModalHeader, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, useDisclosure } from "@heroui/react";
 import clsx from "clsx";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useMobileQuery } from "@/utiils/utils";
-import { getEngravingSrcByName } from "../character/characterFeat";
+import { getEngravingSrcByName } from "../../character/characterFeat";
 
 type MonthChartProps = {
     selectedRelic: RelicBook | null
@@ -179,22 +179,12 @@ function ChartModal({ selectedRelic, isOpen, onOpenChange }: ChartModalProps) {
     )
 }
 
-export default function RelicsComponent() {
-    const [isLoading, setLoading] = useState(true);
-    const [relics, setRelics] = useState<RelicBook[]>([]);
+type RelicsClientProps = {
+    relics: RelicBook[]
+}
+export default function RelicsClient({ relics }: RelicsClientProps) {
     const [selectedRelic, setSelectedRelic] = useState<RelicBook | null>(null);
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
-
-    useEffect(() => {
-        const loadData = async () => {
-            await loadBooks(setRelics, setLoading);
-        }
-        loadData();
-    }, []);
-    
-    if (isLoading) {
-        return <LoadingComponent heightStyle={'h-[calc(100vh-155px)]'}/>;
-    }
 
     return (
         <div className="w-full">
