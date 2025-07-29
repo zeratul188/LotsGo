@@ -421,17 +421,19 @@ function CubeCountComponent({ character, checklist, setChecklist, index, cubes }
                                     variant="flat"
                                     color="danger"
                                     isDisabled={getCountCube(character.cubelist, cube.id) <= 0}
+                                    className="w-8 h-8 min-w-0 min-h-0 p-0 text-sm"
                                     onPress={() => {
                                         handleControlCube(checklist, setChecklist, index, cube.id, false);
-                                    }}>감소</Button>
+                                    }}>-</Button>
                                 <Button
                                     size="sm"
                                     variant="flat"
                                     color="success"
                                     isDisabled={getCountCube(character.cubelist, cube.id) >= 9999}
+                                    className="w-8 h-8 min-w-0 min-h-0 p-0 text-sm"
                                     onPress={() => {
                                         handleControlCube(checklist, setChecklist, index, cube.id, true);
-                                    }}>증가</Button>
+                                    }}>+</Button>
                             </div>
                         </TableCell>
                     </TableRow>
