@@ -36,6 +36,8 @@ import Image from "next/image";
 import { 
     CubeStatue,
     DayValue, 
+    filterChecklist, 
+    getAccounts, 
     getAllBoundGold, 
     getAllContentGold, 
     getAllContentOtherGold, 
@@ -44,6 +46,7 @@ import {
     getAllGoldCharacter, 
     getAllGolds, 
     getBossByContent, 
+    getBossesByHaveContent, 
     getBossesById, 
     getCheckedResult, 
     getColumnsByCubeTiers, 
@@ -82,6 +85,7 @@ import {
     handleRemoveDayList, 
     handleRemoveWeekList, 
     handleResetCube, 
+    handleSelectAccount, 
     handleSelectCharacter, 
     handleWeekListCheck, 
     isBiweeklyContent, 
@@ -90,6 +94,7 @@ import {
     loadDatas, 
     SearchCharacter, 
     useChangeBlessing, 
+    useClickAddAccount, 
     useClickLife, 
     useClickLoadCharacters, 
     useClickUpdatedCharacters, 
@@ -118,6 +123,7 @@ import {
 import { getImgByJob } from "../character/expeditionFeat";
 import { ChecklistData } from "../home/checklistFeat";
 import CheckIcon from "@/Icons/CheckIcon";
+import CharacterIcon from "@/Icons/CharacterIcon";
 
 // state 관리
 export type ModalData = {
@@ -142,6 +148,11 @@ export function useChecklistForm() {
     const [isLogined, setLogined] = useState(false);
     const [biweekly, setBiweekly] = useState(0);
     const [isHideDayContent, setHideDayContent] = useState(false);
+    const [filterContent, setFilterContent] = useState<Selection>(new Set([]));
+    const [isRemainHomework, setRemainHomework] = useState(false);
+    const [isShowGoldCharacter, setShowGoldCharacter] = useState(false);
+    const [accounts, setAccounts] = useState<string[]>(['본계정']);
+    const [filterAccount, setFilterAccount] = useState<Selection>(new Set([]));
 
     return {
         isLoading, setLoading,
@@ -157,7 +168,12 @@ export function useChecklistForm() {
         isLogined, setLogined,
         isShowList, setShowList,
         biweekly, setBiweekly,
-        isHideDayContent, setHideDayContent
+        isHideDayContent, setHideDayContent,
+        filterContent, setFilterContent,
+        isRemainHomework, setRemainHomework,
+        isShowGoldCharacter, setShowGoldCharacter,
+        accounts, setAccounts,
+        filterAccount, setFilterAccount
     }
 }
 
@@ -244,9 +260,23 @@ type ChecklistStatueProps = {
     setLife: SetStateFn<number>,
     setBlessing: SetStateFn<boolean>,
     max: number,
-    setMax: SetStateFn<number>
+    setMax: SetStateFn<number>,
+    accounts: string[],
+    setAccounts: SetStateFn<string[]>
 }
-export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing, setLife, setBlessing, max, setMax }: ChecklistStatueProps) {
+export function ChecklistStatue({ 
+    checklist, 
+    bosses, 
+    dispatch, 
+    life, 
+    isBlessing, 
+    setLife, 
+    setBlessing, 
+    max, 
+    setMax,
+    accounts,
+    setAccounts
+ }: ChecklistStatueProps) {
     const isMobile = useMobileQuery();
     const [isLoading, setLoading] = useState(false);
     const [inputValue, setInputValue] = useState('');
@@ -303,6 +333,11 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
     const onCloseModal = useCloseModal(setResult, setInputValue);
     const onChangeBlessing = useChangeBlessing(life, max, setBlessing);
     const onClickLife = useClickLife(newLife, isBlessing, setLife, setNewLife, newMax, setMax, setNewMax);
+
+    const [inputAccount, setInputAccount] = useState('');
+    const [selected, setSelected] = useState(accounts.length > 0 ? accounts[0] : '본계정');
+    const onClickAddAccount = useClickAddAccount(inputAccount, setInputAccount, accounts, setAccounts);
+
     return (
         <>
             <Card 
@@ -567,7 +602,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                         <>
                             <ModalHeader>캐릭터 추가</ModalHeader>
                             <ModalBody>
-                                <div className="w-full">
+                                <div className="w-full max-h-[600px] sm600:max-h-[800px] overflow-y-auto">
                                     <div className="flex gap-2 mb-4">
                                         <Input
                                             label="대표 캐릭터 이름"
@@ -612,8 +647,8 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                         ))}
                                     </div>
                                     <div className={clsx(
-                                        "flex gap-2 mb-4",
-                                        result.length !== 0 ? 'block' : 'hidden'
+                                        "gap-2 mb-4",
+                                        result.length !== 0 ? 'flex' : 'hidden'
                                     )}>
                                         <div className="grow">
                                             <Tooltip showArrow content="선택된 캐릭터들이 생성될 때 골드 지정 캐릭터로 지정할 것인지 확인합니다.">
@@ -627,8 +662,37 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                             <span>({getCheckedResult(result)+checklist.length}/{MAX_CHARACTER_COUNT})</span>
                                         </Tooltip>
                                     </div>
+                                    <div className={clsx(
+                                        "mb-4",
+                                        result.length !== 0 ? 'block' : 'hidden'
+                                    )}>
+                                        <RadioGroup label="계정 선택" value={selected} onValueChange={setSelected} className="mb-8">
+                                            {accounts.length > 0 ? accounts.map((account, index) => (
+                                                <Radio key={index} value={account}>{account}</Radio>
+                                            )) : <Radio value="본계정">본계정</Radio>}
+                                        </RadioGroup>
+                                        <Input
+                                            label="추가할 계정 이름"
+                                            radius="sm"
+                                            labelPlacement="outside"
+                                            placeholder="2~12글자"
+                                            value={inputAccount}
+                                            onValueChange={setInputAccount}/>
+                                        <Button
+                                            fullWidth
+                                            size="sm"
+                                            radius="sm"
+                                            variant="flat"
+                                            color="success"
+                                            isDisabled={inputAccount === ''}
+                                            className="mt-2"
+                                            onPress={onClickAddAccount}>
+                                            계정 추가
+                                        </Button>
+                                    </div>
                                     <Button
                                         fullWidth
+                                        radius="sm"
                                         isDisabled={getCheckedResult(result) === 0}
                                         isLoading={isLoadingAdd}
                                         color="primary"
@@ -637,7 +701,7 @@ export function ChecklistStatue({ checklist, bosses, dispatch, life, isBlessing,
                                             result.length !== 0 ? 'block' : 'hidden'
                                         )}
                                         onPress={async () => {
-                                            await handleAddCharacter(checklist, result, dispatch, onClose, setLoadingAdd, isGold, bosses);
+                                            await handleAddCharacter(checklist, result, dispatch, onClose, setLoadingAdd, isGold, bosses, selected);
                                         }}>추가</Button>
                                 </div>
                             </ModalBody>
@@ -700,18 +764,41 @@ type ChecklistProps = {
     onOpen: () => void,
     setModalData: SetStateFn<ModalData>,
     biweekly: number,
-    isHideDayContent: boolean
+    isHideDayContent: boolean,
+    filterContent: Selection,
+    isRemainHomework: boolean,
+    isShowGoldCharacter: boolean,
+    accounts: string[],
+    setAccounts: SetStateFn<string[]>,
+    filterAccount: Selection
 }
-export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch, onOpen, setModalData, biweekly, isHideDayContent }: ChecklistProps) {
+export function ChecklistComponent({ 
+    checklist, 
+    server, 
+    bosses, 
+    cubes, 
+    dispatch, 
+    onOpen, 
+    setModalData, 
+    biweekly, 
+    isHideDayContent, 
+    filterContent,
+    isRemainHomework,
+    isShowGoldCharacter,
+    accounts,
+    setAccounts,
+    filterAccount
+}: ChecklistProps) {
     const [inputOtherGold, setInputOtherGold] = useState<{ [nickname: string]: number }>({});
     const isMobile = useMobileQuery();
     return (
         <div className={clsx(
             "w-full min-[541px]:w-[max-content] mt-5 grid gap-4 mx-auto",
-            isHideDayContent ? "grid-cols-1 min-[709]:grid-cols-2 min-[1055px]:grid-cols-3 min-[1401px]:grid-cols-4 min-[1747px]:grid-cols-5 min-[2093px]:grid-cols-6 min-[2439px]:grid-cols-7 min-[2785px]:grid-cols-8 min-[3131px]:grid-cols-9 min-[3477px]:grid-cols-10" : "grid-cols-1 min-[1137px]:grid-cols-2 min-[1713px]:grid-cols-3 min-[2289px]:grid-cols-4 min-[2865px]:grid-cols-5 min-[3441px]:grid-cols-6"
+            checklist.filter((character) => (character.server === server || server === '전체') && filterChecklist(character, filterContent, bosses, checklist, isRemainHomework, isShowGoldCharacter, filterAccount)).length > 0 ? isHideDayContent ? "grid-cols-1 min-[709]:grid-cols-2 min-[1055px]:grid-cols-3 min-[1401px]:grid-cols-4 min-[1747px]:grid-cols-5 min-[2093px]:grid-cols-6 min-[2439px]:grid-cols-7 min-[2785px]:grid-cols-8 min-[3131px]:grid-cols-9 min-[3477px]:grid-cols-10" : "grid-cols-1 min-[1137px]:grid-cols-2 min-[1713px]:grid-cols-3 min-[2289px]:grid-cols-4 min-[2865px]:grid-cols-5 min-[3441px]:grid-cols-6" : ''
         )}>
             {checklist
-                .filter((character) => character.server === server || server === '전체')
+                .filter((character) => (character.server === server || server === '전체') && filterChecklist(character, filterContent, bosses, checklist, isRemainHomework, isShowGoldCharacter, filterAccount)).length > 0 ? checklist
+                .filter((character) => (character.server === server || server === '전체') && filterChecklist(character, filterContent, bosses, checklist, isRemainHomework, isShowGoldCharacter, filterAccount))
                 .map((character, index) => (
                     <Card key={index} fullWidth radius="sm" className={clsx(
                         "w-full",
@@ -734,17 +821,34 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                     </div>
                                     <div className="flex grow flex-row md960:flex-col items-center">
                                         <div className="grow-1 w-full">
-                                            <span className="fadedtext text-sm">@{character.server} · {character.job} · Lv.{character.level}</span>
+                                            <div className="flex gap-2">
+                                                <Chip 
+                                                    size="sm"
+                                                    variant="flat"
+                                                    radius="sm">
+                                                    {character.account}
+                                                </Chip>
+                                                <Chip 
+                                                    size="sm"
+                                                    variant="flat"
+                                                    radius="sm"
+                                                    color="primary">
+                                                    {character.server}
+                                                </Chip>
+                                            </div>
+                                            <p className="fadedtext text-sm mt-1">{character.job} · Lv.{character.level}</p>
                                             <div className="flex gap-2 items-center">
                                                 <span className={clsx(
                                                     isHideDayContent ? isMobile ? "text-xl" : "text-lg" : "text-xl"
                                                 )}>{character.nickname}</span>
                                                 <div className="hidden md960:block">
                                                     <SettingButton 
-                                                        size={16} 
+                                                        size={14} 
                                                         checklist={checklist} 
                                                         characterIndex={getIndexByNickname(checklist, character.nickname)}
-                                                        dispatch={dispatch}/>
+                                                        dispatch={dispatch}
+                                                        accounts={accounts}
+                                                        setAccounts={setAccounts}/>
                                                 </div>
                                             </div>
                                         </div>
@@ -753,13 +857,15 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                                                 size={24} 
                                                 checklist={checklist} 
                                                 characterIndex={getIndexByNickname(checklist, character.nickname)}
-                                                dispatch={dispatch}/>
+                                                dispatch={dispatch}
+                                                accounts={accounts}
+                                                setAccounts={setAccounts}/>
                                         </div>
                                     </div>
                                 </div>
                                 <div className={clsx(
                                     "w-full h-full md960:w-[330px] flex items-start",
-                                    isHideDayContent ? 'px-4' : ''
+                                    isHideDayContent ? 'px-0 sm:px-4' : ''
                                 )}>
                                     <Popover showArrow disableAnimation radius="sm">
                                         <PopoverTrigger>
@@ -1073,8 +1179,93 @@ export function ChecklistComponent({ checklist, server, bosses, cubes, dispatch,
                             </div>
                         </CardFooter>
                     </Card>
-                ))}
+                )) : (
+                    <div className="w-full h-[300px] flex justify-center items-center">
+                        <p className="fadedtext">선택한 필터에 해당하는 캐릭터를 찾을 수 없습니다.</p>
+                    </div>
+                )}
         </div>
+    )
+}
+
+// 계정 선택 Modal
+type SelectAccountModalProps = {
+    isOpenAccount: boolean,
+    onOpenAccount: (isOpen: boolean) => void,
+    dispatch: AppDispatch,
+    accounts: string[],
+    setAccounts: SetStateFn<string[]>,
+    characterIndex: number,
+    checklist: CheckCharacter[]
+}
+function SelectAccountModal({ 
+    isOpenAccount, 
+    onOpenAccount, 
+    dispatch, 
+    accounts, 
+    setAccounts,
+    characterIndex,
+    checklist
+}: SelectAccountModalProps) {
+    const [isLoadingButton, setLoadingButton] = useState(false);
+    const [selected, setSelected] = useState(checklist[characterIndex].account);
+    const [inputName, setInputName] = useState("");
+
+    const onClickAddAccount = useClickAddAccount(inputName, setInputName, accounts, setAccounts);
+
+    return (
+        <Modal
+            radius="sm"
+            isDismissable={false}
+            isOpen={isOpenAccount}
+            onOpenChange={onOpenAccount}>
+            <ModalContent>
+                {(onClose) => (
+                    <>
+                        <ModalHeader>계정 선택</ModalHeader>
+                        <ModalBody>
+                            <div className="max-h-[400px] sm600:max-h-[600px] overflow-y-auto">
+                                <RadioGroup label="계정 선택" value={selected} onValueChange={setSelected} className="mb-8">
+                                    {accounts.length > 0 ? accounts.map((account, index) => (
+                                        <Radio key={index} value={account}>{account}</Radio>
+                                    )) : <Radio value="본계정">본계정</Radio>}
+                                </RadioGroup>
+                                <Input
+                                    label="추가할 계정 이름"
+                                    radius="sm"
+                                    labelPlacement="outside"
+                                    placeholder="2~12글자"
+                                    value={inputName}
+                                    onValueChange={setInputName}/>
+                                <Button
+                                    fullWidth
+                                    size="sm"
+                                    radius="sm"
+                                    variant="flat"
+                                    color="success"
+                                    isDisabled={inputName === ''}
+                                    className="mt-2"
+                                    onPress={onClickAddAccount}>
+                                    계정 추가
+                                </Button>
+                                <p className="mt-1 text-sm fadedtext">다른 계정을 추가할려면 위 입력란에 새로운 계정 이름을 입력하세요.</p>
+                                <Button
+                                    fullWidth
+                                    radius="sm"
+                                    color="primary"
+                                    isLoading={isLoadingButton}
+                                    onPress={async () => {
+                                        await handleSelectAccount(selected, characterIndex, dispatch, onClose, setLoadingButton, checklist);
+                                    }}
+                                    className="mt-6 mb-4">
+                                    계정 선택
+                                </Button>
+                            </div>
+                        </ModalBody>
+                    </>
+                )}
+            </ModalContent>
+        </Modal>
     )
 }
 
@@ -1083,57 +1274,79 @@ type SettingButtonProps = {
     size: number,
     checklist: CheckCharacter[],
     characterIndex: number,
-    dispatch: AppDispatch
+    dispatch: AppDispatch,
+    accounts: string[],
+    setAccounts: SetStateFn<string[]>
 }
-function SettingButton({ size, checklist, characterIndex, dispatch }: SettingButtonProps) {
+function SettingButton({ size, checklist, characterIndex, dispatch, accounts, setAccounts }: SettingButtonProps) {
+    const [isOpenAccount, setOpenAccount] = useState(false);
+    const onOpenChangeAccount = (isOpen: boolean) => setOpenAccount(isOpen);
     return (
-        <Dropdown>
-            <DropdownTrigger>
-                <Button isIconOnly variant="light"><SettingIcon size={size} className="text-gray-500 hover:text-gray-800 cursor-pointer" /></Button>
-            </DropdownTrigger>
-            <DropdownMenu>
-                <DropdownItem 
-                    key="gold"
-                    startContent={
-                        <Image 
-                            src="/icons/gold.png" 
-                            width={16} 
-                            height={16} 
-                            alt="goldicon"
-                            className="w-[16px] h-[16px]"/>
-                    }
-                    onPress={async () => {
-                        await handleCheckGold(checklist, characterIndex, !checklist[characterIndex].isGold, dispatch);
-                    }}>{checklist[characterIndex].isGold ? "골드 지정 해제" : "골드 지정"}</DropdownItem>
-                <DropdownItem 
-                    key="reset-cube"
-                    startContent={
-                        <Image 
-                            src="/icons/cube.png" 
-                            width={18} 
-                            height={18} 
-                            alt="cubeicon"
-                            className="w-[18px] h-[18px]"/>
-                    }
-                    onPress={async () => {
-                        if (confirm('큐브 데이터를 삭제하시겠습니까? 한번 삭제한 데이터를 복구하실 수 없습니다.')) {
-                            await handleResetCube(checklist, characterIndex, dispatch);
+        <>
+            <Dropdown>
+                <DropdownTrigger>
+                    <Button isIconOnly variant="light" size="sm"><SettingIcon size={size} className="text-gray-500 hover:text-gray-800 cursor-pointer" /></Button>
+                </DropdownTrigger>
+                <DropdownMenu>
+                    <DropdownItem 
+                        key="gold"
+                        startContent={
+                            <Image 
+                                src="/icons/gold.png" 
+                                width={16} 
+                                height={16} 
+                                alt="goldicon"
+                                className="w-[16px] h-[16px]"/>
                         }
-                    }}>큐브 초기화</DropdownItem>
-                <DropdownItem 
-                    key="delete"
-                    color="danger"
-                    className="text-danger"
-                    startContent={
-                        <DeleteIcon/>
-                    }
-                    onPress={async () => {
-                        if (confirm(`\"${checklist[characterIndex].nickname}\"의 캐릭터를 삭제하시겠습니까? 삭제하시면 다시 복구하실 수 없습니다.`)) {
-                            await handleRemoveCharacter(checklist, characterIndex, dispatch);
+                        onPress={async () => {
+                            await handleCheckGold(checklist, characterIndex, !checklist[characterIndex].isGold, dispatch);
+                        }}>{checklist[characterIndex].isGold ? "골드 지정 해제" : "골드 지정"}</DropdownItem>
+                    <DropdownItem 
+                        key="account"
+                        startContent={
+                            <CharacterIcon className="w-4 h-4"/>
                         }
-                    }}>캐릭터 삭제</DropdownItem>
-            </DropdownMenu>
-        </Dropdown>
+                        onPress={async () => {
+                            setOpenAccount(true);
+                        }}>계정 선택</DropdownItem>
+                    <DropdownItem 
+                        key="reset-cube"
+                        startContent={
+                            <Image 
+                                src="/icons/cube.png" 
+                                width={16} 
+                                height={16} 
+                                alt="cubeicon"
+                                className="w-[16px] h-[16px]"/>
+                        }
+                        onPress={async () => {
+                            if (confirm('큐브 데이터를 삭제하시겠습니까? 한번 삭제한 데이터를 복구하실 수 없습니다.')) {
+                                await handleResetCube(checklist, characterIndex, dispatch);
+                            }
+                        }}>큐브 초기화</DropdownItem>
+                    <DropdownItem 
+                        key="delete"
+                        color="danger"
+                        className="text-danger"
+                        startContent={
+                            <DeleteIcon/>
+                        }
+                        onPress={async () => {
+                            if (confirm(`\"${checklist[characterIndex].nickname}\"의 캐릭터를 삭제하시겠습니까? 삭제하시면 다시 복구하실 수 없습니다.`)) {
+                                await handleRemoveCharacter(checklist, characterIndex, dispatch);
+                            }
+                        }}>캐릭터 삭제</DropdownItem>
+                </DropdownMenu>
+            </Dropdown>
+            <SelectAccountModal
+                accounts={accounts}
+                setAccounts={setAccounts}
+                dispatch={dispatch}
+                isOpenAccount={isOpenAccount}
+                onOpenAccount={onOpenChangeAccount}
+                characterIndex={characterIndex}
+                checklist={checklist}/>
+        </>
     );
 }
 
@@ -2304,6 +2517,82 @@ export function NotLoginedComponent() {
                         <li className="font-bold">💎 큐브 관리</li>
                         <p>단순 콘텐츠 외에도 큐브의 개수를 기록할 수 있으며, 가지고 있는 큐브가 몇개의 보석을 얻을 수 있는지 확인할 수 있습니다.</p>
                     </ul>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+// 캐릭터 필터 컴포넌트
+type FilterComponentProps = {
+    filterContent: Selection,
+    setFilterContent: SetStateFn<Selection>,
+    bosses: Boss[],
+    checklist: CheckCharacter[],
+    isRemainHomework: boolean,
+    setRemainHomework: SetStateFn<boolean>,
+    isShowGoldCharacter: boolean,
+    setShowGoldCharacter: SetStateFn<boolean>,
+    filterAccount: Selection,
+    setFilterAccount: SetStateFn<Selection>,
+}
+export function FilterComponent({ 
+    filterContent, 
+    setFilterContent, 
+    bosses, 
+    checklist,
+    isRemainHomework,
+    setRemainHomework,
+    isShowGoldCharacter,
+    setShowGoldCharacter,
+    filterAccount,
+    setFilterAccount
+}: FilterComponentProps) {
+    return (
+        <div className="w-full mt-4">
+            <h1 className="text-xl mb-1">검색 필터</h1>
+            <div className="w-full flex flex-col sm:flex-row gap-3 sm:items-center">
+                <Select
+                    label="계정 검색"
+                    placeholder="게정를 선택하세요."
+                    selectedKeys={filterAccount}
+                    radius="sm"
+                    size="sm"
+                    onSelectionChange={setFilterAccount}
+                    className="w-full sm:w-[300px]">
+                    {getAccounts(checklist).map((account, index) => (
+                        <SelectItem key={index}>{account}</SelectItem>
+                    ))}
+                </Select>
+                <Select
+                    label="콘텐츠로 검색"
+                    placeholder="콘텐츠를 선택하세요."
+                    selectedKeys={filterContent}
+                    radius="sm"
+                    size="sm"
+                    onSelectionChange={setFilterContent}
+                    className="w-full sm:w-[300px]">
+                    {getBossesByHaveContent(checklist, bosses).map((boss, index) => (
+                        <SelectItem key={index}>{boss}</SelectItem>
+                    ))}
+                </Select>
+                <div>
+                    <div>
+                        <Switch
+                            size="sm"
+                            isSelected={isRemainHomework}
+                            onValueChange={setRemainHomework}>
+                            주간 숙제를 완료한 캐릭터 숨기기
+                        </Switch>
+                    </div>
+                    <div>
+                        <Switch
+                            size="sm"
+                            isSelected={isShowGoldCharacter}
+                            onValueChange={setShowGoldCharacter}>
+                            골드 지정 캐릭터만 표시하기
+                        </Switch>
+                    </div>
                 </div>
             </div>
         </div>
