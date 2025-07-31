@@ -1,5 +1,5 @@
 'use client'
-import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent, RemainChecklistComponent } from "./ChecklistForm"
+import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent, RemainChecklistComponent, FilterComponent } from "./ChecklistForm"
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
 import { checkLogin, getBosses, getCubes, handleResetChecklist, loadChecklist } from "./checklistFeat";
@@ -54,7 +54,16 @@ export default function ChecklistClient() {
         }
     }, [checklistForm.bosses, expedition]);
 
-    3.
+    useEffect(() => {
+        const results: string[] = [];
+        checklist.forEach((character) => {
+            if (!results.includes(character.account)) {
+                results.push(character.account);
+            }
+        });
+        checklistForm.setAccounts(results);
+    }, [checklist]);
+
     useEffect(() => {
         const auth = getAuth();
         onAuthStateChanged(auth, async (user) => {
@@ -131,7 +140,9 @@ export default function ChecklistClient() {
                     setLife={checklistForm.setLife}
                     setBlessing={checklistForm.setBlessing}
                     max={checklistForm.max}
-                    setMax={checklistForm.setMax}/>
+                    setMax={checklistForm.setMax}
+                    accounts={checklistForm.accounts}
+                    setAccounts={checklistForm.setAccounts}/>
             </div>
             {!checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
                 <div className="w-full flex justify-center overflow-hidden md960:pt-[110px]">
@@ -185,6 +196,17 @@ export default function ChecklistClient() {
                         )}>
                             <CubeDetailComponent checklist={checklist} cubes={checklistForm.cubes}/>
                         </div>
+                        <FilterComponent
+                            filterContent={checklistForm.filterContent}
+                            setFilterContent={checklistForm.setFilterContent}
+                            bosses={checklistForm.bosses}
+                            checklist={checklist}
+                            isRemainHomework={checklistForm.isRemainHomework}
+                            setRemainHomework={checklistForm.setRemainHomework}
+                            isShowGoldCharacter={checklistForm.isShowGoldCharacter}
+                            setShowGoldCharacter={checklistForm.setShowGoldCharacter}
+                            filterAccount={checklistForm.filterAccount}
+                            setFilterAccount={checklistForm.setFilterAccount}/>
                     </div>
                     <ChecklistComponent 
                         checklist={checklist} 
@@ -195,7 +217,13 @@ export default function ChecklistClient() {
                         onOpen={checklistForm.onOpen}
                         setModalData={checklistForm.setModalData}
                         biweekly={checklistForm.biweekly}
-                        isHideDayContent={checklistForm.isHideDayContent}/>
+                        isHideDayContent={checklistForm.isHideDayContent}
+                        filterContent={checklistForm.filterContent}
+                        isRemainHomework={checklistForm.isRemainHomework}
+                        isShowGoldCharacter={checklistForm.isShowGoldCharacter}
+                        accounts={checklistForm.accounts}
+                        setAccounts={checklistForm.setAccounts}
+                        filterAccount={checklistForm.filterAccount}/>
                     <ChecklistModal
                         isOpen={checklistForm.isOpen}
                         modalData={checklistForm.modalData}
