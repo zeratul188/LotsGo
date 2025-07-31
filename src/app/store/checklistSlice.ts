@@ -40,7 +40,8 @@ export type CheckCharacter = {
     cubelist: CubeList[],
     isGold: boolean,
     otherGold: number,
-    position: number
+    position: number,
+    account: string
 }
 type ChecklistState = {
     checklist: CheckCharacter[]
@@ -103,6 +104,10 @@ export type CheckGold = {
 export type CalculateOtherGold = {
     characterIndex: number,
     otherGold: number
+}
+export type UpdateAccount = {
+    characterIndex: number,
+    account: string
 }
 
 const checklistSlice = createSlice({
@@ -184,6 +189,12 @@ const checklistSlice = createSlice({
         resetCube(state, action: PayloadAction<number>) {
             const characterIndex = action.payload;
             state.checklist[characterIndex].cubelist = [];
+        },
+        // 큐브 초기화
+        updateAccount(state, action: PayloadAction<UpdateAccount>) {
+            const characterIndex = action.payload.characterIndex;
+            const account = action.payload.account;
+            state.checklist[characterIndex].account = account;
         }
     }
 })
@@ -202,6 +213,7 @@ export const {
     checkGold,
     removeCharacter,
     calculateOtherGold,
-    resetCube
+    resetCube,
+    updateAccount
 } = checklistSlice.actions;
 export default checklistSlice.reducer;

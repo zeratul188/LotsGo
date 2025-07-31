@@ -14,10 +14,11 @@ import {
     removeWeek, 
     resetCube, 
     saveData, 
-    saveRest 
+    saveRest, 
+    updateAccount
 } from "../store/checklistSlice";
 import { SetStateFn } from "@/utiils/utils";
-import { addToast } from "@heroui/react";
+import { addToast, Selection } from "@heroui/react";
 import { Boss, Difficulty } from "../api/checklist/boss/route";
 import { Character, LoginUser } from "../store/loginSlice";
 import { Cube } from "../api/checklist/cube/route";
@@ -197,7 +198,8 @@ export async function loadChecklist(
                 cube: 0,
                 isGold: true,
                 otherGold: 0,
-                position: 9999
+                position: 9999,
+                account: '본계정'
             }
             checklist.push(checkCharacter);
         }
@@ -1675,7 +1677,8 @@ export async function handleAddCharacter(
     onClose: () => void,
     setLoadingAdd: SetStateFn<boolean>,
     isGold: boolean,
-    bosses: Boss[]
+    bosses: Boss[],
+    selected: string
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
@@ -1707,7 +1710,8 @@ export async function handleAddCharacter(
                 cube: 0,
                 isGold: isGold,
                 otherGold: 0,
-                position: 9999
+                position: 9999,
+                account: selected
             }
             newChecklist.push(checkCharacter);
         }
@@ -2211,4 +2215,177 @@ export async function handleResetChecklist(
         }
         setLoadingReset(false);
     }
+}
+
+// 캐릭터 검색 필터
+export function filterChecklist(
+    character: CheckCharacter,
+    filterContent: Selection,
+    bosses: Boss[],
+    checklist: CheckCharacter[],
+    isRemainHomework: boolean,
+    isShowGoldCharacter: boolean,
+    filterAccount: Selection
+): boolean {
+    // 콘텐츠 필터
+    let isFinded = false;
+    const valueList = Array.from(filterContent);
+    if (valueList.length !== 0) {
+        const sortedBosses = getBossesByHaveContent(checklist, bosses);
+        const selectedIndex = Number(valueList[0]);
+        character.checklist.forEach((content) => {
+            if (content.name === sortedBosses[selectedIndex]) {
+                isFinded = true;
+            }
+        });
+    } else {
+        isFinded = true;
+    }
+
+    // 남은 숙제 여부 필터
+    let isFindedRemainHomework = false;
+    if (isRemainHomework) {
+        character.checklist.forEach((content) => {
+            if (!content.isCheck) {
+                isFindedRemainHomework = true;
+            }
+        });
+        character.weeklist.forEach((content) => {
+            if (!content.isCheck) {
+                isFindedRemainHomework = true;
+            }
+        });
+    } else {
+        isFindedRemainHomework = true;
+    }
+
+    // 골드 지정 캐릭터 필터
+    let isFindedGoldCharacter = false;
+    if (isShowGoldCharacter) {
+        isFindedGoldCharacter = character.isGold;
+    } else {
+        isFindedGoldCharacter = true;
+    }
+
+    // 계정 구분 필터
+    let isFindedAccount = false;
+    const accountList = Array.from(filterAccount);
+    if (accountList.length !== 0) {
+        if (character.account === getAccounts(checklist)[Number(accountList[0])]) {
+            isFindedAccount = true;
+        }
+    } else {
+        isFindedAccount = true;
+    }
+
+    return isFinded && isFindedRemainHomework && isFindedGoldCharacter && isFindedAccount;
+}
+
+// 숙제로 등록된 콘텐츠 목록
+export function getBossesByHaveContent(checklist: CheckCharacter[], bosses: Boss[]): string[] {
+    const filteredBosses: Boss[] = [];
+    checklist.forEach((character) => {
+        character.checklist.forEach((content) => {
+            const findObj = bosses.find(boss => boss.name === content.name);
+            if (findObj) {
+                const findIndex = filteredBosses.findIndex(boss => boss.name === findObj.name);
+                if (findIndex === -1) {
+                    filteredBosses.push(findObj);
+                }
+            }
+        });
+    });
+    const sortedBosses = filteredBosses.sort((a, b) => {
+        const bDiff = bosses.find(boss => boss.name === b.name);
+        const aDiff = bosses.find(boss => boss.name === a.name);
+        let bValue = 0, aValue = 0;
+        if (bDiff){
+            bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
+        }
+        if (aDiff) {
+            aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
+        }
+        return bValue - aValue;
+    });
+    return sortedBosses.map(boss => boss.name);
+}
+
+// 계정 추가 버튼 이벤트
+export function useClickAddAccount(
+    value: string, 
+    setValue: SetStateFn<string>,
+    accounts: string[], 
+    setAccounts: SetStateFn<string[]>
+) {
+    return () => {
+        if (value.length < 2) {
+            addToast({
+                title: "글자 수 미달",
+                description: `글자 수가 2글자 이상만 입력이 가능합니다.`,
+                color: "danger"
+            });
+            return;
+        }
+        const cloneAccounts = structuredClone(accounts);
+        cloneAccounts.push(value);
+        setAccounts(cloneAccounts);
+        setValue('');
+    }
+}
+
+// 계정 변경 버튼 이벤트
+export async function handleSelectAccount(
+    selected: string,
+    characterIndex: number,
+    dispatch: AppDispatch,
+    onClose: () => void,
+    setLoadingButton: SetStateFn<boolean>,
+    checklist: CheckCharacter[]
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    if (storedUser) {
+        setLoadingButton(true);
+        const id = storedUser ? storedUser.id : '';
+        const prevAccount = checklist[characterIndex].account;
+        dispatch(updateAccount({
+            characterIndex: characterIndex,
+            account: selected
+        }));
+        const res = await fetch(`/api/checklist/list`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: id,
+                checklist: checklist,
+                type: 'update-account',
+                characterIndex: characterIndex,
+                account: selected
+            })
+        });
+        if (!res.ok) {
+            addToast({
+                title: "저장 오류",
+                description: `데이터를 저장하는데 문제가 발생하였습니다.`,
+                color: "danger"
+            });
+            dispatch(updateAccount({
+                characterIndex: characterIndex,
+                account: prevAccount
+            }));
+        }
+        setLoadingButton(false);
+        onClose();
+    }
+}
+
+// 계정 목록 반환 함수
+export function getAccounts(checklist: CheckCharacter[]): string[] {
+    const accounts: string[] = [];
+    checklist.forEach((character) => {
+        if (!accounts.includes(character.account)) {
+            accounts.push(character.account);
+        }
+    });
+    return accounts;
 }

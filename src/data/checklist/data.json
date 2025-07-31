@@ -47,7 +47,8 @@
         "cubelist": [],
         "isGold": true,
         "otherGold": 0,
-        "position": 9999
+        "position": 9999,
+        "account": "본계정"
     },
     {
         "nickname": "칼란디르",
@@ -97,7 +98,8 @@
         "cubelist": [],
         "isGold": true,
         "otherGold": 0,
-        "position": 9999
+        "position": 9999,
+        "account": "본계정"
     },
     {
         "nickname": "케니리우스",
@@ -147,7 +149,8 @@
         "cubelist": [],
         "isGold": true,
         "otherGold": 0,
-        "position": 9999
+        "position": 9999,
+        "account": "본계정"
     },
     {
         "nickname": "고스트140",
@@ -197,7 +200,8 @@
         "cubelist": [],
         "isGold": true,
         "otherGold": 0,
-        "position": 9999
+        "position": 9999,
+        "account": "본계정"
     },
     {
         "nickname": "민트초코한우소머리국밥",
@@ -247,7 +251,8 @@
         "cubelist": [],
         "isGold": true,
         "otherGold": 0,
-        "position": 9999
+        "position": 9999,
+        "account": "본계정"
     },
     {
         "nickname": "민트초코계란국",
@@ -297,7 +302,8 @@
         "cubelist": [],
         "isGold": true,
         "otherGold": 0,
-        "position": 9999
+        "position": 9999,
+        "account": "본계정"
     },
     {
         "nickname": "섭종직전라스트댄스",
@@ -347,6 +353,7 @@
         "cubelist": [],
         "isGold": false,
         "otherGold": 0,
-        "position": 9999
+        "position": 9999,
+        "account": "본계정"
     }
 ]

@@ -44,6 +44,7 @@ export async function GET(req: NextRequest) {
                 isGold: item.isGold ?? false,
                 otherGold: item.otherGold ?? 0,
                 position: item.position ?? 9999,
+                account: item.account ?? '본계정'
             }
         }) : [];
         return NextResponse.json(checklist);
@@ -189,6 +190,14 @@ export async function POST(req: NextRequest) {
             case 'reset-cube':
                 characterIndex = body.characterIndex;
                 updatedChecklist[characterIndex].cubelist = [];
+                await updateDoc(docRef, {
+                    checklist: updatedChecklist
+                });
+                return NextResponse.json({ message: '데이터 수정이 정상적으로 처리도었습니다.' }, { status: 200 });
+            case 'update-account':
+                characterIndex = body.characterIndex;
+                const account = body.account;
+                updatedChecklist[characterIndex].account = account;
                 await updateDoc(docRef, {
                     checklist: updatedChecklist
                 });
