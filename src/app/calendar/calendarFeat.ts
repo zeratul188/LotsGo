@@ -6,13 +6,12 @@ import { Boss } from "../api/checklist/boss/route";
 import { addToast, Selection } from "@heroui/react";
 import { ShowWeek, WeekBox } from "./CalendarForm";
 import { DateValue, getLocalTimeZone } from "@internationalized/date";
-import { getWeekContents, getWeekDifficultys } from "../checklist/checklistFeat";
+import { getWeekContents } from "../checklist/checklistFeat";
 import { decrypt } from "@/utiils/crypto";
 
 export type Calendar = {
     name: string,
     raidname: string,
-    difficulty: string
     date: Date,
     memo: string
 }
@@ -71,7 +70,6 @@ export async function loadGuild(setGuild: SetStateFn<Guild | null>) {
             const item: Calendar = {
                 name: calender.name,
                 date: calender.date.toDate(),
-                difficulty: calender.difficulty,
                 raidname: calender.raidname,
                 memo: calender.memo
             }
@@ -99,6 +97,7 @@ export async function loadBosses(setBosses: SetStateFn<Boss[]>) {
     const bosses: Boss[] = snapshot.docs.map(doc => ({
         id: doc.id,
         name: doc.data().name,
+        simple: doc.data().simple ? doc.data().simple : '',
         difficulty: doc.data().difficulty
     }));
     setBosses(bosses);
@@ -119,7 +118,6 @@ export async function loadWorks(setWorks: SetStateFn<Calendar[]>) {
                 const item: Calendar = {
                     name: calender.name,
                     date: calender.date.toDate(),
-                    difficulty: calender.difficulty,
                     raidname: calender.raidname,
                     memo: calender.memo
                 }
@@ -190,7 +188,6 @@ export function formatHours(date: Date): string {
 export async function handleSubmitCalendar(
     title: string,
     raid: Selection,
-    difficulty: Selection,
     selectDate: DateValue | null,
     isTypeGuild: boolean,
     isEtc: boolean,
@@ -219,14 +216,6 @@ export async function handleSubmitCalendar(
         });
         return;
     }
-    if (!Array.from(difficulty)[0] && !isEtc) {
-        addToast({
-            title: "입력 오류",
-            description: `난이도를 선택하지 않았습니다.`,
-            color: "danger"
-        });
-        return;
-    }
     if (!selectDate?.toDate(getLocalTimeZone())) {
         addToast({
             title: "입력 오류",
@@ -242,14 +231,11 @@ export async function handleSubmitCalendar(
     const id = storedUser.id;
 
     const raidObj = Array.from(raid)[0] ? getWeekContents(bosses).find(boss => boss.key === Array.from(raid)[0].toString()) : null;
-    const difficultyObj = Array.from(difficulty)[0] && Array.from(raid)[0] ? getWeekDifficultys(bosses, Array.from(raid)[0].toString()).find(diff => diff.key === Array.from(difficulty)[0].toString()) : null;
     const raidLabel = raidObj ? raidObj.name : '';
-    const difficultyLabel = difficultyObj ? difficultyObj.name : '';
 
     const calendar: Calendar = {
         name: title,
         raidname: isEtc ? '' : raidLabel,
-        difficulty: isEtc ? '' : difficultyLabel,
         date: selectDate?.toDate(getLocalTimeZone()),
         memo: memo
     }

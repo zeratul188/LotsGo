@@ -82,7 +82,32 @@ export function handleWeekContent(
     contentIndex: number
 ) {
     const updatedChecklist = structuredClone(checklist);
-    updatedChecklist[characterIndex].checklist[contentIndex].isCheck = !updatedChecklist[characterIndex].checklist[contentIndex].isCheck;
+    const isNothingChecked = updatedChecklist[characterIndex].checklist[contentIndex].items.some(item => !item.isCheck);
+    for (const item of updatedChecklist[characterIndex].checklist[contentIndex].items) {
+        if (isNothingChecked) item.isCheck = true;
+        else item.isCheck = false;
+    }
+    setChecklist(updatedChecklist);
+}
+
+// 주간 콘텐츠 관문 체크 이벤트
+export function handleWeekStage(
+    checklist: CheckCharacter[],
+    setChecklist: SetStateFn<CheckCharacter[]>,
+    characterIndex: number,
+    contentIndex: number,
+    stage: number
+) {
+    const updatedChecklist = structuredClone(checklist);
+    for (const item of updatedChecklist[characterIndex].checklist[contentIndex].items) {
+        if (item.stage < stage) {
+            item.isCheck = true;
+        } else if (item.stage === stage) {
+            item.isCheck = !item.isCheck;
+        } else {
+            item.isCheck = false;
+        }
+    }
     setChecklist(updatedChecklist);
 }
 

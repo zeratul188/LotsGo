@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Boss } from "../api/checklist/boss/route";
-import { CheckCharacter, Checklist, OtherList } from "../store/checklistSlice";
+import { CheckCharacter, Checklist, ChecklistItem, OtherList } from "../store/checklistSlice";
 import { 
     Button, 
     Card, CardBody, CardHeader,
@@ -45,6 +45,9 @@ import {
     getAllCubeCount, 
     getAllGoldCharacter, 
     getAllGolds, 
+    getBackground50ByStage, 
+    getBackgroundByStage, 
+    getBorderByStage, 
     getBossByContent, 
     getBossesByHaveContent, 
     getBossesById, 
@@ -61,6 +64,7 @@ import {
     getCubeStatues, 
     getDayName, 
     getDiffByContent, 
+    getDifficultyByStage, 
     getGemCountByCharacter, 
     getGemCountByChecklist, 
     getHaveBoundGolds, 
@@ -69,10 +73,11 @@ import {
     getIndexByNickname, 
     getMaxRestValue, 
     getServerList, 
+    getSimpleBossName, 
     getTakeGold, 
     getTypeDayValue, 
     getWeekContents, 
-    getWeekDifficultys, 
+    getWeekStages, 
     handleAddCharacter, 
     handleApplyPositions, 
     handleCalculateOtherGold, 
@@ -87,9 +92,11 @@ import {
     handleResetCube, 
     handleSelectAccount, 
     handleSelectCharacter, 
+    handleWeekCheckStage, 
     handleWeekListCheck, 
     isBiweeklyContent, 
     isCheckBiweeklyContent, 
+    isCheckHomework, 
     isHaveCharacter, 
     loadDatas, 
     SearchCharacter, 
@@ -1008,79 +1015,56 @@ export function ChecklistComponent({
                                         className="min-w-full text-center">주간 콘텐츠</Chip>
                                     <div className="pl-2.5">
                                         {character.checklist.map((item, idx) => (
-                                            <Tooltip 
-                                                key={idx}
-                                                showArrow
-                                                placement="left"
-                                                delay={1500}
-                                                content={
-                                                    <div className="p-1 min-w-[160px]">
-                                                        <p className={clsx(
-                                                            "overflow-hidden text-ellipsis whitespace-nowrap font-bold",
-                                                            getBossByContent(bosses, item.name) ? '' : 'fadedtext'
-                                                        )}>{getBossByContent(bosses, item.name) ? `${getBossByContent(bosses, item.name)?.name}` : '삭제된 콘텐츠'}</p>
-                                                        <Divider className="mt-2 mb-2"/>
-                                                        <div className="w-full grid grid-cols-[max-content_1fr] gap-1">
-                                                            <p className="fadedtext">난이도</p>
-                                                            <p className="text-right">{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.difficulty : '-'}</p>
-                                                            <p className="fadedtext">레벨</p>
-                                                            <p className="text-right">{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.level : 0}</p>
-                                                            <p className="fadedtext">골드</p>
-                                                            <div className="flex gap-1 items-center justify-end">
-                                                                <Image 
-                                                                    src="/icons/gold.png" 
-                                                                    width={16} 
-                                                                    height={16} 
-                                                                    alt="goldicon"
-                                                                    className="w-[16px] h-[16px]"/>
-                                                                <p className={clsx(
-                                                                    item.isGold ? '' : 'fadedtext line-through'
-                                                                )}>{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.gold.toLocaleString() : 0}</p>
-                                                            </div>
-                                                            <p className="fadedtext">귀속 골드</p>
-                                                            <div className="flex gap-1 items-center justify-end">
-                                                                <Image 
-                                                                    src="/icons/gold.png" 
-                                                                    width={16} 
-                                                                    height={16} 
-                                                                    alt="goldicon"
-                                                                    className="w-[16px] h-[16px]"/>
-                                                                <p className={clsx(
-                                                                    item.isGold ? '' : 'fadedtext line-through'
-                                                                )}>{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.boundGold ? getDiffByContent(bosses, item.name, item.difficulty)?.boundGold.toLocaleString() : 0 : 0}</p>
-                                                            </div>
+                                            <div key={idx}>
+                                                <Checkbox
+                                                    aria-label={`checklist-${item.name}-${idx}`}
+                                                    size="sm"
+                                                    radius="full"
+                                                    isSelected={isCheckHomework(item)}
+                                                    className={clsx(
+                                                        "max-w-full w-full mt-3 box-border p-1.5 [&_span:nth-of-type(2)]:w-full",
+                                                        isCheckHomework(item) ? 'outline-2 outline-blue-400 dark:outline-blue-800 rounded-md bg-blue-400/20 dark:bg-blue-800/20' : ''
+                                                    )}
+                                                    onChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
+                                                    <div className="w-full flex items-center gap-1">
+                                                        <span className={clsx(
+                                                            isCheckHomework(item) ? 'line-through' : ''
+                                                        )}>{getSimpleBossName(bosses, item.name)}</span>
+                                                        {item.isGold ? <Image 
+                                                            src="/icons/gold.png" 
+                                                            width={14} 
+                                                            height={14} 
+                                                            alt="goldicon"
+                                                            className="w-[14px] h-[14px]"/> : <></>}
+                                                        <div className="grow"/>
+                                                        <div className="flex items-center z-9">
+                                                            {item.items.map((diff, ix) => (
+                                                                <React.Fragment key={ix}>
+                                                                    {ix > 0 && (
+                                                                        <div className={clsx(
+                                                                            'w-2 h-[2px]',
+                                                                            getBackgroundByStage(diff.difficulty)
+                                                                        )} />
+                                                                    )}
+                                                                    <Tooltip showArrow content={diff.difficulty}>
+                                                                        <div className={clsx(
+                                                                            'w-7 h-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none cursor-pointer',
+                                                                            getBorderByStage(diff.difficulty),
+                                                                            diff.isCheck ? getBackground50ByStage(diff.difficulty) : ''
+                                                                        )} onClick={async (e) => {
+                                                                            e.preventDefault();
+                                                                            e.stopPropagation();
+                                                                            await handleWeekCheckStage(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch, diff.stage)
+                                                                        }}>
+                                                                            {diff.stage}
+                                                                        </div>
+                                                                    </Tooltip>
+                                                                </React.Fragment>
+                                                            ))}
                                                         </div>
-                                                        {item.isBiweekly ? (
-                                                            <p className="fadedtext text-sm mt-2">현재 {biweekly % 2 === 0 ? '1주차' : '2주차'}입니다.</p>
-                                                        ) : <></>}
                                                     </div>
-                                                    
-                                                }>
-                                                <div>
-                                                    <Checkbox
-                                                        lineThrough
-                                                        aria-label={`checklist-${item.name}-${idx}`}
-                                                        size="sm"
-                                                        radius="full"
-                                                        isDisabled={item.isDisable}
-                                                        isSelected={item.isCheck}
-                                                        className={clsx(
-                                                            "max-w-full w-full mt-3 box-border p-1.5",
-                                                            item.isCheck ? 'outline-2 outline-blue-400 dark:outline-blue-800 rounded-md bg-blue-400/20 dark:bg-blue-800/20' : ''
-                                                        )}
-                                                        onChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
-                                                        <span className="flex items-center gap-1">
-                                                            <span>{item.name} {item.difficulty}</span>
-                                                            {item.isGold ? <Image 
-                                                                src="/icons/gold.png" 
-                                                                width={14} 
-                                                                height={14} 
-                                                                alt="goldicon"
-                                                                className="w-[14px] h-[14px]"/> : <></>}
-                                                        </span>
-                                                    </Checkbox>
-                                                </div>
-                                            </Tooltip>
+                                                </Checkbox>
+                                            </div>
                                         ))}
                                         {character.weeklist.map((item, idx) => (
                                             <div key={idx}>
@@ -1801,6 +1785,10 @@ type WeekContentComponentProps = {
     isGold: boolean,
     setGold: SetStateFn<boolean>
 }
+export type ControlStage = {
+    stage: number,
+    difficulty: string
+}
 function WeekContentComponent({
     checklist,
     index,
@@ -1812,6 +1800,26 @@ function WeekContentComponent({
     isGold, setGold
 }: WeekContentComponentProps) {
     const [isLoadingAdd, setLoadingAdd] = useState(false);
+    const [stages, setStages] = useState<ControlStage[]>([]);
+
+    useEffect(() => {
+        if (!Array.from(content)[0]) setStages([]);
+        else {
+            const findBoss = getBossesById(bosses, Array.from(content)[0].toString());
+            const newStages: ControlStage[] = [];
+            if (findBoss) {
+                for (const st of getWeekStages(bosses, Array.from(content)[0].toString())) {
+                    const newStage: ControlStage = {
+                        stage: st,
+                        difficulty: '선택안함'
+                    }
+                    newStages.push(newStage);
+                }
+                setStages(newStages);
+            }
+        }
+    }, [content]);
+
     return (
         <>
             <Table aria-label="checklist-table" removeWrapper>
@@ -1823,7 +1831,7 @@ function WeekContentComponent({
                 <TableBody emptyContent={"설정된 콘텐츠가 없습니다."}>
                     {checklist[index].checklist.map((item, idx) => (
                         <TableRow key={idx}>
-                            <TableCell>{item.name} {item.difficulty}</TableCell>
+                            <TableCell>{item.name}</TableCell>
                             <TableCell>
                                 <Switch
                                     size="sm"
@@ -1869,23 +1877,41 @@ function WeekContentComponent({
                         <SelectItem key={item.key}>{item.name}</SelectItem>
                     ))}
                 </Select>
-                <Select
-                    placeholder="난이도 선택"
-                    label="난이도"
-                    variant="underlined"
-                    selectedKeys={difficulty}
-                    onSelectionChange={setDifficulty}
-                    className={clsx(
-                        "mt-2",
-                        Array.from(content)[0] ? 'block' : "hidden"
-                    )}>
-                    {Array.from(content)[0] ? getWeekDifficultys(bosses, Array.from(content)[0].toString()).map((item) => (
-                        <SelectItem key={item.key}>{item.name}</SelectItem>
-                    )) : <></>}
-                </Select>
+                {Array.from(content)[0] ? getWeekStages(bosses, Array.from(content)[0].toString()).map((level, idx) => (
+                    <div key={idx} className="mt-2">
+                        <h3 className="font-bold mb-1">{level}관문</h3>
+                        <Tabs 
+                            fullWidth 
+                            radius="sm" 
+                            color="primary"
+                            selectedKey={stages.length > idx ? stages[idx].difficulty : '선택안함'}
+                            onSelectionChange={(key) => {
+                                const diff = key.toString();
+                                if (stages.length > idx) {
+                                    const cloneStages = structuredClone(stages);
+                                    if (idx > 0) {
+                                        if (cloneStages[idx-1].difficulty === '선택안함') {
+                                            return;
+                                        }
+                                    }
+                                    cloneStages[idx].difficulty = diff;
+                                    if (diff === '선택안함') {
+                                        for (let i = idx; i < cloneStages.length; i++) {
+                                            cloneStages[i].difficulty = '선택안함';
+                                        }
+                                    }
+                                    setStages(cloneStages);
+                                }
+                            }}>
+                            {getDifficultyByStage(bosses, Array.from(content)[0].toString(), level).map((diff) => (
+                                <Tab key={diff} title={diff}/>
+                            ))}
+                        </Tabs>
+                    </div>
+                )) : <></>}
                 <div className={clsx(
                     "mt-3",
-                    Array.from(difficulty)[0] ? 'block' : "hidden"
+                    Array.from(content)[0] ? 'block' : "hidden"
                 )}>
                     <Checkbox
                         color="warning"
@@ -1897,19 +1923,27 @@ function WeekContentComponent({
                     radius="sm"
                     color="primary"
                     isLoading={isLoadingAdd}
+                    isDisabled={stages.length > 0 ? stages[0].difficulty === '선택안함' : true}
                     onPress={async () => {
-                        if (Array.from(content)[0] && Array.from(difficulty)[0]) {
+                        if (Array.from(content)[0]) {
                             setLoadingAdd(true);
                             const name: string = getBossesById(bosses, Array.from(content)[0].toString())?.name ?? '';
-                            const diff: string = getBossesById(bosses, Array.from(content)[0].toString())?.difficulty[Number(Array.from(difficulty)[0].toString())].difficulty ?? '';
-                            const isBiweekly: boolean = getBossesById(bosses, Array.from(content)[0].toString())?.difficulty[Number(Array.from(difficulty)[0].toString())].isBiweekly ?? false;
+                            const items: ChecklistItem[] = [];
+                            for (const stage of stages) {
+                                if (stage.difficulty !== '선택안함') {
+                                    items.push({
+                                        stage: stage.stage,
+                                        difficulty: stage.difficulty,
+                                        isBonus: false,
+                                        isCheck: false,
+                                        isDisable: false
+                                    });
+                                }
+                            }
                             const addItem: Checklist = {
                                 name: name,
-                                difficulty: diff,
-                                isCheck: false,
                                 isGold: isGold,
-                                isDisable: false,
-                                isBiweekly: isBiweekly
+                                items: items
                             }
                             await useOnClickAddItem(checklist, index, addItem, dispatch, setLoadingAdd, bosses);
                         }
@@ -1917,7 +1951,7 @@ function WeekContentComponent({
                     }}
                     className={clsx(
                         "mt-4",
-                        Array.from(difficulty)[0] ? 'block' : "hidden"
+                        Array.from(content)[0] ? 'block' : "hidden"
                     )}>추가</Button>
             </div>
         </>
