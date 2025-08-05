@@ -1,5 +1,5 @@
 import { AppDispatch } from "../store/store";
-import type { CheckCharacter, Checklist, CubeList, Day, OtherList } from "../store/checklistSlice";
+import type { CheckCharacter, Checklist, ChecklistItem, CubeList, Day, OtherList } from "../store/checklistSlice";
 import { 
     calculateOtherGold,
     checkDayList, 
@@ -152,24 +152,23 @@ export async function loadChecklist(
     checklist.sort((a, b) => a.position - b.position);
     for (const character of checklist) {
         const sortedChecklist = character.checklist.sort((a, b) => {
-            const aDifficulty = bosses.find(item => item.name === a.name)?.difficulty;
-            const aObj = aDifficulty ? aDifficulty.find(item => item.difficulty === a.difficulty) : null;
-            const aLevel = aObj ? aObj.level : 0;
-            const bDifficulty = bosses.find(item => item.name === b.name)?.difficulty;
-            const bObj = bDifficulty ? bDifficulty.find(item => item.difficulty === b.difficulty) : null;
-            const bLevel = bObj ? bObj.level : 0;
+            const aBoss = bosses.find(item => item.name === a.name) ? bosses.find(item => item.name === a.name) : null;
+            const aMax = aBoss ? Math.max(...aBoss.difficulty.map(d => d.level)) : 0;
+            const bBoss = bosses.find(item => item.name === b.name) ? bosses.find(item => item.name === b.name) : null;
+            const bMax = bBoss ? Math.max(...bBoss.difficulty.map(d => d.level)) : 0;
             if (!a.isGold && b.isGold) {
                 return 1;
             } else if (a.isGold && !b.isGold) {
                 return -1;
             } else {
-                return bLevel - aLevel;  
+                return bMax - aMax;  
             }
         });
         character.checklist = sortedChecklist;
     }
 
     if (checklist.length !== 0) {
+        console.log(JSON.stringify(checklist));
         dispatch(saveData(checklist));
         setLoading(false);
     } else {
@@ -308,32 +307,27 @@ function initialWeekContents(level: number, bosses: Boss[]): Checklist[] {
             return maxLevelB - maxLevelA;
         });
     for (const boss of sortedBosses) {
-        let isImport = false;
-        boss.difficulty.sort((a, b) => b.level - a.level);
-        for (const difficulty of boss.difficulty) {
-            if (!difficulty.difficulty.includes('싱글')) {
-                if (!isImport && level >= difficulty.level && !difficulty.isBiweekly) {
-                    checklist.push({
-                        name: boss.name,
-                        difficulty: difficulty.difficulty,
+        const minDifficulty = boss.difficulty.filter(diff => diff.stage === 1).sort((a, b) => b.level - a.level);
+        for (const diff of minDifficulty) {
+            if (level >= diff.level) {
+                const resultDiff = boss.difficulty.filter(d => d.difficulty === diff.difficulty).sort((a, b) => a.stage - b.stage);
+                const items: ChecklistItem[] = [];
+                for (const item of resultDiff) {
+                    items.push({
+                        difficulty: item.difficulty,
                         isCheck: false,
                         isDisable: false,
-                        isGold: true,
-                        isBiweekly: difficulty.isBiweekly
-                    });
-                    isImport = true;
-                    count++;
-                }
-                if (isImport && level >= difficulty.level && difficulty.isBiweekly) {
-                    checklist.push({
-                        name: boss.name,
-                        difficulty: difficulty.difficulty,
-                        isCheck: false,
-                        isDisable: false,
-                        isGold: true,
-                        isBiweekly: difficulty.isBiweekly
+                        isBonus: false,
+                        stage: item.stage
                     });
                 }
+                checklist.push({
+                    name: boss.name,
+                    isGold: true,
+                    items: items
+                });
+                count++;
+                break;
             }
         }
         if (count === 3) break;
@@ -347,6 +341,7 @@ export async function getBosses(): Promise<Boss[]> {
     const bosses: Boss[] = snapshot.docs.map(doc => ({
         id: doc.id,
         name: doc.data().name,
+        simple: doc.data().simple ? doc.data().simple : '',
         difficulty: doc.data().difficulty
     }));
     return bosses;
@@ -370,7 +365,14 @@ export async function getCubes(): Promise<Cube[]> {
 export function getCompleteChecklist(checklist: CheckCharacter[]): number {
     return checklist.reduce((total, character) => {
         const countFromChecklist = character.checklist
-            .filter(item => item.isCheck)
+            .filter(item => {
+                for (const checklistItem of item.items) {
+                    if (!checklistItem.isCheck && !checklistItem.isDisable) {
+                        return false;
+                    }
+                }
+                return true;
+            })
             .reduce((sum) => sum+1, 0);
         return total + countFromChecklist;
     }, 0);
@@ -388,7 +390,7 @@ export function getAllGoldCharacter(
 ): number {
     const golds = character.checklist
         .filter(item => item.isGold)
-        .reduce((total, item) => total + getBossGold(bosses, item.name, item.difficulty) + getBossBoundGold(bosses, item.name, item.difficulty), 0);
+        .reduce((total, item) => total + getBossGold(bosses, item.name, item.items) + getBossBoundGold(bosses, item.name, item.items), 0);
     return character.isGold ? golds : 0;
 }
 
@@ -398,8 +400,8 @@ export function getCompleteGoldCharacter(
     character: CheckCharacter
 ): number {
     const golds = character.checklist
-        .filter(item => item.isGold && item.isCheck)
-        .reduce((total, item) => total + getBossGold(bosses, item.name, item.difficulty) + getBossBoundGold(bosses, item.name, item.difficulty), 0);
+        .filter(item => item.isGold)
+        .reduce((total, item) => total + getBossCheckedGold(bosses, item.name, item.items) + getBossBoundCheckGold(bosses, item.name, item.items), 0);
     return character.isGold ? golds : 0;
 }
 
@@ -409,8 +411,8 @@ export function getCompleteSharedGoldCharacter(
     character: CheckCharacter
 ): number {
     const golds = character.checklist
-        .filter(item => item.isGold && item.isCheck)
-        .reduce((total, item) => total + getBossGold(bosses, item.name, item.difficulty), 0);
+        .filter(item => item.isGold)
+        .reduce((total, item) => total + getBossCheckedGold(bosses, item.name, item.items), 0);
     return character.isGold ? golds : 0;
 }
 
@@ -420,8 +422,8 @@ export function getCompleteBoundGoldCharacter(
     character: CheckCharacter
 ): number {
     const golds = character.checklist
-        .filter(item => item.isGold && item.isCheck)
-        .reduce((total, item) => total + getBossBoundGold(bosses, item.name, item.difficulty), 0);
+        .filter(item => item.isGold)
+        .reduce((total, item) => total + getBossBoundCheckGold(bosses, item.name, item.items), 0);
     return character.isGold ? golds : 0;
 }
 
@@ -436,7 +438,7 @@ export function getAllGolds(
         .reduce((total, character) => {
         const goldFromChecklist = character.checklist
             .filter(item => item.isGold)
-            .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.difficulty) + getBossBoundGold(bosses, item.name, item.difficulty), 0);
+            .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.items) + getBossBoundGold(bosses, item.name, item.items), 0);
         return total + goldFromChecklist;
     }, 0);
     for (const character of checklist) {
@@ -455,8 +457,8 @@ export function getHaveGolds(
         .filter(character => character.isGold)
         .reduce((total, character) => {
         const goldFromChecklist = character.checklist
-            .filter(item => item.isGold && item.isCheck)
-            .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.difficulty) + getBossBoundGold(bosses, item.name, item.difficulty), 0);
+            .filter(item => item.isGold)
+            .reduce((sum, item) => sum + getBossCheckedGold(bosses, item.name, item.items) + getBossBoundCheckGold(bosses, item.name, item.items), 0);
         return total + goldFromChecklist;
     }, 0);
     for (const character of checklist) {
@@ -475,8 +477,8 @@ export function getHaveSharedGolds(
         .filter(character => character.isGold)
         .reduce((total, character) => {
         const goldFromChecklist = character.checklist
-            .filter(item => item.isGold && item.isCheck)
-            .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.difficulty), 0);
+            .filter(item => item.isGold)
+            .reduce((sum, item) => sum + getBossCheckedGold(bosses, item.name, item.items), 0);
         return total + goldFromChecklist;
     }, 0);
     for (const character of checklist) {
@@ -495,8 +497,8 @@ export function getHaveBoundGolds(
         .filter(character => character.isGold)
         .reduce((total, character) => {
         const goldFromChecklist = character.checklist
-            .filter(item => item.isGold && item.isCheck)
-            .reduce((sum, item) => sum + getBossBoundGold(bosses, item.name, item.difficulty), 0);
+            .filter(item => item.isGold)
+            .reduce((sum, item) => sum + getBossBoundCheckGold(bosses, item.name, item.items), 0);
         return total + goldFromChecklist;
     }, 0);
     for (const character of checklist) {
@@ -505,42 +507,81 @@ export function getHaveBoundGolds(
     return sum;
 }
 
-// 특정 콘텐츠 귀속 골드 획득량 가져오는 함수
+// 특정 콘텐츠 귀속 골드 획득가능량 가져오는 함수
 export function getBossBoundGold(
     bosses: Boss[],
     name: string,
-    difficulty: string
+    items: ChecklistItem[]
 ): number {
-    let gold: number = 0;
+    let gold = 0;
     for (const boss of bosses) {
         if (boss.name === name) {
-            for (const diff of boss.difficulty) {
-                if (diff.difficulty === difficulty) {
-                    const boundGold = diff.boundGold ?? 0;
-                    gold = boundGold;
-                    break;
+            for (const item of items) {
+                const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
+                gold += diff ? diff.boundGold : 0;
+            }
+            break;
+        }
+    }
+    return gold;
+}
+
+// 특정 콘텐츠 귀속 골드 획득량 가져오는 함수
+export function getBossBoundCheckGold(
+    bosses: Boss[],
+    name: string,
+    items: ChecklistItem[]
+): number {
+    let gold = 0;
+    for (const boss of bosses) {
+        if (boss.name === name) {
+            for (const item of items) {
+                const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
+                if (item.isCheck) {
+                    gold += diff ? diff.boundGold : 0;
                 }
             }
+            break;
+        }
+    }
+    return gold;
+}
+
+// 특정 콘텐츠 골드 획득 가능량 가져오는 함수
+export function getBossGold(
+    bosses: Boss[],
+    name: string,
+    items: ChecklistItem[]
+): number {
+    let gold = 0;
+    for (const boss of bosses) {
+        if (boss.name === name) {
+            for (const item of items) {
+                const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
+                gold += diff ? diff.gold : 0;
+            }
+            break;
         }
     }
     return gold;
 }
 
 // 특정 콘텐츠 골드 획득량 가져오는 함수
-export function getBossGold(
+export function getBossCheckedGold(
     bosses: Boss[],
     name: string,
-    difficulty: string
+    items: ChecklistItem[]
 ): number {
-    let gold: number = 0;
+    let gold = 0;
     for (const boss of bosses) {
         if (boss.name === name) {
-            for (const diff of boss.difficulty) {
-                if (diff.difficulty === difficulty) {
-                    gold = diff.gold;
-                    break;
+            for (const item of items) {
+                const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
+                if (item.isCheck) {
+                    gold += diff ? diff.gold : 0;
                 }
             }
+            break;
         }
     }
     return gold;
@@ -685,6 +726,60 @@ export function useOnClickDayCheck(
     }
 }
 
+// 주간 콘텐츠 관문 체크 이벤트 함수
+export async function handleWeekCheckStage(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    checklistIndex: number,
+    dispatch: AppDispatch,
+    stage: number
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser ? storedUser.id : '';
+    const updatedChecklist = structuredClone(checklist[characterIndex].checklist[checklistIndex]);
+    const prevChecklist = structuredClone(updatedChecklist);
+    for (const item of updatedChecklist.items) {
+        if (item.stage < stage) {
+            item.isCheck = true;
+        } else if (item.stage === stage) {
+            item.isCheck = !item.isCheck;
+        } else {
+            item.isCheck = false;
+        }
+    }
+    dispatch(checkWeek({
+        characterIndex: characterIndex,
+        checklistIndex: checklistIndex,
+        checklist: updatedChecklist
+    }));
+    const editRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'check-week',
+            characterIndex: characterIndex,
+            checklistIndex: checklistIndex,
+            checklistItem: updatedChecklist
+        })
+    });
+    if (!editRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        dispatch(checkWeek({
+            characterIndex: characterIndex,
+            checklistIndex: checklistIndex,
+            checklist: prevChecklist
+        }));
+        return;
+    }
+}
+
 // 주간 콘텐츠 체크 이벤트 함수
 export async function useOnClickWeekCheck(
     checklist: CheckCharacter[],
@@ -695,9 +790,13 @@ export async function useOnClickWeekCheck(
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
-    const updatedChecklist = {...checklist[characterIndex].checklist[checklistIndex]};
-    const prevChecklist = {...updatedChecklist};
-    updatedChecklist.isCheck = !updatedChecklist.isCheck;
+    const updatedChecklist = structuredClone(checklist[characterIndex].checklist[checklistIndex]);
+    const prevChecklist = structuredClone(updatedChecklist);
+    const isNothingChecked = updatedChecklist.items.some(item => !item.isCheck);
+    for (const item of updatedChecklist.items) {
+        if (isNothingChecked) item.isCheck = true;
+        else item.isCheck = false;
+    }
     dispatch(checkWeek({
         characterIndex: characterIndex,
         checklistIndex: checklistIndex,
@@ -1086,18 +1185,16 @@ export async function handleCheckGolds(
         checklist: updatedChecklist.checklist[checklistIndex]
     }));
     updatedChecklist.checklist = updatedChecklist.checklist.sort((a, b) => {
-        const aDifficulty = bosses.find(item => item.name === a.name)?.difficulty;
-        const aObj = aDifficulty ? aDifficulty.find(item => item.difficulty === a.difficulty) : null;
-        const aGold = aObj ? aObj.gold : 0;
-        const bDifficulty = bosses.find(item => item.name === b.name)?.difficulty;
-        const bObj = bDifficulty ? bDifficulty.find(item => item.difficulty === b.difficulty) : null;
-        const bGold = bObj ? bObj.gold : 0;
+        const aBoss = bosses.find(item => item.name === a.name) ? bosses.find(item => item.name === a.name) : null;
+        const aMax = aBoss ? Math.max(...aBoss.difficulty.map(d => d.level)) : 0;
+        const bBoss = bosses.find(item => item.name === b.name) ? bosses.find(item => item.name === b.name) : null;
+        const bMax = bBoss ? Math.max(...bBoss.difficulty.map(d => d.level)) : 0;
         if (!a.isGold && b.isGold) {
             return 1;
         } else if (a.isGold && !b.isGold) {
             return -1;
         } else {
-            return bGold - aGold;  
+            return bMax - aMax;  
         }
     });
     dispatch(removeWeek({
@@ -1189,18 +1286,16 @@ export async function useOnClickAddItem(
     newChecklist.push(addChecklist);
     const copyChecklist = structuredClone(newChecklist);
     newChecklist = newChecklist.sort((a, b) => {
-        const aDifficulty = bosses.find(item => item.name === a.name)?.difficulty;
-        const aObj = aDifficulty ? aDifficulty.find(item => item.difficulty === a.difficulty) : null;
-        const aGold = aObj ? aObj.gold : 0;
-        const bDifficulty = bosses.find(item => item.name === b.name)?.difficulty;
-        const bObj = bDifficulty ? bDifficulty.find(item => item.difficulty === b.difficulty) : null;
-        const bGold = bObj ? bObj.gold : 0;
+        const aBoss = bosses.find(item => item.name === a.name) ? bosses.find(item => item.name === a.name) : null;
+        const aMax = aBoss ? Math.max(...aBoss.difficulty.map(d => d.level)) : 0;
+        const bBoss = bosses.find(item => item.name === b.name) ? bosses.find(item => item.name === b.name) : null;
+        const bMax = bBoss ? Math.max(...bBoss.difficulty.map(d => d.level)) : 0;
         if (!a.isGold && b.isGold) {
             return 1;
         } else if (a.isGold && !b.isGold) {
             return -1;
         } else {
-            return bGold - aGold;  
+            return bMax - aMax;  
         }
     });
     dispatch(removeWeek({
@@ -1267,21 +1362,24 @@ export function getWeekContents(bosses: Boss[]): WeekContent[] {
 }
 
 // 콘텐츠의 난이도 목록을 가져오는 함수
-export function getWeekDifficultys(bosses: Boss[], key: string): WeekContent[] {
-    const boss = getBossesById(bosses, key);
-    const difficultys: WeekContent[] = [];
-    let taskKey = 0;
-    if (boss) {
-        for (const difficulty of boss.difficulty) {
-            difficultys.push({
-                key: taskKey.toString(),
-                name: difficulty.difficulty
-            });
-            taskKey++;
+export function getWeekStages(bosses: Boss[], id: string): number[] {
+    const findBoss = getBossesById(bosses, id);
+    const diffs = findBoss ? findBoss.difficulty.map(diff => diff.stage) : [];
+    const results = [...new Set(diffs)];
+    return results;
+}
+
+// 관문의 난이도 가져오는 함수
+export function getDifficultyByStage(bosses: Boss[], id: string, stage: number): string[] {
+    const results: string[] = ['선택안함'];
+    const findBoss = getBossesById(bosses, id);
+    const diffs = findBoss ? findBoss.difficulty.filter(diff => diff.stage === stage) : null;
+    if (diffs) {
+        for (const diff of diffs) {
+            results.push(diff.difficulty);
         }
-        return difficultys;
     }
-    return [];
+    return results;
 }
 
 // id로 콘텐츠 Boss 반환하는 함수
@@ -2098,15 +2196,17 @@ export function loadDatas(
     const datas: ChecklistData[] = [];
     for (const character of checklist) {
         for (const content of character.checklist) {
-            if (!content.isCheck && !content.isDisable) {
-                const newData: ChecklistData = {
-                    nickname: character.nickname,
-                    level: character.level,
-                    contentName: content.name,
-                    difficulty: content.difficulty,
-                    isGold: content.isGold
+            for (const item of content.items) {
+                if (!item.isCheck && !item.isDisable) {
+                    const newData: ChecklistData = {
+                        nickname: character.nickname,
+                        level: character.level,
+                        contentName: content.name,
+                        difficulty: item.difficulty,
+                        isGold: content.isGold
+                    }
+                    datas.push(newData);
                 }
-                datas.push(newData);
             }
         }
     }
@@ -2246,8 +2346,10 @@ export function filterChecklist(
     let isFindedRemainHomework = false;
     if (isRemainHomework) {
         character.checklist.forEach((content) => {
-            if (!content.isCheck) {
-                isFindedRemainHomework = true;
+            for (const item of content.items) {
+                if (!item.isCheck) {
+                    isFindedRemainHomework = true;
+                }
             }
         });
         character.weeklist.forEach((content) => {
@@ -2389,3 +2491,50 @@ export function getAccounts(checklist: CheckCharacter[]): string[] {
     });
     return accounts;
 }
+
+// 주간 콘텐츠 체크박스의 체크 여부
+export function isCheckHomework(content: Checklist): boolean {
+    let isChecked = true;
+    if (content.items.length === 0) return false;
+    for (const item of content.items) {
+        if (!item.isCheck) {
+            isChecked = false;
+            break;
+        }
+    }
+    return isChecked;
+}
+
+// 보스 간단 이름 가져오기
+export function getSimpleBossName(bosses: Boss[], name: string): string {
+    const findBoss = bosses.find(boss => boss.name === name);
+    return findBoss ? findBoss.simple : '알 수 없는 콘텐츠';
+}
+
+// 관문 별 체크 버튼 테두리 반환
+export function getBorderByStage(diff: string): string {
+    if (diff.includes('싱글')) return 'border-blue-400 dark:border-blue-600';
+    else if (diff.includes('노말')) return 'border-green-600 dark:border-green-400';
+    else if (diff.includes('하드')) return 'border-red-600 dark:border-red-400';
+    else if (diff.includes('더퍼스트')) return 'border-purple-600 dark:border-purple-400';
+    return 'border-gray-600 dark:border-gray-400';
+}
+
+// 관문 별 체크 버튼 배경색 반환
+export function getBackgroundByStage(diff: string): string {
+    if (diff.includes('싱글')) return 'bg-blue-400 dark:bg-blue-600';
+    else if (diff.includes('노말')) return 'bg-green-600 dark:bg-green-400';
+    else if (diff.includes('하드')) return 'bg-red-600 dark:bg-red-400';
+    else if (diff.includes('더퍼스트')) return 'bg-purple-600 dark:bg-purple-400';
+    return 'bg-gray-600 dark:bg-gray-400';
+}
+
+// 관문 별 체크 버튼 배경색 반환
+export function getBackground50ByStage(diff: string): string {
+    if (diff.includes('싱글')) return 'bg-blue-400/50 dark:bg-blue-600/50 text-white';
+    else if (diff.includes('노말')) return 'bg-green-600/50 dark:bg-green-400/50 text-white';
+    else if (diff.includes('하드')) return 'bg-red-600/50 dark:bg-red-400/50 text-white';
+    else if (diff.includes('더퍼스트')) return 'bg-purple-600/50 dark:bg-purple-400/50 text-white';
+    return 'bg-gray-600/50 dark:bg-gray-400/50 text-white';
+}
+

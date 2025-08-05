@@ -26,7 +26,6 @@ export function isLogin(): boolean {
 export async function loadChecklist(
     setChecklist: SetStateFn<CheckCharacter[]>,
     setLoading: SetStateFn<boolean>,
-    setDatas: SetStateFn<ChecklistData[]>,
     bosses: Boss[]
 ) {
     const userStr = localStorage.getItem('user');
@@ -45,24 +44,6 @@ export async function loadChecklist(
     }
 
     const checklist: CheckCharacter[] = await res.json();
-    const datas: ChecklistData[] = [];
-
-    for (const character of checklist) {
-        for (const content of character.checklist) {
-            if (!content.isCheck && !content.isDisable) {
-                const newData: ChecklistData = {
-                    nickname: character.nickname,
-                    level: character.level,
-                    contentName: content.name,
-                    difficulty: content.difficulty,
-                    isGold: content.isGold
-                }
-                datas.push(newData);
-            }
-        }
-    }
-
-    datas.sort((a, b) => getLevelByContent(bosses, b.contentName, b.difficulty) - getLevelByContent(bosses, a.contentName, a.difficulty));
     checklist.sort((a, b) => b.level - a.level);
     checklist.sort((a, b) => {
         if (a.isGold && !b.isGold) return -1;
@@ -70,7 +51,6 @@ export async function loadChecklist(
         return 0;
     });
     checklist.sort((a, b) => a.position - b.position);
-    setDatas(datas);
     setChecklist(checklist);
     setLoading(false);
 }

@@ -92,7 +92,7 @@ function CubeComponent() {
                             step={1}
                             value={inputReward}
                             onValueChange={setInputReward}
-                            className="grow"/>
+                            className ="grow"/>
                         <Button
                             color="primary"
                             size="lg"
@@ -137,6 +137,7 @@ function BossComponent() {
     const [boss, setBoss] = useState<Boss[]>([]);
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [inputName, setInputName] = useState('');
+    const [inputSimple, setInputSimple] = useState('');
     const [inputs, setInputs] = useState<Difficulty[]>([]);
     const [isEditMode, setEditMode] = useState(false);
     const [editIndex, setEditIndex] = useState(-1);
@@ -147,9 +148,11 @@ function BossComponent() {
         onValueChangeLevel,
         onValueChangeGold,
         onValueChangeBiweekly,
-        onValueChangeBoundGold
+        onValueChangeBoundGold,
+        onValueChangeStage,
+        onValueChangeBonus
     } = useInputHandlers(inputs, setInputs);
-    const onCloseModal = useClearData(setInputName, setInputs, setEditMode, setEditIndex);
+    const onCloseModal = useClearData(setInputName, setInputSimple, setInputs, setEditMode, setEditIndex);
 
     useEffect(() => {
         const fetchBoss = async () => {
@@ -174,7 +177,10 @@ function BossComponent() {
                         {boss.length !== 0 ? boss.map((item: Boss, index: number) => (
                             <Card key={index} radius="sm" className="mb-6">
                                 <CardHeader>
-                                    <h2 className="text-xl font-bold">{item.name}</h2>
+                                    <div className="w-full flex gap-2 items-center">
+                                        <h2 className="grow text-xl font-bold">{item.name}</h2>
+                                        <p className="fadedtext text-sm">{item.simple}</p>
+                                    </div>
                                 </CardHeader>
                                 <Divider/>
                                 <CardBody>
@@ -185,18 +191,22 @@ function BossComponent() {
                                             className="w-[500px] sm:w-full">
                                             <TableHeader>
                                                 <TableColumn>난이도</TableColumn>
+                                                <TableColumn>관문</TableColumn>
                                                 <TableColumn>입장 가능 레벨</TableColumn>
                                                 <TableColumn>획득 골드</TableColumn>
                                                 <TableColumn>귀속 골드</TableColumn>
+                                                <TableColumn>더보기 골드</TableColumn>
                                                 <TableColumn>격주 여부</TableColumn>
                                             </TableHeader>
                                             <TableBody>
                                                 {item.difficulty.map((difficulty: Difficulty, idx: number) => (
                                                     <TableRow key={idx}>
                                                         <TableCell>{difficulty.difficulty}</TableCell>
+                                                        <TableCell>{difficulty.stage}</TableCell>
                                                         <TableCell>{difficulty.level.toLocaleString()}</TableCell>
                                                         <TableCell>{difficulty.gold.toLocaleString()}</TableCell>
                                                         <TableCell>{difficulty.boundGold.toLocaleString()}</TableCell>
+                                                        <TableCell>{difficulty.bonus.toLocaleString()}</TableCell>
                                                         <TableCell>{difficulty.isBiweekly ? '○' : '✕'}</TableCell>
                                                     </TableRow>
                                                 ))}
@@ -209,7 +219,7 @@ function BossComponent() {
                                     <div className="w-full flex gap-4">
                                         <div className="grow-1"/>
                                         <Button color="danger" onPress={async () => await onClickRemove(index, boss, setBoss)}>삭제</Button>
-                                        <Button color="primary" onPress={() => onClickEdit(index, setEditMode, setEditIndex, onOpen, boss[index], setInputName, setInputs)}>수정</Button>
+                                        <Button color="primary" onPress={() => onClickEdit(index, setEditMode, setEditIndex, onOpen, boss[index], setInputName, setInputSimple, setInputs)}>수정</Button>
                                     </div>
                                 </CardFooter>
                             </Card>
@@ -222,6 +232,7 @@ function BossComponent() {
                 isDismissable={false} 
                 scrollBehavior="inside"
                 backdrop="blur"
+                size="4xl"
                 onOpenChange={onOpenChange}
                 onClose={onCloseModal}>
                 <ModalContent>
@@ -235,6 +246,12 @@ function BossComponent() {
                                     placeholder="군단장 레이드 - 카멘"
                                     value={inputName}
                                     onValueChange={setInputName}/>
+                                <Input
+                                    label="간단 콘텐츠 명"
+                                    labelPlacement="outside"
+                                    placeholder="카멘"
+                                    value={inputSimple}
+                                    onValueChange={setInputSimple}/>
                                 <div className="max-h-[500px] overflow-y-auto">
                                     {inputs.map((input: Difficulty, index: number) => (
                                         <div key={index} className="mt-4">
@@ -244,7 +261,7 @@ function BossComponent() {
                                                     className="text-red-500 underline hover:text-red-800 cursor-pointer"
                                                     onClick={() => useOnRemoveDifficulty(index, inputs, setInputs)}>삭제하기</span>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-3 items-center mt-2">
+                                            <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 items-center mt-2">
                                                 <Input
                                                     label="난이도"
                                                     labelPlacement="outside"
@@ -261,12 +278,21 @@ function BossComponent() {
                                                     value={input.level}
                                                     onValueChange={(value: number) => onValueChangeLevel(value, index)}/>
                                                 <NumberInput
+                                                    label="관문"
+                                                    labelPlacement="outside"
+                                                    placeholder="0 ~ 9999999"
+                                                    minValue={0}
+                                                    maxValue={9999999}
+                                                    step={1}
+                                                    value={input.stage}
+                                                    onValueChange={(value: number) => onValueChangeStage(value, index)}/>
+                                                <NumberInput
                                                     label="지급 골드"
                                                     labelPlacement="outside"
                                                     placeholder="0 ~ 9999999"
                                                     minValue={0}
                                                     maxValue={9999999}
-                                                    step={10}
+                                                    step={5}
                                                     value={input.gold}
                                                     onValueChange={(value: number) => onValueChangeGold(value, index)}/>
                                                 <NumberInput
@@ -275,9 +301,18 @@ function BossComponent() {
                                                     placeholder="0 ~ 9999999"
                                                     minValue={0}
                                                     maxValue={9999999}
-                                                    step={10}
+                                                    step={5}
                                                     value={input.boundGold}
                                                     onValueChange={(value: number) => onValueChangeBoundGold(value, index)}/>
+                                                <NumberInput
+                                                    label="더보기"
+                                                    labelPlacement="outside"
+                                                    placeholder="0 ~ 9999999"
+                                                    minValue={0}
+                                                    maxValue={9999999}
+                                                    step={5}
+                                                    value={input.bonus}
+                                                    onValueChange={(value: number) => onValueChangeBonus(value, index)}/>
                                                 <Switch 
                                                     isSelected={input.isBiweekly} 
                                                     onValueChange={(isSelected: boolean) => onValueChangeBiweekly(isSelected, index)}>격주 여부</Switch>
@@ -295,7 +330,7 @@ function BossComponent() {
                             <Divider/>
                             <ModalFooter>
                                 <Button color="default" variant="light" onPress={onClose}>취소</Button>
-                                <Button color="primary" onPress={async () => await useOnAddData(inputName, inputs, onClose, boss, setBoss, isEditMode, editIndex)}>{isEditMode ? '수정' : '추가'}</Button>
+                                <Button color="primary" onPress={async () => await useOnAddData(inputName, inputSimple, inputs, onClose, boss, setBoss, isEditMode, editIndex)}>{isEditMode ? '수정' : '추가'}</Button>
                             </ModalFooter>
                         </>
                     )}

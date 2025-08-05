@@ -37,7 +37,7 @@ import {
     Tooltip
 } from "@heroui/react";
 import {DateValue, getLocalTimeZone, now} from "@internationalized/date";
-import { getWeekContents, getWeekDifficultys } from "../checklist/checklistFeat";
+import { getWeekContents } from "../checklist/checklistFeat";
 import CalendarIcon from "@/Icons/CalendarIcon";
 import { SetStateFn } from "@/utiils/utils";
 
@@ -85,7 +85,6 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild, isLogi
 
     const [title, setTitle] = useState('');
     const [raid, setRaid] = useState<Selection>(new Set([]));
-    const [difficulty, setDifficulty] = useState<Selection>(new Set([]));
     const [selectDate, setSelectDate] = useState<DateValue | null>(now(getLocalTimeZone()));
     const [isTypeGuild, setTypeGuild] = useState(false);
     const [isEtc, setEtc] = useState(false);
@@ -169,10 +168,10 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild, isLogi
                                                 <p className="text-sm fadedtext">제목</p>
                                                 <p className="truncate mb-2">{box.calendar.name}</p>
                                                 <div className={clsx(
-                                                    box.calendar.raidname !== '' && box.calendar.difficulty !== '' ? 'block' : 'hidden'
+                                                    box.calendar.raidname !== '' ? 'block' : 'hidden'
                                                 )}>
                                                     <p className="text-sm fadedtext">콘텐츠</p>
-                                                    <p className="truncate mb-2">{box.calendar.raidname} {box.calendar.difficulty}</p>
+                                                    <p className="truncate mb-2">{box.calendar.raidname}</p>
                                                 </div>
                                                 <p className="text-sm fadedtext">날짜 및 시간</p>
                                                 <p className="truncate mb-2">{formatDatetoString(box.calendar.date)}</p>
@@ -264,10 +263,10 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild, isLogi
                                                 <p className="text-sm fadedtext">제목</p>
                                                 <p className="truncate mb-2">{box.calendar.name}</p>
                                                 <div className={clsx(
-                                                    box.calendar.raidname !== '' && box.calendar.difficulty !== '' ? 'block' : 'hidden'
+                                                    box.calendar.raidname !== '' ? 'block' : 'hidden'
                                                 )}>
                                                     <p className="text-sm fadedtext">콘텐츠</p>
-                                                    <p className="truncate mb-2">{box.calendar.raidname} {box.calendar.difficulty}</p>
+                                                    <p className="truncate mb-2">{box.calendar.raidname}</p>
                                                 </div>
                                                 <p className="text-sm fadedtext">날짜 및 시간</p>
                                                 <p className="truncate mb-2">{formatDatetoString(box.calendar.date)}</p>
@@ -316,7 +315,6 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild, isLogi
                 onClose={() => {
                     setTitle('');
                     setRaid(new Set([]));
-                    setDifficulty(new Set([]));
                     setSelectDate(now(getLocalTimeZone()));
                     setTypeGuild(false);
                     setMemo('');
@@ -384,21 +382,6 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild, isLogi
                                         <SelectItem key={boss.key}>{boss.name}</SelectItem>
                                     ))}
                                 </Select>
-                                <Select
-                                    isRequired
-                                    label="난이도"
-                                    placeholder="난이도 선택"
-                                    radius="sm"
-                                    selectedKeys={difficulty}
-                                    onSelectionChange={setDifficulty}
-                                    className={clsx(
-                                        "mb-2",
-                                        Array.from(raid)[0] && !isEtc ? 'block' : 'hidden'
-                                    )}>
-                                    {Array.from(raid)[0] ? getWeekDifficultys(bosses, Array.from(raid)[0].toString()).map((difficulty) => (
-                                        <SelectItem key={difficulty.key}>{difficulty.name}</SelectItem>
-                                    )) : <></>}
-                                </Select>
                                 <DatePicker
                                     isRequired
                                     label="일정 날짜"
@@ -424,7 +407,7 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild, isLogi
                                     radius="sm"
                                     isLoading={isLoadingButton}
                                     onPress={async () => {
-                                        await handleSubmitCalendar(title, raid, difficulty, selectDate, isTypeGuild, isEtc, memo, onClose, bosses, setLoadingButton, works, setWorks, guild, setGuild);
+                                        await handleSubmitCalendar(title, raid, selectDate, isTypeGuild, isEtc, memo, onClose, bosses, setLoadingButton, works, setWorks, guild, setGuild);
                                     }}>
                                     추가
                                 </Button>
@@ -627,10 +610,10 @@ export default function BigComponent({ works, guild, setWorks, setGuild }: BigCo
                                                     <p className="text-sm fadedtext">제목</p>
                                                     <p className="truncate mb-2">{box.calendar.name}</p>
                                                     <div className={clsx(
-                                                        box.calendar.raidname !== '' && box.calendar.difficulty !== '' ? 'block' : 'hidden'
+                                                        box.calendar.raidname !== '' ? 'block' : 'hidden'
                                                     )}>
                                                         <p className="text-sm fadedtext">콘텐츠</p>
-                                                        <p className="truncate mb-2">{box.calendar.raidname} {box.calendar.difficulty}</p>
+                                                        <p className="truncate mb-2">{box.calendar.raidname}</p>
                                                     </div>
                                                     <p className="text-sm fadedtext">날짜 및 시간</p>
                                                     <p className="truncate mb-2">{formatDatetoString(box.calendar.date)}</p>

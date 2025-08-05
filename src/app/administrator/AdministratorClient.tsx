@@ -34,7 +34,7 @@ export default function AdministratorClient() {
         },
         {
             key: 'crypto',
-            title: '암호화 관리',
+            title: '자동화 관리',
             component: <CryptoComponent/>
         },
         {

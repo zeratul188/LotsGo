@@ -17,11 +17,15 @@ export type OtherList = {
 }
 export type Checklist = {
     name: string,
+    items: ChecklistItem[],
+    isGold: boolean
+}
+export type ChecklistItem = {
     difficulty: string,
+    stage: number,
     isCheck: boolean,
     isDisable: boolean,
-    isGold: boolean,
-    isBiweekly: boolean
+    isBonus: boolean
 }
 export type CubeList = {
     id: string,

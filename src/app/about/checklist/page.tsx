@@ -33,6 +33,22 @@ export default function Checklist() {
             <p>서버 선택 우측에 위치한 "남은 숙제 현황 보기"를 누르면 현재 체크하지 않은 주간 콘텐츠를 표시합니다.</p>
             <p>항목의 좌측의 색은 골드 지정된 레이드를 뜻합니다. 노란색은 골드 지정 레이드이며, 회색은 골드 지정이 아닌 레이드를 뜻합니다.</p>
             <p>콘텐츠 선택으로 특정 콘텐츠를 선택하면 해당 레이드의 체크하지 않은 항목만 표시됩니다.</p>
+            <h1 className="font-bold mt-10 mb-2">계정 관리하기</h1>
+            <div className="w-full grid sm:grid-cols-[1fr_2fr] gap-2 mb-2">
+                <div className="w-full flex flex-col gap-2">
+                    <Image src="/about/checklist11.webp" alt="로츠고 계정 버튼 위치" width={800} height={0} className="w-full h-auto rounded-xl mt-2 mb-2"/>
+                    <Image src="/about/checklist12.webp" alt="로츠고 계정 관리" width={800} height={0} className="w-full h-auto rounded-xl mt-2 mb-2"/>
+                </div>
+                <div className="w-full">
+                    <p>로스트아크를 플레이 할 경우 다계정을 이용하게 되면 숙제로 등록된 캐릭터 수가 많아졌을 경우 캐릭터마다 계정을 지정하여 관리하실 수 있습니다.</p>
+                    <p>캐릭터 설정 버튼을 눌러 "계정 선택"을 통해 캐릭터의 계정을 지정하실 수 있습니다.</p>
+                    <p>
+                        2번째 이미지를 보시면 기존에 등록되어 있던 계정을 선택하거나 새로운 계정을 등록할려면 하단의 입력란에 새로운 계정명을 입력하신 후 "계정 추가"를 통해 
+                        계정을 추가하고 추가된 계정을 선택하여 "계정 선택"을 통해 계정을 지정하실 수 있습니다.
+                    </p>
+                    <p>이후 계정마다 숙제를 간략하게 확인하고 싶으시다면 상단의 "검색 필터"를 통해 계정 별로 검색하실 수 있습니다.</p>
+                </div>
+            </div>
             <h1 className="font-bold mt-10 mb-2">휴식 게이지 관리하기</h1>
             <Image src="/about/checklist4.webp" alt="로츠고 휴식 게이지 관리" width={800} height={0} className="w-full sm:w-1/2 h-auto rounded-xl mt-2 mb-2"/>
             <p>휴식게이지를 관리하기 위해서 해당 캐릭터의 일일콘텐츠 및에 있는 "추가" 버튼을 누르면 휴식 게이지를 관리할 수 있습니다.</p>
