@@ -168,7 +168,6 @@ export async function loadChecklist(
     }
 
     if (checklist.length !== 0) {
-        console.log(JSON.stringify(checklist));
         dispatch(saveData(checklist));
         setLoading(false);
     } else {
@@ -2275,11 +2274,17 @@ export async function handleResetChecklist(
                     ...item,
                     isCheck: false
                 })),
-                checklist: checklistSection.map((item: any) => ({
-                    ...item,
-                    isDisable: item.isBiweekly && item.isCheck && (biweekly%2 === 1),
-                    isCheck: false
-                })),
+                checklist: checklistSection.map((item: any) => {
+                    const itemsSection = Array.isArray(item.items) ? item.items : [];
+                    return {
+                        ...item,
+                        items: itemsSection.map((it: any) => ({
+                            ...it,
+                            isBonus: false,
+                            isCheck: false
+                        }))
+                    }
+                }),
                 otherGold: 0,
                 weeklist: weeklist.map((list: any) => ({
                     ...list,
