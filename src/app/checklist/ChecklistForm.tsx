@@ -51,6 +51,7 @@ import {
     getBossByContent, 
     getBossesByHaveContent, 
     getBossesById, 
+    getBossGoldByContent, 
     getCheckedResult, 
     getColumnsByCubeTiers, 
     getCompleteBoundGoldCharacter, 
@@ -75,6 +76,7 @@ import {
     getServerList, 
     getSimpleBossName, 
     getTakeGold, 
+    getTextColorByDifficulty, 
     getTypeDayValue, 
     getWeekContents, 
     getWeekStages, 
@@ -1046,7 +1048,72 @@ export function ChecklistComponent({
                                                                             getBackgroundByStage(diff.difficulty)
                                                                         )} />
                                                                     )}
-                                                                    <Tooltip showArrow content={diff.difficulty}>
+                                                                    <Tooltip showArrow delay={1000} content={
+                                                                        <div className="w-full min-[251px]:w-[250px]">
+                                                                            <h1 className="w-full text-center font-bold p-1.5 font-bold">{item.name}</h1>
+                                                                            <div className="w-full flex gap-2 items-center mb-1.5">
+                                                                                <Chip
+                                                                                    radius="sm"
+                                                                                    size="sm"
+                                                                                    color={getTextColorByDifficulty(diff.difficulty)}
+                                                                                    variant="flat">
+                                                                                    {diff.difficulty}
+                                                                                </Chip>
+                                                                                <div className="grow"/>
+                                                                                <Chip
+                                                                                    radius="sm"
+                                                                                    size="sm"
+                                                                                    variant="flat">
+                                                                                    {diff.stage}관문
+                                                                                </Chip>
+                                                                            </div>
+                                                                            <Divider/>
+                                                                            <div className="w-full mt-1.5 mb-1">
+                                                                                <div className="w-full flex gap-2 mb-1 items-center">
+                                                                                    <p className="fadedtext">골드</p>
+                                                                                    <div className="grow flex gap-1 items-center justify-end">
+                                                                                        <Image 
+                                                                                            src="/icons/gold.png" 
+                                                                                            width={16} 
+                                                                                            height={16} 
+                                                                                            alt="goldicon"
+                                                                                            className="w-[16px] h-[16px]"/>
+                                                                                        <p>{getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).gold.toLocaleString()}</p>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div className={clsx(
+                                                                                    "w-full gap-2 mb-1 items-center",
+                                                                                    getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).boundGold > 0 ? 'flex' : 'hidden'
+                                                                                )}>
+                                                                                    <p className="fadedtext">귀속 골드</p>
+                                                                                    <div className="grow flex gap-1 items-center justify-end">
+                                                                                        <Image 
+                                                                                            src="/icons/gold.png" 
+                                                                                            width={16} 
+                                                                                            height={16} 
+                                                                                            alt="goldicon"
+                                                                                            className="w-[16px] h-[16px]"/>
+                                                                                        <p>{getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).boundGold.toLocaleString()}</p>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div className={clsx(
+                                                                                    "w-full gap-2 items-center",
+                                                                                    getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).bonus > 0 ? 'flex' : 'hidden'
+                                                                                )}>
+                                                                                    <p className="fadedtext">더보기 골드</p>
+                                                                                    <div className="grow flex gap-1 items-center justify-end">
+                                                                                        <Image 
+                                                                                            src="/icons/gold.png" 
+                                                                                            width={16} 
+                                                                                            height={16} 
+                                                                                            alt="goldicon"
+                                                                                            className="w-[16px] h-[16px]"/>
+                                                                                        <p>{getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).bonus.toLocaleString()}</p>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    }>
                                                                         <div className={clsx(
                                                                             'w-7 h-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none cursor-pointer',
                                                                             getBorderByStage(diff.difficulty),
