@@ -189,11 +189,17 @@ export const resetWeekChecklist = functions.https.onRequest(async (req, res) => 
             const weeklist = Array.isArray(section.weeklist) ? section.weeklist : [];
             const updatedSection = {
                 ...section,
-                checklist: checklistSection.map((item: any) => ({
-                    ...item,
-                    isDisable: item.isBiweekly && item.isCheck && (biweekly%2 === 1),
-                    isCheck: false
-                })),
+                checklist: checklistSection.map((item: any) => {
+                  const itemsSection = Array.isArray(item.items) ? item.items : [];
+                  return {
+                      ...item,
+                      items: itemsSection.map((it: any) => ({
+                        ...it,
+                        isBonus: false,
+                        isCheck: false
+                      }))
+                  }
+                }),
                 otherGold: 0,
                 weeklist: weeklist.map((list: any) => ({
                     ...list,
@@ -315,4 +321,4 @@ export const removeCacheCalendarData = onRequest({
 })
 
 // firebase functions:secrets:set LOSTARK_API_KEY
-// firebase deploy --only functions:updateRelicsBook
+// firebase deploy --only functions:resetWeekChecklist

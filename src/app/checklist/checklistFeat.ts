@@ -168,7 +168,6 @@ export async function loadChecklist(
     }
 
     if (checklist.length !== 0) {
-        console.log(JSON.stringify(checklist));
         dispatch(saveData(checklist));
         setLoading(false);
     } else {
@@ -2275,11 +2274,17 @@ export async function handleResetChecklist(
                     ...item,
                     isCheck: false
                 })),
-                checklist: checklistSection.map((item: any) => ({
-                    ...item,
-                    isDisable: item.isBiweekly && item.isCheck && (biweekly%2 === 1),
-                    isCheck: false
-                })),
+                checklist: checklistSection.map((item: any) => {
+                    const itemsSection = Array.isArray(item.items) ? item.items : [];
+                    return {
+                        ...item,
+                        items: itemsSection.map((it: any) => ({
+                            ...it,
+                            isBonus: false,
+                            isCheck: false
+                        }))
+                    }
+                }),
                 otherGold: 0,
                 weeklist: weeklist.map((list: any) => ({
                     ...list,
@@ -2538,3 +2543,33 @@ export function getBackground50ByStage(diff: string): string {
     return 'bg-gray-600/50 dark:bg-gray-400/50 text-white';
 }
 
+// 난이도 관련 색상 반환
+export function getTextColorByDifficulty(diff: string): 'primary' | 'danger' | 'success' | 'secondary' | 'default' {
+    if (diff.includes('싱글')) return 'primary';
+    else if (diff.includes('노말')) return 'success';
+    else if (diff.includes('하드')) return 'danger';
+    else if (diff.includes('더퍼스트')) return 'secondary';
+    return 'default';
+}
+
+// 난이도와 관문에 대한 내용 반환 함수
+export type BossGold = {
+    gold: number,
+    boundGold: number,
+    bonus: number
+}
+export function getBossGoldByContent(bosses: Boss[], name: string, stage: number, diff: string): BossGold {
+    const boss = getBossByContent(bosses, name);
+    const item = boss ? boss.difficulty.find(it => it.stage === stage && it.difficulty === diff) : null;
+    const bossGold: BossGold = {
+        gold: 0,
+        boundGold: 0,
+        bonus: 0
+    }
+    if (item) {
+        bossGold.gold = item.gold;
+        bossGold.boundGold = item.boundGold;
+        bossGold.bonus = item.bonus;
+    }
+    return bossGold;
+}
