@@ -1425,18 +1425,20 @@ export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dis
                                 <span>{checklist[modalData.characterIndex].nickname} 콘텐츠 관리</span>
                             </ModalHeader>
                             <ModalBody>
-                                {modalData.type === 'day' ? 
-                                    <DayModalContent
-                                        checklist={checklist}
-                                        index={modalData.characterIndex}
-                                        dispatch={dispatch}
-                                        onClose={onClose}/> : 
-                                    <WeekModalContent 
-                                        checklist={checklist} 
-                                        index={modalData.characterIndex} 
-                                        dispatch={dispatch}
-                                        bosses={bosses}
-                                        onClose={onClose}/>}
+                                <div className="w-full max-h-[600px] min-[601px]:max-h-[800px] overflow-y-auto scroll-auto">
+                                    {modalData.type === 'day' ? 
+                                        <DayModalContent
+                                            checklist={checklist}
+                                            index={modalData.characterIndex}
+                                            dispatch={dispatch}
+                                            onClose={onClose}/> : 
+                                        <WeekModalContent 
+                                            checklist={checklist} 
+                                            index={modalData.characterIndex} 
+                                            dispatch={dispatch}
+                                            bosses={bosses}
+                                            onClose={onClose}/>}
+                                </div>
                             </ModalBody>
                         </>
                     )}
