@@ -15,12 +15,15 @@ export async function loadBoss(
         const bosses: Boss[] = snapshot.docs.map(doc => ({
             id: doc.id,
             name: doc.data().name,
+            simple: doc.data().simple ? doc.data().simple : '',
             difficulty: doc.data().difficulty.map((d: any) => ({
                 difficulty: d.difficulty,
+                stage: d.stage ?? 0,
                 level: d.level,
                 isBiweekly: d.isBiweekly,
                 gold: d.gold,
-                boundGold: d.boundGold ?? 0
+                boundGold: d.boundGold ?? 0,
+                bonus: d.bonus ?? 0
             }))
         }));
         setBoss(bosses);
@@ -39,10 +42,12 @@ export async function loadBoss(
 export function useOnAddInput(setInputs: SetStateFn<Difficulty[]>) {
     const emptyDifficulty: Difficulty = {
         difficulty: '',
+        stage: 0,
         level: 0,
         isBiweekly: false,
         gold: 0,
-        boundGold: 0
+        boundGold: 0,
+        bonus: 0
     }
     return () => setInputs(prev => [...prev, emptyDifficulty]);
 }
@@ -63,19 +68,23 @@ export function useInputHandlers(inputs: Difficulty[], setInputs: SetStateFn<Dif
         onValueChangeLevel: (value: number, index: number) => updateInputData({ level: value }, index),
         onValueChangeGold: (value: number, index: number) => updateInputData({ gold: value }, index),
         onValueChangeBoundGold: (value: number, index: number) => updateInputData({ boundGold: value }, index),
-        onValueChangeBiweekly: (isSelected: boolean, index: number) => updateInputData({ isBiweekly: isSelected }, index)
+        onValueChangeBiweekly: (isSelected: boolean, index: number) => updateInputData({ isBiweekly: isSelected }, index),
+        onValueChangeStage: (value: number, index: number) => updateInputData({ stage: value }, index),
+        onValueChangeBonus: (value: number, index: number) => updateInputData({ bonus: value }, index)
     }
 }
 
 // Modal을 닫았을 경우 데이터 초기화 이벤트
 export function useClearData(
     setInputName: SetStateFn<string>, 
+    setInputSimple: SetStateFn<string>, 
     setInputs: SetStateFn<Difficulty[]>,
     setEditMode: SetStateFn<boolean>,
     setEditIndex: SetStateFn<number>
 ) {
     return () => {
         setInputName('');
+        setInputSimple('');
         setInputs([]);
         setEditMode(false);
         setEditIndex(-1);
@@ -104,6 +113,7 @@ function isEmptyValue(inputs: Difficulty[]) {
 // 데이터 추가 또는 수정 이벤트
 export async function useOnAddData(
     inputName: string, 
+    inputSimple: string,
     inputs: Difficulty[],
     onClose: () => void,
     boss: Boss[],
@@ -129,6 +139,7 @@ export async function useOnAddData(
 
     const inputBoss = {
         name: inputName,
+        simple: inputSimple,
         difficulty: inputs
     }
     if (isEditMode) {
@@ -142,6 +153,7 @@ export async function useOnAddData(
             });
             const editBoss = [...boss];
             editBoss[editIndex].name = inputName;
+            editBoss[editIndex].simple = inputSimple;
             editBoss[editIndex].difficulty = inputs;
             setBoss(editBoss);
         } catch(err) {
@@ -162,6 +174,7 @@ export async function useOnAddData(
             });
             const newBoss: Boss = {
                 name: inputName,
+                simple: inputSimple,
                 difficulty: inputs,
                 id: addRef.id
             }
@@ -186,12 +199,14 @@ export function onClickEdit(
     onOpen: () => void,
     selectBoss: Boss,
     setInputName: SetStateFn<string>,
+    setInputSimple: SetStateFn<string>,
     setInputs: SetStateFn<Difficulty[]>
 ) {
     setEditMode(true);
     setEditIndex(index);
     setInputName(selectBoss.name);
     setInputs(selectBoss.difficulty);
+    setInputSimple(selectBoss.simple);
     onOpen();
 }
 

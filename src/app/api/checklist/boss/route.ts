@@ -4,6 +4,8 @@ import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase
 
 export type Difficulty = {
     difficulty: string,
+    stage: number,
+    bonus: number,
     level: number,
     isBiweekly: boolean,
     gold: number,
@@ -12,6 +14,7 @@ export type Difficulty = {
 export type Boss = {
     id: string,
     name: string,
+    simple: string,
     difficulty: Difficulty[]
 }
 
@@ -21,12 +24,15 @@ export async function GET(_req: NextRequest) {
         const bosses: Boss[] = snapshot.docs.map(doc => ({
             id: doc.id,
             name: doc.data().name,
+            simple: doc.data().simple ? doc.data().simple : '',
             difficulty: doc.data().difficulty.map((d: any) => ({
                 difficulty: d.difficulty,
+                stage: d.stage ? d.stage : 0,
                 level: d.level,
                 isBiweekly: d.isBiweekly,
                 gold: d.gold,
-                boundGold: d.boundGold ? d.boundGold : 0
+                boundGold: d.boundGold ? d.boundGold : 0,
+                bonus: d.bonus ? d.bonus : 0
             }))
         }));
 
