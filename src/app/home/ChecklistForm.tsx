@@ -19,15 +19,13 @@ function useChecklistForm() {
     const [isLogin, setLogin] = useState(false);
     const [bosses, setBosses] = useState<Boss[]>([]);
     const [isAdministrator, setAdministrator] = useState(false);
-    const [datas, setDatas] = useState<ChecklistData[]>([]);
 
     return {
         checklist, setChecklist,
         isLoading, setLoading,
         isLogin, setLogin,
         bosses, setBosses,
-        isAdministrator, setAdministrator,
-        datas, setDatas
+        isAdministrator, setAdministrator
     }
 }
 
@@ -57,7 +55,7 @@ export default function ChecklistComponent() {
     useEffect(() => {
         const loadData = async () => {
             if (checklistForm.isLogin) {
-                await loadChecklist(checklistForm.setChecklist, checklistForm.setLoading, checklistForm.setDatas, checklistForm.bosses);
+                await loadChecklist(checklistForm.setChecklist, checklistForm.setLoading, checklistForm.bosses);
             }
         }
         loadData();

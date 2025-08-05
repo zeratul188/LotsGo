@@ -4,15 +4,16 @@ import { SetStateFn, useMobileQuery } from "@/utiils/utils"
 import { Accordion, AccordionItem, addToast, Avatar, Button, ButtonGroup, Card, CardBody, CardFooter, CardHeader, Checkbox, Chip, Divider, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Link, NumberInput, Popover, PopoverContent, PopoverTrigger, Progress, Tab, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tabs, Tooltip } from "@heroui/react"
 import Image from "next/image";
 import { Boss } from "../api/checklist/boss/route";
-import { DayValue, getAllBoundGold, getAllContentGold, getAllContentOtherGold, getAllCountChecklist, getAllCubeCount, getAllGoldCharacter, getAllGolds, getBossByContent, getCompleteBoundGoldCharacter, getCompleteChecklist, getCompleteGoldCharacter, getCompleteSharedGoldCharacter, getCountCube, getCubeList, getDayName, getDiffByContent, getHaveBoundGolds, getHaveGolds, getHaveSharedGolds, getIndexByNickname, getMaxRestValue, getTypeDayValue } from "./checklistFeat";
+import { DayValue, getAllBoundGold, getAllContentGold, getAllContentOtherGold, getAllCountChecklist, getAllCubeCount, getAllGoldCharacter, getAllGolds, getBackground50ByStage, getBackgroundByStage, getBorderByStage, getBossByContent, getCompleteBoundGoldCharacter, getCompleteChecklist, getCompleteGoldCharacter, getCompleteSharedGoldCharacter, getCountCube, getCubeList, getDayName, getDiffByContent, getHaveBoundGolds, getHaveGolds, getHaveSharedGolds, getIndexByNickname, getMaxRestValue, getSimpleBossName, getTypeDayValue, isCheckHomework } from "./checklistFeat";
 import { CubeDetailComponent, CubeStatueComponent, RemainChecklistComponent, SelectServer } from "./ChecklistForm";
 import clsx from "clsx";
 import { Cube } from "../api/checklist/cube/route";
 import { getImgByJob } from "../character/expeditionFeat";
 import { SettingIcon } from "../icons/SettingIcon";
 import DeleteIcon from "../icons/DeleteIcon";
-import { handleControlCube, handleSetOtherGold, handleWeekContent, useOnClickCheckGold, useOnClickDayCheck } from "./testFet";
+import { handleControlCube, handleSetOtherGold, handleWeekContent, handleWeekStage, useOnClickCheckGold, useOnClickDayCheck } from "./testFet";
 import AddIcon from "../icons/AddIcon";
+import React from "react";
 
 // 숙제 현황
 type ChecklistStatueProps = {
@@ -610,77 +611,56 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                         className="min-w-full text-center">주간 콘텐츠</Chip>
                                     <div className="pl-2.5">
                                         {character.checklist.map((item, idx) => (
-                                            <Tooltip 
-                                                key={idx}
-                                                showArrow
-                                                placement="left"
-                                                delay={1000}
-                                                content={
-                                                    <div className="p-1 min-w-[160px]">
-                                                        <p className={clsx(
-                                                            "overflow-hidden text-ellipsis whitespace-nowrap font-bold",
-                                                            getBossByContent(bosses, item.name) ? '' : 'fadedtext'
-                                                        )}>{getBossByContent(bosses, item.name) ? `${getBossByContent(bosses, item.name)?.name}` : '삭제된 콘텐츠'}</p>
-                                                        <Divider className="mt-2 mb-2"/>
-                                                        <div className="w-full grid grid-cols-[max-content_1fr] gap-1">
-                                                            <p className="fadedtext">난이도</p>
-                                                            <p className="text-right">{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.difficulty : '-'}</p>
-                                                            <p className="fadedtext">레벨</p>
-                                                            <p className="text-right">{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.level : 0}</p>
-                                                            <p className="fadedtext">골드</p>
-                                                            <div className="flex gap-1 items-center justify-end">
-                                                                <Image 
-                                                                    src="/icons/gold.png" 
-                                                                    width={16} 
-                                                                    height={16} 
-                                                                    alt="goldicon"
-                                                                    className="w-[16px] h-[16px]"/>
-                                                                <p className={clsx(
-                                                                    item.isGold ? '' : 'fadedtext line-through'
-                                                                )}>{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.gold.toLocaleString() : 0}</p>
-                                                            </div>
-                                                            <p className="fadedtext">귀속 골드</p>
-                                                            <div className="flex gap-1 items-center justify-end">
-                                                                <Image 
-                                                                    src="/icons/gold.png" 
-                                                                    width={16} 
-                                                                    height={16} 
-                                                                    alt="goldicon"
-                                                                    className="w-[16px] h-[16px]"/>
-                                                                <p className={clsx(
-                                                                    item.isGold ? '' : 'fadedtext line-through'
-                                                                )}>{getDiffByContent(bosses, item.name, item.difficulty) ? getDiffByContent(bosses, item.name, item.difficulty)?.boundGold ? getDiffByContent(bosses, item.name, item.difficulty)?.boundGold.toLocaleString() : 0 : 0}</p>
-                                                            </div>
+                                            <div key={idx}>
+                                                <Checkbox
+                                                    aria-label={`checklist-${item.name}-${idx}`}
+                                                    size="sm"
+                                                    radius="full"
+                                                    isSelected={isCheckHomework(item)}
+                                                    className={clsx(
+                                                        "max-w-full w-full mt-3 box-border p-1.5 [&_span:nth-of-type(2)]:w-full",
+                                                        isCheckHomework(item) ? 'outline-2 outline-blue-400 dark:outline-blue-800 rounded-md bg-blue-400/20 dark:bg-blue-800/20' : ''
+                                                    )}
+                                                    onChange={() => handleWeekContent(checklist, setChecklist, index, idx)}>
+                                                    <div className="w-full flex items-center gap-1">
+                                                        <span className={clsx(
+                                                            isCheckHomework(item) ? 'line-through' : ''
+                                                        )}>{getSimpleBossName(bosses, item.name)}</span>
+                                                        {item.isGold ? <Image 
+                                                            src="/icons/gold.png" 
+                                                            width={14} 
+                                                            height={14} 
+                                                            alt="goldicon"
+                                                            className="w-[14px] h-[14px]"/> : <></>}
+                                                        <div className="grow"/>
+                                                        <div className="flex items-center z-9">
+                                                            {item.items.map((diff, ix) => (
+                                                                <React.Fragment key={ix}>
+                                                                    {ix > 0 && (
+                                                                        <div className={clsx(
+                                                                            'w-2 h-[2px]',
+                                                                            getBackgroundByStage(diff.difficulty)
+                                                                        )} />
+                                                                    )}
+                                                                    <Tooltip showArrow content={diff.difficulty}>
+                                                                        <div className={clsx(
+                                                                            'w-7 h-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none cursor-pointer',
+                                                                            getBorderByStage(diff.difficulty),
+                                                                            diff.isCheck ? getBackground50ByStage(diff.difficulty) : ''
+                                                                        )} onClick={async (e) => {
+                                                                            e.preventDefault();
+                                                                            e.stopPropagation();
+                                                                            handleWeekStage(checklist, setChecklist, index, idx, diff.stage);
+                                                                        }}>
+                                                                            {diff.stage}
+                                                                        </div>
+                                                                    </Tooltip>
+                                                                </React.Fragment>
+                                                            ))}
                                                         </div>
                                                     </div>
-                                                }>
-                                                <div>
-                                                    <Checkbox
-                                                        lineThrough
-                                                        aria-label={`checklist-${item.name}-${idx}`}
-                                                        size="sm"
-                                                        radius="full"
-                                                        isDisabled={item.isDisable}
-                                                        isSelected={item.isCheck}
-                                                        className={clsx(
-                                                            "max-w-full w-full mt-3 box-border p-1.5",
-                                                            item.isCheck ? 'outline-2 outline-blue-400 dark:outline-blue-800 rounded-md bg-blue-400/20 dark:bg-blue-800/20' : ''
-                                                        )}
-                                                        onChange={() => {
-                                                            handleWeekContent(checklist, setChecklist, index, idx);
-                                                        }}>
-                                                        <span className="flex items-center gap-1">
-                                                            <span>{item.name} {item.difficulty}</span>
-                                                            {item.isGold ? <Image 
-                                                                src="/icons/gold.png" 
-                                                                width={14} 
-                                                                height={14} 
-                                                                alt="goldicon"
-                                                                className="w-[14px] h-[14px]"/> : <></>}
-                                                        </span>
-                                                    </Checkbox>
-                                                </div>
-                                            </Tooltip>
+                                                </Checkbox>
+                                            </div>
                                         ))}
                                     </div>
                                     <Button 
