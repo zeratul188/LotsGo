@@ -2,7 +2,6 @@
 import { addToast, Card, CardBody, CardHeader, Checkbox, Divider, NumberInput, Radio, RadioGroup } from "@heroui/react"
 import { useEffect, useState } from "react";
 import { formatGold, useClickPersons } from "../calcFeat";
-import Image from "next/image";
 
 function CalcComponent() {
     const [person, setPerson] = useState(4);
@@ -154,10 +153,8 @@ function CalcComponent() {
                                             <div className="w-full flex items-center">
                                                 <h3 className="fadedtext grow">미참 거래 금액</h3>
                                                 <div className="flex gap-1 items-center">
-                                                    <Image 
+                                                    <img 
                                                         src="/icons/gold.png" 
-                                                        width={14} 
-                                                        height={14} 
                                                         alt="goldicon"
                                                         className="w-[16px] h-[16px] "/>
                                                     <span>{formatGold(person > 0 ? gold + (singleGold - gold) / person : 0)}</span>
@@ -187,10 +184,8 @@ function CalcComponent() {
                                             <div className="w-full flex items-center">
                                                 <h3 className="fadedtext grow">독식 입찰 금액</h3>
                                                 <div className="flex gap-1 items-center">
-                                                    <Image 
+                                                    <img 
                                                         src="/icons/gold.png" 
-                                                        width={14} 
-                                                        height={14} 
                                                         alt="goldicon"
                                                         className="w-[16px] h-[16px] "/>
                                                     <span>{formatGold((singleGold - gold) - ((singleGold - gold) / person))}</span>
@@ -202,12 +197,10 @@ function CalcComponent() {
                                 <div className="mt-2 flex items-center gap-1">
                                     <p>기사는 총</p>
                                     <div className="flex items-center gap-1">
-                                        <Image 
+                                        <img 
                                             src="/icons/gold.png" 
-                                            width={14} 
-                                            height={14} 
                                             alt="goldicon"
-                                            className="w-[16px] h-[16px] "/>
+                                            className="w-[16px] h-[16px]"/>
                                         <p><strong className="text-yellow-700 dark:text-yellow-400">{formatGold((person > 1 ? (gold + (singleGold - gold) / person) * 0.95 * ((person - article) / article) + (singleGold - gold) / person : 0))}</strong></p>
                                     </div>
                                     <p>골드를 수령합니다.</p>
@@ -261,12 +254,10 @@ function CalcComponent() {
                                 <CardBody className="py-1.5">
                                     <h3 className="fadedtext text-sm">미참 거래 금액</h3>
                                     <div className="flex gap-1 items-center">
-                                        <Image 
+                                        <img 
                                             src="/icons/gold.png" 
-                                            width={14} 
-                                            height={14} 
                                             alt="goldicon"
-                                            className="w-[16px] h-[16px] "/>
+                                            className="w-[16px] h-[16px]"/>
                                         <span>{formatGold(person > 1 ? gold + (singleGold - gold) / person + (gold + ((singleGold - gold) - ((singleGold - gold) / person)) / (person - 1)) * ((person - article) % article) * 0.95 / person / (1 - ((person - article) % article) * 0.95 / person) : 0)}</span>
                                     </div>
                                 </CardBody>
@@ -292,12 +283,10 @@ function CalcComponent() {
                                 <CardBody className="py-1.5">
                                     <h3 className="fadedtext text-sm">독식 입찰 금액</h3>
                                     <div className="flex gap-1 items-center">
-                                        <Image 
+                                        <img
                                             src="/icons/gold.png" 
-                                            width={14} 
-                                            height={14} 
                                             alt="goldicon"
-                                            className="w-[16px] h-[16px] "/>
+                                            className="w-[16px] h-[16px]"/>
                                         <span>{formatGold((singleGold - gold) - ((singleGold - gold) / person))}</span>
                                     </div>
                                 </CardBody>
@@ -323,12 +312,10 @@ function CalcComponent() {
                                 <CardBody className="py-1.5">
                                     <h3 className="fadedtext text-sm">공대장 입찰 금액</h3>
                                     <div className="flex gap-1 items-center">
-                                        <Image 
-                                            src="/icons/gold.png" 
-                                            width={14} 
-                                            height={14} 
+                                        <img
+                                            src="/icons/gold.png"
                                             alt="goldicon"
-                                            className="w-[16px] h-[16px] "/>
+                                            className="w-[16px] h-[16px]"/>
                                         <span>{formatGold(person > 1 ? (gold + ((singleGold - gold) - ((singleGold - gold) / person)) / (person - 1)) * ((person - article) % article) * 0.95 / person / (1 - ((person - article) % article) * 0.95 / person) * (person - 1) : 0)}</span>
                                     </div>
                                 </CardBody>
@@ -354,12 +341,10 @@ function CalcComponent() {
                                 <CardBody className="py-1.5">
                                     <h3 className="fadedtext text-sm">분배금</h3>
                                     <div className="flex gap-1 items-center">
-                                        <Image 
+                                        <img
                                             src="/icons/gold.png" 
-                                            width={14} 
-                                            height={14} 
                                             alt="goldicon"
-                                            className="w-[16px] h-[16px] "/>
+                                            className="w-[16px] h-[16px]"/>
                                         <span>{formatGold(person > 1 ? (gold + ((singleGold - gold) - ((singleGold - gold) / person)) / (person - 1)) * ((person - article) % article) * 0.95 / person / (1 - ((person - article) % article) * 0.95 / person) : 0)}</span>
                                     </div>
                                 </CardBody>
@@ -368,12 +353,10 @@ function CalcComponent() {
                         <div className="mt-2 flex items-center gap-1">
                             <p>기사는 총</p>
                             <div className="flex items-center gap-1">
-                                <Image 
+                                <img
                                     src="/icons/gold.png" 
-                                    width={14} 
-                                    height={14} 
                                     alt="goldicon"
-                                    className="w-[16px] h-[16px] "/>
+                                    className="w-[16px] h-[16px]"/>
                                 <p><strong className="text-yellow-700 dark:text-yellow-400">{formatGold((person > 1 ? gold + (singleGold - gold) / person + (gold + ((singleGold - gold) - ((singleGold - gold) / person)) / (person - 1)) * ((person - article) % article) * 0.95 / person / (1 - ((person - article) % article) * 0.95 / person) : 0) * 0.95 * (Math.floor((person - article) / article)) + (person > 1 ? (gold + ((singleGold - gold) - ((singleGold - gold) / person)) / (person - 1)) * ((person - article) % article) * 0.95 / person / (1 - ((person - article) % article) * 0.95 / person) : 0))}</strong></p>
                             </div>
                             <p>골드를 수령합니다.</p>
@@ -447,12 +430,10 @@ function RelicComponent() {
                             <CardBody className="py-1.5">
                                 <h3 className="fadedtext text-sm">분배 금액</h3>
                                 <div className="flex gap-1 items-center">
-                                    <Image 
+                                    <img 
                                         src="/icons/gold.png" 
-                                        width={14} 
-                                        height={14} 
                                         alt="goldicon"
-                                        className="w-[16px] h-[16px] "/>
+                                        className="w-[16px] h-[16px]"/>
                                     <span>{formatGold(person > 0 ? gold * 0.95 / (person - 0.05) : 0)}</span>
                                 </div>
                             </CardBody>
@@ -463,12 +444,10 @@ function RelicComponent() {
             <div className="mt-2 flex items-center gap-1">
                 <p>기사는 총</p>
                 <div className="flex items-center gap-1">
-                    <Image 
+                    <img
                         src="/icons/gold.png" 
-                        width={14} 
-                        height={14} 
                         alt="goldicon"
-                        className="w-[16px] h-[16px] "/>
+                        className="w-[16px] h-[16px]"/>
                     <p><strong className="text-yellow-700 dark:text-yellow-400">{formatGold(person > 0 ? gold * 0.95 / (person - 0.05) * 0.95 : 0)}</strong></p>
                 </div>
                 <p>골드를 수령합니다.</p>

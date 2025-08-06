@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
-import { CharacterFile, Gem, getGemSimpleTailName } from "./characterFeat"
+import { CharacterFile, Gem } from "./characterFeat"
 import { AvgSkillPowers, getAllDestory, getTextAttack, getTextTime, loadSkillPoint, loadSkills, Skill } from "./skillFeat"
-import { Card, CardBody, CardHeader, Chip, Divider, Image, Popover, PopoverContent, PopoverTrigger, Progress, Tooltip } from "@heroui/react"
+import { Card, CardBody, CardHeader, Chip, Divider, Popover, PopoverContent, PopoverTrigger, Progress } from "@heroui/react"
 import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils"
 import clsx from "clsx"
 
@@ -123,12 +123,10 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                             <div className="grow">
                                 <div className="flex flex-col md960:flex-row gap-2 md960:gap-3 items-start md960:items-center p-3">
                                     <div className="flex gap-3 items-center">
-                                        <Image 
+                                        <img
                                             src={skill.icon} 
-                                            width={40} 
-                                            height={40} 
-                                            radius="sm" 
-                                            alt={skill.name}/>
+                                            alt={skill.name}
+                                            className="w-10 h-10 rounded-md"/>
                                         <p className="text-lg font-bold">{skill.name}</p>
                                         <p>Lv.{skill.level}</p>
                                         <Chip variant="flat" radius="sm" size="sm">{skill.type}</Chip>
@@ -148,14 +146,11 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                     <div className="w-full grid grid-cols-1 md960:grid-cols-3 gap-2 md960:gap-10">
                                         {skill.tripods.map((tripod, idx) => (
                                             <div key={idx} className="flex gap-2 items-center">
-                                                <Image 
+                                                <img
                                                     src={tripod.icon} 
-                                                    width={30} 
-                                                    height={30} 
-                                                    radius="full" 
                                                     alt={skill.name}
                                                     className={clsx(
-                                                        `border-1`,
+                                                        `w-[30px] h-[30px] rounded-full border-1`,
                                                         idx === 0 ? 'border-blue-500 bg-blue-900' : idx === 1 ? 'border-green-500 bg-green-900' : 'border-yellow-500 bg-yellow-900'
                                                     )}/>
                                                 <p>{tripod.name}</p>
@@ -167,11 +162,10 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                             <div className="w-full md960:w-[360px] min-h-full md960:border-l-1 border-[#dedede] dark:border-[#282828] p-3">
                                 <div className="w-full flex gap-2 items-center">
                                     <div className={`w-[34px] h-[34px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(skill.rune ? skill.rune.grade : '')}`}>
-                                        {skill.rune ? <Image
+                                        {skill.rune ? <img
                                             src={skill.rune.icon}
-                                            width={28}
-                                            height={28}
-                                            alt="스킬에 장착된 룬 이미지"/> : <></>}
+                                            alt="스킬에 장착된 룬 이미지"
+                                            className="w-7 h-7"/> : <></>}
                                     </div>
                                     <p className={`${getColorTextByGrade(skill.rune ? skill.rune.grade : '')}`}>{skill.rune ? `${skill.rune.grade} ${skill.rune.name}` : '-'}</p>
                                 </div>
@@ -181,11 +175,10 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                             <div className="w-full flex items-center gap-2 cursor-pointer">
                                                 <div className={`w-[42px] h-[42px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(skill.attackGem ? skill.attackGem!.grade : "")}`}>
                                                     {skill.attackGem ? (
-                                                        <Image
+                                                        <img
                                                             src={skill.attackGem!.icon}
-                                                            width={40}
-                                                            height={40}
-                                                            alt="스킬에 장착된 겁화/멸화 이미지"/>
+                                                            alt="스킬에 장착된 겁화/멸화 이미지"
+                                                            className="w-10 h-10"/>
                                                     ) : <></>}
                                                 </div>
                                                 {skill.attackGem ? (
@@ -213,11 +206,10 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                             <div className="w-full flex items-center gap-2 cursor-pointer">
                                                 <div className={`w-[42px] h-[42px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(skill.timeGem ? skill.timeGem!.grade : "")}`}>
                                                     {skill.timeGem ? (
-                                                        <Image
+                                                        <img
                                                             src={skill.timeGem!.icon}
-                                                            width={40}
-                                                            height={40}
-                                                            alt="스킬에 장착된 작열/홍염 이미지"/>
+                                                            alt="스킬에 장착된 작열/홍염 이미지"
+                                                            className="w-10 h-10"/>
                                                     ) : <></>}
                                                 </div>
                                                 {skill.timeGem ? (

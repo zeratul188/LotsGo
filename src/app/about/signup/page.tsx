@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -12,8 +11,8 @@ export default function Signup() {
             <h1 className="font-bold mb-2">로츠고 회원가입</h1>
             <p>로츠고의 숙제기능과 일정기능을 이용하기 위해서 로츠고에 회원가입을 해야만 이용이 가능합니다.</p>
             <div className="w-full grid sm:grid-cols-2 gap-2 mt-2 mb-2">
-                <Image src="/about/signup1.webp" alt="로츠고 로그인 화면" width={800} height={0} className="w-full h-auto rounded-xl"/>
-                <Image src="/about/signup2.webp" alt="로츠고 회원가입 화면" width={800} height={0} className="w-full h-auto rounded-xl"/>
+                <img src="/about/signup1.webp" alt="로츠고 로그인 화면" className="w-full h-auto rounded-xl"/>
+                <img src="/about/signup2.webp" alt="로츠고 회원가입 화면" className="w-full h-auto rounded-xl"/>
             </div>
             <p>회원가입을 하기 위해서 올바른 값을 입력해야만 합니다.</p>
             <ul className="list-disc pl-4">
@@ -30,9 +29,9 @@ export default function Signup() {
             </ul>
             <h1 className="font-bold mt-10 mb-2">로스트아크 API 키 입력하기</h1>
             <p>로츠고를 이용하실 떄 로스트아크로부터 본인의 API 키를 입력하시면 일부 기능이 활성화되며, 로츠고를 더 원할하게 이용하실 수 있습니다.</p>
-            <Image src="/about/signup3.webp" alt="로츠고 설정 위치" width={800} height={0} className="w-full h-auto rounded-xl mt-2 mb-2"/>
+            <img src="/about/signup3.webp" alt="로츠고 설정 위치" className="w-full h-auto rounded-xl mt-2 mb-2"/>
             <p>회원가입 하시고 로그인을 하시면 우측 상단의 프로필을 누르면 "설정"으로 이동하실 수 있습니다.</p>
-            <Image src="/about/signup4.webp" alt="로츠고 설정 페이지" width={800} height={0} className="w-full h-auto rounded-xl mt-2 mb-2"/>
+            <img src="/about/signup4.webp" alt="로츠고 설정 페이지" className="w-full h-auto rounded-xl mt-2 mb-2"/>
             <p>설정 페이지로 이동하시고 좌측의 메뉴에서 "로스트아크 API 키"를 눌러 이동하신 후 화면에 나오는 설명대로 API 키를 발급받거나 키가 이미 있다면 해당 키를 입력하신 후 "등록하기" 버튼을 누르면 바로 적용됩니다.</p>
         </div>
     )

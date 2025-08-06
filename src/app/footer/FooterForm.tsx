@@ -1,17 +1,13 @@
-import { Image } from "@heroui/react";
-
 // 로고 이미지 컴포넌트
 export function LogoComponent() {
     return (
         <>
-            <Image
+            <img
                 src="title(L).png" 
-                width={220} 
-                className="dark:hidden cursor-pointer"/>
-            <Image 
+                className="w-[220px] dark:hidden cursor-pointer"/>
+            <img 
                 src="title(D).png" 
-                width={220} 
-                className="hidden dark:block cursor-pointer"/>
+                className="w-[220px] hidden dark:block cursor-pointer"/>
         </>
     )
 }

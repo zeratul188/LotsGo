@@ -4,10 +4,9 @@ import {
     Accordion,
     AccordionItem,
     Button,
-    Card, CardBody, CardFooter, CardHeader, 
+    Card, CardBody, CardFooter, 
     Chip, 
     Divider, 
-    Image, 
     Link, 
     Popover, PopoverContent, PopoverTrigger, 
     ScrollShadow, 
@@ -57,13 +56,10 @@ function EventComponent({ events }: EventComponentProps) {
                                 shadow="none"
                                 href={event.link}>
                                 <CardBody className="overflow-visible p-0">
-                                    <Image
+                                    <img
                                         alt={event.title}
-                                        className="w-full object-cover h-[180px]"
-                                        radius="md"
-                                        shadow="sm"
-                                        src={event.thumbnail}
-                                        width="100%"/>
+                                        className="w-full object-cover h-[180px] rounded-md"
+                                        src={event.thumbnail}/>
                                 </CardBody>
                                 <CardFooter>
                                     <div className="w-full text-left">
@@ -191,12 +187,10 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
                         )}>
                             <CardBody>
                                 <div className="w-full flex gap-2 items-center">
-                                    <Image 
+                                    <img 
                                         src={island.icon} 
-                                        width={36}
-                                        height={36} 
                                         alt={island.name} 
-                                        radius="sm"/>
+                                        className="w-9 h-9 rounded-md"/>
                                     <div className="grow flex gap-2 items-center">
                                         <p>{island.name}</p>
                                         <Chip 
@@ -220,26 +214,20 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
                                                     getBackgroundByGrade(item.grade)
 
                                                 )}>
-                                                    <Image 
+                                                    <img
                                                         src={item.icon} 
-                                                        width={28}
-                                                        height={28} 
                                                         alt={item.name} 
-                                                        radius="sm"
-                                                        className="w-full h-full object-cover"/>
+                                                        className="w-full h-full object-cover rounded-md"/>
                                                 </div>
                                             </Tooltip>
                                             <Popover 
                                                 showArrow>
                                                 <PopoverTrigger>
                                                     <div className={`block sm:hidden w-[34px] h-[34px] aspect-square p-[3px] rounded-md ${getBackgroundByGrade(item.grade)}`}>
-                                                        <Image 
+                                                        <img 
                                                             src={item.icon} 
-                                                            width={28}
-                                                            height={28} 
                                                             alt={item.name} 
-                                                            radius="sm"
-                                                            className="w-full h-full object-cover"/>
+                                                            className="w-full h-full object-cover rounded-md"/>
                                                     </div>
                                                 </PopoverTrigger>
                                                 <PopoverContent>
@@ -278,7 +266,7 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
                                     {islandDatas.filter(filterIslandData(week)).map((data, idx) => (
                                         <AccordionItem key={idx} hideIndicator title={
                                             <div className="flex gap-2 items-center cursor-pointer">
-                                                <Image src={data.icon} alt={data.name} width={20} height={20} radius="sm"/>
+                                                <img src={data.icon} alt={data.name} className="w-5 h-5 rounded-md"/>
                                                 <p className={clsx(
                                                     "text-[9pt]",
                                                     isGoldIsland(week, data) ? 'text-[#C4841D] dark:text-[#F7B750]' : ''
@@ -290,13 +278,13 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
                                                     <div key={idx} className="flex justify-center items-center">
                                                         <div className="hidden sm:block">
                                                             <Tooltip showArrow content={<p className={clsx(getColorTextByGrade(reward.grade))}>{reward.name}</p>}>
-                                                                <Image src={reward.icon} alt={reward.name} width={20} height={20} radius="sm"/>
+                                                                <img src={reward.icon} alt={reward.name} className="w-5 h-5 rounded-md"/>
                                                             </Tooltip>
                                                         </div>
                                                         <div className="block sm:hidden">
                                                             <Popover showArrow>
                                                                 <PopoverTrigger>
-                                                                    <Image src={reward.icon} alt={reward.name} width={20} height={20} radius="sm"/>
+                                                                    <img src={reward.icon} alt={reward.name} className="w-5 h-5 rounded-md"/>
                                                                 </PopoverTrigger>
                                                                 <PopoverContent>
                                                                     <p className={clsx(getColorTextByGrade(reward.grade))}>{reward.name}</p>
@@ -381,12 +369,10 @@ function ContentComponent({ gate, boss, gateDate, bossDate }: ContentComponentPr
                 <Card shadow="sm" radius="sm">
                     <CardBody>
                         <div className="w-full flex gap-2 items-center">
-                            <Image 
+                            <img 
                                 src={gate.imgSrc} 
-                                width={36}
-                                height={36} 
                                 alt="카오스게이트"
-                                radius="sm"/>
+                                className="w-9 h-9 rounded-md"/>
                             <p className="grow">카오스 게이트</p>
                             <div className="w-[max-content] flex gap-5 sm:gap-10 items-center">
                                 <div className="grow">
@@ -412,12 +398,10 @@ function ContentComponent({ gate, boss, gateDate, bossDate }: ContentComponentPr
                 <Card shadow="sm" radius="sm">
                     <CardBody>
                         <div className="w-full flex gap-2 items-center">
-                            <Image 
+                            <img 
                                 src={boss.imgSrc} 
-                                width={36}
-                                height={36} 
                                 alt="필드보스"
-                                radius="sm"/>
+                                className="w-9 h-9 rounded-md"/>
                             <p className="grow">필드보스</p>
                             <div className="w-[max-content] flex gap-5 sm:gap-10 items-center">
                                 <div className="grow">

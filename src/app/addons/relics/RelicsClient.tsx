@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from "react"
 import { ChartData, formatMonthData, getDiffPrice, getMaxGoldByBook, getMinGoldByBook, getUndoPrice, RelicBook } from "./relicsFeat";
-import Image from "next/image";
 import { Button, Card, CardBody, Chip, Divider, Modal, ModalBody, ModalContent, ModalHeader, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, useDisclosure } from "@heroui/react";
 import clsx from "clsx";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
@@ -90,10 +89,8 @@ function CustomTooltip({ active, payload, label, data }: any) {
         <div className="rounded-lg border-1 border-[#eeeeee] dark:border-[#333333] px-3 py-2 bg-white dark:bg-[#1a1a1a] flex gap-1 items-center">
             <Chip size="sm" radius="sm" variant="flat" className="min-w-[50px] text-center">{label}</Chip>
             <div className="flex gap-1 items-center">
-                <Image 
+                <img 
                     src="/icons/gold.png" 
-                    width={14} 
-                    height={14} 
                     alt="goldicon"
                     className="w-[16px] h-[16px]"/>
                 <span className="text-sm">{price?.toLocaleString()}</span>
@@ -125,10 +122,8 @@ function ChartModal({ selectedRelic, isOpen, onOpenChange }: ChartModalProps) {
                     <>
                         <ModalHeader>
                             <div className="flex gap-2 items-center">
-                                <Image 
+                                <img
                                     src={getEngravingSrcByName(selectedRelic.name.replaceAll(' 각인서', ''))} 
-                                    width={32} 
-                                    height={32} 
                                     alt="relic book icon"
                                     className="w-[32px] h-[32px] rounded-md"/>
                                 <p className="text-relics text-[12pt]">{selectedRelic.name}</p>
@@ -144,10 +139,8 @@ function ChartModal({ selectedRelic, isOpen, onOpenChange }: ChartModalProps) {
                                             <div className="w-full flex gap-1 items-center">
                                                 <Chip radius="sm" variant="flat">3개월 최고 가격</Chip>
                                                 <div className="grow"/>
-                                                <Image 
+                                                <img 
                                                     src="/icons/gold.png" 
-                                                    width={14} 
-                                                    height={14} 
                                                     alt="goldicon"
                                                     className="w-[18px] h-[18px]"/>
                                                 <span className="text-[14pt]">{getMaxGoldByBook(selectedRelic).toLocaleString()}</span>
@@ -159,10 +152,8 @@ function ChartModal({ selectedRelic, isOpen, onOpenChange }: ChartModalProps) {
                                             <div className="w-full flex gap-1 items-center">
                                                 <Chip radius="sm" variant="flat">3개월 최저 가격</Chip>
                                                 <div className="grow"/>
-                                                <Image 
+                                                <img 
                                                     src="/icons/gold.png" 
-                                                    width={14} 
-                                                    height={14} 
                                                     alt="goldicon"
                                                     className="w-[18px] h-[18px]"/>
                                                 <span className="text-[14pt]">{getMinGoldByBook(selectedRelic).toLocaleString()}</span>
@@ -203,10 +194,8 @@ export default function RelicsClient({ relics }: RelicsClientProps) {
                             <TableRow key={index}>
                                 <TableCell>
                                     <div className="flex gap-2 items-center">
-                                        <Image 
+                                        <img
                                             src={getEngravingSrcByName(relic.name.replaceAll(' 각인서', ''))} 
-                                            width={32} 
-                                            height={32} 
                                             alt="relic book icon"
                                             className="w-[28px] h-[28px] rounded-md"/>
                                         <p className="text-relics text-[12pt]">{relic.name}</p>
@@ -214,10 +203,8 @@ export default function RelicsClient({ relics }: RelicsClientProps) {
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex gap-1 items-center">
-                                        <Image 
+                                        <img 
                                             src="/icons/gold.png" 
-                                            width={14} 
-                                            height={14} 
                                             alt="goldicon"
                                             className="w-[16px] h-[16px]"/>
                                         <span className="text-[12pt]">{relic.price.toLocaleString()}</span>
@@ -225,10 +212,8 @@ export default function RelicsClient({ relics }: RelicsClientProps) {
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex gap-1 items-center">
-                                        <Image 
+                                        <img 
                                             src="/icons/gold.png" 
-                                            width={14} 
-                                            height={14} 
                                             alt="goldicon"
                                             className="w-[16px] h-[16px]"/>
                                         <span className="text-[12pt]">{getUndoPrice(relic).toLocaleString()}</span>

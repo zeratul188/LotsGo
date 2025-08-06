@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { CheckCharacter } from "../store/checklistSlice";
-import { ChecklistData, isLogin, loadChecklist } from "./checklistFeat";
+import { isLogin, loadChecklist } from "./checklistFeat";
 import { LoadingComponent } from "../UtilsCompnents";
 import { Boss } from "../api/checklist/boss/route";
 import { getAllCountChecklist, getAllGolds, getBosses, getCompleteChecklist, getHaveGolds } from "../checklist/checklistFeat";
@@ -9,7 +9,6 @@ import {
     Card, CardBody,
     Progress
 } from "@heroui/react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 // state 관리
@@ -80,10 +79,8 @@ export default function ChecklistComponent() {
                             color="warning"
                             label={(
                                 <div className="flex items-center">
-                                    <Image
+                                    <img
                                         src="/icons/gold.png" 
-                                        width={19} 
-                                        height={19} 
                                         alt="goldicon"
                                         className="w-[19px] h-[19px]"/>
                                     <span className="ml-1 text-md">주간 수익 골드량 : {getHaveGolds(checklistForm.bosses, checklistForm.checklist).toLocaleString()} / {getAllGolds(checklistForm.bosses, checklistForm.checklist).toLocaleString()}</span>
