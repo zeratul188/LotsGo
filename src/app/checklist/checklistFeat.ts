@@ -2596,3 +2596,37 @@ export function getBossGoldByContent(bosses: Boss[], name: string, stage: number
     }
     return bossGold;
 }
+
+// 체크리스트 난이도 출력 함수
+type PrintDifficulty = {
+    difficulty: string,
+    result: string
+}
+export function printDifficulty(items: ChecklistItem[]): string {
+    const prints: PrintDifficulty[] = [];
+    for (const item of items) {
+        if (prints.length > 0) {
+            if (prints[prints.length-1].difficulty === item.difficulty) {
+                prints[prints.length-1].result += item.stage;
+            } else {
+                prints.push({
+                    difficulty: item.difficulty,
+                    result: item.stage.toString()
+                });
+            }
+        } else {
+            prints.push({
+                difficulty: item.difficulty,
+                result: item.stage.toString()
+            });
+        }
+    }
+    let result = '';
+    for (let i = 0; i < prints.length; i++) {
+        if (i > 0) {
+            result += ' ';
+        }
+        result += `${prints[i].difficulty}${prints[i].result}`;
+    }
+    return result;
+}

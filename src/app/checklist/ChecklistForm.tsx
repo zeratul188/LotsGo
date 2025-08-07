@@ -99,6 +99,7 @@ import {
     isCheckHomework, 
     isHaveCharacter, 
     loadDatas, 
+    printDifficulty, 
     SearchCharacter, 
     useChangeBlessing, 
     useClickAddAccount, 
@@ -1011,13 +1012,21 @@ export function ChecklistComponent({
                                                     )}
                                                     onChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                     <div className="w-full flex items-center gap-1">
-                                                        <span className={clsx(
-                                                            isCheckHomework(item) ? 'line-through fadedtext' : ''
-                                                        )}>{getSimpleBossName(bosses, item.name)}</span>
-                                                        {item.isGold ? <img 
-                                                            src="/icons/gold.png" 
-                                                            alt="goldicon"
-                                                            className="w-[14px] h-[14px]"/> : <></>}
+                                                        <div>
+                                                            <div className="flex gap-1 items-center">
+                                                                <p className={clsx(
+                                                                    isCheckHomework(item) ? 'line-through fadedtext' : ''
+                                                                )}>{getSimpleBossName(bosses, item.name)}</p>
+                                                                {item.isGold ? <img 
+                                                                    src="/icons/gold.png" 
+                                                                    alt="goldicon"
+                                                                    className="w-[14px] h-[14px]"/> : <></>}
+                                                            </div>
+                                                            <p className={clsx(
+                                                                "fadedtext text-[9pt]",
+                                                                isCheckHomework(item) ? 'line-through' : ''
+                                                            )}>{printDifficulty(item.items)}</p>
+                                                        </div>
                                                         <div className="grow"/>
                                                         <div className="flex items-center z-9">
                                                             {item.items.map((diff, ix) => (
