@@ -9,7 +9,13 @@ export type ChecklistData = {
     level: number,
     isGold: boolean,
     contentName: string,
-    difficulty: string
+    difficultys: ChecklistDataDifficulty[]
+}
+
+export type ChecklistDataDifficulty = {
+    stage: number,
+    difficulty: string,
+    isComplete: boolean
 }
 
 // 로그인 여부 확인 함수
@@ -55,12 +61,13 @@ export async function loadChecklist(
     setLoading(false);
 }
 
-export function getLevelByContent(bosses: Boss[], contentName: string, difficulty: string): number {
+export function getLevelByContent(bosses: Boss[], contentName: string, difficultys: ChecklistDataDifficulty[]): number {
     for (const boss of bosses) {
         if (boss.name === contentName) {
-            for (const diff of boss.difficulty) {
-                if (diff.difficulty === difficulty) {
-                    return diff.level;
+            for (const diff of difficultys) {
+                const findDiff = boss.difficulty.find(d => d.stage === diff.stage && d.difficulty === diff.difficulty);
+                if (findDiff) {
+                    return findDiff.level;
                 }
             }
         }

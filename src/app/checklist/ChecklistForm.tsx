@@ -1012,7 +1012,7 @@ export function ChecklistComponent({
                                                     onChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                     <div className="w-full flex items-center gap-1">
                                                         <span className={clsx(
-                                                            isCheckHomework(item) ? 'line-through' : ''
+                                                            isCheckHomework(item) ? 'line-through fadedtext' : ''
                                                         )}>{getSimpleBossName(bosses, item.name)}</span>
                                                         {item.isGold ? <img 
                                                             src="/icons/gold.png" 
@@ -2740,10 +2740,27 @@ export function RemainChecklistComponent({ checklist, bosses }: RemainChecklistC
                         )}>
                             <CardBody className="py-2.5 sm:py-3 px-1.5 sm:px-2">
                                 <div>
-                                    <p className="text-[8pt] sm:text-[10pt] font-bold">{item.contentName} {item.difficulty}</p>
+                                    <p className="text-[8pt] sm:text-[10pt] font-bold">{item.contentName}</p>
                                     <div className="w-full flex gap-1">
                                         <p className="grow text-[7pt] sm:text-[9pt]">{item.nickname}</p>
                                         <p className="fadedtext text-[7pt] sm:text-[9pt]">Lv.{item.level}</p>
+                                    </div>
+                                    <div className="w-full grid grid-cols-4 gap-1 mt-1">
+                                        {item.difficultys.map((diff, idx) => (
+                                            <Tooltip
+                                                key={idx}
+                                                showArrow
+                                                content={diff.difficulty}>
+                                                <Chip
+                                                    color={diff.isComplete ? 'default' : getTextColorByDifficulty(diff.difficulty)}
+                                                    variant="flat"
+                                                    size="sm"
+                                                    radius="sm"
+                                                    className="min-w-full text-center">
+                                                    {diff.stage}관문
+                                                </Chip>
+                                            </Tooltip>
+                                        ))}
                                     </div>
                                 </div>
                             </CardBody>

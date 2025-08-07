@@ -25,7 +25,7 @@ import { Cube } from "../api/checklist/cube/route";
 import { collection, getDocs } from "firebase/firestore";
 import { database, firestore } from "@/utiils/firebase";
 import { decrypt } from "@/utiils/crypto";
-import { ChecklistData, getLevelByContent } from "../home/checklistFeat";
+import { ChecklistData, ChecklistDataDifficulty, getLevelByContent } from "../home/checklistFeat";
 import { get, ref } from "firebase/database";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
@@ -2195,28 +2195,51 @@ export function loadDatas(
     const datas: ChecklistData[] = [];
     for (const character of checklist) {
         for (const content of character.checklist) {
+            let isAdded = false;
+            const diffs: ChecklistDataDifficulty[] = [];
             for (const item of content.items) {
                 if (!item.isCheck && !item.isDisable) {
-                    const newData: ChecklistData = {
-                        nickname: character.nickname,
-                        level: character.level,
-                        contentName: content.name,
+                    const newDiff: ChecklistDataDifficulty = {
+                        stage: item.stage,
                         difficulty: item.difficulty,
-                        isGold: content.isGold
+                        isComplete: item.isCheck
                     }
-                    datas.push(newData);
+                    diffs.push(newDiff);
+                    isAdded = true;
                 }
+            }
+            if (isAdded) {
+                diffs.sort((a, b) => a.stage - b.stage);
+                const newData: ChecklistData = {
+                    nickname: character.nickname,
+                    level: character.level,
+                    contentName: content.name,
+                    difficultys: diffs,
+                    isGold: content.isGold
+                }
+                datas.push(newData);
             }
         }
     }
-    datas.sort((a, b) => getLevelByContent(bosses, b.contentName, b.difficulty) - getLevelByContent(bosses, a.contentName, a.difficulty));
+    datas.sort((a, b) => getLevelByContent(bosses, b.contentName, b.difficultys) - getLevelByContent(bosses, a.contentName, a.difficultys));
     setDatas(datas);
     const valueList = Array.from(value);
     if (valueList.length === 0) {
         setResults(datas);
     } else {
         const selectedIndex = Number(valueList[0]);
-        const contentName = bosses.sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(boss => boss.name)[selectedIndex];
+        const contentName = bosses.sort((a, b) => {
+            const bDiff = bosses.find(boss => boss.name === b.name);
+            const aDiff = bosses.find(boss => boss.name === a.name);
+            let bValue = 0, aValue = 0;
+            if (bDiff){
+                bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
+            }
+            if (aDiff) {
+                aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
+            }
+            return bValue - aValue;
+        }).map(boss => boss.name)[selectedIndex];
         const list: ChecklistData[] = datas.filter((item) => item.contentName === contentName);
         setResults(list);
     }
