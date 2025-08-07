@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { useEffect, useState } from "react"
 import data from '@/data/mains/data.json';
 import clsx from "clsx";
@@ -60,11 +59,10 @@ export default function UpdateComponent() {
                     transition={{ duration: 0.3 }}
                     className="absolute bottom-0 z-1 w-full h-full"
                     >
-                    <Image
+                    <img
                         src={data[page - 1].url}
                         alt={`${data[page - 1].sub} ${data[page - 1].title}`}
-                        fill
-                        className="object-contain"
+                        className="w-full object-contain"
                     />
                     </motion.div>
                 </AnimatePresence>
