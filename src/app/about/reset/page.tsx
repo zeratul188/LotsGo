@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -13,8 +12,8 @@ export default function Reset() {
             <h1 className="font-bold mb-2">비밀번호 재설정</h1>
             <p>로츠고 이용 중 비밀번호를 잊어버렸을 경우 비밀번호를 다시 설정하실 수 있습니다.</p>
             <div className="w-full grid sm:grid-cols-2 gap-2 mb-2">
-                <Image src="/about/reset1.webp" alt="로츠고 로그인 화면" width={800} height={0} className="w-full h-auto rounded-xl mt-2"/>
-                <Image src="/about/reset2.webp" alt="로츠고 비밀번호 재설정 팝업" width={800} height={0} className="w-full h-auto rounded-xl mt-2"/>
+                <img src="/about/reset1.webp" alt="로츠고 로그인 화면" className="w-full h-auto rounded-xl mt-2"/>
+                <img src="/about/reset2.webp" alt="로츠고 비밀번호 재설정 팝업" className="w-full h-auto rounded-xl mt-2"/>
             </div>
             <ul className="list-decimal pl-4">
                 <li>

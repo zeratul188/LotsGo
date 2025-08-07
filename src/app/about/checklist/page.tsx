@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -6,20 +5,19 @@ export const metadata: Metadata = {
     description: '로츠고 사이트에서 숙제 기능을 어떻게 이용하는 방법에 대해서 알려드립니다.',
 };
 
-
 export default function Checklist() {
     return (
         <div className="w-full [&_p]:text-lg [&_li]:text-lg [&_h3]:text-xl [&_h1]:text-3xl">
             <h1 className="font-bold mb-2">숙제</h1>
             <p>캐릭터들을 등록하여 일일 콘텐츠, 주간 콘텐츠 등을 기록하고 관리할 수 잇는 기능입니다.</p>
-            <Image src="/about/checklist1.webp" alt="로츠고 숙제 페이지" width={800} height={0} className="w-full h-auto rounded-xl mt-2 mb-2"/>
+            <img src="/about/checklist1.webp" alt="로츠고 숙제 페이지" className="w-full h-auto rounded-xl mt-2 mb-2"/>
             <h1 className="font-bold mt-10 mb-2">숙제 초기 세팅</h1>
             <p>초기세팅은 회원가입 후 숙제 페이지로 이동하면 별도 설정없이 자동으로 초기세팅이 완료됩니다.</p>
             <p>초기세팅 내용은 회원가입 시 등록했던 원정대에서 레벨이 높은 순서대로 6캐릭이 골드 지정으로 선택된 상태에서 자동으로 등록됩니다.</p>
             <p>추가된 캐릭터는 주요 콘텐츠에서 레벨이 맞는 주간 레이드를 레벨 높은 순서대로 3개의 레이드가 주간 콘텐츠에 추가됩니다.</p>
             <h1 className="font-bold mt-10 mb-2">캐릭터 추가하기</h1>
             <div className="w-full grid sm:grid-cols-[1fr_2fr] gap-4">
-                <Image src="/about/checklist2.webp" alt="로츠고 캐릭터 추가" width={800} height={0} className="w-full h-auto rounded-xl mt-2 mb-2"/>
+                <img src="/about/checklist2.webp" alt="로츠고 캐릭터 추가" className="w-full h-auto rounded-xl mt-2 mb-2"/>
                 <ul className="list-decimal pl-4">
                     <li>페이지 상단에 고정된 요소에서 "캐릭터 추가"를 누르면 창이 나오게 됩니다.</li>
                     <li>추가할 캐릭터 명 또는 해당 원정대의 대표 캐릭터 명을 입력하신 후 "조회" 버튼을 통해 데이터를 불러옵니다.</li>
@@ -29,15 +27,15 @@ export default function Checklist() {
                 </ul>
             </div>
             <h1 className="font-bold mt-10 mb-2">남은 숙제 확인하기</h1>
-            <Image src="/about/checklist3.webp" alt="로츠고 남은 숙제 확인" width={800} height={0} className="w-full h-auto rounded-xl mt-2 mb-2"/>
+            <img src="/about/checklist3.webp" alt="로츠고 남은 숙제 확인" className="w-full h-auto rounded-xl mt-2 mb-2"/>
             <p>서버 선택 우측에 위치한 "남은 숙제 현황 보기"를 누르면 현재 체크하지 않은 주간 콘텐츠를 표시합니다.</p>
             <p>항목의 좌측의 색은 골드 지정된 레이드를 뜻합니다. 노란색은 골드 지정 레이드이며, 회색은 골드 지정이 아닌 레이드를 뜻합니다.</p>
             <p>콘텐츠 선택으로 특정 콘텐츠를 선택하면 해당 레이드의 체크하지 않은 항목만 표시됩니다.</p>
             <h1 className="font-bold mt-10 mb-2">계정 관리하기</h1>
             <div className="w-full grid sm:grid-cols-[1fr_2fr] gap-2 mb-2">
                 <div className="w-full flex flex-col gap-2">
-                    <Image src="/about/checklist11.webp" alt="로츠고 계정 버튼 위치" width={800} height={0} className="w-full h-auto rounded-xl mt-2 mb-2"/>
-                    <Image src="/about/checklist12.webp" alt="로츠고 계정 관리" width={800} height={0} className="w-full h-auto rounded-xl mt-2 mb-2"/>
+                    <img src="/about/checklist11.webp" alt="로츠고 계정 버튼 위치" className="w-full h-auto rounded-xl mt-2 mb-2"/>
+                    <img src="/about/checklist12.webp" alt="로츠고 계정 관리" className="w-full h-auto rounded-xl mt-2 mb-2"/>
                 </div>
                 <div className="w-full">
                     <p>로스트아크를 플레이 할 경우 다계정을 이용하게 되면 숙제로 등록된 캐릭터 수가 많아졌을 경우 캐릭터마다 계정을 지정하여 관리하실 수 있습니다.</p>
@@ -50,13 +48,13 @@ export default function Checklist() {
                 </div>
             </div>
             <h1 className="font-bold mt-10 mb-2">휴식 게이지 관리하기</h1>
-            <Image src="/about/checklist4.webp" alt="로츠고 휴식 게이지 관리" width={800} height={0} className="w-full sm:w-1/2 h-auto rounded-xl mt-2 mb-2"/>
+            <img src="/about/checklist4.webp" alt="로츠고 휴식 게이지 관리" className="w-full sm:w-1/2 h-auto rounded-xl mt-2 mb-2"/>
             <p>휴식게이지를 관리하기 위해서 해당 캐릭터의 일일콘텐츠 및에 있는 "추가" 버튼을 누르면 휴식 게이지를 관리할 수 있습니다.</p>
             <p>쿠르잔 전선, 가디언 토벌에서 휴식 게이지를 조절하여 휴식 게이지를 수정할 수 있습니다.</p>
             <h1 className="font-bold mt-10 mb-2">콘텐츠 관리하기</h1>
             <div className="w-full grid sm:grid-cols-2 gap-2 mb-2">
-                <Image src="/about/checklist5.webp" alt="로츠고 주간 콘텐츠 관리" width={800} height={0} className="w-full h-auto rounded-xl mt-2 mb-2"/>
-                <Image src="/about/checklist6.webp" alt="로츠고 기타 콘텐츠 관리" width={800} height={0} className="w-full h-auto rounded-xl mt-2 mb-2"/>
+                <img src="/about/checklist5.webp" alt="로츠고 주간 콘텐츠 관리" className="w-full h-auto rounded-xl mt-2 mb-2"/>
+                <img src="/about/checklist6.webp" alt="로츠고 기타 콘텐츠 관리" className="w-full h-auto rounded-xl mt-2 mb-2"/>
             </div>
             <p>주간 콘텐츠를 추가하기 위해 주간 콘텐츠 영역의 하단에 위치한 "추가" 버튼을 통해 창을 여실 수 있습니다.</p>
             <p>하단의 콘텐츠의 종류와 난이도를 선택하신 후 골드 지정을 선택하고 "추가"를 누르시면 해당 콘텐츠가 추가됩니다.</p>
@@ -68,8 +66,8 @@ export default function Checklist() {
             <p>단, 다시 1주차로 넘어올 경우에는 다시 활성화됩니다. 반대로 2주차때 체크해도 1주차로 돌아올 때는 비활성화되지 않습니다.</p>
             <h1 className="font-bold mt-10 mb-2">큐브 관리하기</h1>
             <div className="w-full grid sm:grid-cols-2 gap-2 mb-2">
-                <Image src="/about/checklist7.webp" alt="로츠고 큐브 추가 및 감소" width={800} height={0} className="w-full h-auto rounded-xl mt-2 mb-2"/>
-                <Image src="/about/checklist8.webp" alt="로츠고 큐브 보상 보기" width={800} height={0} className="w-full h-auto rounded-xl mt-2 mb-2"/>
+                <img src="/about/checklist7.webp" alt="로츠고 큐브 추가 및 감소" className="w-full h-auto rounded-xl mt-2 mb-2"/>
+                <img src="/about/checklist8.webp" alt="로츠고 큐브 보상 보기" className="w-full h-auto rounded-xl mt-2 mb-2"/>
             </div>
             <p>
                 캐릭터 하단의 큐브 영역을 클릭하면 각 캐릭터의 레벨에 따라 큐브들의 목록이 표시됩니다.
@@ -80,8 +78,8 @@ export default function Checklist() {
                 "보상" 탭에서는 가지고 있는 큐브 티켓의 모든 보상을 합친 보석의 결과가 표시됩니다.
                 단, 황금방처럼 추가로 얻는 보석은 포함하지 않습니다.
             </p>
-            <Image src="/about/checklist9.webp" alt="로츠고 큐브 총 개수" width={800} height={0} className="w-full h-auto rounded-xl mt-2 mb-2"/>
-            <Image src="/about/checklist10.webp" alt="로츠고 큐브 총 보상" width={800} height={0} className="w-full h-auto rounded-xl mt-2 mb-2"/>
+            <img src="/about/checklist9.webp" alt="로츠고 큐브 총 개수" className="w-full h-auto rounded-xl mt-2 mb-2"/>
+            <img src="/about/checklist10.webp" alt="로츠고 큐브 총 보상" className="w-full h-auto rounded-xl mt-2 mb-2"/>
             <p>큐브 전체 현황은 서버 선택의 우측에 "남은 숙제 현황 보기" 우측의 "큐브 현황 보기"를 누르시면 해당 요소가 표시됩니다.</p>
             <p>"개수" 탭에서는 캐릭터 별로 큐브 개수를 확인할 수 있으며 전체 캐릭터의 큐브 총합도 확인을 하실 수 있습니다.</p>
             <p>"보상" 탭에서는 보석의 티어별로 표시가 되며, 캐릭터 별로 큐브 보상을 확인할 수 있으며 전체 캐릭터의 큐브 총 보상을 확인할 수 있습니다.</p>

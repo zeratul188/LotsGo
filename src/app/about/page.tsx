@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -40,7 +39,7 @@ export default function About() {
                 <li>부수입을 기록함으로써 콘텐츠의 골드량와 별개로 획득한 골드량도 기록이 가능합니다.</li>
                 <li>큐브를 기록함으로써 캐릭터마다 큐브를 몇 장을 가지고 있는지 확인이 가능하며 총 보석의 보상량도 자동으로 계산해드립니다.</li>
             </ul>
-            <Image src="/about/intro1.webp" alt="로츠고 숙제 화면 예시" width={800} height={0} className="w-full h-auto rounded-xl mt-2"/>
+            <img src="/about/intro1.webp" alt="로츠고 숙제 화면 예시" className="w-full h-auto rounded-xl mt-2"/>
             <h3 className="font-bold mt-4">🌀 자동 초기화 시스템</h3>
             <ul className="list-disc pl-4">
                 <li>일일 콘텐츠는 매일 오전 6시, 주간 콘텐츠는 매주 수요일 6시에 자동으로 초기화됩니다.</li>
@@ -58,7 +57,7 @@ export default function About() {
                 <li>닉네임을 입력하면 장비, 전투력, 각인, 보석, 스킬, 내실 포인트, 원정대 등 캐릭터의 정보를 확인할 수 있습니다.</li>
                 <li>초월, 엘릭서, 악세 연마 효과, 팔찌 효과 등 중요한 요소는 간단하게 표현하여 쉽게 표현할 수 있습니다.</li>
             </ul>
-            <Image src="/about/intro2.webp" alt="로츠고 전투정보실 예시" width={800} height={0} className="w-full sm:w-1/2 h-auto rounded-xl mt-2"/>
+            <img src="/about/intro2.webp" alt="로츠고 전투정보실 예시" className="w-full sm:w-1/2 h-auto rounded-xl mt-2"/>
         </div>
     )
 }

@@ -171,7 +171,7 @@ export function NavBrand() {
                 <Image 
                     src="/icon(L).png" 
                     width={40} 
-                    className="dark:hidden"
+                    className="w-10 dark:hidden"
                     alt="타이틀 이미지 (라이트 버전)"/>
                 <Image 
                     src="/icon(D).png" 

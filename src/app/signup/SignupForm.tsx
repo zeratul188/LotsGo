@@ -1,4 +1,4 @@
-import { Image, Button, Input, Link } from "@heroui/react";
+import { Button, Input, Link } from "@heroui/react";
 import { useState } from "react";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Checkbox } from "@heroui/react";
 import { useClickDuplicateEmailCheck, useOnClickDuplicateCheck, useOnClickExpeditionCheck, useOnClickSignup, useOnValueChangePrivacy } from "./signupFeat";
@@ -31,16 +31,14 @@ export function useSignupForm() {
 export function LogoComponent() {
     return (
         <div className="w-full flex justify-center mt-5 sm:mt-20">
-            <Image 
+            <img 
                 src="title(L).png" 
-                width={340} 
-                className="dark:hidden cursor-pointer"
+                className="w-[340px] dark:hidden cursor-pointer"
                 alt="로츠고 로고 이미지"
                 onClick={() => location.href = '/'}/>
-            <Image 
+            <img 
                 src="title(D).png" 
-                width={340} 
-                className="hidden dark:block cursor-pointer"
+                className="w-[340px] hidden dark:block cursor-pointer"
                 alt="로츠고 로고 이미지"
                 onClick={() => location.href = '/'}/>
         </div>

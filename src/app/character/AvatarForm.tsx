@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { CharacterFile } from "./characterFeat"
 import { Avatar, loadAvatars, loadImage } from "./avatarFeat";
-import { Card, CardBody, CardHeader, Divider, Image as HeroUIImage } from "@heroui/react";
+import { Card, CardBody, CardHeader, Divider } from "@heroui/react";
 import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils";
-import Image from 'next/image';
 
 // 아바타 컴포넌트
 type AvatarComponentProps = {
@@ -27,7 +26,7 @@ export function AvatarComponent({ file }: AvatarComponentProps) {
                     <div className="w-full flex flex-col md960:flex-row">
                         <div className="grow h-[max-content] md960:h-[800px] flex justify-center items-center bg-[#15181d] relative overflow-hidden">
                             {characterImage ? (
-                                <HeroUIImage 
+                                <img 
                                     alt="character-img"
                                     src={characterImage}
                                     className="w-auto h-full object-contain"/>
@@ -38,11 +37,10 @@ export function AvatarComponent({ file }: AvatarComponentProps) {
                             {avatars.map((avatar, index) => (
                                 <div key={index} className="w-full p-3 flex gap-3">
                                     <div className={`w-[42px] h-[42px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(avatar.grade)}`}>
-                                        <Image
+                                        <img
                                             src={avatar.icon}
-                                            width={36}
-                                            height={36}
-                                            alt="avatar-icon"/>
+                                            alt="avatar-icon"
+                                            className="w-9 h-9 rounded-md"/>
                                     </div>
                                     <div>
                                         <p className={`w-full text-[11pt] truncate ${getColorTextByGrade(avatar.grade)}`}>{avatar.name}</p>
