@@ -2,7 +2,6 @@
 import { useMobileQuery } from "@/utiils/utils";
 import { LogoComponent, SiteInformation } from "./FooterForm";
 import { Button, Divider, Link, Popover, PopoverContent, PopoverTrigger } from "@heroui/react";
-import Image from "next/image";
 
 export default function Footer() {
     const isMobile = useMobileQuery();
@@ -25,7 +24,7 @@ export default function Footer() {
                         radius="sm"
                         color="primary"
                         startContent={
-                            <Image width={20} height={20} src="/discord.png" alt="discord-icon"/>
+                            <img src="/discord.png" alt="discord-icon" className="w-5 h-5"/>
                         }
                         onPress={() => {
                             window.open('https://discord.gg/FzP3zuyW4s', '_target');

@@ -1,10 +1,27 @@
 import { useState } from "react"
 import { CheckCharacter } from "../store/checklistSlice"
 import { SetStateFn, useMobileQuery } from "@/utiils/utils"
-import { Accordion, AccordionItem, addToast, Avatar, Button, ButtonGroup, Card, CardBody, CardFooter, CardHeader, Checkbox, Chip, Divider, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Link, NumberInput, Popover, PopoverContent, PopoverTrigger, Progress, Tab, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tabs, Tooltip } from "@heroui/react"
-import Image from "next/image";
+import { 
+    Accordion, AccordionItem, 
+    addToast, 
+    Avatar, 
+    Button, ButtonGroup, 
+    Card, CardBody, CardFooter, CardHeader, 
+    Checkbox, 
+    Chip, 
+    Divider, 
+    Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, 
+    Link, 
+    NumberInput, 
+    Popover, PopoverContent, PopoverTrigger, 
+    Progress, 
+    Tab, 
+    Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, 
+    Tabs, 
+    Tooltip 
+} from "@heroui/react"
 import { Boss } from "../api/checklist/boss/route";
-import { DayValue, getAllBoundGold, getAllContentGold, getAllContentOtherGold, getAllCountChecklist, getAllCubeCount, getAllGoldCharacter, getAllGolds, getBackground50ByStage, getBackgroundByStage, getBorderByStage, getBossByContent, getCompleteBoundGoldCharacter, getCompleteChecklist, getCompleteGoldCharacter, getCompleteSharedGoldCharacter, getCountCube, getCubeList, getDayName, getDiffByContent, getHaveBoundGolds, getHaveGolds, getHaveSharedGolds, getIndexByNickname, getMaxRestValue, getSimpleBossName, getTypeDayValue, isCheckHomework } from "./checklistFeat";
+import { DayValue, getAllBoundGold, getAllContentGold, getAllContentOtherGold, getAllCountChecklist, getAllCubeCount, getAllGoldCharacter, getAllGolds, getBackground50ByStage, getBackgroundByStage, getBorderByStage, getCompleteBoundGoldCharacter, getCompleteChecklist, getCompleteGoldCharacter, getCompleteSharedGoldCharacter, getCountCube, getCubeList, getDayName, getDiffByContent, getHaveBoundGolds, getHaveGolds, getHaveSharedGolds, getIndexByNickname, getMaxRestValue, getSimpleBossName, getTypeDayValue, isCheckHomework } from "./checklistFeat";
 import { CubeDetailComponent, CubeStatueComponent, RemainChecklistComponent, SelectServer } from "./ChecklistForm";
 import clsx from "clsx";
 import { Cube } from "../api/checklist/cube/route";
@@ -53,10 +70,8 @@ function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
                                 color="warning"
                                 label={(
                                     <div className="flex items-center">
-                                        <Image 
+                                        <img
                                             src="/icons/gold.png" 
-                                            width={19} 
-                                            height={19} 
                                             alt="goldicon"
                                             className="w-[19px] h-[19px]"/>
                                         <span className="ml-1 text-md">주간 골드량 : {getHaveGolds(bosses, checklist).toLocaleString()} / {getAllGolds(bosses, checklist).toLocaleString()}</span>
@@ -106,30 +121,24 @@ function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
                                         <div className="w-full grid grid-cols-1 min-[501px]:grid-cols-3 gap-4 p-1 items-center">
                                             <div className="w-full flex items-center gap-1">
                                                 <p className="grow text-[9pt] fadedtext">총 콘텐츠</p>
-                                                <Image 
+                                                <img 
                                                     src="/icons/gold.png" 
-                                                    width={14} 
-                                                    height={14} 
                                                     alt="goldicon"
                                                     className="w-[14px] h-[14px]"/>
                                                 <p className="test-sm">{getAllContentGold(bosses, checklist).toLocaleString()}</p>
                                             </div>
                                             <div className="w-full flex items-center gap-1">
                                                 <p className="grow text-[9pt] fadedtext">총 귀속 골드</p>
-                                                <Image 
+                                                <img
                                                     src="/icons/gold.png" 
-                                                    width={14} 
-                                                    height={14} 
                                                     alt="goldicon"
                                                     className="w-[14px] h-[14px]"/>
                                                 <p className="test-sm">{getAllBoundGold(bosses, checklist).toLocaleString()}</p>
                                             </div>
                                             <div className="w-full flex items-center gap-1">
                                                 <p className="grow text-[9pt] fadedtext">총 부수입</p>
-                                                <Image 
+                                                <img
                                                     src="/icons/gold.png" 
-                                                    width={14} 
-                                                    height={14} 
                                                     alt="goldicon"
                                                     className="w-[14px] h-[14px]"/>
                                                 <p className="test-sm">{getAllContentOtherGold(bosses, checklist).toLocaleString()}</p>
@@ -282,10 +291,8 @@ function SettingButton({ size, checklist, setChecklist, characterIndex}: Setting
                 <DropdownItem 
                     key="gold"
                     startContent={
-                        <Image 
+                        <img
                             src="/icons/gold.png" 
-                            width={16} 
-                            height={16} 
                             alt="goldicon"
                             className="w-[16px] h-[16px]"/>
                     }
@@ -293,10 +300,8 @@ function SettingButton({ size, checklist, setChecklist, characterIndex}: Setting
                 <DropdownItem 
                     key="reset-cube"
                     startContent={
-                        <Image 
+                        <img
                             src="/icons/cube.png" 
-                            width={18} 
-                            height={18} 
                             alt="cubeicon"
                             className="w-[18px] h-[18px]"/>
                     }
@@ -504,10 +509,8 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                                 color="warning"
                                                 label={(
                                                     <div className="flex items-center">
-                                                        <Image 
+                                                        <img
                                                             src="/icons/gold.png" 
-                                                            width={14} 
-                                                            height={14} 
                                                             alt="goldicon"
                                                             className="w-[16px] h-[16px]"/>
                                                         <span className="ml-1 text-md">{(getCompleteGoldCharacter(bosses, character)+character.otherGold).toLocaleString()} / {(getAllGoldCharacter(bosses, character)+character.otherGold).toLocaleString()}</span>
@@ -525,10 +528,8 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                                     <div className="w-[9px] h-[9px] rounded-full bg-green-500"/>
                                                     <p className="grow">콘텐츠</p>
                                                     <div className="flex items-center">
-                                                        <Image 
+                                                        <img
                                                             src="/icons/gold.png" 
-                                                            width={14} 
-                                                            height={14} 
                                                             alt="goldicon"
                                                             className="w-[16px] h-[16px]"/>
                                                         <span className="ml-1 text-md">{getCompleteSharedGoldCharacter(bosses, character).toLocaleString()}</span>
@@ -538,10 +539,8 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                                     <div className="w-[9px] h-[9px] rounded-full bg-yellow-500"/>
                                                     <p className="grow">귀속 골드</p>
                                                     <div className="flex items-center">
-                                                        <Image 
+                                                        <img
                                                             src="/icons/gold.png" 
-                                                            width={14} 
-                                                            height={14} 
                                                             alt="goldicon"
                                                             className="w-[16px] h-[16px]"/>
                                                         <span className="ml-1 text-md">{getCompleteBoundGoldCharacter(bosses, character).toLocaleString()}</span>
@@ -551,10 +550,8 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                                     <div className="w-[9px] h-[9px] rounded-full bg-purple-600"/>
                                                     <p className="grow">부수입</p>
                                                     <div className="flex items-center">
-                                                        <Image 
+                                                        <img
                                                             src="/icons/gold.png" 
-                                                            width={14} 
-                                                            height={14} 
                                                             alt="goldicon"
                                                             className="w-[16px] h-[16px]"/>
                                                         <span className="ml-1 text-md">{character.otherGold.toLocaleString()}</span>
@@ -626,10 +623,8 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                                         <span className={clsx(
                                                             isCheckHomework(item) ? 'line-through' : ''
                                                         )}>{getSimpleBossName(bosses, item.name)}</span>
-                                                        {item.isGold ? <Image 
+                                                        {item.isGold ? <img 
                                                             src="/icons/gold.png" 
-                                                            width={14} 
-                                                            height={14} 
                                                             alt="goldicon"
                                                             className="w-[14px] h-[14px]"/> : <></>}
                                                         <div className="grow"/>
@@ -719,10 +714,8 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                 <Divider/>
                                 <Accordion>
                                     <AccordionItem key="0" title={<span className="flex gap-2 items-center cursor-pointer">
-                                        <Image 
+                                        <img 
                                             src="/icons/cube.png" 
-                                            width={18} 
-                                            height={18} 
                                             alt="cubeicon"
                                             className="w-[18px] h-[18px]"/>
                                         <span>큐브 - 총합 {getAllCubeCount(character)}장</span>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { CharacterFile } from "./characterFeat"
 import { Collect, CollectEquipment, getColorByProgress, getCompleteMaxPoint, getCompletePoint, getProgressData, Hobby, loadCollects, loadHobbys, loadItems } from "./pointFeat"
-import { Card, CardBody, CardFooter, CardHeader, Divider, Image, Popover, PopoverContent, PopoverTrigger, Progress, Switch } from "@heroui/react"
+import { Card, CardBody, CardFooter, CardHeader, Divider, Popover, PopoverContent, PopoverTrigger, Progress, Switch } from "@heroui/react"
 import CheckIcon from "@/Icons/CheckIcon"
 import clsx from "clsx"
 import { getBackgroundByGrade, getColorTextByGrade, useMobileQuery } from "@/utiils/utils"
@@ -70,11 +70,10 @@ export function PointComponent({ file }: PointComponentProps) {
                                     <div className="w-full flex items-center gap-2 cursor-pointer">
                                         <div className={`w-[32px] h-[32px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(collectEquipments.length > 0 ? collectEquipments[0].grade : "")}`}>
                                             {collectEquipments.length > 0 ? (
-                                                <Image
+                                                <img
                                                     src={collectEquipments[0].icon}
-                                                    width={26}
-                                                    height={26}
-                                                    alt="수집형 아이템 1"/>
+                                                    alt="수집형 아이템 1"
+                                                    className="w-[26px] h-[26px]"/>
                                             ) : <></>}
                                         </div>
                                         <div>
@@ -98,11 +97,10 @@ export function PointComponent({ file }: PointComponentProps) {
                                     <div className="w-full flex items-center gap-2 cursor-pointer mt-1">
                                         <div className={`w-[32px] h-[32px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(collectEquipments.length > 1 ? collectEquipments[1].grade : "-")}`}>
                                             {collectEquipments.length > 1 ? (
-                                                <Image
+                                                <img
                                                     src={collectEquipments[1].icon}
-                                                    width={26}
-                                                    height={26}
-                                                    alt="수집형 아이템 2"/>
+                                                    alt="수집형 아이템 2"
+                                                    className="w-[26px] h-[26px]"/>
                                             ) : <></>}
                                         </div>
                                         <div>
@@ -145,7 +143,7 @@ export function DetailComponent({ collects, isSelected }: DetailComponentProps) 
                     <CardHeader>
                         <div className="w-full">
                             <div className="w-full flex gap-2 items-center">
-                                <Image src={collect.icon} width={24} height={24} alt={collect.type}/>
+                                <img src={collect.icon} alt={collect.type} className="w-6 h-6"/>
                                 <p className="grow text-md">{collect.type}</p>
                                 <p className="fadedtext text-sm">{getCompletePoint(collect)} / {getCompleteMaxPoint(collect)}</p>
                             </div>

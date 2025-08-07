@@ -1,4 +1,4 @@
-import { Image, Input, Divider, Button, Link, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
+import { Input, Divider, Button, Link, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter } from "@heroui/react";
 import { useLoginHandlers, useLoginHandler, handleSendPasswordReset, login } from "./loginFeat";
 import { useState } from "react";
 import { SetStateFn } from "@/utiils/utils";
@@ -33,15 +33,13 @@ export function useLoginForm() {
 export function LogoComponent() {
     return (
         <>
-            <Image 
+            <img 
                 src="title(L).png" 
-                width={340} 
-                className="dark:hidden cursor-pointer"
+                className="w-[340px] dark:hidden cursor-pointer"
                 alt="로츠고 로고 이미지"/>
-            <Image 
+            <img 
                 src="title(D).png" 
-                width={340} 
-                className="hidden dark:block cursor-pointer"
+                className="w-[340px] hidden dark:block cursor-pointer"
                 alt="로츠고 로고 이미지"/>
         </>
     )

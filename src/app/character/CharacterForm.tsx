@@ -8,13 +8,11 @@ import {
     Chip, 
     Divider, 
     Input, 
-    Image as HeroUIImage,
     Popover, PopoverContent, PopoverTrigger, 
     Progress, 
     Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, 
     Tooltip 
 } from "@heroui/react";
-import Image from 'next/image';
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
@@ -564,11 +562,10 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                     <PopoverTrigger>
                                         <div className="flex gap-2 mb-4 items-center cursor-pointer">
                                             <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(equip.grade)}`}>
-                                                <Image
+                                                <img
                                                     src={equip.icon}
-                                                    width={40}
-                                                    height={40}
-                                                    alt="equip-icon"/>
+                                                    alt="equip-icon"
+                                                    className="w-10 h-10"/>
                                             </div>
                                             <div className="grow truncate">
                                                 <div className="flex gap-1 items-center">
@@ -603,11 +600,9 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                             <h3 className={`w-full text-center text-lg font-bold ${getColorTextByGrade(equip.grade)}`}>{equip.name}</h3>
                                             <div className="w-full flex gap-2 mt-3">
                                                 <div className={`w-[55px] h-[55px] p-[5px] aspect-square rounded-md ${getBackgroundByGrade(equip.grade)}`}>
-                                                    <Image
+                                                    <img
                                                         src={equip.icon}
-                                                        width={45}
-                                                        height={45}
-                                                        alt="detail-equip-icon"/>
+                                                        alt="w-[45px] h-[45px] detail-equip-icon"/>
                                                 </div>
                                                 <div className="grow">
                                                     <div className="flex gap-2">
@@ -808,11 +803,10 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                     <PopoverTrigger>
                                         <div className="flex gap-2 mb-2 items-center cursor-pointer">
                                             <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(equip.grade)}`}>
-                                                <Image
+                                                <img
                                                     src={equip.icon}
-                                                    width={40}
-                                                    height={40}
-                                                    alt="accessories-icon"/>
+                                                    alt="accessories-icon"
+                                                    className="w-10 h-10"/>
                                             </div>
                                             <div className="grow">
                                                 <div className="flex gap-1 items-center">
@@ -827,11 +821,10 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                 <div className="w-[130px] flex flex-col gap-[1px] h-full items-start">
                                                     {equip.items.map((item, idx) => (
                                                         <div key={idx} className="flex gap-1 text-[9pt] items-center">
-                                                            <Image
+                                                            <img
                                                                 src={getSrcByGrade(getSmallGradeByAccessory(equip.type, item).grade)}
-                                                                width={16}
-                                                                height={16}
-                                                                alt={`effect-${idx}`}/>
+                                                                alt={`effect-${idx}`}
+                                                                className="w-4 h-4"/>
                                                             <p className={getTextColorByGrade(getSmallGradeByAccessory(equip.type, item).grade)}>{getTextByGrade(getSmallGradeByAccessory(equip.type, item).grade)}</p>
                                                             <p className={clsx(
                                                                 getSmallGradeByAccessory(equip.type, item).grade === 'none' ? 'fadedtext' : ''
@@ -847,11 +840,10 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                             <h3 className={`w-full text-center text-lg font-bold ${getColorTextByGrade(equip.grade)}`}>{equip.name}</h3>
                                             <div className="w-full flex gap-2 mt-3">
                                                 <div className={`w-[55px] h-[55px] p-[5px] aspect-square rounded-md ${getBackgroundByGrade(equip.grade)}`}>
-                                                    <Image
+                                                    <img
                                                         src={equip.icon}
-                                                        width={45}
-                                                        height={45}
-                                                        alt="detail-accessories-icon"/>
+                                                        alt="detail-accessories-icon"
+                                                        className="w-[45px] h-[45px]"/>
                                                 </div>
                                                 <div className="grow">
                                                     <div className="flex gap-2">
@@ -898,11 +890,10 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                 <PopoverTrigger>
                                     <div className="flex gap-2 mb-2 items-center cursor-pointer">
                                         <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(arm.grade)}`}>
-                                            <Image
+                                            <img
                                                 src={arm.icon}
-                                                width={40}
-                                                height={40}
-                                                alt="arm-icon"/>
+                                                alt="arm-icon"
+                                                className="w-10 h-10"/>
                                         </div>
                                         <div className="grow">
                                             <div className="flex gap-1 items-center">
@@ -919,11 +910,10 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                         "flex gap-1 text-[9pt] items-center",
                                                         getSmallGradeByArm(item).name !== 'null' ? 'block' : 'hidden'
                                                     )}>
-                                                        <Image
+                                                        <img
                                                             src={getSrcByGrade(getSmallGradeByArm(item).grade)}
-                                                            width={16}
-                                                            height={16}
-                                                            alt={`arm-effect-${idx}`}/>
+                                                            alt={`arm-effect-${idx}`}
+                                                            className="w-4 h-4"/>
                                                         <p className={getTextColorByGrade(getSmallGradeByArm(item).grade)}>{getTextByGrade(getSmallGradeByArm(item).grade)}</p>
                                                         <p className={clsx(
                                                             getSmallGradeByArm(item).grade === 'none' ? 'fadedtext' : ''
@@ -939,11 +929,10 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                         <h3 className={`w-full text-center text-lg font-bold ${getColorTextByGrade(arm.grade)}`}>{arm.name}</h3>
                                         <div className="w-full flex gap-2 mt-3">
                                             <div className={`w-[55px] h-[55px] p-[5px] aspect-square rounded-md ${getBackgroundByGrade(arm.grade)}`}>
-                                                <Image
+                                                <img
                                                     src={arm.icon}
-                                                    width={45}
-                                                    height={45}
-                                                    alt="detail-arm-icon"/>
+                                                    alt="detail-arm-icon"
+                                                    className="w-[45px] h-[45px]"/>
                                             </div>
                                             <div className="grow">
                                                 <div className="flex gap-2">
@@ -987,11 +976,10 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                 <PopoverTrigger>
                                     <div className="flex gap-2 mb-2 items-center cursor-pointer">
                                         <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(stone.grade)}`}>
-                                            <Image
+                                            <img
                                                 src={stone.icon}
-                                                width={40}
-                                                height={40}
-                                                alt="stone-icon"/>
+                                                alt="stone-icon"
+                                                className="w-10 h-10"/>
                                         </div>
                                         <div className="grow">
                                             <div className="flex gap-1 items-center">
@@ -1015,11 +1003,10 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                         <h3 className={`w-full text-center text-lg font-bold ${getColorTextByGrade(stone.grade)}`}>{stone.name}</h3>
                                         <div className="w-full flex gap-2 mt-3">
                                             <div className={`w-[55px] h-[55px] p-[5px] aspect-square rounded-md ${getBackgroundByGrade(stone.grade)}`}>
-                                                <Image
+                                                <img
                                                     src={stone.icon}
-                                                    width={45}
-                                                    height={45}
-                                                    alt="detail-stone-icon"/>
+                                                    alt="detail-stone-icon"
+                                                    className="w-[45px] h-[45px]"/>
                                             </div>
                                             <div className="grow">
                                                 <div className="flex gap-2">
@@ -1098,11 +1085,10 @@ function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
                             <PopoverTrigger>
                                 <div className="w-full flex items-center justify-center flex-col cursor-pointer">
                                     <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(gem.grade)}`}>
-                                        <Image
+                                        <img
                                             src={gem.icon}
-                                            width={44}
-                                            height={44}
-                                            alt="gem-icon"/>
+                                            alt="gem-icon"
+                                            className="w-11 h-11"/>
                                     </div>
                                     <Chip
                                         size="sm"
@@ -1132,11 +1118,10 @@ function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
                             <PopoverTrigger>
                                 <div className="w-full flex items-center justify-center flex-col cursor-pointer">
                                     <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(gem.grade)}`}>
-                                        <Image
+                                        <img
                                             src={gem.icon}
-                                            width={44}
-                                            height={44}
-                                            alt="detail-gem-icon"/>
+                                            alt="detail-gem-icon"
+                                            className="w-11 h-11"/>
                                     </div>
                                     <Chip
                                         size="sm"
@@ -1438,20 +1423,17 @@ function EngravingComponent({ file }: ProfileComponentProps) {
                                 "flex gap-2 mb-2 rounded-md pt-1 pb-1 pl-2 pr-2 items-center",
                                 engraving.level >= 4 ? `${getBackgroundRightByGrade(engraving.grade)}` : ""
                             )}>
-                                <Image
+                                <img
                                     src={getEngravingSrcByName(engraving.name)}
                                     alt={engraving.name}
-                                    width={32}
-                                    height={32}
                                     className="w-6 h-6 rounded-md"/>
                                 <p className={`grow ${getColorTextByGrade(engraving.grade)}`}>{engraving.name}</p>
                                 {engraving.stoneLevel > 0 ? (
                                     <div className="flex gap-1 items-center fadedtext">
-                                        <Image
+                                        <img
                                             src={'/icons/stoneicon.png'}
-                                            width={12}
-                                            height={20}
-                                            alt="stone-icon"/>
+                                            alt="stone-icon"
+                                            className="w-3 h-5"/>
                                         <p>X {engraving.stoneLevel}</p>
                                     </div>
                                 ) : <></>}
@@ -1517,12 +1499,10 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
                             <p className="max-w-[320px]">{item.description}</p>
                         </div>}>
                         <div className="flex gap-2 mb-2 items-center">
-                            <HeroUIImage
+                            <img
                                 src={item.icon}
-                                width={24}
-                                height={24}
-                                radius="sm"
-                                alt="arkpassvie-icon"/>
+                                alt="arkpassvie-icon"
+                                className="w-6 h-6 rounded-md"/>
                             <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
                             <p className="text-sm">Lv.{item.level}</p>
                             <p className="grow text-sm">{item.name}</p>
@@ -1549,12 +1529,10 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
                             <p className="max-w-[320px]">{item.description}</p>
                         </div>}>
                         <div className="flex gap-2 mb-2 items-center">
-                            <HeroUIImage
+                            <img
                                 src={item.icon}
-                                width={24}
-                                height={24}
-                                radius="sm"
-                                alt="arkpassvie-icon"/>
+                                alt="arkpassvie-icon"
+                                className="w-6 h-6 rounded-md"/>
                             <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
                             <p className="text-sm">Lv.{item.level}</p>
                             <p className="grow text-sm">{item.name}</p>
@@ -1581,12 +1559,10 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
                             <p className="max-w-[320px]">{item.description}</p>
                         </div>}>
                         <div className="flex gap-2 mb-2 items-center">
-                            <HeroUIImage
+                            <img
                                 src={item.icon}
-                                width={24}
-                                height={24}
-                                radius="sm"
-                                alt="arkpassvie-icon"/>
+                                alt="arkpassvie-icon"
+                                className="w-6 h-6 rounded-md"/>
                             <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
                             <p className="text-sm">Lv.{item.level}</p>
                             <p className="grow text-sm">{item.name}</p>
