@@ -21,7 +21,7 @@ import {
     Tooltip 
 } from "@heroui/react"
 import { Boss } from "../api/checklist/boss/route";
-import { DayValue, getAllBoundGold, getAllContentGold, getAllContentOtherGold, getAllCountChecklist, getAllCubeCount, getAllGoldCharacter, getAllGolds, getBackground50ByStage, getBackgroundByStage, getBorderByStage, getCompleteBoundGoldCharacter, getCompleteChecklist, getCompleteGoldCharacter, getCompleteSharedGoldCharacter, getCountCube, getCubeList, getDayName, getDiffByContent, getHaveBoundGolds, getHaveGolds, getHaveSharedGolds, getIndexByNickname, getMaxRestValue, getSimpleBossName, getTypeDayValue, isCheckHomework } from "./checklistFeat";
+import { DayValue, getAllBoundGold, getAllContentGold, getAllContentOtherGold, getAllCountChecklist, getAllCubeCount, getAllGoldCharacter, getAllGolds, getBackground50ByStage, getBackgroundByStage, getBorderByStage, getCompleteBoundGoldCharacter, getCompleteChecklist, getCompleteGoldCharacter, getCompleteSharedGoldCharacter, getCountCube, getCubeList, getDayName, getDiffByContent, getHaveBoundGolds, getHaveGolds, getHaveSharedGolds, getIndexByNickname, getMaxRestValue, getSimpleBossName, getTypeDayValue, isCheckHomework, printDifficulty } from "./checklistFeat";
 import { CubeDetailComponent, CubeStatueComponent, RemainChecklistComponent, SelectServer } from "./ChecklistForm";
 import clsx from "clsx";
 import { Cube } from "../api/checklist/cube/route";
@@ -620,13 +620,21 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                                     )}
                                                     onChange={() => handleWeekContent(checklist, setChecklist, index, idx)}>
                                                     <div className="w-full flex items-center gap-1">
-                                                        <span className={clsx(
-                                                            isCheckHomework(item) ? 'line-through' : ''
-                                                        )}>{getSimpleBossName(bosses, item.name)}</span>
-                                                        {item.isGold ? <img 
-                                                            src="/icons/gold.png" 
-                                                            alt="goldicon"
-                                                            className="w-[14px] h-[14px]"/> : <></>}
+                                                        <div>
+                                                            <div className="flex gap-1 items-center">
+                                                                <p className={clsx(
+                                                                    isCheckHomework(item) ? 'line-through fadedtext' : ''
+                                                                )}>{getSimpleBossName(bosses, item.name)}</p>
+                                                                {item.isGold ? <img 
+                                                                    src="/icons/gold.png" 
+                                                                    alt="goldicon"
+                                                                    className="w-[14px] h-[14px]"/> : <></>}
+                                                            </div>
+                                                            <p className={clsx(
+                                                                "fadedtext text-[9pt]",
+                                                                isCheckHomework(item) ? 'line-through' : ''
+                                                            )}>{printDifficulty(item.items)}</p>
+                                                        </div>
                                                         <div className="grow"/>
                                                         <div className="flex items-center z-9">
                                                             {item.items.map((diff, ix) => (
@@ -768,14 +776,6 @@ export default function NotLoginedComponent({ initialChecklist, initialBosses, i
                                 setServer={setServer}/>
                         </div>
                         <ButtonGroup fullWidth={isMobile}>
-                            <Button
-                                radius="sm"
-                                color={isShowList ? 'default' : 'primary'}
-                                onPress={() => {
-                                    setShowList(!isShowList);
-                                }}>
-                                남은 숙제 현황 {isShowList ? '닫기' : "보기"}
-                            </Button>
                             <Button
                                 radius="sm"
                                 color={isShowCubeDetail ? 'default' : 'primary'}

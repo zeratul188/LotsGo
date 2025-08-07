@@ -1,5 +1,5 @@
 'use client'
-import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent, RemainChecklistComponent, FilterComponent } from "./ChecklistForm"
+import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent, RemainChecklistComponent, FilterComponent, BossInfoModal } from "./ChecklistForm"
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
 import { checkLogin, getBosses, getCubes, handleResetChecklist, loadChecklist } from "./checklistFeat";
@@ -46,6 +46,9 @@ export default function ChecklistClient() {
     const checklist: CheckCharacter[] = useSelector((state: RootState) => state.checklist.checklist);
     const isMobile = useMobileQuery();
     const [isLoadingReset, setLoadingReset] = useState(false);
+    
+    const [isOpenBosses, setOpenBosses] = useState(false);
+    const onOpenChangeBosses = (isOpen: boolean) => setOpenBosses(isOpen);
     
     useEffect(() => {
         if (!expedition || expedition.length === 0) return;
@@ -206,7 +209,10 @@ export default function ChecklistClient() {
                             isShowGoldCharacter={checklistForm.isShowGoldCharacter}
                             setShowGoldCharacter={checklistForm.setShowGoldCharacter}
                             filterAccount={checklistForm.filterAccount}
-                            setFilterAccount={checklistForm.setFilterAccount}/>
+                            setFilterAccount={checklistForm.setFilterAccount}
+                            isOpenBosses={isOpenBosses}
+                            onOpenBosses={onOpenChangeBosses}
+                            setOpenBosses={setOpenBosses}/>
                     </div>
                     <ChecklistComponent 
                         checklist={checklist} 
@@ -230,6 +236,10 @@ export default function ChecklistClient() {
                         onOpenChange={checklistForm.onOpenChange}
                         checklist={checklist}
                         dispatch={dispatch}
+                        bosses={checklistForm.bosses}/>
+                    <BossInfoModal
+                        isOpenBosses={isOpenBosses}
+                        onOpenBosses={onOpenChangeBosses}
                         bosses={checklistForm.bosses}/>
                 </div>
             )}

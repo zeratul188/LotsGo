@@ -25,7 +25,7 @@ import { Cube } from "../api/checklist/cube/route";
 import { collection, getDocs } from "firebase/firestore";
 import { database, firestore } from "@/utiils/firebase";
 import { decrypt } from "@/utiils/crypto";
-import { ChecklistData, getLevelByContent } from "../home/checklistFeat";
+import { ChecklistData, ChecklistDataDifficulty, getLevelByContent } from "../home/checklistFeat";
 import { get, ref } from "firebase/database";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
@@ -2195,28 +2195,51 @@ export function loadDatas(
     const datas: ChecklistData[] = [];
     for (const character of checklist) {
         for (const content of character.checklist) {
+            let isAdded = false;
+            const diffs: ChecklistDataDifficulty[] = [];
             for (const item of content.items) {
                 if (!item.isCheck && !item.isDisable) {
-                    const newData: ChecklistData = {
-                        nickname: character.nickname,
-                        level: character.level,
-                        contentName: content.name,
+                    const newDiff: ChecklistDataDifficulty = {
+                        stage: item.stage,
                         difficulty: item.difficulty,
-                        isGold: content.isGold
+                        isComplete: item.isCheck
                     }
-                    datas.push(newData);
+                    diffs.push(newDiff);
+                    isAdded = true;
                 }
+            }
+            if (isAdded) {
+                diffs.sort((a, b) => a.stage - b.stage);
+                const newData: ChecklistData = {
+                    nickname: character.nickname,
+                    level: character.level,
+                    contentName: content.name,
+                    difficultys: diffs,
+                    isGold: content.isGold
+                }
+                datas.push(newData);
             }
         }
     }
-    datas.sort((a, b) => getLevelByContent(bosses, b.contentName, b.difficulty) - getLevelByContent(bosses, a.contentName, a.difficulty));
+    datas.sort((a, b) => getLevelByContent(bosses, b.contentName, b.difficultys) - getLevelByContent(bosses, a.contentName, a.difficultys));
     setDatas(datas);
     const valueList = Array.from(value);
     if (valueList.length === 0) {
         setResults(datas);
     } else {
         const selectedIndex = Number(valueList[0]);
-        const contentName = bosses.sort((a, b) => a.name.localeCompare(b.name, 'ko')).map(boss => boss.name)[selectedIndex];
+        const contentName = bosses.sort((a, b) => {
+            const bDiff = bosses.find(boss => boss.name === b.name);
+            const aDiff = bosses.find(boss => boss.name === a.name);
+            let bValue = 0, aValue = 0;
+            if (bDiff){
+                bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
+            }
+            if (aDiff) {
+                aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
+            }
+            return bValue - aValue;
+        }).map(boss => boss.name)[selectedIndex];
         const list: ChecklistData[] = datas.filter((item) => item.contentName === contentName);
         setResults(list);
     }
@@ -2572,4 +2595,76 @@ export function getBossGoldByContent(bosses: Boss[], name: string, stage: number
         bossGold.bonus = item.bonus;
     }
     return bossGold;
+}
+
+// 체크리스트 난이도 출력 함수
+type PrintDifficulty = {
+    difficulty: string,
+    result: string
+}
+export function printDifficulty(items: ChecklistItem[]): string {
+    const prints: PrintDifficulty[] = [];
+    for (const item of items) {
+        if (prints.length > 0) {
+            if (prints[prints.length-1].difficulty === item.difficulty) {
+                prints[prints.length-1].result += item.stage;
+            } else {
+                prints.push({
+                    difficulty: item.difficulty,
+                    result: item.stage.toString()
+                });
+            }
+        } else {
+            prints.push({
+                difficulty: item.difficulty,
+                result: item.stage.toString()
+            });
+        }
+    }
+    let result = '';
+    for (let i = 0; i < prints.length; i++) {
+        if (i > 0) {
+            result += ' ';
+        }
+        result += `${prints[i].difficulty}${prints[i].result}`;
+    }
+    return result;
+}
+
+// 보스 난이도 리스트 출력
+export function getDifficultyByBosses(boss: Boss): string[] {
+    const results: string[] = [];
+    for (const diff of boss.difficulty) {
+        if (!results.includes(diff.difficulty)) {
+            results.push(diff.difficulty);
+        }
+    }
+    return results;
+}
+
+// 특정 난이도의 총 골드량 반환
+export function getSumGoldByDifficulty(boss: Boss, difficulty: string): number {
+    let sumGold = 0;
+    for (const diff of boss.difficulty.filter(diff => diff.difficulty === difficulty)) {
+        sumGold += diff.gold + diff.boundGold;
+    }
+    return sumGold;
+}
+
+// 특정 난이도의 골드량 반환
+export function getGoldByDifficulty(boss: Boss, difficulty: string): number {
+    let sumGold = 0;
+    for (const diff of boss.difficulty.filter(diff => diff.difficulty === difficulty)) {
+        sumGold += diff.gold;
+    }
+    return sumGold;
+}
+
+// 특정 난이도의 총 골드량 반환
+export function getBoundGoldByDifficulty(boss: Boss, difficulty: string): number {
+    let sumGold = 0;
+    for (const diff of boss.difficulty.filter(diff => diff.difficulty === difficulty)) {
+        sumGold += diff.boundGold;
+    }
+    return sumGold;
 }
