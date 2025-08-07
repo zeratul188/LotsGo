@@ -2630,3 +2630,41 @@ export function printDifficulty(items: ChecklistItem[]): string {
     }
     return result;
 }
+
+// 보스 난이도 리스트 출력
+export function getDifficultyByBosses(boss: Boss): string[] {
+    const results: string[] = [];
+    for (const diff of boss.difficulty) {
+        if (!results.includes(diff.difficulty)) {
+            results.push(diff.difficulty);
+        }
+    }
+    return results;
+}
+
+// 특정 난이도의 총 골드량 반환
+export function getSumGoldByDifficulty(boss: Boss, difficulty: string): number {
+    let sumGold = 0;
+    for (const diff of boss.difficulty.filter(diff => diff.difficulty === difficulty)) {
+        sumGold += diff.gold + diff.boundGold;
+    }
+    return sumGold;
+}
+
+// 특정 난이도의 골드량 반환
+export function getGoldByDifficulty(boss: Boss, difficulty: string): number {
+    let sumGold = 0;
+    for (const diff of boss.difficulty.filter(diff => diff.difficulty === difficulty)) {
+        sumGold += diff.gold;
+    }
+    return sumGold;
+}
+
+// 특정 난이도의 총 골드량 반환
+export function getBoundGoldByDifficulty(boss: Boss, difficulty: string): number {
+    let sumGold = 0;
+    for (const diff of boss.difficulty.filter(diff => diff.difficulty === difficulty)) {
+        sumGold += diff.boundGold;
+    }
+    return sumGold;
+}
