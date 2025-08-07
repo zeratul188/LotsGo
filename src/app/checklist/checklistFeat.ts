@@ -306,7 +306,7 @@ function initialWeekContents(level: number, bosses: Boss[]): Checklist[] {
             return maxLevelB - maxLevelA;
         });
     for (const boss of sortedBosses) {
-        const minDifficulty = boss.difficulty.filter(diff => diff.stage === 1).sort((a, b) => b.level - a.level);
+        const minDifficulty = boss.difficulty.filter(diff => !diff.difficulty.includes('싱글')).filter(diff => diff.stage === 1).sort((a, b) => b.level - a.level);
         for (const diff of minDifficulty) {
             if (level >= diff.level) {
                 const resultDiff = boss.difficulty.filter(d => d.difficulty === diff.difficulty).sort((a, b) => a.stage - b.stage);
