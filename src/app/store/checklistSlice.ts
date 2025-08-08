@@ -25,7 +25,8 @@ export type ChecklistItem = {
     stage: number,
     isCheck: boolean,
     isDisable: boolean,
-    isBonus: boolean
+    isBonus: boolean,
+    isBiweekly: boolean
 }
 export type CubeList = {
     id: string,

@@ -1173,7 +1173,7 @@ export function ChecklistComponent({
                                                                     {ix > 0 && (
                                                                         <div className={clsx(
                                                                             'w-2 h-[2px]',
-                                                                            getBackgroundByStage(diff.difficulty)
+                                                                            getBackgroundByStage(diff.difficulty, diff.isDisable)
                                                                         )} />
                                                                     )}
                                                                     <Tooltip showArrow delay={1000} content={
@@ -1233,17 +1233,28 @@ export function ChecklistComponent({
                                                                                         <p>{getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).bonus.toLocaleString()}</p>
                                                                                     </div>
                                                                                 </div>
+                                                                                {diff.isBiweekly ? (
+                                                                                    <>
+                                                                                        <Divider className="mt-2 mb-2"/>
+                                                                                        <p className="fadedtext text-sm">해당 관문은 2주에 1번씩 클리어를 하실 수 있습니다.</p>
+                                                                                        <p className="fadedtext text-sm">현재 {biweekly%2+1}주차입니다.</p>
+                                                                                        {diff.isDisable ? (
+                                                                                            <p className="text-red-400 dark:text-red-600 text-sm">저번 주에 이미 이 관문을 완료했었습니다.<br/>다음 주에 이 관문이 초기화됩니다.</p>
+                                                                                        ) : null}
+                                                                                    </>
+                                                                                ) : null}
                                                                             </div>
                                                                         </div>
                                                                     }>
                                                                         <div className={clsx(
                                                                             'w-7 h-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none cursor-pointer',
-                                                                            getBorderByStage(diff.difficulty),
-                                                                            diff.isCheck ? getBackground50ByStage(diff.difficulty) : ''
+                                                                            getBorderByStage(diff.difficulty, diff.isDisable),
+                                                                            diff.isDisable ? 'bg-gray-300/30 dark:bg-gray-600/30 fadedtext' : '',
+                                                                            diff.isCheck ? getBackground50ByStage(diff.difficulty, diff.isDisable) : ''
                                                                         )} onClick={async (e) => {
                                                                             e.preventDefault();
                                                                             e.stopPropagation();
-                                                                            await handleWeekCheckStage(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch, diff.stage)
+                                                                            await handleWeekCheckStage(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch, diff.stage, diff.isDisable)
                                                                         }}>
                                                                             {diff.stage}
                                                                         </div>
@@ -2110,16 +2121,20 @@ function WeekContentComponent({
                     onPress={async () => {
                         if (Array.from(content)[0]) {
                             setLoadingAdd(true);
-                            const name: string = getBossesById(bosses, Array.from(content)[0].toString())?.name ?? '';
+                            const findBoss = getBossesById(bosses, Array.from(content)[0].toString());
+                            const name: string = findBoss?.name ?? '';
                             const items: ChecklistItem[] = [];
                             for (const stage of stages) {
                                 if (stage.difficulty !== '선택안함') {
+                                    const diff = findBoss ? findBoss.difficulty.find(d => d.stage === stage.stage && d.difficulty === stage.difficulty) : null;
+                                    const isBiweekly = diff ? diff.isBiweekly : false;
                                     items.push({
                                         stage: stage.stage,
                                         difficulty: stage.difficulty,
                                         isBonus: false,
                                         isCheck: false,
-                                        isDisable: false
+                                        isDisable: false,
+                                        isBiweekly: isBiweekly
                                     });
                                 }
                             }

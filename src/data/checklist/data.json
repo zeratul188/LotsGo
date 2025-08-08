@@ -26,6 +26,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     }
                 ]
@@ -39,6 +40,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     },
                     {
@@ -46,6 +48,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 2
                     },
                     {
@@ -53,6 +56,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 3
                     }
                 ]
@@ -66,6 +70,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     },
                     {
@@ -73,6 +78,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 2
                     }
                 ]
@@ -113,6 +119,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     }
                 ]
@@ -126,6 +133,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     },
                     {
@@ -133,6 +141,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 2
                     },
                     {
@@ -140,6 +149,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 3
                     }
                 ]
@@ -153,6 +163,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     },
                     {
@@ -160,6 +171,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 2
                     }
                 ]
@@ -200,6 +212,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     }
                 ]
@@ -213,6 +226,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     },
                     {
@@ -220,6 +234,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 2
                     },
                     {
@@ -227,6 +242,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 3
                     }
                 ]
@@ -240,6 +256,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     },
                     {
@@ -247,6 +264,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 2
                     }
                 ]
@@ -287,6 +305,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     },
                     {
@@ -294,6 +313,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 2
                     },
                     {
@@ -301,6 +321,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 3
                     }
                 ]
@@ -314,6 +335,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     },
                     {
@@ -321,6 +343,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 2
                     }
                 ]
@@ -334,6 +357,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     },
                     {
@@ -341,6 +365,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 2
                     }
                 ]
@@ -381,6 +406,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     },
                     {
@@ -388,6 +414,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 2
                     },
                     {
@@ -395,6 +422,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 3
                     }
                 ]
@@ -408,6 +436,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     },
                     {
@@ -415,6 +444,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 2
                     }
                 ]
@@ -428,6 +458,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     },
                     {
@@ -435,6 +466,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 2
                     }
                 ]
@@ -475,6 +507,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     },
                     {
@@ -482,6 +515,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 2
                     },
                     {
@@ -489,6 +523,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 3
                     }
                 ]
@@ -502,6 +537,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     },
                     {
@@ -509,6 +545,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 2
                     }
                 ]
@@ -522,6 +559,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 1
                     },
                     {
@@ -529,6 +567,7 @@
                         "isCheck": false,
                         "isDisable": false,
                         "isBonus": false,
+                        "isBiweekly": false,
                         "stage": 2
                     }
                 ]
