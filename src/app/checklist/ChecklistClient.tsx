@@ -173,6 +173,14 @@ export default function ChecklistClient() {
                             <ButtonGroup fullWidth={isMobile}>
                                 <Button
                                     radius="sm"
+                                    color="secondary"
+                                    onPress={() => {
+                                        setOpenBosses(true);
+                                    }}>
+                                    콘텐츠 정보
+                                </Button>
+                                <Button
+                                    radius="sm"
                                     color={checklistForm.isShowList ? 'default' : 'primary'}
                                     onPress={() => {
                                         checklistForm.setShowList(!checklistForm.isShowList);
@@ -209,10 +217,7 @@ export default function ChecklistClient() {
                             isShowGoldCharacter={checklistForm.isShowGoldCharacter}
                             setShowGoldCharacter={checklistForm.setShowGoldCharacter}
                             filterAccount={checklistForm.filterAccount}
-                            setFilterAccount={checklistForm.setFilterAccount}
-                            isOpenBosses={isOpenBosses}
-                            onOpenBosses={onOpenChangeBosses}
-                            setOpenBosses={setOpenBosses}/>
+                            setFilterAccount={checklistForm.setFilterAccount}/>
                     </div>
                     <ChecklistComponent 
                         checklist={checklist} 

@@ -2814,10 +2814,7 @@ type FilterComponentProps = {
     isShowGoldCharacter: boolean,
     setShowGoldCharacter: SetStateFn<boolean>,
     filterAccount: Selection,
-    setFilterAccount: SetStateFn<Selection>,
-    isOpenBosses: boolean,
-    onOpenBosses: (isOpen: boolean) => void,
-    setOpenBosses: SetStateFn<boolean>
+    setFilterAccount: SetStateFn<Selection>
 }
 export function FilterComponent({ 
     filterContent, 
@@ -2829,10 +2826,7 @@ export function FilterComponent({
     isShowGoldCharacter,
     setShowGoldCharacter,
     filterAccount,
-    setFilterAccount,
-    isOpenBosses,
-    onOpenBosses,
-    setOpenBosses
+    setFilterAccount
 }: FilterComponentProps) {
     return (
         <div className="w-full mt-4">
@@ -2880,15 +2874,6 @@ export function FilterComponent({
                         </Switch>
                     </div>
                 </div>
-                <div className="grow"/>
-                <Button
-                    radius="sm"
-                    color="primary"
-                    onPress={() => {
-                        setOpenBosses(true);
-                    }}>
-                    콘텐츠 정보
-                </Button>
             </div>
         </div>
     )
