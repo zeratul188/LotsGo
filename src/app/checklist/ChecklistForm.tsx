@@ -196,6 +196,54 @@ type BossInfoModalProps = {
     bosses: Boss[]
 }
 export function BossInfoModal({ isOpenBosses, onOpenBosses, bosses }: BossInfoModalProps) {
+    const [value, setValue] = useState<Selection>(new Set(['0']));
+    const [boss, setBoss] = useState<Boss>(
+        bosses.sort((a, b) => {
+            const bDiff = bosses.find(boss => boss.name === b.name);
+            const aDiff = bosses.find(boss => boss.name === a.name);
+            let bValue = 0, aValue = 0;
+            if (bDiff){
+                bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
+            }
+            if (aDiff) {
+                aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
+            }
+            return bValue - aValue;
+        })[0]
+    )
+
+    useEffect(() => {
+        const valueList = Array.from(value);
+        if (valueList.length === 0) {
+            setBoss(bosses.sort((a, b) => {
+                const bDiff = bosses.find(boss => boss.name === b.name);
+                const aDiff = bosses.find(boss => boss.name === a.name);
+                let bValue = 0, aValue = 0;
+                if (bDiff){
+                    bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
+                }
+                if (aDiff) {
+                    aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
+                }
+                return bValue - aValue;
+            })[0]);
+        } else {
+            const selectedIndex = Number(valueList[0]);
+            setBoss(bosses.sort((a, b) => {
+                const bDiff = bosses.find(boss => boss.name === b.name);
+                const aDiff = bosses.find(boss => boss.name === a.name);
+                let bValue = 0, aValue = 0;
+                if (bDiff){
+                    bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
+                }
+                if (aDiff) {
+                    aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
+                }
+                return bValue - aValue;
+            })[selectedIndex]);
+        }
+    }, [value]);
+
     return (
         <Modal
             radius="sm"
@@ -207,114 +255,122 @@ export function BossInfoModal({ isOpenBosses, onOpenBosses, bosses }: BossInfoMo
                         <ModalHeader>콘텐츠 정보</ModalHeader>
                         <ModalBody>
                             <div className="w-full max-h-[500px] sm:max-h-[800px] overflow-y-auto scroll-auto">
-                                {bosses.sort((a, b) => {
-                                    const bDiff = bosses.find(boss => boss.name === b.name);
-                                    const aDiff = bosses.find(boss => boss.name === a.name);
-                                    let bValue = 0, aValue = 0;
-                                    if (bDiff){
-                                        bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
-                                    }
-                                    if (aDiff) {
-                                        aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
-                                    }
-                                    return bValue - aValue;
-                                }).map((boss, index) => (
-                                    <React.Fragment key={index}>
-                                        {index !== 0 ? <Divider className="mt-1 mb-4"/> : null}
-                                        <div className="w-full mb-2">
-                                            <h1 className="font-bold text-lg">{boss.name}</h1>
-                                            {getDifficultyByBosses(boss).map((diff, idx) => (
-                                                <React.Fragment key={idx}>
-                                                    <Chip
-                                                        variant="flat"
-                                                        radius="sm"
-                                                        color={getTextColorByDifficulty(diff)}
-                                                        className="min-w-full text-center mt-2">
-                                                        {diff}
-                                                    </Chip>
-                                                    <Card radius="sm" shadow="sm" className="mt-2 mb-1 mx-1">
-                                                        <CardBody>
-                                                            <div className="w-full grid grid-cols-3 gap-1">
-                                                                <div>
-                                                                    <p className="fadedtext text-sm">총 골드량</p>
-                                                                    <div className="flex gap-1 items-center">
-                                                                        <img
-                                                                            src="/icons/gold.png" 
-                                                                            alt="goldicon"
-                                                                            className="w-[14px] h-[14px]"/>
-                                                                        <p>{getSumGoldByDifficulty(boss, diff).toLocaleString()}</p>
-                                                                    </div>
-                                                                </div>
-                                                                <div>
-                                                                    <p className="fadedtext text-sm">골드량</p>
-                                                                    <div className="flex gap-1 items-center">
-                                                                        <img
-                                                                            src="/icons/gold.png" 
-                                                                            alt="goldicon"
-                                                                            className="w-[14px] h-[14px]"/>
-                                                                        <p>{getGoldByDifficulty(boss, diff).toLocaleString()}</p>
-                                                                    </div>
-                                                                </div>
-                                                                <div>
-                                                                    <p className="fadedtext text-sm">귀속 골드</p>
-                                                                    <div className="flex gap-1 items-center">
-                                                                        <img
-                                                                            src="/icons/gold.png" 
-                                                                            alt="goldicon"
-                                                                            className="w-[14px] h-[14px]"/>
-                                                                        <p>{getBoundGoldByDifficulty(boss, diff).toLocaleString()}</p>
-                                                                    </div>
-                                                                </div>
+                                <Select
+                                    fullWidth
+                                    label="콘텐츠 선택"
+                                    placeholder="콘텐츠를 선택하세요."
+                                    selectedKeys={value}
+                                    radius="sm"
+                                    size="sm"
+                                    defaultSelectedKeys={'0'}
+                                    onSelectionChange={setValue}>
+                                    {bosses.sort((a, b) => {
+                                        const bDiff = bosses.find(boss => boss.name === b.name);
+                                        const aDiff = bosses.find(boss => boss.name === a.name);
+                                        let bValue = 0, aValue = 0;
+                                        if (bDiff){
+                                            bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
+                                        }
+                                        if (aDiff) {
+                                            aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
+                                        }
+                                        return bValue - aValue;
+                                    }).map(boss => boss.name).map((boss, index) => (
+                                        <SelectItem key={index}>{boss}</SelectItem>
+                                    ))}
+                                </Select>
+                                <div className="w-full mb-3 mt-3">
+                                    <h1 className="font-bold text-lg">{boss.name}</h1>
+                                    {getDifficultyByBosses(boss).map((diff, idx) => (
+                                        <React.Fragment key={idx}>
+                                            <Chip
+                                                variant="flat"
+                                                radius="sm"
+                                                color={getTextColorByDifficulty(diff)}
+                                                className="min-w-full text-center mt-2">
+                                                {diff}
+                                            </Chip>
+                                            <Card radius="sm" shadow="sm" className="mt-2 mb-1 mx-1">
+                                                <CardBody>
+                                                    <div className="w-full grid grid-cols-3 gap-1">
+                                                        <div>
+                                                            <p className="fadedtext text-sm">총 골드량</p>
+                                                            <div className="flex gap-1 items-center">
+                                                                <img
+                                                                    src="/icons/gold.png" 
+                                                                    alt="goldicon"
+                                                                    className="w-[14px] h-[14px]"/>
+                                                                <p>{getSumGoldByDifficulty(boss, diff).toLocaleString()}</p>
                                                             </div>
-                                                        </CardBody>
-                                                    </Card>
-                                                    <Table removeWrapper className="mt-2">
-                                                        <TableHeader>
-                                                            <TableColumn>관문</TableColumn>
-                                                            <TableColumn>골드</TableColumn>
-                                                            <TableColumn>귀속 골드</TableColumn>
-                                                            <TableColumn>더보기</TableColumn>
-                                                        </TableHeader>
-                                                        <TableBody>
-                                                            {boss.difficulty.filter(d => d.difficulty === diff).map((item, ix) => (
-                                                                <TableRow key={ix}>
-                                                                    <TableCell>{item.stage}관문</TableCell>
-                                                                    <TableCell>
-                                                                        <div className="flex gap-1 items-center">
-                                                                            <img
-                                                                                src="/icons/gold.png" 
-                                                                                alt="goldicon"
-                                                                                className="w-[14px] h-[14px]"/>
-                                                                            <p>{item.gold.toLocaleString()}</p>
-                                                                        </div>
-                                                                    </TableCell>
-                                                                    <TableCell>
-                                                                        <div className="flex gap-1 items-center">
-                                                                            <img
-                                                                                src="/icons/gold.png" 
-                                                                                alt="goldicon"
-                                                                                className="w-[14px] h-[14px]"/>
-                                                                            <p>{item.boundGold.toLocaleString()}</p>
-                                                                        </div>
-                                                                    </TableCell>
-                                                                    <TableCell>
-                                                                        <div className="flex gap-1 items-center">
-                                                                            <img
-                                                                                src="/icons/gold.png" 
-                                                                                alt="goldicon"
-                                                                                className="w-[14px] h-[14px]"/>
-                                                                            <p>{item.bonus.toLocaleString()}</p>
-                                                                        </div>
-                                                                    </TableCell>
-                                                                </TableRow>
-                                                            ))}
-                                                        </TableBody>
-                                                    </Table>
-                                                </React.Fragment>
-                                            ))}
-                                        </div>
-                                    </React.Fragment>
-                                ))}
+                                                        </div>
+                                                        <div>
+                                                            <p className="fadedtext text-sm">골드량</p>
+                                                            <div className="flex gap-1 items-center">
+                                                                <img
+                                                                    src="/icons/gold.png" 
+                                                                    alt="goldicon"
+                                                                    className="w-[14px] h-[14px]"/>
+                                                                <p>{getGoldByDifficulty(boss, diff).toLocaleString()}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <p className="fadedtext text-sm">귀속 골드</p>
+                                                            <div className="flex gap-1 items-center">
+                                                                <img
+                                                                    src="/icons/gold.png" 
+                                                                    alt="goldicon"
+                                                                    className="w-[14px] h-[14px]"/>
+                                                                <p>{getBoundGoldByDifficulty(boss, diff).toLocaleString()}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </CardBody>
+                                            </Card>
+                                            <Table removeWrapper className="mt-2">
+                                                <TableHeader>
+                                                    <TableColumn>관문</TableColumn>
+                                                    <TableColumn>골드</TableColumn>
+                                                    <TableColumn>귀속 골드</TableColumn>
+                                                    <TableColumn>더보기</TableColumn>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {boss.difficulty.filter(d => d.difficulty === diff).map((item, ix) => (
+                                                        <TableRow key={ix}>
+                                                            <TableCell>{item.stage}관문</TableCell>
+                                                            <TableCell>
+                                                                <div className="flex gap-1 items-center">
+                                                                    <img
+                                                                        src="/icons/gold.png" 
+                                                                        alt="goldicon"
+                                                                        className="w-[14px] h-[14px]"/>
+                                                                    <p>{item.gold.toLocaleString()}</p>
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="flex gap-1 items-center">
+                                                                    <img
+                                                                        src="/icons/gold.png" 
+                                                                        alt="goldicon"
+                                                                        className="w-[14px] h-[14px]"/>
+                                                                    <p>{item.boundGold.toLocaleString()}</p>
+                                                                </div>
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="flex gap-1 items-center">
+                                                                    <img
+                                                                        src="/icons/gold.png" 
+                                                                        alt="goldicon"
+                                                                        className="w-[14px] h-[14px]"/>
+                                                                    <p>{item.bonus.toLocaleString()}</p>
+                                                                </div>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </React.Fragment>
+                                    ))}
+                                </div>
                             </div>
                         </ModalBody>
                     </>
