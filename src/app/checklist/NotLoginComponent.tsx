@@ -642,14 +642,14 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                                                     {ix > 0 && (
                                                                         <div className={clsx(
                                                                             'w-2 h-[2px]',
-                                                                            getBackgroundByStage(diff.difficulty)
+                                                                            getBackgroundByStage(diff.difficulty, diff.isDisable)
                                                                         )} />
                                                                     )}
                                                                     <Tooltip showArrow content={diff.difficulty}>
                                                                         <div className={clsx(
                                                                             'w-7 h-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none cursor-pointer',
-                                                                            getBorderByStage(diff.difficulty),
-                                                                            diff.isCheck ? getBackground50ByStage(diff.difficulty) : ''
+                                                                            getBorderByStage(diff.difficulty, diff.isDisable),
+                                                                            diff.isCheck ? getBackground50ByStage(diff.difficulty, diff.isDisable) : ''
                                                                         )} onClick={async (e) => {
                                                                             e.preventDefault();
                                                                             e.stopPropagation();
