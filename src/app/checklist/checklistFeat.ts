@@ -317,6 +317,7 @@ function initialWeekContents(level: number, bosses: Boss[]): Checklist[] {
                         isCheck: false,
                         isDisable: false,
                         isBonus: false,
+                        isBiweekly: item.isBiweekly,
                         stage: item.stage
                     });
                 }
@@ -517,7 +518,9 @@ export function getBossBoundGold(
         if (boss.name === name) {
             for (const item of items) {
                 const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
-                gold += diff ? diff.boundGold : 0;
+                if (!item.isDisable) {
+                    gold += diff ? diff.boundGold : 0;
+                }
             }
             break;
         }
@@ -557,7 +560,9 @@ export function getBossGold(
         if (boss.name === name) {
             for (const item of items) {
                 const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
-                gold += diff ? diff.gold : 0;
+                if (!item.isDisable) {
+                    gold += diff ? diff.gold : 0;
+                }
             }
             break;
         }
@@ -731,8 +736,10 @@ export async function handleWeekCheckStage(
     characterIndex: number,
     checklistIndex: number,
     dispatch: AppDispatch,
-    stage: number
+    stage: number,
+    isDisable: boolean
 ) {
+    if (isDisable) return;
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
@@ -791,9 +798,9 @@ export async function useOnClickWeekCheck(
     const id = storedUser ? storedUser.id : '';
     const updatedChecklist = structuredClone(checklist[characterIndex].checklist[checklistIndex]);
     const prevChecklist = structuredClone(updatedChecklist);
-    const isNothingChecked = updatedChecklist.items.some(item => !item.isCheck);
+    const isNothingChecked = updatedChecklist.items.some(item => !item.isCheck && !item.isDisable);
     for (const item of updatedChecklist.items) {
-        if (isNothingChecked) item.isCheck = true;
+        if (isNothingChecked && !item.isDisable) item.isCheck = true;
         else item.isCheck = false;
     }
     dispatch(checkWeek({
@@ -2301,11 +2308,24 @@ export async function handleResetChecklist(
                     const itemsSection = Array.isArray(item.items) ? item.items : [];
                     return {
                         ...item,
-                        items: itemsSection.map((it: any) => ({
-                            ...it,
-                            isBonus: false,
-                            isCheck: false
-                        }))
+                        items: itemsSection.map((it: any) => {
+                            let isDisable = it.isDisable;
+                            let isBiweekly = it.isBiweekly ?? false;
+                            if (!isDisable) {
+                                if (it.isCheck && isBiweekly && biweekly%2 === 1) {
+                                    isDisable = true;
+                                }
+                            }
+                            if (biweekly%2 === 0) {
+                                isDisable = false;
+                            }
+                            return {
+                                ...it,
+                                isBonus: false,
+                                isCheck: false,
+                                isDisable: isDisable
+                            }
+                        })
                     }
                 }),
                 otherGold: 0,
@@ -2525,7 +2545,7 @@ export function isCheckHomework(content: Checklist): boolean {
     let isChecked = true;
     if (content.items.length === 0) return false;
     for (const item of content.items) {
-        if (!item.isCheck) {
+        if (!item.isCheck && !item.isDisable) {
             isChecked = false;
             break;
         }
@@ -2540,16 +2560,18 @@ export function getSimpleBossName(bosses: Boss[], name: string): string {
 }
 
 // 관문 별 체크 버튼 테두리 반환
-export function getBorderByStage(diff: string): string {
+export function getBorderByStage(diff: string, isDisable: boolean): string {
+    if (isDisable) return 'border-gray-400 dark:border-gray-600';
     if (diff.includes('싱글')) return 'border-blue-400 dark:border-blue-600';
     else if (diff.includes('노말')) return 'border-green-600 dark:border-green-400';
     else if (diff.includes('하드')) return 'border-red-600 dark:border-red-400';
     else if (diff.includes('더퍼스트')) return 'border-purple-600 dark:border-purple-400';
-    return 'border-gray-600 dark:border-gray-400';
+    return 'border-yellow-600 dark:border-yellow-400';
 }
 
 // 관문 별 체크 버튼 배경색 반환
-export function getBackgroundByStage(diff: string): string {
+export function getBackgroundByStage(diff: string, isDisable: boolean): string {
+    if (isDisable) return 'bg-gray-400 dark:bg-gray-600';
     if (diff.includes('싱글')) return 'bg-blue-400 dark:bg-blue-600';
     else if (diff.includes('노말')) return 'bg-green-600 dark:bg-green-400';
     else if (diff.includes('하드')) return 'bg-red-600 dark:bg-red-400';
@@ -2558,7 +2580,8 @@ export function getBackgroundByStage(diff: string): string {
 }
 
 // 관문 별 체크 버튼 배경색 반환
-export function getBackground50ByStage(diff: string): string {
+export function getBackground50ByStage(diff: string, isDisable: boolean): string {
+    if (isDisable) return 'bg-gray-400/50 dark:bg-gray-600/50 fadedtext';
     if (diff.includes('싱글')) return 'bg-blue-400/50 dark:bg-blue-600/50 text-white';
     else if (diff.includes('노말')) return 'bg-green-600/50 dark:bg-green-400/50 text-white';
     else if (diff.includes('하드')) return 'bg-red-600/50 dark:bg-red-400/50 text-white';

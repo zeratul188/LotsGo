@@ -193,11 +193,24 @@ export const resetWeekChecklist = functions.https.onRequest(async (req, res) => 
                   const itemsSection = Array.isArray(item.items) ? item.items : [];
                   return {
                       ...item,
-                      items: itemsSection.map((it: any) => ({
-                        ...it,
-                        isBonus: false,
-                        isCheck: false
-                      }))
+                      items: itemsSection.map((it: any) => {
+                        let isDisable = it.isDisable;
+                        let isBiweekly = it.isBiweekly ?? false;
+                        if (!isDisable) {
+                          if (it.isCheck && isBiweekly && biweekly%2 === 1) {
+                            isDisable = true;
+                          }
+                        }
+                        if (biweekly%2 === 0) {
+                          isDisable = false;
+                        }
+                        return {
+                          ...it,
+                          isBonus: false,
+                          isCheck: false,
+                          isDisable: isDisable
+                        }
+                      })
                   }
                 }),
                 otherGold: 0,

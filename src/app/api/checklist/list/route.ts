@@ -1,4 +1,4 @@
-import { CheckCharacter, Day } from "@/app/store/checklistSlice";
+import { CheckCharacter, ChecklistItem, Day } from "@/app/store/checklistSlice";
 import { firestore } from "@/utiils/firebase";
 import { collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
@@ -37,7 +37,17 @@ export async function GET(req: NextRequest) {
                 server: item.server ?? '',
                 day: item.day ?? defaultDay,
                 daylist: item.daylist ?? [],
-                checklist: item.checklist ?? [],
+                checklist: item.checklist ? item.checklist.map((entry: any) => ({
+                    ...entry,
+                    items: entry.items.map((item: any) => ({
+                        difficulty: item.difficulty,
+                        stage: item.stage,
+                        isCheck: item.isCheck,
+                        isDisable: item.isDisable,
+                        isBonus: item.isBonus,
+                        isBiweekly: item.isBiweekly ?? false
+                    }))
+                })) : [],
                 weeklist: item.weeklist ?? [],
                 cube: item.cube ?? 0,
                 cubelist: item.cubelist ?? [],
