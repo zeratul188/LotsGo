@@ -172,6 +172,7 @@ export async function loadChecklist(
         setLoading(false);
     } else {
         const top6: Character[] = expedition.slice().sort((a, b) => b.level - a.level).slice(0, 6);
+        const notImportedList: string[] = [];
         for (const character of top6) {
             const checkCharacter: CheckCharacter = {
                 nickname: character.nickname,
@@ -189,7 +190,7 @@ export async function loadChecklist(
                     questBonus: 0,
                     questUsing: 0
                 },
-                checklist: initialWeekContents(character.level, bosses),
+                checklist: initialWeekContents(character.level, bosses, notImportedList),
                 cubelist: [],
                 daylist: [],
                 weeklist: [],
@@ -295,7 +296,7 @@ export function useChangeBlessing(life: number, max: number, setBlessing: SetSta
 }
 
 // 주간 콘텐츠 초기화 함수
-function initialWeekContents(level: number, bosses: Boss[]): Checklist[] {
+function initialWeekContents(level: number, bosses: Boss[], notImportedList: string[]): Checklist[] {
     const checklist: Checklist[] = [];
     let count = 0;
     const sortedBosses = bosses
@@ -306,31 +307,36 @@ function initialWeekContents(level: number, bosses: Boss[]): Checklist[] {
             return maxLevelB - maxLevelA;
         });
     for (const boss of sortedBosses) {
-        const minDifficulty = boss.difficulty.filter(diff => !diff.difficulty.includes('싱글')).filter(diff => diff.stage === 1).sort((a, b) => b.level - a.level);
-        for (const diff of minDifficulty) {
-            if (level >= diff.level) {
-                const resultDiff = boss.difficulty.filter(d => d.difficulty === diff.difficulty).sort((a, b) => a.stage - b.stage);
-                const items: ChecklistItem[] = [];
-                for (const item of resultDiff) {
-                    items.push({
-                        difficulty: item.difficulty,
-                        isCheck: false,
-                        isDisable: false,
-                        isBonus: false,
-                        isBiweekly: item.isBiweekly,
-                        stage: item.stage
+        if (!notImportedList.includes(boss.name)) {
+            const minDifficulty = boss.difficulty.filter(diff => !diff.difficulty.includes('싱글')).filter(diff => diff.stage === 1).sort((a, b) => b.level - a.level);
+            for (const diff of minDifficulty) {
+                if (level >= diff.level) {
+                    const resultDiff = boss.difficulty.filter(d => d.difficulty === diff.difficulty).sort((a, b) => a.stage - b.stage);
+                    const items: ChecklistItem[] = [];
+                    for (const item of resultDiff) {
+                        items.push({
+                            difficulty: item.difficulty,
+                            isCheck: false,
+                            isDisable: false,
+                            isBonus: false,
+                            isBiweekly: item.isBiweekly,
+                            stage: item.stage
+                        });
+                    }
+                    checklist.push({
+                        name: boss.name,
+                        isGold: true,
+                        items: items
                     });
+                    if (diff.isOnce) {
+                        notImportedList.push(boss.name);
+                    }
+                    count++;
+                    break;
                 }
-                checklist.push({
-                    name: boss.name,
-                    isGold: true,
-                    items: items
-                });
-                count++;
-                break;
             }
+            if (count === 3) break;
         }
-        if (count === 3) break;
     }
     return checklist;
 }
@@ -1788,6 +1794,27 @@ export async function handleAddCharacter(
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const newChecklist = checklist.map(item => ({ ...item }));
+    let notImportedList: string[] = [];
+    for (const character of checklist) {
+        for (const content of character.checklist) {
+            for (const item of content.items) {
+                const findBoss = bosses.find(boss => {
+                    let isFindedOnce = false;
+                    for (const diff of boss.difficulty) {
+                        if (item.difficulty === diff.difficulty && item.stage === diff.stage) {
+                            if (diff.isOnce) {
+                                isFindedOnce = true;
+                            }
+                        }
+                    }
+                    return boss.name === content.name && isFindedOnce;
+                });
+                if (findBoss) {
+                    notImportedList.push(findBoss.name);
+                }
+            }
+        }
+    }
     setLoadingAdd(true);
     for (const item of result) {
         if (item.isCheck) {
@@ -1807,7 +1834,7 @@ export async function handleAddCharacter(
                     questBonus: 0,
                     questUsing: 0
                 },
-                checklist: initialWeekContents(item.level, bosses),
+                checklist: initialWeekContents(item.level, bosses, notImportedList),
                 cubelist: [],
                 daylist: [],
                 weeklist: [],
