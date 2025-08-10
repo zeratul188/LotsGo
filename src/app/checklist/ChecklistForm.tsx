@@ -985,6 +985,7 @@ export function ChecklistComponent({
     filterAccount
 }: ChecklistProps) {
     const [inputOtherGold, setInputOtherGold] = useState<{ [nickname: string]: number }>({});
+    const [inputCubeControl, setInputCubeControl] = useState<{ [nickname: string]: number }>({});
     const isMobile = useMobileQuery();
     return (
         <div className={clsx(
@@ -1403,9 +1404,25 @@ export function ChecklistComponent({
                                         <span>큐브 - 총합 {getAllCubeCount(character)}장</span>
                                     </span>}>
                                     <div>
-                                        <Tabs fullWidth aria-label="cube-tabs">
+                                        <NumberInput
+                                            fullWidth
+                                            label="큐브 증감량"
+                                            labelPlacement="outside"
+                                            placeholder="0 ~ 999"
+                                            maxValue={999}
+                                            size="sm"
+                                            value={inputCubeControl[character.nickname] ?? 0}
+                                            onValueChange={(value: number) => {
+                                                setInputCubeControl(prev => ({...prev, [character.nickname]: value}));
+                                            }}/>
+                                        <Tabs fullWidth aria-label="cube-tabs" className="mt-2">
                                             <Tab key="setting" title="개수">
-                                                <CubeCountComponent checklist={checklist} character={character} cubes={cubes} dispatch={dispatch}/>
+                                                <CubeCountComponent 
+                                                    checklist={checklist} 
+                                                    character={character} 
+                                                    cubes={cubes} 
+                                                    dispatch={dispatch}
+                                                    count={inputCubeControl[character.nickname]}/>
                                             </Tab>
                                             <Tab key="statue" title="보상">
                                                 <CubeStatueComponent character={character} cubes={cubes}/>
@@ -2217,9 +2234,10 @@ type CubeCountComponentProps = {
     checklist: CheckCharacter[],
     character: CheckCharacter,
     cubes: Cube[],
-    dispatch: AppDispatch
+    dispatch: AppDispatch,
+    count: number
 }
-function CubeCountComponent({ checklist, character, cubes, dispatch }: CubeCountComponentProps) {
+function CubeCountComponent({ checklist, character, cubes, dispatch, count }: CubeCountComponentProps) {
     return (
         <Table removeWrapper>
             <TableHeader>
@@ -2241,7 +2259,7 @@ function CubeCountComponent({ checklist, character, cubes, dispatch }: CubeCount
                                     isDisabled={getCountCube(character.cubelist, cube.id) <= 0}
                                     className="w-8 h-8 min-w-0 min-h-0 p-0 text-sm"
                                     onPress={async () => {
-                                        await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, false);
+                                        await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, false, count);
                                     }}>-</Button>
                                 <Button
                                     size="sm"
@@ -2250,7 +2268,7 @@ function CubeCountComponent({ checklist, character, cubes, dispatch }: CubeCount
                                     isDisabled={getCountCube(character.cubelist, cube.id) >= 9999}
                                     className="w-8 h-8 min-w-0 min-h-0 p-0 text-sm"
                                     onPress={async () => {
-                                        await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, true);
+                                        await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, true, count);
                                     }}>+</Button>
                             </div>
                         </TableCell>

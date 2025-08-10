@@ -1478,7 +1478,8 @@ export async function handleControlCube(
     characterIndex: number,
     cubeID: string,
     dispatch: AppDispatch,
-    isAdd: boolean
+    isAdd: boolean,
+    count: number
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
@@ -1486,12 +1487,16 @@ export async function handleControlCube(
     const cubelist = checklist[characterIndex].cubelist.map(item => ({ ...item }));
     const prevCubelist = checklist[characterIndex].cubelist.map(item => ({ ...item }));
     const findIndex = cubelist.findIndex(item => item.id === cubeID);
+    const value = isNaN(count) ? 1 : count;
     if (findIndex !== -1) {
-        cubelist[findIndex].count += isAdd ? 1 : cubelist[findIndex].count <= 0 ? 0 : -1;
+        cubelist[findIndex].count += isAdd ? value : cubelist[findIndex].count <= 0 ? 0 : (value * -1);
+        if (cubelist[findIndex].count < 0) {
+            cubelist[findIndex].count = 0;
+        }
     } else {
         cubelist.push({
             id: cubeID,
-            count: isAdd ? 1 : 0
+            count: isAdd ? value : 0
         });
     }
     dispatch(editCube({
@@ -2188,7 +2193,7 @@ export function getGemCountByCharacter(character: CheckCharacter, cubes: Cube[],
     }
     const gems: number[] = [];
     for (let i = 1; i <= 10; i++) {
-        gems.push(sum % 3);
+        gems.push(i === 10 ? sum : sum % 3);
         sum = Math.floor(sum / 3);
     }
     return gems;
@@ -2212,7 +2217,7 @@ export function getGemCountByChecklist(checklist: CheckCharacter[], cubes: Cube[
     }
     const gems: number[] = [];
     for (let i = 1; i <= 10; i++) {
-        gems.push(sum % 3);
+        gems.push(i === 10 ? sum : sum % 3);
         sum = Math.floor(sum / 3);
     }
     return gems;
