@@ -23,7 +23,8 @@ export async function loadBoss(
                 isBiweekly: d.isBiweekly,
                 gold: d.gold,
                 boundGold: d.boundGold ?? 0,
-                bonus: d.bonus ?? 0
+                bonus: d.bonus ?? 0,
+                isOnce: d.isOnce ?? false
             }))
         }));
         setBoss(bosses);
@@ -47,7 +48,8 @@ export function useOnAddInput(setInputs: SetStateFn<Difficulty[]>) {
         isBiweekly: false,
         gold: 0,
         boundGold: 0,
-        bonus: 0
+        bonus: 0,
+        isOnce: false
     }
     return () => setInputs(prev => [...prev, emptyDifficulty]);
 }
@@ -70,7 +72,8 @@ export function useInputHandlers(inputs: Difficulty[], setInputs: SetStateFn<Dif
         onValueChangeBoundGold: (value: number, index: number) => updateInputData({ boundGold: value }, index),
         onValueChangeBiweekly: (isSelected: boolean, index: number) => updateInputData({ isBiweekly: isSelected }, index),
         onValueChangeStage: (value: number, index: number) => updateInputData({ stage: value }, index),
-        onValueChangeBonus: (value: number, index: number) => updateInputData({ bonus: value }, index)
+        onValueChangeBonus: (value: number, index: number) => updateInputData({ bonus: value }, index),
+        onValueChangeOnce: (isSelected: boolean, index: number) => updateInputData({ isOnce: isSelected }, index)
     }
 }
 
