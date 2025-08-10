@@ -1178,7 +1178,7 @@ export function ChecklistComponent({
                                                 type: 'day'
                                             });
                                             onOpen();
-                                        }}>추가</Button>
+                                        }}>추가 및 휴식 게이지 관리</Button>
                                 </div>
                                 <Divider className={clsx(
                                     isHideDayContent ? 'hidden' : "block md960:hidden"
@@ -1295,7 +1295,7 @@ export function ChecklistComponent({
                                                                                         <p className="fadedtext text-sm">해당 관문은 2주에 1번씩 클리어를 하실 수 있습니다.</p>
                                                                                         <p className="fadedtext text-sm">현재 {biweekly%2+1}주차입니다.</p>
                                                                                         {diff.isDisable ? (
-                                                                                            <p className="text-red-400 dark:text-red-600 text-sm">저번 주에 이미 이 관문을 완료했었습니다.<br/>다음 주에 이 관문이 초기화됩니다.</p>
+                                                                                            <p className="text-red-400 dark:text-red-700 text-sm">저번 주에 이미 이 관문을 완료했었습니다.<br/>다음 주에 이 관문이 초기화됩니다.</p>
                                                                                         ) : null}
                                                                                     </>
                                                                                 ) : null}
