@@ -2,7 +2,7 @@
 import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent, RemainChecklistComponent, FilterComponent, BossInfoModal } from "./ChecklistForm"
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
-import { checkLogin, getBosses, getCubes, handleResetChecklist, loadChecklist } from "./checklistFeat";
+import { checkLogin, getBosses, getCubes, handleResetChecklist, loadChecklist, settingFilter } from "./checklistFeat";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -120,6 +120,11 @@ export default function ChecklistClient() {
             }
         }
         loadSettings();
+        settingFilter(
+            checklistForm.setRemainHomework, 
+            checklistForm.setShowGoldCharacter,
+            checklistForm.setHideCompleteContent
+        );
     }, []);
 
     if (!checklistForm.isLogined) {
@@ -217,7 +222,9 @@ export default function ChecklistClient() {
                             isShowGoldCharacter={checklistForm.isShowGoldCharacter}
                             setShowGoldCharacter={checklistForm.setShowGoldCharacter}
                             filterAccount={checklistForm.filterAccount}
-                            setFilterAccount={checklistForm.setFilterAccount}/>
+                            setFilterAccount={checklistForm.setFilterAccount}
+                            isHideCompleteContent={checklistForm.isHideCompleteContent}
+                            setHideCompleteContent={checklistForm.setHideCompleteContent}/>
                     </div>
                     <ChecklistComponent 
                         checklist={checklist} 
@@ -234,7 +241,8 @@ export default function ChecklistClient() {
                         isShowGoldCharacter={checklistForm.isShowGoldCharacter}
                         accounts={checklistForm.accounts}
                         setAccounts={checklistForm.setAccounts}
-                        filterAccount={checklistForm.filterAccount}/>
+                        filterAccount={checklistForm.filterAccount}
+                        isHideCompleteContent={checklistForm.isHideCompleteContent}/>
                     <ChecklistModal
                         isOpen={checklistForm.isOpen}
                         modalData={checklistForm.modalData}

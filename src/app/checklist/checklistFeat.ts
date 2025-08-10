@@ -2723,3 +2723,23 @@ export function getBoundGoldByDifficulty(boss: Boss, difficulty: string): number
     }
     return sumGold;
 }
+
+// 필터 설정값 가져오기
+export function settingFilter(
+    setRemainHomework: SetStateFn<boolean>,
+    setShowGoldCharacter: SetStateFn<boolean>,
+    setHideCompleteContent: SetStateFn<boolean>
+) {
+    const savedRemainHomework = localStorage.getItem('isRemainHomework');
+    if (savedRemainHomework) {
+        setRemainHomework(savedRemainHomework === 'true');
+    }
+    const savedShowGoldCharacter = localStorage.getItem('isShowGoldCharacter');
+    if (savedShowGoldCharacter) {
+        setShowGoldCharacter(savedShowGoldCharacter === 'true');
+    }
+    const savedHideCompleteContent = localStorage.getItem('isHideCompleteContent');
+    if (savedHideCompleteContent) {
+        setHideCompleteContent(savedHideCompleteContent === 'true');
+    }
+}

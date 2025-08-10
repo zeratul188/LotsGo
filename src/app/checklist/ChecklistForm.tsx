@@ -161,10 +161,13 @@ export function useChecklistForm() {
     const [biweekly, setBiweekly] = useState(0);
     const [isHideDayContent, setHideDayContent] = useState(false);
     const [filterContent, setFilterContent] = useState<Selection>(new Set([]));
-    const [isRemainHomework, setRemainHomework] = useState(false);
-    const [isShowGoldCharacter, setShowGoldCharacter] = useState(false);
     const [accounts, setAccounts] = useState<string[]>(['본계정']);
     const [filterAccount, setFilterAccount] = useState<Selection>(new Set([]));
+
+    // 필터 설정값
+    const [isRemainHomework, setRemainHomework] = useState(false);
+    const [isShowGoldCharacter, setShowGoldCharacter] = useState(false);
+    const [isHideCompleteContent, setHideCompleteContent] = useState(false);
 
     return {
         isLoading, setLoading,
@@ -185,7 +188,8 @@ export function useChecklistForm() {
         isRemainHomework, setRemainHomework,
         isShowGoldCharacter, setShowGoldCharacter,
         accounts, setAccounts,
-        filterAccount, setFilterAccount
+        filterAccount, setFilterAccount,
+        isHideCompleteContent, setHideCompleteContent
     }
 }
 
@@ -965,7 +969,8 @@ type ChecklistProps = {
     isShowGoldCharacter: boolean,
     accounts: string[],
     setAccounts: SetStateFn<string[]>,
-    filterAccount: Selection
+    filterAccount: Selection,
+    isHideCompleteContent: boolean
 }
 export function ChecklistComponent({ 
     checklist, 
@@ -982,7 +987,8 @@ export function ChecklistComponent({
     isShowGoldCharacter,
     accounts,
     setAccounts,
-    filterAccount
+    filterAccount,
+    isHideCompleteContent
 }: ChecklistProps) {
     const [inputOtherGold, setInputOtherGold] = useState<{ [nickname: string]: number }>({});
     const [inputCubeControl, setInputCubeControl] = useState<{ [nickname: string]: number }>({});
@@ -1195,8 +1201,31 @@ export function ChecklistComponent({
                                         radius="sm"
                                         className="min-w-full text-center">주간 콘텐츠</Chip>
                                     <div className="pl-2.5">
+                                        {character.checklist.length === 0 ? (
+                                            <div className="w-full h-[140px] flex items-center justify-center">
+                                                <p className="fadedtext">등록된 숙제가 없습니다.</p>
+                                            </div>
+                                        ) : null}
+                                        {character.checklist.filter(item => {
+                                            if (isHideCompleteContent) {
+                                                if (!isCheckHomework(item)) {
+                                                    return true;
+                                                } else {
+                                                    return false;
+                                                }
+                                            } else {
+                                                return true;
+                                            }
+                                        }).length + character.weeklist.filter(item => isHideCompleteContent ? !item.isCheck ? true : false : false).length === 0 ? (
+                                            <div className="w-full h-[140px] flex items-center justify-center gap-2">
+                                                <CheckIcon size={16}/>
+                                                <p className="fadedtext">숙제를 모두 완료했습니다.</p>
+                                            </div>
+                                        ) : null}
                                         {character.checklist.map((item, idx) => (
-                                            <div key={idx}>
+                                            <div key={idx} className={clsx(
+                                                isHideCompleteContent ? isCheckHomework(item) ? 'hidden' : '' : ''
+                                            )}>
                                                 <Checkbox
                                                     aria-label={`checklist-${item.name}-${idx}`}
                                                     size="sm"
@@ -1324,7 +1353,9 @@ export function ChecklistComponent({
                                             </div>
                                         ))}
                                         {character.weeklist.map((item, idx) => (
-                                            <div key={idx}>
+                                            <div key={idx} className={clsx(
+                                                isHideCompleteContent ? item.isCheck ? 'hidden' : '' : ''
+                                            )}>
                                                 <Checkbox
                                                     lineThrough
                                                     aria-label={`checklist-${item.name}-${idx}`}
@@ -2832,7 +2863,9 @@ type FilterComponentProps = {
     isShowGoldCharacter: boolean,
     setShowGoldCharacter: SetStateFn<boolean>,
     filterAccount: Selection,
-    setFilterAccount: SetStateFn<Selection>
+    setFilterAccount: SetStateFn<Selection>,
+    isHideCompleteContent: boolean,
+    setHideCompleteContent: SetStateFn<boolean>
 }
 export function FilterComponent({ 
     filterContent, 
@@ -2844,8 +2877,11 @@ export function FilterComponent({
     isShowGoldCharacter,
     setShowGoldCharacter,
     filterAccount,
-    setFilterAccount
+    setFilterAccount,
+    isHideCompleteContent,
+    setHideCompleteContent
 }: FilterComponentProps) {
+
     return (
         <div className="w-full mt-4">
             <h1 className="text-xl mb-1">검색 필터</h1>
@@ -2874,24 +2910,48 @@ export function FilterComponent({
                         <SelectItem key={index}>{boss}</SelectItem>
                     ))}
                 </Select>
-                <div>
-                    <div>
-                        <Switch
-                            size="sm"
-                            isSelected={isRemainHomework}
-                            onValueChange={setRemainHomework}>
-                            주간 숙제를 완료한 캐릭터 숨기기
-                        </Switch>
-                    </div>
-                    <div>
-                        <Switch
-                            size="sm"
-                            isSelected={isShowGoldCharacter}
-                            onValueChange={setShowGoldCharacter}>
-                            골드 지정 캐릭터만 표시하기
-                        </Switch>
-                    </div>
-                </div>
+                <Popover showArrow>
+                    <PopoverTrigger>
+                        <Button
+                            radius="sm"
+                            color="primary"
+                            className="w-full sm:w-[max-content]">
+                            필터 추가 옵션
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                        <div className="w-full min-[301px]:w-[300px] px-1.5 py-2">
+                            <div className="w-full grid grid-cols-[1fr_max-content] gap-2">
+                                <p>주간 숙제를 완료한 캐릭터 숨기기</p>
+                                <Switch
+                                    size="sm"
+                                    isSelected={isRemainHomework}
+                                    onValueChange={(isSelected) => {
+                                        localStorage.setItem('isRemainHomework', String(isSelected));
+                                        setRemainHomework(isSelected);
+                                    }}/>
+                                <p>골드 지정 캐릭터만 표시하기</p>
+                                <Switch
+                                    size="sm"
+                                    isSelected={isShowGoldCharacter}
+                                    onValueChange={(isSelected) => {
+                                        localStorage.setItem('isShowGoldCharacter', String(isSelected));
+                                        setShowGoldCharacter(isSelected);
+                                    }}/>
+                                <p>숙제 완료한 콘텐츠 숨기기</p>
+                                <Switch
+                                    size="sm"
+                                    isSelected={isHideCompleteContent}
+                                    onValueChange={(isSelected) => {
+                                        localStorage.setItem('isHideCompleteContent', String(isSelected));
+                                        setHideCompleteContent(isSelected);
+                                    }}/>
+                            </div>
+                            <Divider className="mt-2"/>
+                            <p className="fadedtext text-sm mt-2">해당 설정값은 브라우저에 저장됩니다.</p>
+                        </div>
+                    </PopoverContent>
+                </Popover>
             </div>
         </div>
     )
