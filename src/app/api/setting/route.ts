@@ -3,7 +3,8 @@ import { collection, doc, getDocs, query, updateDoc, where } from "firebase/fire
 import { NextRequest, NextResponse } from "next/server";
 
 export type Settings = {
-    isHideDayContent: boolean
+    isHideDayContent: boolean,
+    isHideBonusMode: boolean
 }
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
@@ -21,7 +22,8 @@ export async function GET(req: NextRequest) {
         const data = targetDoc.data();
 
         const defaultSettings: Settings = {
-            isHideDayContent: false
+            isHideDayContent: false,
+            isHideBonusMode: false
         }
         const settings: Settings = {
             ...defaultSettings,

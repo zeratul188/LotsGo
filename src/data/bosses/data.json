@@ -11,7 +11,8 @@
                 "isBiweekly": false,
                 "gold": 600,
                 "boundGold": 600,
-                "bonus": 180
+                "bonus": 180,
+                "isOnce": false
             },
             {
                 "difficulty": "싱글",
@@ -20,7 +21,8 @@
                 "isBiweekly": false,
                 "gold": 800,
                 "boundGold": 800,
-                "bonus": 220
+                "bonus": 220,
+                "isOnce": false
             },
             {
                 "difficulty": "싱글",
@@ -29,7 +31,8 @@
                 "isBiweekly": false,
                 "gold": 1200,
                 "boundGold": 1200,
-                "bonus": 300
+                "bonus": 300,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -38,7 +41,8 @@
                 "isBiweekly": false,
                 "gold": 600,
                 "boundGold": 600,
-                "bonus": 180
+                "bonus": 180,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -47,7 +51,8 @@
                 "isBiweekly": false,
                 "gold": 600,
                 "boundGold": 600,
-                "bonus": 220
+                "bonus": 220,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -56,7 +61,8 @@
                 "isBiweekly": false,
                 "gold": 1200,
                 "boundGold": 1200,
-                "bonus": 300
+                "bonus": 300,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -65,7 +71,8 @@
                 "isBiweekly": false,
                 "gold": 700,
                 "boundGold": 700,
-                "bonus": 350
+                "bonus": 350,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -74,7 +81,8 @@
                 "isBiweekly": false,
                 "gold": 1000,
                 "boundGold": 1000,
-                "bonus": 500
+                "bonus": 500,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -83,7 +91,8 @@
                 "isBiweekly": false,
                 "gold": 1900,
                 "boundGold": 1900,
-                "bonus": 950
+                "bonus": 950,
+                "isOnce": false
             }
         ]
     },
@@ -99,7 +108,8 @@
                 "isBiweekly": false,
                 "gold": 2375,
                 "boundGold": 2375,
-                "bonus": 1030
+                "bonus": 1030,
+                "isOnce": false
             },
             {
                 "difficulty": "싱글",
@@ -108,7 +118,8 @@
                 "isBiweekly": false,
                 "gold": 5375,
                 "boundGold": 5375,
-                "bonus": 2400
+                "bonus": 2400,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -117,7 +128,8 @@
                 "isBiweekly": false,
                 "gold": 4750,
                 "boundGold": 0,
-                "bonus": 1030
+                "bonus": 1030,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -126,7 +138,8 @@
                 "isBiweekly": false,
                 "gold": 10750,
                 "boundGold": 0,
-                "bonus": 2400
+                "bonus": 2400,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -135,7 +148,8 @@
                 "isBiweekly": false,
                 "gold": 8000,
                 "boundGold": 0,
-                "bonus": 3640
+                "bonus": 3640,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -144,7 +158,8 @@
                 "isBiweekly": false,
                 "gold": 16500,
                 "boundGold": 0,
-                "bonus": 5880
+                "bonus": 5880,
+                "isOnce": false
             }
         ]
     },
@@ -160,7 +175,8 @@
                 "isBiweekly": false,
                 "gold": 250,
                 "boundGold": 250,
-                "bonus": 75
+                "bonus": 75,
+                "isOnce": false
             },
             {
                 "difficulty": "싱글",
@@ -169,7 +185,8 @@
                 "isBiweekly": false,
                 "gold": 350,
                 "boundGold": 350,
-                "bonus": 100
+                "bonus": 100,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -178,7 +195,8 @@
                 "isBiweekly": false,
                 "gold": 250,
                 "boundGold": 250,
-                "bonus": 75
+                "bonus": 75,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -187,7 +205,8 @@
                 "isBiweekly": false,
                 "gold": 350,
                 "boundGold": 350,
-                "bonus": 100
+                "bonus": 100,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -196,7 +215,8 @@
                 "isBiweekly": false,
                 "gold": 350,
                 "boundGold": 350,
-                "bonus": 175
+                "bonus": 175,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -205,7 +225,8 @@
                 "isBiweekly": false,
                 "gold": 550,
                 "boundGold": 550,
-                "bonus": 275
+                "bonus": 275,
+                "isOnce": false
             }
         ]
     },
@@ -221,7 +242,8 @@
                 "isBiweekly": false,
                 "gold": 150,
                 "boundGold": 150,
-                "bonus": 100
+                "bonus": 100,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -230,7 +252,8 @@
                 "isBiweekly": false,
                 "gold": 150,
                 "boundGold": 150,
-                "bonus": 150
+                "bonus": 150,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -239,7 +262,8 @@
                 "isBiweekly": false,
                 "gold": 200,
                 "boundGold": 200,
-                "bonus": 150
+                "bonus": 150,
+                "isOnce": false
             }
         ]
     },
@@ -255,7 +279,8 @@
                 "isBiweekly": false,
                 "gold": 15000,
                 "boundGold": 0,
-                "bonus": 0
+                "bonus": 0,
+                "isOnce": true
             },
             {
                 "difficulty": "하드",
@@ -264,7 +289,8 @@
                 "isBiweekly": false,
                 "gold": 30000,
                 "boundGold": 0,
-                "bonus": 0
+                "bonus": 0,
+                "isOnce": true
             }
         ]
     },
@@ -280,7 +306,8 @@
                 "isBiweekly": false,
                 "gold": 6000,
                 "boundGold": 0,
-                "bonus": 2400
+                "bonus": 2400,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -289,7 +316,8 @@
                 "isBiweekly": false,
                 "gold": 9500,
                 "boundGold": 0,
-                "bonus": 3200
+                "bonus": 3200,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -298,7 +326,8 @@
                 "isBiweekly": false,
                 "gold": 12500,
                 "boundGold": 0,
-                "bonus": 4200
+                "bonus": 4200,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -307,7 +336,8 @@
                 "isBiweekly": false,
                 "gold": 7000,
                 "boundGold": 0,
-                "bonus": 2700
+                "bonus": 2700,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -316,7 +346,8 @@
                 "isBiweekly": false,
                 "gold": 11000,
                 "boundGold": 0,
-                "bonus": 4100
+                "bonus": 4100,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -325,7 +356,8 @@
                 "isBiweekly": false,
                 "gold": 20000,
                 "boundGold": 0,
-                "bonus": 5800
+                "bonus": 5800,
+                "isOnce": false
             }
         ]
     },
@@ -341,7 +373,8 @@
                 "isBiweekly": false,
                 "gold": 300,
                 "boundGold": 300,
-                "bonus": 100
+                "bonus": 100,
+                "isOnce": false
             },
             {
                 "difficulty": "싱글",
@@ -350,7 +383,8 @@
                 "isBiweekly": false,
                 "gold": 450,
                 "boundGold": 450,
-                "bonus": 150
+                "bonus": 150,
+                "isOnce": false
             },
             {
                 "difficulty": "싱글",
@@ -359,7 +393,8 @@
                 "isBiweekly": false,
                 "gold": 750,
                 "boundGold": 750,
-                "bonus": 200
+                "bonus": 200,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -368,7 +403,8 @@
                 "isBiweekly": false,
                 "gold": 300,
                 "boundGold": 300,
-                "bonus": 100
+                "bonus": 100,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -377,7 +413,8 @@
                 "isBiweekly": false,
                 "gold": 450,
                 "boundGold": 450,
-                "bonus": 150
+                "bonus": 150,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -386,7 +423,8 @@
                 "isBiweekly": false,
                 "gold": 750,
                 "boundGold": 750,
-                "bonus": 200
+                "bonus": 200,
+                "isOnce": false
             }
         ]
     },
@@ -402,7 +440,8 @@
                 "isBiweekly": false,
                 "gold": 375,
                 "boundGold": 375,
-                "bonus": 180
+                "bonus": 180,
+                "isOnce": false
             },
             {
                 "difficulty": "싱글",
@@ -411,7 +450,8 @@
                 "isBiweekly": false,
                 "gold": 550,
                 "boundGold": 550,
-                "bonus": 200
+                "bonus": 200,
+                "isOnce": false
             },
             {
                 "difficulty": "싱글",
@@ -420,7 +460,8 @@
                 "isBiweekly": false,
                 "gold": 725,
                 "boundGold": 725,
-                "bonus": 270
+                "bonus": 270,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -429,7 +470,8 @@
                 "isBiweekly": false,
                 "gold": 375,
                 "boundGold": 375,
-                "bonus": 180
+                "bonus": 180,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -438,7 +480,8 @@
                 "isBiweekly": false,
                 "gold": 550,
                 "boundGold": 550,
-                "bonus": 210
+                "bonus": 210,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -447,7 +490,8 @@
                 "isBiweekly": false,
                 "gold": 725,
                 "boundGold": 725,
-                "bonus": 270
+                "bonus": 270,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -456,7 +500,8 @@
                 "isBiweekly": false,
                 "gold": 450,
                 "boundGold": 450,
-                "bonus": 225
+                "bonus": 225,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -465,7 +510,8 @@
                 "isBiweekly": false,
                 "gold": 700,
                 "boundGold": 700,
-                "bonus": 350
+                "bonus": 350,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -474,7 +520,8 @@
                 "isBiweekly": false,
                 "gold": 1000,
                 "boundGold": 1000,
-                "bonus": 500
+                "bonus": 500,
+                "isOnce": false
             }
         ]
     },
@@ -490,7 +537,8 @@
                 "isBiweekly": false,
                 "gold": 2800,
                 "boundGold": 0,
-                "bonus": 920
+                "bonus": 920,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -499,7 +547,8 @@
                 "isBiweekly": false,
                 "gold": 6000,
                 "boundGold": 0,
-                "bonus": 1960
+                "bonus": 1960,
+                "isOnce": false
             }
         ]
     },
@@ -515,7 +564,8 @@
                 "isBiweekly": false,
                 "gold": 0,
                 "boundGold": 0,
-                "bonus": 0
+                "bonus": 0,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -524,7 +574,8 @@
                 "isBiweekly": false,
                 "gold": 150,
                 "boundGold": 150,
-                "bonus": 150
+                "bonus": 150,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -533,7 +584,8 @@
                 "isBiweekly": false,
                 "gold": 0,
                 "boundGold": 0,
-                "bonus": 0
+                "bonus": 0,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -542,7 +594,8 @@
                 "isBiweekly": false,
                 "gold": 200,
                 "boundGold": 200,
-                "bonus": 150
+                "bonus": 150,
+                "isOnce": false
             }
         ]
     },
@@ -558,7 +611,8 @@
                 "isBiweekly": false,
                 "gold": 7250,
                 "boundGold": 0,
-                "bonus": 3240
+                "bonus": 3240,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -567,7 +621,8 @@
                 "isBiweekly": false,
                 "gold": 14250,
                 "boundGold": 0,
-                "bonus": 4830
+                "bonus": 4830,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -576,7 +631,8 @@
                 "isBiweekly": false,
                 "gold": 10000,
                 "boundGold": 0,
-                "bonus": 4500
+                "bonus": 4500,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -585,7 +641,8 @@
                 "isBiweekly": false,
                 "gold": 20500,
                 "boundGold": 0,
-                "bonus": 7200
+                "bonus": 7200,
+                "isOnce": false
             }
         ]
     },
@@ -601,7 +658,8 @@
                 "isBiweekly": false,
                 "gold": 1150,
                 "boundGold": 1150,
-                "bonus": 380
+                "bonus": 380,
+                "isOnce": false
             },
             {
                 "difficulty": "싱글",
@@ -610,7 +668,8 @@
                 "isBiweekly": false,
                 "gold": 2500,
                 "boundGold": 2500,
-                "bonus": 840
+                "bonus": 840,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -619,7 +678,8 @@
                 "isBiweekly": false,
                 "gold": 1150,
                 "boundGold": 1150,
-                "bonus": 380
+                "bonus": 380,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -628,7 +688,8 @@
                 "isBiweekly": false,
                 "gold": 2500,
                 "boundGold": 2500,
-                "bonus": 840
+                "bonus": 840,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -637,7 +698,8 @@
                 "isBiweekly": false,
                 "gold": 2800,
                 "boundGold": 0,
-                "bonus": 920
+                "bonus": 920,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -646,7 +708,8 @@
                 "isBiweekly": false,
                 "gold": 6000,
                 "boundGold": 0,
-                "bonus": 1960
+                "bonus": 1960,
+                "isOnce": false
             }
         ]
     },
@@ -662,7 +725,8 @@
                 "isBiweekly": false,
                 "gold": 300,
                 "boundGold": 300,
-                "bonus": 100
+                "bonus": 100,
+                "isOnce": false
             },
             {
                 "difficulty": "싱글",
@@ -671,7 +735,8 @@
                 "isBiweekly": false,
                 "gold": 500,
                 "boundGold": 500,
-                "bonus": 150
+                "bonus": 150,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -680,7 +745,8 @@
                 "isBiweekly": false,
                 "gold": 300,
                 "boundGold": 300,
-                "bonus": 100
+                "bonus": 100,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -689,7 +755,8 @@
                 "isBiweekly": false,
                 "gold": 500,
                 "boundGold": 500,
-                "bonus": 150
+                "bonus": 150,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -698,7 +765,8 @@
                 "isBiweekly": false,
                 "gold": 450,
                 "boundGold": 450,
-                "bonus": 225
+                "bonus": 225,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -707,7 +775,8 @@
                 "isBiweekly": false,
                 "gold": 750,
                 "boundGold": 750,
-                "bonus": 375
+                "bonus": 375,
+                "isOnce": false
             }
         ]
     },
@@ -723,7 +792,8 @@
                 "isBiweekly": false,
                 "gold": 425,
                 "boundGold": 425,
-                "bonus": 190
+                "bonus": 190,
+                "isOnce": false
             },
             {
                 "difficulty": "싱글",
@@ -732,7 +802,8 @@
                 "isBiweekly": false,
                 "gold": 775,
                 "boundGold": 775,
-                "bonus": 230
+                "bonus": 230,
+                "isOnce": false
             },
             {
                 "difficulty": "싱글",
@@ -741,7 +812,8 @@
                 "isBiweekly": false,
                 "gold": 1150,
                 "boundGold": 1150,
-                "bonus": 330
+                "bonus": 330,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -750,7 +822,8 @@
                 "isBiweekly": false,
                 "gold": 425,
                 "boundGold": 425,
-                "bonus": 190
+                "bonus": 190,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -759,7 +832,8 @@
                 "isBiweekly": false,
                 "gold": 775,
                 "boundGold": 775,
-                "bonus": 230
+                "bonus": 230,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -768,7 +842,8 @@
                 "isBiweekly": false,
                 "gold": 1150,
                 "boundGold": 1150,
-                "bonus": 330
+                "bonus": 330,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -777,7 +852,8 @@
                 "isBiweekly": false,
                 "gold": 600,
                 "boundGold": 600,
-                "bonus": 300
+                "bonus": 300,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -786,7 +862,8 @@
                 "isBiweekly": false,
                 "gold": 1000,
                 "boundGold": 1000,
-                "bonus": 500
+                "bonus": 500,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -795,7 +872,8 @@
                 "isBiweekly": false,
                 "gold": 1400,
                 "boundGold": 1400,
-                "bonus": 7000
+                "bonus": 7000,
+                "isOnce": false
             }
         ]
     },
@@ -811,7 +889,8 @@
                 "isBiweekly": false,
                 "gold": 500,
                 "boundGold": 500,
-                "bonus": 100
+                "bonus": 100,
+                "isOnce": false
             },
             {
                 "difficulty": "싱글",
@@ -820,7 +899,8 @@
                 "isBiweekly": false,
                 "gold": 500,
                 "boundGold": 500,
-                "bonus": 150
+                "bonus": 150,
+                "isOnce": false
             },
             {
                 "difficulty": "싱글",
@@ -829,7 +909,8 @@
                 "isBiweekly": false,
                 "gold": 500,
                 "boundGold": 500,
-                "bonus": 200
+                "bonus": 200,
+                "isOnce": false
             },
             {
                 "difficulty": "싱글",
@@ -838,7 +919,8 @@
                 "isBiweekly": true,
                 "gold": 800,
                 "boundGold": 800,
-                "bonus": 375
+                "bonus": 375,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -847,7 +929,8 @@
                 "isBiweekly": false,
                 "gold": 500,
                 "boundGold": 500,
-                "bonus": 100
+                "bonus": 100,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -856,7 +939,8 @@
                 "isBiweekly": false,
                 "gold": 500,
                 "boundGold": 500,
-                "bonus": 150
+                "bonus": 150,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -865,7 +949,8 @@
                 "isBiweekly": false,
                 "gold": 500,
                 "boundGold": 500,
-                "bonus": 200
+                "bonus": 200,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -874,7 +959,8 @@
                 "isBiweekly": true,
                 "gold": 800,
                 "boundGold": 800,
-                "bonus": 375
+                "bonus": 375,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -883,7 +969,8 @@
                 "isBiweekly": false,
                 "gold": 600,
                 "boundGold": 600,
-                "bonus": 300
+                "bonus": 300,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -892,7 +979,8 @@
                 "isBiweekly": false,
                 "gold": 600,
                 "boundGold": 600,
-                "bonus": 300
+                "bonus": 300,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -901,7 +989,8 @@
                 "isBiweekly": false,
                 "gold": 600,
                 "boundGold": 600,
-                "bonus": 300
+                "bonus": 300,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -910,7 +999,8 @@
                 "isBiweekly": true,
                 "gold": 1000,
                 "boundGold": 1000,
-                "bonus": 500
+                "bonus": 500,
+                "isOnce": false
             }
         ]
     },
@@ -926,7 +1016,8 @@
                 "isBiweekly": false,
                 "gold": 800,
                 "boundGold": 800,
-                "bonus": 360
+                "bonus": 360,
+                "isOnce": false
             },
             {
                 "difficulty": "싱글",
@@ -935,7 +1026,8 @@
                 "isBiweekly": false,
                 "gold": 1000,
                 "boundGold": 1000,
-                "bonus": 440
+                "bonus": 440,
+                "isOnce": false
             },
             {
                 "difficulty": "싱글",
@@ -944,7 +1036,8 @@
                 "isBiweekly": false,
                 "gold": 1400,
                 "boundGold": 1400,
-                "bonus": 640
+                "bonus": 640,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -953,7 +1046,8 @@
                 "isBiweekly": false,
                 "gold": 800,
                 "boundGold": 800,
-                "bonus": 360
+                "bonus": 360,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -962,7 +1056,8 @@
                 "isBiweekly": false,
                 "gold": 1000,
                 "boundGold": 1000,
-                "bonus": 440
+                "bonus": 440,
+                "isOnce": false
             },
             {
                 "difficulty": "노말",
@@ -971,7 +1066,8 @@
                 "isBiweekly": false,
                 "gold": 1400,
                 "boundGold": 1400,
-                "bonus": 640
+                "bonus": 640,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -980,7 +1076,8 @@
                 "isBiweekly": false,
                 "gold": 1000,
                 "boundGold": 1000,
-                "bonus": 500
+                "bonus": 500,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -989,7 +1086,8 @@
                 "isBiweekly": false,
                 "gold": 1200,
                 "boundGold": 1200,
-                "bonus": 600
+                "bonus": 600,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -998,7 +1096,8 @@
                 "isBiweekly": false,
                 "gold": 1800,
                 "boundGold": 1800,
-                "bonus": 900
+                "bonus": 900,
+                "isOnce": false
             },
             {
                 "difficulty": "하드",
@@ -1007,7 +1106,8 @@
                 "isBiweekly": true,
                 "gold": 2500,
                 "boundGold": 2500,
-                "bonus": 1250
+                "bonus": 1250,
+                "isOnce": false
             }
         ]
     }

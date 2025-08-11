@@ -172,6 +172,7 @@ export async function loadChecklist(
         setLoading(false);
     } else {
         const top6: Character[] = expedition.slice().sort((a, b) => b.level - a.level).slice(0, 6);
+        const notImportedList: string[] = [];
         for (const character of top6) {
             const checkCharacter: CheckCharacter = {
                 nickname: character.nickname,
@@ -189,7 +190,7 @@ export async function loadChecklist(
                     questBonus: 0,
                     questUsing: 0
                 },
-                checklist: initialWeekContents(character.level, bosses),
+                checklist: initialWeekContents(character.level, bosses, notImportedList),
                 cubelist: [],
                 daylist: [],
                 weeklist: [],
@@ -295,7 +296,7 @@ export function useChangeBlessing(life: number, max: number, setBlessing: SetSta
 }
 
 // 주간 콘텐츠 초기화 함수
-function initialWeekContents(level: number, bosses: Boss[]): Checklist[] {
+function initialWeekContents(level: number, bosses: Boss[], notImportedList: string[]): Checklist[] {
     const checklist: Checklist[] = [];
     let count = 0;
     const sortedBosses = bosses
@@ -306,31 +307,37 @@ function initialWeekContents(level: number, bosses: Boss[]): Checklist[] {
             return maxLevelB - maxLevelA;
         });
     for (const boss of sortedBosses) {
-        const minDifficulty = boss.difficulty.filter(diff => !diff.difficulty.includes('싱글')).filter(diff => diff.stage === 1).sort((a, b) => b.level - a.level);
-        for (const diff of minDifficulty) {
-            if (level >= diff.level) {
-                const resultDiff = boss.difficulty.filter(d => d.difficulty === diff.difficulty).sort((a, b) => a.stage - b.stage);
-                const items: ChecklistItem[] = [];
-                for (const item of resultDiff) {
-                    items.push({
-                        difficulty: item.difficulty,
-                        isCheck: false,
-                        isDisable: false,
-                        isBonus: false,
-                        isBiweekly: item.isBiweekly,
-                        stage: item.stage
+        if (!notImportedList.includes(boss.name)) {
+            const minDifficulty = boss.difficulty.filter(diff => !diff.difficulty.includes('싱글')).filter(diff => diff.stage === 1).sort((a, b) => b.level - a.level);
+            for (const diff of minDifficulty) {
+                if (level >= diff.level) {
+                    const resultDiff = boss.difficulty.filter(d => d.difficulty === diff.difficulty).sort((a, b) => a.stage - b.stage);
+                    const items: ChecklistItem[] = [];
+                    for (const item of resultDiff) {
+                        items.push({
+                            difficulty: item.difficulty,
+                            isCheck: false,
+                            isDisable: false,
+                            isBonus: false,
+                            isBiweekly: item.isBiweekly,
+                            stage: item.stage
+                        });
+                    }
+                    checklist.push({
+                        name: boss.name,
+                        isGold: true,
+                        items: items,
+                        busGold: 0
                     });
+                    if (diff.isOnce) {
+                        notImportedList.push(boss.name);
+                    }
+                    count++;
+                    break;
                 }
-                checklist.push({
-                    name: boss.name,
-                    isGold: true,
-                    items: items
-                });
-                count++;
-                break;
             }
+            if (count === 3) break;
         }
-        if (count === 3) break;
     }
     return checklist;
 }
@@ -562,6 +569,9 @@ export function getBossGold(
                 const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
                 if (!item.isDisable) {
                     gold += diff ? diff.gold : 0;
+                    if (item.isBonus) {
+                        gold -= diff ? diff.bonus : 0;
+                    }
                 }
             }
             break;
@@ -583,6 +593,9 @@ export function getBossCheckedGold(
                 const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
                 if (item.isCheck) {
                     gold += diff ? diff.gold : 0;
+                    if (item.isBonus) {
+                        gold -= diff ? diff.bonus : 0;
+                    }
                 }
             }
             break;
@@ -730,6 +743,56 @@ export function useOnClickDayCheck(
     }
 }
 
+// 주간 콘텐츠 관문 더보기 체크 이벤트 함수
+export async function handleWeekBonusCheckStage(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    checklistIndex: number,
+    dispatch: AppDispatch,
+    stage: number
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser ? storedUser.id : '';
+    const updatedChecklist = structuredClone(checklist[characterIndex].checklist[checklistIndex]);
+    const prevChecklist = structuredClone(updatedChecklist);
+    for (const item of updatedChecklist.items) {
+        if (item.stage === stage) {
+            item.isBonus = !item.isBonus;
+        }
+    }
+    dispatch(checkWeek({
+        characterIndex: characterIndex,
+        checklistIndex: checklistIndex,
+        checklist: updatedChecklist
+    }));
+    const editRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'check-week',
+            characterIndex: characterIndex,
+            checklistIndex: checklistIndex,
+            checklistItem: updatedChecklist
+        })
+    });
+    if (!editRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        dispatch(checkWeek({
+            characterIndex: characterIndex,
+            checklistIndex: checklistIndex,
+            checklist: prevChecklist
+        }));
+        return;
+    }
+}
+
 // 주간 콘텐츠 관문 체크 이벤트 함수
 export async function handleWeekCheckStage(
     checklist: CheckCharacter[],
@@ -750,8 +813,12 @@ export async function handleWeekCheckStage(
             item.isCheck = true;
         } else if (item.stage === stage) {
             item.isCheck = !item.isCheck;
+            if (!item.isCheck && item.isBonus) {
+                item.isBonus = false;
+            }
         } else {
             item.isCheck = false;
+            item.isBonus = false;
         }
     }
     dispatch(checkWeek({
@@ -801,7 +868,10 @@ export async function useOnClickWeekCheck(
     const isNothingChecked = updatedChecklist.items.some(item => !item.isCheck && !item.isDisable);
     for (const item of updatedChecklist.items) {
         if (isNothingChecked && !item.isDisable) item.isCheck = true;
-        else item.isCheck = false;
+        else {
+            item.isCheck = false;
+            item.isBonus = false;
+        }
     }
     dispatch(checkWeek({
         characterIndex: characterIndex,
@@ -1472,7 +1542,8 @@ export async function handleControlCube(
     characterIndex: number,
     cubeID: string,
     dispatch: AppDispatch,
-    isAdd: boolean
+    isAdd: boolean,
+    count: number
 ) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
@@ -1480,12 +1551,16 @@ export async function handleControlCube(
     const cubelist = checklist[characterIndex].cubelist.map(item => ({ ...item }));
     const prevCubelist = checklist[characterIndex].cubelist.map(item => ({ ...item }));
     const findIndex = cubelist.findIndex(item => item.id === cubeID);
+    const value = isNaN(count) ? 1 : count;
     if (findIndex !== -1) {
-        cubelist[findIndex].count += isAdd ? 1 : cubelist[findIndex].count <= 0 ? 0 : -1;
+        cubelist[findIndex].count += isAdd ? value : cubelist[findIndex].count <= 0 ? 0 : (value * -1);
+        if (cubelist[findIndex].count < 0) {
+            cubelist[findIndex].count = 0;
+        }
     } else {
         cubelist.push({
             id: cubeID,
-            count: isAdd ? 1 : 0
+            count: isAdd ? value : 0
         });
     }
     dispatch(editCube({
@@ -1788,6 +1863,27 @@ export async function handleAddCharacter(
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const newChecklist = checklist.map(item => ({ ...item }));
+    let notImportedList: string[] = [];
+    for (const character of checklist) {
+        for (const content of character.checklist) {
+            for (const item of content.items) {
+                const findBoss = bosses.find(boss => {
+                    let isFindedOnce = false;
+                    for (const diff of boss.difficulty) {
+                        if (item.difficulty === diff.difficulty && item.stage === diff.stage) {
+                            if (diff.isOnce) {
+                                isFindedOnce = true;
+                            }
+                        }
+                    }
+                    return boss.name === content.name && isFindedOnce;
+                });
+                if (findBoss) {
+                    notImportedList.push(findBoss.name);
+                }
+            }
+        }
+    }
     setLoadingAdd(true);
     for (const item of result) {
         if (item.isCheck) {
@@ -1807,7 +1903,7 @@ export async function handleAddCharacter(
                     questBonus: 0,
                     questUsing: 0
                 },
-                checklist: initialWeekContents(item.level, bosses),
+                checklist: initialWeekContents(item.level, bosses, notImportedList),
                 cubelist: [],
                 daylist: [],
                 weeklist: [],
@@ -2161,7 +2257,7 @@ export function getGemCountByCharacter(character: CheckCharacter, cubes: Cube[],
     }
     const gems: number[] = [];
     for (let i = 1; i <= 10; i++) {
-        gems.push(sum % 3);
+        gems.push(i === 10 ? sum : sum % 3);
         sum = Math.floor(sum / 3);
     }
     return gems;
@@ -2185,7 +2281,7 @@ export function getGemCountByChecklist(checklist: CheckCharacter[], cubes: Cube[
     }
     const gems: number[] = [];
     for (let i = 1; i <= 10; i++) {
-        gems.push(sum % 3);
+        gems.push(i === 10 ? sum : sum % 3);
         sum = Math.floor(sum / 3);
     }
     return gems;
@@ -2690,4 +2786,24 @@ export function getBoundGoldByDifficulty(boss: Boss, difficulty: string): number
         sumGold += diff.boundGold;
     }
     return sumGold;
+}
+
+// 필터 설정값 가져오기
+export function settingFilter(
+    setRemainHomework: SetStateFn<boolean>,
+    setShowGoldCharacter: SetStateFn<boolean>,
+    setHideCompleteContent: SetStateFn<boolean>
+) {
+    const savedRemainHomework = localStorage.getItem('isRemainHomework');
+    if (savedRemainHomework) {
+        setRemainHomework(savedRemainHomework === 'true');
+    }
+    const savedShowGoldCharacter = localStorage.getItem('isShowGoldCharacter');
+    if (savedShowGoldCharacter) {
+        setShowGoldCharacter(savedShowGoldCharacter === 'true');
+    }
+    const savedHideCompleteContent = localStorage.getItem('isHideCompleteContent');
+    if (savedHideCompleteContent) {
+        setHideCompleteContent(savedHideCompleteContent === 'true');
+    }
 }

@@ -150,7 +150,8 @@ function BossComponent() {
         onValueChangeBiweekly,
         onValueChangeBoundGold,
         onValueChangeStage,
-        onValueChangeBonus
+        onValueChangeBonus,
+        onValueChangeOnce
     } = useInputHandlers(inputs, setInputs);
     const onCloseModal = useClearData(setInputName, setInputSimple, setInputs, setEditMode, setEditIndex);
 
@@ -174,7 +175,18 @@ function BossComponent() {
                                 className="w-full sm:w-40"
                                 onPress={onOpen}>추가</Button>
                         </div>
-                        {boss.length !== 0 ? boss.map((item: Boss, index: number) => (
+                        {boss.length !== 0 ? boss.sort((a, b) => {
+                            const bDiff = boss.find(d => d.name === b.name);
+                            const aDiff = boss.find(d => d.name === a.name);
+                            let bValue = 0, aValue = 0;
+                            if (bDiff){
+                                bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
+                            }
+                            if (aDiff) {
+                                aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
+                            }
+                            return bValue - aValue;
+                        }).map((item: Boss, index: number) => (
                             <Card key={index} radius="sm" className="mb-6">
                                 <CardHeader>
                                     <div className="w-full flex gap-2 items-center">
@@ -196,7 +208,8 @@ function BossComponent() {
                                                 <TableColumn>획득 골드</TableColumn>
                                                 <TableColumn>귀속 골드</TableColumn>
                                                 <TableColumn>더보기 골드</TableColumn>
-                                                <TableColumn>격주 여부</TableColumn>
+                                                <TableColumn>격주 콘텐츠</TableColumn>
+                                                <TableColumn>원정대 1회</TableColumn>
                                             </TableHeader>
                                             <TableBody>
                                                 {item.difficulty.map((difficulty: Difficulty, idx: number) => (
@@ -208,6 +221,7 @@ function BossComponent() {
                                                         <TableCell>{difficulty.boundGold.toLocaleString()}</TableCell>
                                                         <TableCell>{difficulty.bonus.toLocaleString()}</TableCell>
                                                         <TableCell>{difficulty.isBiweekly ? '○' : '✕'}</TableCell>
+                                                        <TableCell>{difficulty.isOnce ? '○' : '✕'}</TableCell>
                                                     </TableRow>
                                                 ))}
                                             </TableBody>
@@ -315,7 +329,10 @@ function BossComponent() {
                                                     onValueChange={(value: number) => onValueChangeBonus(value, index)}/>
                                                 <Switch 
                                                     isSelected={input.isBiweekly} 
-                                                    onValueChange={(isSelected: boolean) => onValueChangeBiweekly(isSelected, index)}>격주 여부</Switch>
+                                                    onValueChange={(isSelected: boolean) => onValueChangeBiweekly(isSelected, index)}>격주 콘텐츠</Switch>
+                                                <Switch 
+                                                    isSelected={input.isOnce} 
+                                                    onValueChange={(isSelected: boolean) => onValueChangeOnce(isSelected, index)}>원정대 1회</Switch>
                                             </div>
                                         </div>
                                     ))}
