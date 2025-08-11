@@ -326,7 +326,8 @@ function initialWeekContents(level: number, bosses: Boss[], notImportedList: str
                     checklist.push({
                         name: boss.name,
                         isGold: true,
-                        items: items
+                        items: items,
+                        busGold: 0
                     });
                     if (diff.isOnce) {
                         notImportedList.push(boss.name);

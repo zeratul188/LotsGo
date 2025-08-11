@@ -30,7 +30,8 @@ import {
     Switch,
     Link,
     Avatar,
-    Pagination
+    Pagination,
+    addToast
 } from "@heroui/react";
 import { 
     CubeStatue,
@@ -2245,7 +2246,8 @@ function WeekContentComponent({
                             const addItem: Checklist = {
                                 name: name,
                                 isGold: isGold,
-                                items: items
+                                items: items,
+                                busGold: 0
                             }
                             await useOnClickAddItem(checklist, index, addItem, dispatch, setLoadingAdd, bosses);
                         }
@@ -2922,7 +2924,10 @@ export function FilterComponent({
                     <PopoverContent>
                         <div className="w-full min-[301px]:w-[300px] px-1.5 py-2">
                             <div className="w-full grid grid-cols-[1fr_max-content] gap-2">
-                                <p>주간 숙제를 완료한 캐릭터 숨기기</p>
+                                <p className="cursor-pointer" onClick={() => {
+                                    localStorage.setItem('isRemainHomework', String(!isRemainHomework));
+                                    setRemainHomework(!isRemainHomework);
+                                }}>주간 숙제를 완료한 캐릭터 숨기기</p>
                                 <Switch
                                     size="sm"
                                     isSelected={isRemainHomework}
@@ -2930,7 +2935,10 @@ export function FilterComponent({
                                         localStorage.setItem('isRemainHomework', String(isSelected));
                                         setRemainHomework(isSelected);
                                     }}/>
-                                <p>골드 지정 캐릭터만 표시하기</p>
+                                <p className="cursor-pointer" onClick={() => {
+                                    localStorage.setItem('isShowGoldCharacter', String(!isShowGoldCharacter));
+                                    setShowGoldCharacter(!isShowGoldCharacter);
+                                }}>골드 지정 캐릭터만 표시하기</p>
                                 <Switch
                                     size="sm"
                                     isSelected={isShowGoldCharacter}
@@ -2938,7 +2946,10 @@ export function FilterComponent({
                                         localStorage.setItem('isShowGoldCharacter', String(isSelected));
                                         setShowGoldCharacter(isSelected);
                                     }}/>
-                                <p>숙제 완료한 콘텐츠 숨기기</p>
+                                <p className="cursor-pointer" onClick={() => {
+                                    localStorage.setItem('isHideCompleteContent', String(!isHideCompleteContent));
+                                    setHideCompleteContent(!isHideCompleteContent);
+                                }}>숙제 완료한 콘텐츠 숨기기</p>
                                 <Switch
                                     size="sm"
                                     isSelected={isHideCompleteContent}
@@ -2952,6 +2963,24 @@ export function FilterComponent({
                         </div>
                     </PopoverContent>
                 </Popover>
+                <Button 
+                    radius="sm"
+                    color="danger"
+                    onPress={() => {
+                        setFilterAccount(new Set([]));
+                        setFilterContent(new Set([]));
+                        localStorage.removeItem('isRemainHomework');
+                        setRemainHomework(false);
+                        localStorage.removeItem('isShowGoldCharacter');
+                        setShowGoldCharacter(false);
+                        addToast({
+                            title: "필터 해제",
+                            description: `모든 필터를 제거하였습니다.`,
+                            color: "success"
+                        });
+                    }}>
+                    필터 해제
+                </Button>
             </div>
         </div>
     )

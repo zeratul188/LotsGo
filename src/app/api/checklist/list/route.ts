@@ -45,7 +45,8 @@ export async function GET(req: NextRequest) {
                         isCheck: item.isCheck,
                         isDisable: item.isDisable,
                         isBonus: item.isBonus,
-                        isBiweekly: item.isBiweekly ?? false
+                        isBiweekly: item.isBiweekly ?? false,
+                        busGold: item.busGold ?? 0
                     }))
                 })) : [],
                 weeklist: item.weeklist ?? [],
