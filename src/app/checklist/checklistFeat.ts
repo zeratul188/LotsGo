@@ -569,6 +569,9 @@ export function getBossGold(
                 const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
                 if (!item.isDisable) {
                     gold += diff ? diff.gold : 0;
+                    if (item.isBonus) {
+                        gold -= diff ? diff.bonus : 0;
+                    }
                 }
             }
             break;
@@ -590,6 +593,9 @@ export function getBossCheckedGold(
                 const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
                 if (item.isCheck) {
                     gold += diff ? diff.gold : 0;
+                    if (item.isBonus) {
+                        gold -= diff ? diff.bonus : 0;
+                    }
                 }
             }
             break;
@@ -737,6 +743,56 @@ export function useOnClickDayCheck(
     }
 }
 
+// 주간 콘텐츠 관문 더보기 체크 이벤트 함수
+export async function handleWeekBonusCheckStage(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    checklistIndex: number,
+    dispatch: AppDispatch,
+    stage: number
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser ? storedUser.id : '';
+    const updatedChecklist = structuredClone(checklist[characterIndex].checklist[checklistIndex]);
+    const prevChecklist = structuredClone(updatedChecklist);
+    for (const item of updatedChecklist.items) {
+        if (item.stage === stage) {
+            item.isBonus = !item.isBonus;
+        }
+    }
+    dispatch(checkWeek({
+        characterIndex: characterIndex,
+        checklistIndex: checklistIndex,
+        checklist: updatedChecklist
+    }));
+    const editRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'check-week',
+            characterIndex: characterIndex,
+            checklistIndex: checklistIndex,
+            checklistItem: updatedChecklist
+        })
+    });
+    if (!editRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        dispatch(checkWeek({
+            characterIndex: characterIndex,
+            checklistIndex: checklistIndex,
+            checklist: prevChecklist
+        }));
+        return;
+    }
+}
+
 // 주간 콘텐츠 관문 체크 이벤트 함수
 export async function handleWeekCheckStage(
     checklist: CheckCharacter[],
@@ -757,8 +813,12 @@ export async function handleWeekCheckStage(
             item.isCheck = true;
         } else if (item.stage === stage) {
             item.isCheck = !item.isCheck;
+            if (!item.isCheck && item.isBonus) {
+                item.isBonus = false;
+            }
         } else {
             item.isCheck = false;
+            item.isBonus = false;
         }
     }
     dispatch(checkWeek({
@@ -808,7 +868,10 @@ export async function useOnClickWeekCheck(
     const isNothingChecked = updatedChecklist.items.some(item => !item.isCheck && !item.isDisable);
     for (const item of updatedChecklist.items) {
         if (isNothingChecked && !item.isDisable) item.isCheck = true;
-        else item.isCheck = false;
+        else {
+            item.isCheck = false;
+            item.isBonus = false;
+        }
     }
     dispatch(checkWeek({
         characterIndex: characterIndex,
