@@ -160,10 +160,13 @@ export function useChecklistForm() {
     const [isShowList, setShowList] = useState(false);
     const [isLogined, setLogined] = useState(false);
     const [biweekly, setBiweekly] = useState(0);
-    const [isHideDayContent, setHideDayContent] = useState(false);
     const [filterContent, setFilterContent] = useState<Selection>(new Set([]));
     const [accounts, setAccounts] = useState<string[]>(['본계정']);
     const [filterAccount, setFilterAccount] = useState<Selection>(new Set([]));
+
+    // 설정
+    const [isHideDayContent, setHideDayContent] = useState(false);
+    const [isHideBonusMode, setHideBonusMode] = useState(false);
 
     // 필터 설정값
     const [isRemainHomework, setRemainHomework] = useState(false);
@@ -190,7 +193,8 @@ export function useChecklistForm() {
         isShowGoldCharacter, setShowGoldCharacter,
         accounts, setAccounts,
         filterAccount, setFilterAccount,
-        isHideCompleteContent, setHideCompleteContent
+        isHideCompleteContent, setHideCompleteContent,
+        isHideBonusMode, setHideBonusMode
     }
 }
 
@@ -971,7 +975,8 @@ type ChecklistProps = {
     accounts: string[],
     setAccounts: SetStateFn<string[]>,
     filterAccount: Selection,
-    isHideCompleteContent: boolean
+    isHideCompleteContent: boolean,
+    isHideBonusMode: boolean
 }
 export function ChecklistComponent({ 
     checklist, 
@@ -989,7 +994,8 @@ export function ChecklistComponent({
     accounts,
     setAccounts,
     filterAccount,
-    isHideCompleteContent
+    isHideCompleteContent,
+    isHideBonusMode
 }: ChecklistProps) {
     const [inputOtherGold, setInputOtherGold] = useState<{ [nickname: string]: number }>({});
     const [inputCubeControl, setInputCubeControl] = useState<{ [nickname: string]: number }>({});
@@ -1453,7 +1459,10 @@ export function ChecklistComponent({
                                     onValueChange={(isSelected) => {
                                         setBonusMode(prev => ({...prev, [character.nickname]: isSelected}))
                                     }}
-                                    className="mb-2">
+                                    className={clsx(
+                                        "mb-2",
+                                        isHideBonusMode ? 'hidden' : ''
+                                    )}>
                                     더보기 관리 모드
                                 </Switch>
                                 <div className="mb-2 flex gap-2 items-end">

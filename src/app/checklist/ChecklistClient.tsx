@@ -26,7 +26,8 @@ import { Settings } from "../api/setting/route";
 
 
 export const defaultSettings: Settings = {
-    isHideDayContent: false
+    isHideDayContent: false,
+    isHideBonusMode: false
 }
 
 
@@ -99,6 +100,7 @@ export default function ChecklistClient() {
                 const localSetting: Settings = JSON.parse(settingLocal);
                 const settings: Settings = { ...defaultSettings, ...localSetting};
                 checklistForm.setHideDayContent(settings.isHideDayContent);
+                checklistForm.setHideBonusMode(settings.isHideBonusMode);
                 return;
             }
             const userStr = localStorage.getItem('user');
@@ -110,6 +112,7 @@ export default function ChecklistClient() {
                     const settings: Settings = await res.json();
                     localStorage.setItem('userSettings', JSON.stringify(settings));
                     checklistForm.setHideDayContent(settings.isHideDayContent);
+                    checklistForm.setHideBonusMode(settings.isHideBonusMode);
                 } else {
                     addToast({
                         title: "로드 오류",
@@ -242,7 +245,8 @@ export default function ChecklistClient() {
                         accounts={checklistForm.accounts}
                         setAccounts={checklistForm.setAccounts}
                         filterAccount={checklistForm.filterAccount}
-                        isHideCompleteContent={checklistForm.isHideCompleteContent}/>
+                        isHideCompleteContent={checklistForm.isHideCompleteContent}
+                        isHideBonusMode={checklistForm.isHideBonusMode}/>
                     <ChecklistModal
                         isOpen={checklistForm.isOpen}
                         modalData={checklistForm.modalData}
