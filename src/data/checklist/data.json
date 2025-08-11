@@ -20,6 +20,7 @@
             {
                 "name": "카멘 익스트림",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "하드",
@@ -34,6 +35,7 @@
             {
                 "name": "카제로스 레이드 - 3막 모르둠",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "하드",
@@ -64,6 +66,7 @@
             {
                 "name": "카제로스 레이드 - 2막 아브렐슈드",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "하드",
@@ -113,6 +116,7 @@
             {
                 "name": "카멘 익스트림",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "노말",
@@ -127,6 +131,7 @@
             {
                 "name": "카제로스 레이드 - 3막 모르둠",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "하드",
@@ -157,6 +162,7 @@
             {
                 "name": "카제로스 레이드 - 2막 아브렐슈드",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "하드",
@@ -206,6 +212,7 @@
             {
                 "name": "카멘 익스트림",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "노말",
@@ -220,6 +227,7 @@
             {
                 "name": "카제로스 레이드 - 3막 모르둠",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "하드",
@@ -250,6 +258,7 @@
             {
                 "name": "카제로스 레이드 - 2막 아브렐슈드",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "하드",
@@ -299,6 +308,7 @@
             {
                 "name": "카제로스 레이드 - 3막 모르둠",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "노말",
@@ -329,6 +339,7 @@
             {
                 "name": "카제로스 레이드 - 2막 아브렐슈드",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "노말",
@@ -351,6 +362,7 @@
             {
                 "name": "카제로스 레이드 - 1막 에기르",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "하드",
@@ -400,6 +412,7 @@
             {
                 "name": "카제로스 레이드 - 3막 모르둠",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "노말",
@@ -430,6 +443,7 @@
             {
                 "name": "카제로스 레이드 - 2막 아브렐슈드",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "노말",
@@ -452,6 +466,7 @@
             {
                 "name": "카제로스 레이드 - 1막 에기르",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "하드",
@@ -501,6 +516,7 @@
             {
                 "name": "카제로스 레이드 - 3막 모르둠",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "노말",
@@ -531,6 +547,7 @@
             {
                 "name": "카제로스 레이드 - 2막 아브렐슈드",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "노말",
@@ -553,6 +570,7 @@
             {
                 "name": "카제로스 레이드 - 1막 에기르",
                 "isGold": true,
+                "busGold": 0,
                 "items": [
                     {
                         "difficulty": "하드",
