@@ -9,7 +9,8 @@ export type Difficulty = {
     level: number,
     isBiweekly: boolean,
     gold: number,
-    boundGold: number
+    boundGold: number,
+    isOnce: boolean
 }
 export type Boss = {
     id: string,
@@ -32,7 +33,8 @@ export async function GET(_req: NextRequest) {
                 isBiweekly: d.isBiweekly,
                 gold: d.gold,
                 boundGold: d.boundGold ? d.boundGold : 0,
-                bonus: d.bonus ? d.bonus : 0
+                bonus: d.bonus ? d.bonus : 0,
+                isOnce: d.isOnce ? d.isOnce : false
             }))
         }));
 

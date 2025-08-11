@@ -2,7 +2,7 @@
 import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent, RemainChecklistComponent, FilterComponent, BossInfoModal } from "./ChecklistForm"
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
-import { checkLogin, getBosses, getCubes, handleResetChecklist, loadChecklist } from "./checklistFeat";
+import { checkLogin, getBosses, getCubes, handleResetChecklist, loadChecklist, settingFilter } from "./checklistFeat";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -26,7 +26,8 @@ import { Settings } from "../api/setting/route";
 
 
 export const defaultSettings: Settings = {
-    isHideDayContent: false
+    isHideDayContent: false,
+    isHideBonusMode: false
 }
 
 
@@ -99,6 +100,7 @@ export default function ChecklistClient() {
                 const localSetting: Settings = JSON.parse(settingLocal);
                 const settings: Settings = { ...defaultSettings, ...localSetting};
                 checklistForm.setHideDayContent(settings.isHideDayContent);
+                checklistForm.setHideBonusMode(settings.isHideBonusMode);
                 return;
             }
             const userStr = localStorage.getItem('user');
@@ -110,6 +112,7 @@ export default function ChecklistClient() {
                     const settings: Settings = await res.json();
                     localStorage.setItem('userSettings', JSON.stringify(settings));
                     checklistForm.setHideDayContent(settings.isHideDayContent);
+                    checklistForm.setHideBonusMode(settings.isHideBonusMode);
                 } else {
                     addToast({
                         title: "로드 오류",
@@ -120,6 +123,11 @@ export default function ChecklistClient() {
             }
         }
         loadSettings();
+        settingFilter(
+            checklistForm.setRemainHomework, 
+            checklistForm.setShowGoldCharacter,
+            checklistForm.setHideCompleteContent
+        );
     }, []);
 
     if (!checklistForm.isLogined) {
@@ -173,6 +181,14 @@ export default function ChecklistClient() {
                             <ButtonGroup fullWidth={isMobile}>
                                 <Button
                                     radius="sm"
+                                    color="secondary"
+                                    onPress={() => {
+                                        setOpenBosses(true);
+                                    }}>
+                                    콘텐츠 정보
+                                </Button>
+                                <Button
+                                    radius="sm"
                                     color={checklistForm.isShowList ? 'default' : 'primary'}
                                     onPress={() => {
                                         checklistForm.setShowList(!checklistForm.isShowList);
@@ -210,9 +226,8 @@ export default function ChecklistClient() {
                             setShowGoldCharacter={checklistForm.setShowGoldCharacter}
                             filterAccount={checklistForm.filterAccount}
                             setFilterAccount={checklistForm.setFilterAccount}
-                            isOpenBosses={isOpenBosses}
-                            onOpenBosses={onOpenChangeBosses}
-                            setOpenBosses={setOpenBosses}/>
+                            isHideCompleteContent={checklistForm.isHideCompleteContent}
+                            setHideCompleteContent={checklistForm.setHideCompleteContent}/>
                     </div>
                     <ChecklistComponent 
                         checklist={checklist} 
@@ -229,7 +244,9 @@ export default function ChecklistClient() {
                         isShowGoldCharacter={checklistForm.isShowGoldCharacter}
                         accounts={checklistForm.accounts}
                         setAccounts={checklistForm.setAccounts}
-                        filterAccount={checklistForm.filterAccount}/>
+                        filterAccount={checklistForm.filterAccount}
+                        isHideCompleteContent={checklistForm.isHideCompleteContent}
+                        isHideBonusMode={checklistForm.isHideBonusMode}/>
                     <ChecklistModal
                         isOpen={checklistForm.isOpen}
                         modalData={checklistForm.modalData}

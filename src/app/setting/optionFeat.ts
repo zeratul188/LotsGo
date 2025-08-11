@@ -61,3 +61,34 @@ export async function handleHideDayContent(
         }
     }
 }
+
+export async function handleHideBonusMode(
+    settings: Settings | null, 
+    setSettings: SetStateFn<Settings | null>
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    if (storedUser && settings) {
+        const id = storedUser.id;
+        const cloneSettings = structuredClone(settings);
+        cloneSettings.isHideBonusMode = !cloneSettings.isHideBonusMode;
+        const res = await fetch(`/api/setting`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: id,
+                settings: cloneSettings
+            })
+        });
+        if (res.ok) {
+            localStorage.setItem('userSettings', JSON.stringify(cloneSettings));
+            setSettings(cloneSettings);
+        } else {
+            addToast({
+                title: "저장 오류",
+                description: `변경된 옵션이 정상적으로 저장되지 않았습니다.`,
+                color: "danger"
+            });
+        }
+    }
+}

@@ -18,7 +18,8 @@ export type OtherList = {
 export type Checklist = {
     name: string,
     items: ChecklistItem[],
-    isGold: boolean
+    isGold: boolean,
+    busGold: number
 }
 export type ChecklistItem = {
     difficulty: string,

@@ -30,7 +30,8 @@ import {
     Switch,
     Link,
     Avatar,
-    Pagination
+    Pagination,
+    addToast
 } from "@heroui/react";
 import { 
     CubeStatue,
@@ -47,7 +48,6 @@ import {
     getBackground50ByStage, 
     getBackgroundByStage, 
     getBorderByStage, 
-    getBossByContent, 
     getBossesByHaveContent, 
     getBossesById, 
     getBossGoldByContent, 
@@ -96,6 +96,7 @@ import {
     handleResetCube, 
     handleSelectAccount, 
     handleSelectCharacter, 
+    handleWeekBonusCheckStage, 
     handleWeekCheckStage, 
     handleWeekListCheck, 
     isBiweeklyContent, 
@@ -159,12 +160,18 @@ export function useChecklistForm() {
     const [isShowList, setShowList] = useState(false);
     const [isLogined, setLogined] = useState(false);
     const [biweekly, setBiweekly] = useState(0);
-    const [isHideDayContent, setHideDayContent] = useState(false);
     const [filterContent, setFilterContent] = useState<Selection>(new Set([]));
-    const [isRemainHomework, setRemainHomework] = useState(false);
-    const [isShowGoldCharacter, setShowGoldCharacter] = useState(false);
     const [accounts, setAccounts] = useState<string[]>(['본계정']);
     const [filterAccount, setFilterAccount] = useState<Selection>(new Set([]));
+
+    // 설정
+    const [isHideDayContent, setHideDayContent] = useState(false);
+    const [isHideBonusMode, setHideBonusMode] = useState(false);
+
+    // 필터 설정값
+    const [isRemainHomework, setRemainHomework] = useState(false);
+    const [isShowGoldCharacter, setShowGoldCharacter] = useState(false);
+    const [isHideCompleteContent, setHideCompleteContent] = useState(false);
 
     return {
         isLoading, setLoading,
@@ -185,7 +192,9 @@ export function useChecklistForm() {
         isRemainHomework, setRemainHomework,
         isShowGoldCharacter, setShowGoldCharacter,
         accounts, setAccounts,
-        filterAccount, setFilterAccount
+        filterAccount, setFilterAccount,
+        isHideCompleteContent, setHideCompleteContent,
+        isHideBonusMode, setHideBonusMode
     }
 }
 
@@ -965,7 +974,9 @@ type ChecklistProps = {
     isShowGoldCharacter: boolean,
     accounts: string[],
     setAccounts: SetStateFn<string[]>,
-    filterAccount: Selection
+    filterAccount: Selection,
+    isHideCompleteContent: boolean,
+    isHideBonusMode: boolean
 }
 export function ChecklistComponent({ 
     checklist, 
@@ -982,9 +993,13 @@ export function ChecklistComponent({
     isShowGoldCharacter,
     accounts,
     setAccounts,
-    filterAccount
+    filterAccount,
+    isHideCompleteContent,
+    isHideBonusMode
 }: ChecklistProps) {
     const [inputOtherGold, setInputOtherGold] = useState<{ [nickname: string]: number }>({});
+    const [inputCubeControl, setInputCubeControl] = useState<{ [nickname: string]: number }>({});
+    const [isBonusMode, setBonusMode] = useState<{ [nickname: string]: boolean }>({});
     const isMobile = useMobileQuery();
     return (
         <div className={clsx(
@@ -1178,7 +1193,7 @@ export function ChecklistComponent({
                                                 type: 'day'
                                             });
                                             onOpen();
-                                        }}>추가</Button>
+                                        }}>추가 및 휴식 게이지 관리</Button>
                                 </div>
                                 <Divider className={clsx(
                                     isHideDayContent ? 'hidden' : "block md960:hidden"
@@ -1194,8 +1209,31 @@ export function ChecklistComponent({
                                         radius="sm"
                                         className="min-w-full text-center">주간 콘텐츠</Chip>
                                     <div className="pl-2.5">
+                                        {character.checklist.length === 0 ? (
+                                            <div className="w-full h-[140px] flex items-center justify-center">
+                                                <p className="fadedtext">등록된 숙제가 없습니다.</p>
+                                            </div>
+                                        ) : null}
+                                        {character.checklist.filter(item => {
+                                            if (isHideCompleteContent) {
+                                                if (!isCheckHomework(item)) {
+                                                    return true;
+                                                } else {
+                                                    return false;
+                                                }
+                                            } else {
+                                                return true;
+                                            }
+                                        }).length + character.weeklist.filter(item => isHideCompleteContent ? !item.isCheck ? true : false : false).length === 0 && character.checklist.length > 0 ? (
+                                            <div className="w-full h-[140px] flex items-center justify-center gap-2">
+                                                <CheckIcon size={16}/>
+                                                <p className="fadedtext">숙제를 모두 완료했습니다.</p>
+                                            </div>
+                                        ) : null}
                                         {character.checklist.map((item, idx) => (
-                                            <div key={idx}>
+                                            <div key={idx} className={clsx(
+                                                isHideCompleteContent ? isCheckHomework(item) ? 'hidden' : '' : ''
+                                            )}>
                                                 <Checkbox
                                                     aria-label={`checklist-${item.name}-${idx}`}
                                                     size="sm"
@@ -1223,107 +1261,161 @@ export function ChecklistComponent({
                                                             )}>{printDifficulty(item.items)}</p>
                                                         </div>
                                                         <div className="grow"/>
-                                                        <div className="flex items-center z-9">
-                                                            {item.items.map((diff, ix) => (
-                                                                <React.Fragment key={ix}>
-                                                                    {ix > 0 && (
-                                                                        <div className={clsx(
-                                                                            'w-2 h-[2px]',
-                                                                            getBackgroundByStage(diff.difficulty, diff.isDisable)
-                                                                        )} />
-                                                                    )}
-                                                                    <Tooltip showArrow delay={1000} content={
-                                                                        <div className="w-full min-[251px]:w-[250px]">
-                                                                            <h1 className="w-full text-center font-bold p-1.5">{item.name}</h1>
-                                                                            <div className="w-full flex gap-2 items-center mb-1.5">
-                                                                                <Chip
-                                                                                    radius="sm"
-                                                                                    size="sm"
-                                                                                    color={getTextColorByDifficulty(diff.difficulty)}
-                                                                                    variant="flat">
-                                                                                    {diff.difficulty}
-                                                                                </Chip>
-                                                                                <div className="grow"/>
-                                                                                <Chip
-                                                                                    radius="sm"
-                                                                                    size="sm"
-                                                                                    variant="flat">
-                                                                                    {diff.stage}관문
-                                                                                </Chip>
+                                                        <div className="z-9">
+                                                            <div className={clsx(
+                                                                "flex items-center z-9",
+                                                                isBonusMode[character.nickname] ?? false ? 'gap-2' : ''
+                                                            )}>
+                                                                {isBonusMode[character.nickname] ?? false ? item.items.map((diff, ix) => (
+                                                                    <Tooltip key={ix} showArrow content={
+                                                                        <div className="min-w-[180px] px-2 py-1">
+                                                                            <div className="flex gap-1 items-center">
+                                                                                <p className="grow fadedtext">더보기 골드</p>
+                                                                                <img 
+                                                                                    src="/icons/gold.png" 
+                                                                                    alt="goldicon"
+                                                                                    className="w-[16px] h-[16px]"/>
+                                                                                <p>{getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).bonus.toLocaleString()}</p>
                                                                             </div>
-                                                                            <Divider/>
-                                                                            <div className="w-full mt-1.5 mb-1">
-                                                                                <div className="w-full flex gap-2 mb-1 items-center">
-                                                                                    <p className="fadedtext">골드</p>
-                                                                                    <div className="grow flex gap-1 items-center justify-end">
-                                                                                        <img 
-                                                                                            src="/icons/gold.png" 
-                                                                                            alt="goldicon"
-                                                                                            className="w-[16px] h-[16px]"/>
-                                                                                        <p>{getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).gold.toLocaleString()}</p>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div className={clsx(
-                                                                                    "w-full gap-2 mb-1 items-center",
-                                                                                    getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).boundGold > 0 ? 'flex' : 'hidden'
-                                                                                )}>
-                                                                                    <p className="fadedtext">귀속 골드</p>
-                                                                                    <div className="grow flex gap-1 items-center justify-end">
-                                                                                        <img 
-                                                                                            src="/icons/gold.png" 
-                                                                                            alt="goldicon"
-                                                                                            className="w-[16px] h-[16px]"/>
-                                                                                        <p>{getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).boundGold.toLocaleString()}</p>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div className={clsx(
-                                                                                    "w-full gap-2 items-center",
-                                                                                    getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).bonus > 0 ? 'flex' : 'hidden'
-                                                                                )}>
-                                                                                    <p className="fadedtext">더보기 골드</p>
-                                                                                    <div className="grow flex gap-1 items-center justify-end">
-                                                                                        <img 
-                                                                                            src="/icons/gold.png" 
-                                                                                            alt="goldicon"
-                                                                                            className="w-[16px] h-[16px]"/>
-                                                                                        <p>{getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).bonus.toLocaleString()}</p>
-                                                                                    </div>
-                                                                                </div>
-                                                                                {diff.isBiweekly ? (
-                                                                                    <>
-                                                                                        <Divider className="mt-2 mb-2"/>
-                                                                                        <p className="fadedtext text-sm">해당 관문은 2주에 1번씩 클리어를 하실 수 있습니다.</p>
-                                                                                        <p className="fadedtext text-sm">현재 {biweekly%2+1}주차입니다.</p>
-                                                                                        {diff.isDisable ? (
-                                                                                            <p className="text-red-400 dark:text-red-600 text-sm">저번 주에 이미 이 관문을 완료했었습니다.<br/>다음 주에 이 관문이 초기화됩니다.</p>
-                                                                                        ) : null}
-                                                                                    </>
-                                                                                ) : null}
-                                                                            </div>
+                                                                            <p className={clsx(
+                                                                                "mt-1 text-[10pt]",
+                                                                                diff.isCheck ? "text-green-600 dark:text-green-400" : "text-red-400 dark:text-red-600"
+                                                                            )}>{diff.isCheck ? '더보기 가능' : "관문 클리어 이후 체크 가능"}</p>
                                                                         </div>
                                                                     }>
                                                                         <div className={clsx(
-                                                                            'w-7 h-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none cursor-pointer',
-                                                                            getBorderByStage(diff.difficulty, diff.isDisable),
-                                                                            diff.isDisable ? 'bg-gray-300/30 dark:bg-gray-600/30 fadedtext' : '',
-                                                                            diff.isCheck ? getBackground50ByStage(diff.difficulty, diff.isDisable) : ''
+                                                                            'w-7 h-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none',
+                                                                            diff.isDisable || !diff.isCheck ? 'bg-gray-300/30 dark:bg-gray-600/30 fadedtext' : 'cursor-pointer',
+                                                                            diff.isBonus ? 'border-yellow-600 dark:border-yellow-400 bg-yellow-600/50 dark:bg-yellow-400/50 text-white' : 'border-gray-400 dark:border-gray-600'
                                                                         )} onClick={async (e) => {
                                                                             e.preventDefault();
                                                                             e.stopPropagation();
-                                                                            await handleWeekCheckStage(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch, diff.stage, diff.isDisable)
+                                                                            if (!diff.isCheck) {
+                                                                                addToast({
+                                                                                    title: "더보기 불가",
+                                                                                    description: `관문 클리어 이후에만 더보기 체크가 가능합니다.`,
+                                                                                    color: "danger"
+                                                                                });
+                                                                            } else {
+                                                                                await handleWeekBonusCheckStage(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch, diff.stage);
+                                                                            }
                                                                         }}>
                                                                             {diff.stage}
                                                                         </div>
                                                                     </Tooltip>
-                                                                </React.Fragment>
-                                                            ))}
+                                                                ))
+                                                                : item.items.map((diff, ix) => (
+                                                                    <React.Fragment key={ix}>
+                                                                        {ix > 0 && (
+                                                                            <div className={clsx(
+                                                                                'w-2 h-[2px]',
+                                                                                getBackgroundByStage(diff.difficulty, diff.isDisable)
+                                                                            )} />
+                                                                        )}
+                                                                        <Tooltip showArrow delay={1000} content={
+                                                                            <div className="w-full min-[251px]:w-[250px]">
+                                                                                <h1 className="w-full text-center font-bold p-1.5">{item.name}</h1>
+                                                                                <div className="w-full flex gap-2 items-center mb-1.5">
+                                                                                    <Chip
+                                                                                        radius="sm"
+                                                                                        size="sm"
+                                                                                        color={getTextColorByDifficulty(diff.difficulty)}
+                                                                                        variant="flat">
+                                                                                        {diff.difficulty}
+                                                                                    </Chip>
+                                                                                    <div className="grow"/>
+                                                                                    <Chip
+                                                                                        radius="sm"
+                                                                                        size="sm"
+                                                                                        variant="flat">
+                                                                                        {diff.stage}관문
+                                                                                    </Chip>
+                                                                                </div>
+                                                                                <Divider/>
+                                                                                <div className="w-full mt-1.5 mb-1">
+                                                                                    <div className="w-full flex gap-2 mb-1 items-center">
+                                                                                        <p className="fadedtext">골드</p>
+                                                                                        <div className="grow flex gap-1 items-center justify-end">
+                                                                                            <img 
+                                                                                                src="/icons/gold.png" 
+                                                                                                alt="goldicon"
+                                                                                                className="w-[16px] h-[16px]"/>
+                                                                                            <p>{getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).gold.toLocaleString()}</p>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div className={clsx(
+                                                                                        "w-full gap-2 mb-1 items-center",
+                                                                                        getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).boundGold > 0 ? 'flex' : 'hidden'
+                                                                                    )}>
+                                                                                        <p className="fadedtext">귀속 골드</p>
+                                                                                        <div className="grow flex gap-1 items-center justify-end">
+                                                                                            <img 
+                                                                                                src="/icons/gold.png" 
+                                                                                                alt="goldicon"
+                                                                                                className="w-[16px] h-[16px]"/>
+                                                                                            <p>{getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).boundGold.toLocaleString()}</p>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div className={clsx(
+                                                                                        "w-full gap-2 items-center",
+                                                                                        getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).bonus > 0 ? 'flex' : 'hidden'
+                                                                                    )}>
+                                                                                        <p className="fadedtext">더보기 골드</p>
+                                                                                        <div className="grow flex gap-1 items-center justify-end">
+                                                                                            <img 
+                                                                                                src="/icons/gold.png" 
+                                                                                                alt="goldicon"
+                                                                                                className="w-[16px] h-[16px]"/>
+                                                                                            <p>{getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).bonus.toLocaleString()}</p>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    {diff.isBiweekly ? (
+                                                                                        <>
+                                                                                            <Divider className="mt-2 mb-2"/>
+                                                                                            <p className="fadedtext text-sm">해당 관문은 2주에 1번씩 클리어를 하실 수 있습니다.</p>
+                                                                                            <p className="fadedtext text-sm">현재 {biweekly%2+1}주차입니다.</p>
+                                                                                            {diff.isDisable ? (
+                                                                                                <p className="text-red-400 dark:text-red-700 text-sm">저번 주에 이미 이 관문을 완료했었습니다.<br/>다음 주에 이 관문이 초기화됩니다.</p>
+                                                                                            ) : null}
+                                                                                        </>
+                                                                                    ) : null}
+                                                                                </div>
+                                                                            </div>
+                                                                        }>
+                                                                            <div className={clsx(
+                                                                                'w-7 h-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none cursor-pointer',
+                                                                                getBorderByStage(diff.difficulty, diff.isDisable),
+                                                                                diff.isDisable ? 'bg-gray-300/30 dark:bg-gray-600/30 fadedtext' : '',
+                                                                                diff.isCheck ? getBackground50ByStage(diff.difficulty, diff.isDisable) : ''
+                                                                            )} onClick={async (e) => {
+                                                                                e.preventDefault();
+                                                                                e.stopPropagation();
+                                                                                await handleWeekCheckStage(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch, diff.stage, diff.isDisable)
+                                                                            }}>
+                                                                                {diff.stage}
+                                                                            </div>
+                                                                        </Tooltip>
+                                                                    </React.Fragment>
+                                                                ))}
+                                                            </div>
+                                                            {!isBonusMode[character.nickname] ? (
+                                                                <div className="flex gap-2">
+                                                                    {item.items.map((diff, ix) => (
+                                                                        <div key={ix} className="w-7 text-yellow-800 dark:text-yellow-400 text-[7pt] text-center">
+                                                                            {diff.isBonus ? '더보기' : ''}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            ) : null}
                                                         </div>
                                                     </div>
                                                 </Checkbox>
                                             </div>
                                         ))}
                                         {character.weeklist.map((item, idx) => (
-                                            <div key={idx}>
+                                            <div key={idx} className={clsx(
+                                                isHideCompleteContent ? item.isCheck ? 'hidden' : '' : ''
+                                            )}>
                                                 <Checkbox
                                                     lineThrough
                                                     aria-label={`checklist-${item.name}-${idx}`}
@@ -1359,8 +1451,21 @@ export function ChecklistComponent({
                         </CardBody>
                         <Divider/>
                         <CardFooter className="pt-0 pb-0">
-                            <div className="w-full">
-                                <div className="mt-3 mb-2 flex gap-2 items-end">
+                            <div className="w-full pt-3">
+                                <Switch
+                                    size="sm"
+                                    color="warning"
+                                    isSelected={isBonusMode[character.nickname] ?? false}
+                                    onValueChange={(isSelected) => {
+                                        setBonusMode(prev => ({...prev, [character.nickname]: isSelected}))
+                                    }}
+                                    className={clsx(
+                                        "mb-2",
+                                        isHideBonusMode ? 'hidden' : ''
+                                    )}>
+                                    더보기 관리 모드
+                                </Switch>
+                                <div className="mb-2 flex gap-2 items-end">
                                     <NumberInput
                                         fullWidth
                                         label="부수입 설정"
@@ -1403,9 +1508,25 @@ export function ChecklistComponent({
                                         <span>큐브 - 총합 {getAllCubeCount(character)}장</span>
                                     </span>}>
                                     <div>
-                                        <Tabs fullWidth aria-label="cube-tabs">
+                                        <NumberInput
+                                            fullWidth
+                                            label="큐브 증감량"
+                                            labelPlacement="outside"
+                                            placeholder="0 ~ 999"
+                                            maxValue={999}
+                                            size="sm"
+                                            value={inputCubeControl[character.nickname] ?? 0}
+                                            onValueChange={(value: number) => {
+                                                setInputCubeControl(prev => ({...prev, [character.nickname]: value}));
+                                            }}/>
+                                        <Tabs fullWidth aria-label="cube-tabs" className="mt-2">
                                             <Tab key="setting" title="개수">
-                                                <CubeCountComponent checklist={checklist} character={character} cubes={cubes} dispatch={dispatch}/>
+                                                <CubeCountComponent 
+                                                    checklist={checklist} 
+                                                    character={character} 
+                                                    cubes={cubes} 
+                                                    dispatch={dispatch}
+                                                    count={inputCubeControl[character.nickname]}/>
                                             </Tab>
                                             <Tab key="statue" title="보상">
                                                 <CubeStatueComponent character={character} cubes={cubes}/>
@@ -2197,7 +2318,8 @@ function WeekContentComponent({
                             const addItem: Checklist = {
                                 name: name,
                                 isGold: isGold,
-                                items: items
+                                items: items,
+                                busGold: 0
                             }
                             await useOnClickAddItem(checklist, index, addItem, dispatch, setLoadingAdd, bosses);
                         }
@@ -2217,9 +2339,10 @@ type CubeCountComponentProps = {
     checklist: CheckCharacter[],
     character: CheckCharacter,
     cubes: Cube[],
-    dispatch: AppDispatch
+    dispatch: AppDispatch,
+    count: number
 }
-function CubeCountComponent({ checklist, character, cubes, dispatch }: CubeCountComponentProps) {
+function CubeCountComponent({ checklist, character, cubes, dispatch, count }: CubeCountComponentProps) {
     return (
         <Table removeWrapper>
             <TableHeader>
@@ -2241,7 +2364,7 @@ function CubeCountComponent({ checklist, character, cubes, dispatch }: CubeCount
                                     isDisabled={getCountCube(character.cubelist, cube.id) <= 0}
                                     className="w-8 h-8 min-w-0 min-h-0 p-0 text-sm"
                                     onPress={async () => {
-                                        await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, false);
+                                        await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, false, count);
                                     }}>-</Button>
                                 <Button
                                     size="sm"
@@ -2250,7 +2373,7 @@ function CubeCountComponent({ checklist, character, cubes, dispatch }: CubeCount
                                     isDisabled={getCountCube(character.cubelist, cube.id) >= 9999}
                                     className="w-8 h-8 min-w-0 min-h-0 p-0 text-sm"
                                     onPress={async () => {
-                                        await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, true);
+                                        await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, true, count);
                                     }}>+</Button>
                             </div>
                         </TableCell>
@@ -2815,9 +2938,8 @@ type FilterComponentProps = {
     setShowGoldCharacter: SetStateFn<boolean>,
     filterAccount: Selection,
     setFilterAccount: SetStateFn<Selection>,
-    isOpenBosses: boolean,
-    onOpenBosses: (isOpen: boolean) => void,
-    setOpenBosses: SetStateFn<boolean>
+    isHideCompleteContent: boolean,
+    setHideCompleteContent: SetStateFn<boolean>
 }
 export function FilterComponent({ 
     filterContent, 
@@ -2830,10 +2952,10 @@ export function FilterComponent({
     setShowGoldCharacter,
     filterAccount,
     setFilterAccount,
-    isOpenBosses,
-    onOpenBosses,
-    setOpenBosses
+    isHideCompleteContent,
+    setHideCompleteContent
 }: FilterComponentProps) {
+
     return (
         <div className="w-full mt-4">
             <h1 className="text-xl mb-1">검색 필터</h1>
@@ -2862,32 +2984,74 @@ export function FilterComponent({
                         <SelectItem key={index}>{boss}</SelectItem>
                     ))}
                 </Select>
-                <div>
-                    <div>
-                        <Switch
-                            size="sm"
-                            isSelected={isRemainHomework}
-                            onValueChange={setRemainHomework}>
-                            주간 숙제를 완료한 캐릭터 숨기기
-                        </Switch>
-                    </div>
-                    <div>
-                        <Switch
-                            size="sm"
-                            isSelected={isShowGoldCharacter}
-                            onValueChange={setShowGoldCharacter}>
-                            골드 지정 캐릭터만 표시하기
-                        </Switch>
-                    </div>
-                </div>
-                <div className="grow"/>
-                <Button
+                <Popover showArrow>
+                    <PopoverTrigger>
+                        <Button
+                            radius="sm"
+                            color="primary"
+                            className="w-full sm:w-[max-content]">
+                            필터 추가 옵션
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent>
+                        <div className="w-full min-[301px]:w-[300px] px-1.5 py-2">
+                            <div className="w-full grid grid-cols-[1fr_max-content] gap-2">
+                                <p className="cursor-pointer" onClick={() => {
+                                    localStorage.setItem('isRemainHomework', String(!isRemainHomework));
+                                    setRemainHomework(!isRemainHomework);
+                                }}>주간 숙제를 완료한 캐릭터 숨기기</p>
+                                <Switch
+                                    size="sm"
+                                    isSelected={isRemainHomework}
+                                    onValueChange={(isSelected) => {
+                                        localStorage.setItem('isRemainHomework', String(isSelected));
+                                        setRemainHomework(isSelected);
+                                    }}/>
+                                <p className="cursor-pointer" onClick={() => {
+                                    localStorage.setItem('isShowGoldCharacter', String(!isShowGoldCharacter));
+                                    setShowGoldCharacter(!isShowGoldCharacter);
+                                }}>골드 지정 캐릭터만 표시하기</p>
+                                <Switch
+                                    size="sm"
+                                    isSelected={isShowGoldCharacter}
+                                    onValueChange={(isSelected) => {
+                                        localStorage.setItem('isShowGoldCharacter', String(isSelected));
+                                        setShowGoldCharacter(isSelected);
+                                    }}/>
+                                <p className="cursor-pointer" onClick={() => {
+                                    localStorage.setItem('isHideCompleteContent', String(!isHideCompleteContent));
+                                    setHideCompleteContent(!isHideCompleteContent);
+                                }}>숙제 완료한 콘텐츠 숨기기</p>
+                                <Switch
+                                    size="sm"
+                                    isSelected={isHideCompleteContent}
+                                    onValueChange={(isSelected) => {
+                                        localStorage.setItem('isHideCompleteContent', String(isSelected));
+                                        setHideCompleteContent(isSelected);
+                                    }}/>
+                            </div>
+                            <Divider className="mt-2"/>
+                            <p className="fadedtext text-sm mt-2">해당 설정값은 브라우저에 저장됩니다.</p>
+                        </div>
+                    </PopoverContent>
+                </Popover>
+                <Button 
                     radius="sm"
-                    color="primary"
+                    color="danger"
                     onPress={() => {
-                        setOpenBosses(true);
+                        setFilterAccount(new Set([]));
+                        setFilterContent(new Set([]));
+                        localStorage.removeItem('isRemainHomework');
+                        setRemainHomework(false);
+                        localStorage.removeItem('isShowGoldCharacter');
+                        setShowGoldCharacter(false);
+                        addToast({
+                            title: "필터 해제",
+                            description: `모든 필터를 제거하였습니다.`,
+                            color: "success"
+                        });
                     }}>
-                    콘텐츠 정보
+                    필터 해제
                 </Button>
             </div>
         </div>
