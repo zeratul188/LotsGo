@@ -64,6 +64,20 @@ export default function Checklist() {
             <p className="mb-3">주간 콘텐츠와 비슷하게 관리가 가능합니다.</p>
             <p>주간 콘텐츠에서 추가된 주간 숙제에서 "카멘 하드 4관문"처럼 2주마다 1번씩 돌 수 있는 격주의 레이드일 경우 1주차때 체크하셨다면 자동으로 2주차때는 체크가 불가능합니다.</p>
             <p>단, 다시 1주차로 넘어올 경우에는 다시 활성화됩니다. 반대로 2주차때 체크해도 1주차로 돌아올 때는 비활성화되지 않습니다.</p>
+            <h1 className="font-bold mt-10 mb-2">버스비 설정</h1>
+            <img src="/about/checklist13.webp" alt="로츠고 버스비" className="w-full sm:w-1/2 h-auto rounded-xl mt-2 mb-2"/>
+            <p>버스비를 설정하기 위해서 체크박스에 있는 버스 모양 아이콘을 누르면 버스비를 설정할 수 있습니다. 버스비를 입력하면 자동으로 적용됩니다.</p>
+            <p>버스비는 해당 콘텐츠의 모든 관문을 완료해야만 적용됩니다. 골드지정 콘텐츠, 골드지정 캐릭터와 상관없이 골드가 적용됩니다.</p>
+            <p>버스를 해제하기 위해서 버스비를 0으로 설정하시면 해제됩니다. 적용되면 초록색, 해제되면 회색으로 표시됩니다.</p>
+            <h1 className="font-bold mt-10 mb-2">더보기 설정</h1>
+            <div className="w-full grid sm:grid-cols-2 gap-2 mb-2">
+                <img src="/about/checklist14.webp" alt="로츠고 더보기 전" className="w-full h-auto rounded-xl mt-2 mb-2"/>
+                <img src="/about/checklist15.webp" alt="로츠고 더보기 이후" className="w-full h-auto rounded-xl mt-2 mb-2"/>
+            </div>
+            <p>더보기를 체크하기 위해서 캐릭터 하단의 "더보기 관리 모드"를 체크하면 더보기를 체크하실 수 있습니다.</p>
+            <p>더보기가 체크된 관문은 관문 밑에 노란색 글씨의 "더보기" 문구가 표시됩니다.</p>
+            <p>더보기는 클리어 완료된 관문만 적용이 가능하며 클리어 취소할 경우 더보기도 같이 취소됩니다.</p>
+            <p>더보기를 이용하지 않고 "더보기 관리 모드" 스위치가 보이지 않길 원하는 경우, 계정 설정에서 "더보기 관리 모드"를 숨길 수 있습니다.</p>
             <h1 className="font-bold mt-10 mb-2">큐브 관리하기</h1>
             <div className="w-full grid sm:grid-cols-2 gap-2 mb-2">
                 <img src="/about/checklist7.webp" alt="로츠고 큐브 추가 및 감소" className="w-full h-auto rounded-xl mt-2 mb-2"/>
