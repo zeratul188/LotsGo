@@ -1003,6 +1003,7 @@ export function ChecklistComponent({
     const [inputCubeControl, setInputCubeControl] = useState<{ [nickname: string]: number }>({});
     const [isBonusMode, setBonusMode] = useState<{ [nickname: string]: boolean }>({});
     const isMobile = useMobileQuery();
+
     return (
         <div className={clsx(
             "w-full min-[541px]:w-[max-content] mt-5 grid gap-4 mx-auto",
@@ -1245,7 +1246,7 @@ export function ChecklistComponent({
                                                         "max-w-full w-full mt-3 box-border p-1.5 [&_span:nth-of-type(2)]:w-full",
                                                         isCheckHomework(item) ? 'outline-2 outline-blue-400 dark:outline-blue-800 rounded-md bg-blue-400/20 dark:bg-blue-800/20' : ''
                                                     )}
-                                                    onChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
+                                                    onValueChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                     <div className="w-full flex items-center gap-1">
                                                         <div>
                                                             <div className="flex gap-1 items-center">
@@ -1280,6 +1281,7 @@ export function ChecklistComponent({
                                                                                 value={item.busGold}
                                                                                 maxLength={8}
                                                                                 min={0}
+                                                                                onKeyDownCapture={(e) => e.stopPropagation()}
                                                                                 onValueChange={async (value: number) => {
                                                                                     await handleEditBusGold(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch, value);
                                                                                 }}/>
