@@ -1432,7 +1432,7 @@ export type WeekContent = {
     key: string,
     name: string
 }
-export function getWeekContents(bosses: Boss[]): WeekContent[] {
+export function getWeekContents(bosses: Boss[], checklist: CheckCharacter[], index: number): WeekContent[] {
     const contents: WeekContent[] = [];
     for (const boss of bosses) {
         contents.push({
@@ -1440,7 +1440,7 @@ export function getWeekContents(bosses: Boss[]): WeekContent[] {
             name: boss.name
         });
     }
-    contents.sort((a, b) => {
+    const results = contents.sort((a, b) => {
         const bDiff = bosses.find(boss => boss.name === b.name);
         const aDiff = bosses.find(boss => boss.name === a.name);
         let bValue = 0, aValue = 0;
@@ -1451,8 +1451,8 @@ export function getWeekContents(bosses: Boss[]): WeekContent[] {
             aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
         }
         return bValue - aValue;
-    });
-    return contents;
+    }).filter((content) => !checklist[index].checklist.some((item) => item.name === content.name));
+    return results;
 }
 
 // 콘텐츠의 난이도 목록을 가져오는 함수

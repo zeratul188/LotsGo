@@ -2276,7 +2276,7 @@ function WeekContentComponent({
                     selectedKeys={content}
                     onSelectionChange={setContent}
                     className="mt-2">
-                    {getWeekContents(bosses).map((item) => (
+                    {getWeekContents(bosses, checklist, index).map((item) => (
                         <SelectItem key={item.key}>{item.name}</SelectItem>
                     ))}
                 </Select>
