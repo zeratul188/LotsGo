@@ -1451,7 +1451,7 @@ export function getWeekContents(bosses: Boss[], checklist: CheckCharacter[], ind
             aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
         }
         return bValue - aValue;
-    }).filter((content) => !checklist[index].checklist.some((item) => item.name === content.name));
+    }).filter((content) => index > -1 ? !checklist[index].checklist.some((item) => item.name === content.name) : true);
     return results;
 }
 

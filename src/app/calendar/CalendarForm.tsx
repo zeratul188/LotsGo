@@ -378,7 +378,7 @@ export function WeekComponent({ works, guild, bosses, setWorks, setGuild, isLogi
                                         "mb-2",
                                         isEtc ? 'hidden' : 'block'
                                     )}>
-                                    {getWeekContents(bosses).map((boss) => (
+                                    {getWeekContents(bosses, [], -1).map((boss) => (
                                         <SelectItem key={boss.key}>{boss.name}</SelectItem>
                                     ))}
                                 </Select>
