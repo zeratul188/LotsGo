@@ -395,10 +395,13 @@ export function getAllGoldCharacter(
     bosses: Boss[],
     character: CheckCharacter
 ): number {
-    const golds = character.checklist
+    let golds = character.isGold ? character.checklist
         .filter(item => item.isGold)
-        .reduce((total, item) => total + getBossGold(bosses, item.name, item.items) + getBossBoundGold(bosses, item.name, item.items), 0);
-    return character.isGold ? golds : 0;
+        .reduce((total, item) => total + getBossGold(bosses, item.name, item.items) + getBossBoundGold(bosses, item.name, item.items), 0) : 0;
+    golds += character.checklist
+        .filter(item => item.busGold > 0)
+        .reduce((total, item) => total + (item.busGold ?? 0), 0);
+    return golds;
 }
 
 // 특정 캐릭터 골드 획득량 측정 함수 (완료된 숙제만)
@@ -406,10 +409,13 @@ export function getCompleteGoldCharacter(
     bosses: Boss[],
     character: CheckCharacter
 ): number {
-    const golds = character.checklist
+    let golds = character.isGold ? character.checklist
         .filter(item => item.isGold)
-        .reduce((total, item) => total + getBossCheckedGold(bosses, item.name, item.items) + getBossBoundCheckGold(bosses, item.name, item.items), 0);
-    return character.isGold ? golds : 0;
+        .reduce((total, item) => total + getBossCheckedGold(bosses, item.name, item.items) + getBossBoundCheckGold(bosses, item.name, item.items), 0) : 0;
+    golds += character.checklist
+        .filter(item => item.busGold > 0)
+        .reduce((total, item) => total + (isCheckHomework(item) ? item.busGold ?? 0 : 0), 0);
+    return golds;
 }
 
 // 특정 캐릭터 골드 획득량 측정 함수 (완료된 숙제만) (귀속 골드 X)
@@ -417,10 +423,13 @@ export function getCompleteSharedGoldCharacter(
     bosses: Boss[],
     character: CheckCharacter
 ): number {
-    const golds = character.checklist
+    let golds = character.isGold ? character.checklist
         .filter(item => item.isGold)
-        .reduce((total, item) => total + getBossCheckedGold(bosses, item.name, item.items), 0);
-    return character.isGold ? golds : 0;
+        .reduce((total, item) => total + getBossCheckedGold(bosses, item.name, item.items), 0) : 0;
+    golds += character.checklist
+        .filter(item => item.busGold > 0)
+        .reduce((total, item) => total + (isCheckHomework(item) ? item.busGold ?? 0 : 0), 0);
+    return golds;
 }
 
 // 특정 캐릭터 골드 획득량 측정 함수 (완료된 숙제만) (귀속 골드 O)
@@ -443,9 +452,12 @@ export function getAllGolds(
     sum = checklist
         .filter(character => character.isGold)
         .reduce((total, character) => {
-        const goldFromChecklist = character.checklist
+        let goldFromChecklist = character.checklist
             .filter(item => item.isGold)
             .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.items) + getBossBoundGold(bosses, item.name, item.items), 0);
+        goldFromChecklist += character.checklist
+            .filter(item => item.busGold > 0)
+            .reduce((total, item) => total + (item.busGold ?? 0), 0);
         return total + goldFromChecklist;
     }, 0);
     for (const character of checklist) {
@@ -463,9 +475,12 @@ export function getHaveGolds(
     sum = checklist
         .filter(character => character.isGold)
         .reduce((total, character) => {
-        const goldFromChecklist = character.checklist
+        let goldFromChecklist = character.checklist
             .filter(item => item.isGold)
             .reduce((sum, item) => sum + getBossCheckedGold(bosses, item.name, item.items) + getBossBoundCheckGold(bosses, item.name, item.items), 0);
+        goldFromChecklist += character.checklist
+            .filter(item => item.busGold > 0)
+            .reduce((total, item) => total + (isCheckHomework(item) ? item.busGold ?? 0 : 0), 0);
         return total + goldFromChecklist;
     }, 0);
     for (const character of checklist) {
@@ -483,9 +498,12 @@ export function getHaveSharedGolds(
     sum = checklist
         .filter(character => character.isGold)
         .reduce((total, character) => {
-        const goldFromChecklist = character.checklist
+        let goldFromChecklist = character.checklist
             .filter(item => item.isGold)
             .reduce((sum, item) => sum + getBossCheckedGold(bosses, item.name, item.items), 0);
+        goldFromChecklist += character.checklist
+            .filter(item => item.busGold > 0)
+            .reduce((total, item) => total + (isCheckHomework(item) ? item.busGold ?? 0 : 0), 0);
         return total + goldFromChecklist;
     }, 0);
     for (const character of checklist) {
@@ -2805,5 +2823,51 @@ export function settingFilter(
     const savedHideCompleteContent = localStorage.getItem('isHideCompleteContent');
     if (savedHideCompleteContent) {
         setHideCompleteContent(savedHideCompleteContent === 'true');
+    }
+}
+
+// 버스비 수정하기
+export async function handleEditBusGold(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    checklistIndex: number,
+    dispatch: AppDispatch,
+    value: number
+) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser ? storedUser.id : '';
+    const updatedChecklist = structuredClone(checklist[characterIndex].checklist[checklistIndex]);
+    const prevChecklist = structuredClone(updatedChecklist);
+    updatedChecklist.busGold = value;
+    dispatch(checkWeek({
+        characterIndex: characterIndex,
+        checklistIndex: checklistIndex,
+        checklist: updatedChecklist
+    }));
+    const editRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'check-week',
+            characterIndex: characterIndex,
+            checklistIndex: checklistIndex,
+            checklistItem: updatedChecklist
+        })
+    });
+    if (!editRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        dispatch(checkWeek({
+            characterIndex: characterIndex,
+            checklistIndex: checklistIndex,
+            checklist: prevChecklist
+        }));
+        return;
     }
 }
