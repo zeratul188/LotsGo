@@ -878,6 +878,7 @@ export async function useOnClickWeekCheck(
     checklistIndex: number,
     dispatch: AppDispatch
 ) {
+    console.log('checklist');
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
