@@ -1299,7 +1299,7 @@ export function ChecklistComponent({
                                                                 isBonusMode[character.nickname] ?? false ? 'gap-2' : ''
                                                             )}>
                                                                 {isBonusMode[character.nickname] ?? false ? item.items.map((diff, ix) => (
-                                                                    <Tooltip key={ix} showArrow content={
+                                                                    <Tooltip key={ix} showArrow delay={1000} content={
                                                                         <div className="min-w-[180px] px-2 py-1">
                                                                             <div className="flex gap-1 items-center">
                                                                                 <p className="grow fadedtext">더보기 골드</p>
