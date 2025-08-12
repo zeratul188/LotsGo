@@ -89,6 +89,7 @@ import {
     handleCheckGolds, 
     handleControlCube, 
     handleDayListCheck, 
+    handleEditBusGold, 
     handleOnDragEnd, 
     handleRemoveCharacter, 
     handleRemoveDayList, 
@@ -137,6 +138,7 @@ import { getImgByJob } from "../character/expeditionFeat";
 import { ChecklistData } from "../home/checklistFeat";
 import CheckIcon from "@/Icons/CheckIcon";
 import CharacterIcon from "@/Icons/CharacterIcon";
+import BusIcon from "@/Icons/BusIcon";
 
 // state 관리
 export type ModalData = {
@@ -1254,6 +1256,36 @@ export function ChecklistComponent({
                                                                     src="/icons/gold.png" 
                                                                     alt="goldicon"
                                                                     className="w-[14px] h-[14px]"/> : <></>}
+                                                                <Popover showArrow>
+                                                                    <PopoverTrigger>
+                                                                        <button 
+                                                                            type="button"
+                                                                            onPointerDown={(e) => e.stopPropagation()}
+                                                                            onClick={(e) => e.stopPropagation()}
+                                                                            onKeyDown={(e) => e.stopPropagation()}
+                                                                            className="w-4 h-4 cursor-pointer">
+                                                                            <BusIcon size={16} className={clsx(
+                                                                                item.busGold > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-500/70'
+                                                                            )}/>
+                                                                        </button>
+                                                                    </PopoverTrigger>
+                                                                    <PopoverContent>
+                                                                        <div className="pb-2 pt-1"> 
+                                                                            <NumberInput
+                                                                                label="버스비 설정"
+                                                                                placeholder="0~99999999"
+                                                                                size="sm"
+                                                                                variant="underlined"
+                                                                                hideStepper
+                                                                                value={item.busGold}
+                                                                                maxLength={8}
+                                                                                min={0}
+                                                                                onValueChange={async (value: number) => {
+                                                                                    await handleEditBusGold(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch, value);
+                                                                                }}/>
+                                                                        </div>
+                                                                    </PopoverContent>
+                                                                </Popover>
                                                             </div>
                                                             <p className={clsx(
                                                                 "fadedtext text-[9pt]",
@@ -1267,7 +1299,7 @@ export function ChecklistComponent({
                                                                 isBonusMode[character.nickname] ?? false ? 'gap-2' : ''
                                                             )}>
                                                                 {isBonusMode[character.nickname] ?? false ? item.items.map((diff, ix) => (
-                                                                    <Tooltip key={ix} showArrow content={
+                                                                    <Tooltip key={ix} showArrow delay={1000} content={
                                                                         <div className="min-w-[180px] px-2 py-1">
                                                                             <div className="flex gap-1 items-center">
                                                                                 <p className="grow fadedtext">더보기 골드</p>
@@ -2244,7 +2276,7 @@ function WeekContentComponent({
                     selectedKeys={content}
                     onSelectionChange={setContent}
                     className="mt-2">
-                    {getWeekContents(bosses).map((item) => (
+                    {getWeekContents(bosses, checklist, index).map((item) => (
                         <SelectItem key={item.key}>{item.name}</SelectItem>
                     ))}
                 </Select>
