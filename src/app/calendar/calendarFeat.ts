@@ -230,7 +230,7 @@ export async function handleSubmitCalendar(
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser.id;
 
-    const raidObj = Array.from(raid)[0] ? getWeekContents(bosses).find(boss => boss.key === Array.from(raid)[0].toString()) : null;
+    const raidObj = Array.from(raid)[0] ? getWeekContents(bosses, [], -1).find(boss => boss.key === Array.from(raid)[0].toString()) : null;
     const raidLabel = raidObj ? raidObj.name : '';
 
     const calendar: Calendar = {
