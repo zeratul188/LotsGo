@@ -452,10 +452,14 @@ export function getAllGolds(
     sum = checklist
         .filter(character => character.isGold)
         .reduce((total, character) => {
-        let goldFromChecklist = character.checklist
+        const goldFromChecklist = character.checklist
             .filter(item => item.isGold)
             .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.items) + getBossBoundGold(bosses, item.name, item.items), 0);
-        goldFromChecklist += character.checklist
+        return total + goldFromChecklist;
+    }, 0);
+    sum += checklist
+        .reduce((total, character) => {
+        const goldFromChecklist = character.checklist
             .filter(item => item.busGold > 0)
             .reduce((total, item) => total + (item.busGold ?? 0), 0);
         return total + goldFromChecklist;
@@ -475,10 +479,14 @@ export function getHaveGolds(
     sum = checklist
         .filter(character => character.isGold)
         .reduce((total, character) => {
-        let goldFromChecklist = character.checklist
+        const goldFromChecklist = character.checklist
             .filter(item => item.isGold)
             .reduce((sum, item) => sum + getBossCheckedGold(bosses, item.name, item.items) + getBossBoundCheckGold(bosses, item.name, item.items), 0);
-        goldFromChecklist += character.checklist
+        return total + goldFromChecklist;
+    }, 0);
+    sum += checklist
+        .reduce((total, character) => {
+        const goldFromChecklist = character.checklist
             .filter(item => item.busGold > 0)
             .reduce((total, item) => total + (isCheckHomework(item) ? item.busGold ?? 0 : 0), 0);
         return total + goldFromChecklist;
