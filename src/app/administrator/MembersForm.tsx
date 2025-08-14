@@ -38,7 +38,17 @@ export default function MembersComponent() {
     return (
         <div className="w-full">
             <div className="flex justify-end mb-4">
-                <div className="flex gap-2 w-full min-[401px]:w-[400px]">
+                <div className="flex gap-2 w-full flex-col sm:flex-row">
+                    <div className="grow flex gap-3">
+                        <div>
+                            <p className="fadedtext text-[10pt]">가입한 맴버 수</p>
+                            <p className="font-bold text-xl">{members.length}</p>
+                        </div>
+                        <div>
+                            <p className="fadedtext text-[10pt]">검색 결과 개수</p>
+                            <p className="font-bold text-xl">{result.length}</p>
+                        </div>
+                    </div>
                     <Input
                         placeholder="검색 내용을 입력하세요."
                         radius="sm"
@@ -46,16 +56,16 @@ export default function MembersComponent() {
                         onValueChange={setSearch}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
-                                const searchedMembers = members.filter(member => member.id.includes(search) || member.character.includes(search) || member.email.includes(search));
+                                const searchedMembers = members.filter(member => member.id.includes(search) || member.character.includes(search) || member.email.includes(search) || member.expeditions.some(character => character.nickname === search));
                                 setResult(searchedMembers);
                             }
                         }}
-                        className="grow"/>
+                        className="w-full sm:w-[240px]"/>
                     <Button
                         radius="sm"
                         color="primary"
                         onPress={() => {
-                            const searchedMembers = members.filter(member => member.id.includes(search) || member.character.includes(search) || member.email.includes(search));
+                            const searchedMembers = members.filter(member => member.id.includes(search) || member.character.includes(search) || member.email.includes(search) || member.expeditions.some(character => character.nickname === search));
                             setResult(searchedMembers);
                         }}>
                         검색

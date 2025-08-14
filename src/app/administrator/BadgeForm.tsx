@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { Badge } from "../api/administrator/badge/route"
 import { LoadingComponent } from "../UtilsCompnents";
 import { loadBadges, loadIds, useUpdateData } from "./badgeFeat";
-import { Button, Input, Pagination, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react";
+import { Button, Input, NumberInput, Pagination, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react";
 import clsx from "clsx";
 
 export default function BadgeComponent() {
@@ -72,6 +72,24 @@ export default function BadgeComponent() {
                     </Button>
                 </div>
                 <div className="grow hidden sm:block"/>
+                <div className="w-full sm:w-[248px] grid grid-cols-2 gap-2">
+                    <NumberInput
+                        isReadOnly
+                        hideStepper
+                        radius="sm"
+                        label="캐릭터 수"
+                        size="sm"
+                        value={badges.length}
+                        className="w-full sm:w-[120px]"/>
+                    <NumberInput
+                        isReadOnly
+                        hideStepper
+                        radius="sm"
+                        label="검색 결과 개수"
+                        size="sm"
+                        value={results.length}
+                        className="w-full sm:w-[120px]"/>
+                </div>
                 <Button
                     color="primary"
                     radius="sm"
@@ -84,7 +102,7 @@ export default function BadgeComponent() {
             <div className="w-full overflow-x-auto scrollbar-hide">
                 <Table
                     removeWrapper
-                    className="w-[700px] min-[701px]:w-full"
+                    className="w-[400px] min-[401px]:w-full"
                     bottomContent={
                         <div className={clsx(
                             "w-full justify-center",
