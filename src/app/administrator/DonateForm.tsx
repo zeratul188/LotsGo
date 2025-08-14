@@ -68,6 +68,24 @@ export default function DonateComponent() {
                     </Button>
                 </div>
                 <div className="grow hidden sm:block"/>
+                <div className="w-full sm:w-[248px] grid grid-cols-2 gap-2">
+                    <NumberInput
+                        isReadOnly
+                        hideStepper
+                        radius="sm"
+                        label="후원 총 인원"
+                        size="sm"
+                        value={donates.length}
+                        className="w-full sm:w-[120px]"/>
+                    <NumberInput
+                        isReadOnly
+                        hideStepper
+                        radius="sm"
+                        label="검색 결과 개수"
+                        size="sm"
+                        value={results.length}
+                        className="w-full sm:w-[120px]"/>
+                </div>
                 <Input
                     isReadOnly
                     radius="sm"
