@@ -3100,126 +3100,119 @@ type RemainChecklistComponentProps = {
 export function RemainChecklistComponent({ checklist, bosses }: RemainChecklistComponentProps) {
     const [datas, setDatas] = useState<ChecklistData[]>([]);
     const [results, setResults] = useState<ChecklistData[]>([]);
-    const [value, setValue] = useState<Selection>(new Set([]));
-    const [page, setPage] = useState(1);
-    const countByPage = 10;
+    const [selectedKey, setSelectedKey] = useState('');
+    const isMobile = useMobileQuery();
 
     useEffect(() => {
-        loadDatas(checklist, bosses, value, setDatas, setResults);
+        loadDatas(checklist, bosses, setDatas);
     }, [checklist]);
 
     useEffect(() => {
-        if (datas.length > 0) {
-            const valueList = Array.from(value);
-            if (valueList.length === 0) {
-                setResults(datas);
-            } else {
-                const selectedIndex = Number(valueList[0]);
-                const contentName = bosses.sort((a, b) => {
-                    const bDiff = bosses.find(boss => boss.name === b.name);
-                    const aDiff = bosses.find(boss => boss.name === a.name);
-                    let bValue = 0, aValue = 0;
-                    if (bDiff){
-                        bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
-                    }
-                    if (aDiff) {
-                        aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
-                    }
-                    return bValue - aValue;
-                }).map(boss => boss.name)[selectedIndex];
-                const list = datas.filter((item) => item.contentName === contentName);
-                setResults(list);
+        const sortedBosses = bosses.sort((a, b) => {
+            const bDiff = bosses.find(boss => boss.name === b.name);
+            const aDiff = bosses.find(boss => boss.name === a.name);
+            let bValue = 0, aValue = 0;
+            if (bDiff){
+                bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
             }
-            setPage(1);
+            if (aDiff) {
+                aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
+            }
+            return bValue - aValue;
+        });
+        if (sortedBosses.length > 0) {
+            setSelectedKey(bosses[0].id);
         }
-    }, [value]);
+    }, [bosses]);
+
+    useEffect(() => {
+        const findBoss = bosses.find(boss => boss.id === selectedKey);
+        if (findBoss) {
+            const contentName = findBoss.name;
+            const list = datas.filter((item) => item.contentName === contentName);
+            setResults(list);
+        }
+    }, [selectedKey, datas]);
 
     return (
         <div className="w-full mt-4">
-            <Select
-                label="콘텐츠 선택"
-                placeholder="콘텐츠를 선택하세요."
-                selectedKeys={value}
-                radius="sm"
-                size="sm"
-                onSelectionChange={setValue}
-                className="w-full sm:w-[300px]">
-                {bosses.sort((a, b) => {
-                    const bDiff = bosses.find(boss => boss.name === b.name);
-                    const aDiff = bosses.find(boss => boss.name === a.name);
-                    let bValue = 0, aValue = 0;
-                    if (bDiff){
-                        bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
-                    }
-                    if (aDiff) {
-                        aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
-                    }
-                    return bValue - aValue;
-                }).map(boss => boss.name).map((boss, index) => (
-                    <SelectItem key={index}>{boss}</SelectItem>
-                ))}
-            </Select>
-            <div className="w-full mt-4 grid grid-cols-2 min-[617px]:grid-cols-3 min-[925px]:grid-cols-4 min-[1233px]:grid-cols-5 gap-2">
-                {results.slice((page-1)*countByPage, page*countByPage).map((item, index) => (
-                    <Tooltip key={index} showArrow content={<div className={clsx(
-                        item.isGold ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'
-                    )}>
-                        {item.isGold ? '골드 획득 가능' : "골드 획득 불가"}
-                    </div>}>
-                        <Card shadow="sm" radius="sm" className={clsx(
-                            "border-l-4",
-                            item.isGold ? "border-[#F3B600]" : "border-[#cccccc] dark:border-[#333333]"
-                        )}>
-                            <CardBody className="py-2.5 sm:py-3 px-1.5 sm:px-2">
-                                <div>
-                                    <p className="text-[8pt] sm:text-[10pt] font-bold">{item.contentName}</p>
-                                    <div className="w-full flex gap-1">
-                                        <p className="grow text-[7pt] sm:text-[9pt]">{item.nickname}</p>
-                                        <p className="fadedtext text-[7pt] sm:text-[9pt]">Lv.{item.level}</p>
-                                    </div>
-                                    <div className="w-full grid grid-cols-4 gap-1 mt-1">
-                                        {item.difficultys.map((diff, idx) => (
-                                            <Tooltip
-                                                key={idx}
-                                                showArrow
-                                                content={diff.difficulty}>
-                                                <Chip
-                                                    color={diff.isComplete ? 'default' : getTextColorByDifficulty(diff.difficulty)}
-                                                    variant="flat"
-                                                    size="sm"
-                                                    radius="sm"
-                                                    className="min-w-full text-center">
-                                                    {diff.stage}관문
-                                                </Chip>
-                                            </Tooltip>
-                                        ))}
-                                    </div>
-                                </div>
-                            </CardBody>
-                        </Card>
-                    </Tooltip>
-                ))}
-            </div>
-            {results.length === 0 ? (
-                <div className="w-full h-[140px] fadedtext flex justify-center items-center">
-                    <div className="flex gap-2 items-center">
-                        <CheckIcon size={24}/>
-                        <p className="text-md sm:text-xl">남은 숙제가 없거나 데이터가 존재하지 않습니다.</p>
-                    </div>
-                </div>
-            ) : <></>}
-            {results.length > 0 && Math.ceil(results.length / countByPage) > 1 ? (
-                <div className="w-full flex justify-center mt-2">
-                    <Pagination
-                        isCompact
-                        showControls
+            <div className="w-full sm:h-[400px] grid sm:grid-cols-[1fr_3fr] gap-2">
+                <div className="h-[200px] sm:h-full overflow-y-auto scrollbar-hide">
+                    <Tabs 
+                        fullWidth 
+                        isVertical={true}
+                        selectedKey={selectedKey} 
                         color="primary"
-                        page={page}
-                        total={Math.ceil(results.length / countByPage)}
-                        onChange={setPage}
-                        className="mt-2"/>
+                        onSelectionChange={(key) => setSelectedKey(String(key))}>
+                        {bosses.sort((a, b) => {
+                            const bDiff = bosses.find(boss => boss.name === b.name);
+                            const aDiff = bosses.find(boss => boss.name === a.name);
+                            let bValue = 0, aValue = 0;
+                            if (bDiff){
+                                bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
+                            }
+                            if (aDiff) {
+                                aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
+                            }
+                            return bValue - aValue;
+                        }).map((boss) => (
+                            <Tab key={boss.id} title={boss.name}/>
+                        ))}
+                    </Tabs>
                 </div>
-            ) : <></>}
+                <div className="w-full max-h-[400px] sm:h-[max-content] overflow-y-auto scrollbar-hide">
+                    <div className="w-full h-full grid sm:grid-cols-2 gap-3 sm:gap-2 p-1">
+                        {results.map((data, index) => (
+                            <Card key={index} radius="sm" shadow="sm" className={clsx(
+                                "h-[max-content] border-l-4",
+                                data.isGold && data.isGoldCharacter ? "border-[#F3B600]" : "border-[#cccccc] dark:border-[#333333]"
+                            )}>
+                                <CardBody>
+                                    <div className="w-full flex gap-3 items-center justify-end">
+                                        <Avatar isBordered size="md" src={getImgByJob(data.job)}/>
+                                        <div className="grow">
+                                            <p>{data.nickname}</p>
+                                            <p className="fadedtext text-[10pt]">{data.job} · Lv.{data.level.toLocaleString()}</p>
+                                        </div>
+                                        <div className="flex flex-col items-end">
+                                            <div className="grow">
+                                                <p className={clsx(
+                                                    "text-yellow-600 dark:text-yellow-500 text-[10pt] mb-1",
+                                                    data.isGold && data.isGoldCharacter ? "" : "hidden"
+                                                )}>골드 획득 가능</p>
+                                            </div>
+                                            <div className="flex gap-1">
+                                                {data.difficultys.map((diff, idx) => (
+                                                    <Tooltip
+                                                        key={idx}
+                                                        showArrow
+                                                        content={diff.difficulty}>
+                                                        <div className={clsx(
+                                                            "w-5 h-5 flex items-center justify-center p-1 rounded-full text-[9pt] border-1",
+                                                            getBackground50ByStage(diff.difficulty, false),
+                                                            getBorderByStage(diff.difficulty, false)
+                                                        )}>
+                                                            {diff.stage}
+                                                        </div>
+                                                    </Tooltip>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CardBody>
+                            </Card>
+                        ))}
+                    </div>
+                    {results.length === 0 ? (
+                        <div className="w-full h-[400px] fadedtext flex justify-center items-center">
+                            <div className="flex gap-2 items-center">
+                                <CheckIcon size={24}/>
+                                <p className="text-md sm:text-xl">남은 숙제가 없거나 데이터가 존재하지 않습니다.</p>
+                            </div>
+                        </div>
+                    ) : <></>}
+                </div>
+            </div>
         </div>
     )
 }
