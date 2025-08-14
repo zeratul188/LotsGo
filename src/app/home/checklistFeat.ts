@@ -7,7 +7,9 @@ import { Boss } from "../api/checklist/boss/route";
 export type ChecklistData = {
     nickname: string,
     level: number,
+    job: string,
     isGold: boolean,
+    isGoldCharacter: boolean,
     contentName: string,
     difficultys: ChecklistDataDifficulty[]
 }

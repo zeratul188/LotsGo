@@ -2318,9 +2318,7 @@ export function getGemCountByChecklist(checklist: CheckCharacter[], cubes: Cube[
 export function loadDatas(
     checklist: CheckCharacter[], 
     bosses: Boss[], 
-    value: any,
-    setDatas: SetStateFn<ChecklistData[]>,
-    setResults: SetStateFn<ChecklistData[]>
+    setDatas: SetStateFn<ChecklistData[]>
 ) {
     const datas: ChecklistData[] = [];
     for (const character of checklist) {
@@ -2343,9 +2341,11 @@ export function loadDatas(
                 const newData: ChecklistData = {
                     nickname: character.nickname,
                     level: character.level,
+                    job: character.job,
                     contentName: content.name,
                     difficultys: diffs,
-                    isGold: content.isGold
+                    isGold: content.isGold,
+                    isGoldCharacter: character.isGold
                 }
                 datas.push(newData);
             }
@@ -2353,26 +2353,6 @@ export function loadDatas(
     }
     datas.sort((a, b) => getLevelByContent(bosses, b.contentName, b.difficultys) - getLevelByContent(bosses, a.contentName, a.difficultys));
     setDatas(datas);
-    const valueList = Array.from(value);
-    if (valueList.length === 0) {
-        setResults(datas);
-    } else {
-        const selectedIndex = Number(valueList[0]);
-        const contentName = bosses.sort((a, b) => {
-            const bDiff = bosses.find(boss => boss.name === b.name);
-            const aDiff = bosses.find(boss => boss.name === a.name);
-            let bValue = 0, aValue = 0;
-            if (bDiff){
-                bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
-            }
-            if (aDiff) {
-                aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
-            }
-            return bValue - aValue;
-        }).map(boss => boss.name)[selectedIndex];
-        const list: ChecklistData[] = datas.filter((item) => item.contentName === contentName);
-        setResults(list);
-    }
 }
 
 // 수동 초기화 함수
