@@ -2,6 +2,9 @@
 import { addToast, Card, CardBody, CardHeader, Checkbox, Divider, NumberInput, Radio, RadioGroup } from "@heroui/react"
 import { useEffect, useState } from "react";
 import { formatGold, useClickPersons } from "../calcFeat";
+import { useMobileQuery } from "@/utiils/utils";
+import LineAd from "@/app/ad/LineAd";
+import FixedLineAd from "@/app/ad/FixedLineAd";
 
 function CalcComponent() {
     const [person, setPerson] = useState(4);
@@ -460,10 +463,23 @@ function RelicComponent() {
 }
 
 export default function BusClient() {
+    const isMobile = useMobileQuery();
     return (
         <div className="w-full">
             <CalcComponent/>
-            <Divider className="mt-8 mb-8"/>
+            {isMobile ? (
+                <div className="w-full flex justify-center px-4 overflow-hidden mt-8 mb-8">
+                    <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px]">
+                        <LineAd isLoaded={true}/>
+                    </div>
+                </div>
+            ) : (
+                <div className="w-full flex justify-center mt-8 overflow-hidden mb-8">
+                    <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-4 mx-4">
+                        <FixedLineAd isLoaded={true}/>
+                    </div>
+                </div>
+            )}
             <RelicComponent/>
             <p className="mt-2">위 계산들은 최초 입찰 금액(50골드), 신뢰도로 인한 수수료를 제외하고 계산되었습니다.</p>
         </div>
