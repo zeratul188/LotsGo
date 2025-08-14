@@ -166,8 +166,13 @@ export const writeRelicsBookPrice = functions.https.onRequest(async (req, res) =
 })
 
 // 매주 6시에 주간 숙제 초기화 함수
-export const resetWeekChecklist = functions.https.onRequest(async (req, res) => {
+export const resetWeekChecklist = onRequest({
+  timeoutSeconds: 300, // 5분
+  memory: "512MiB",    // 메모리
+  region: "asia-northeast3" // 리전
+}, async (req, res) => {
   try {
+    functions.logger.info("ENTER resetWeekChecklist");
     const biweeklyRef = database.ref('/checklist/biweekly');
     const biweeklySnapshot = await biweeklyRef.once('value');
     let biweekly: number = Number(biweeklySnapshot.val());
@@ -177,7 +182,8 @@ export const resetWeekChecklist = functions.https.onRequest(async (req, res) => 
 
     const membersRef = firestore.collection('members');
     const snapshot = await membersRef.get();
-    const batch = firestore.batch();
+
+    const updates: any[] = [];
 
     snapshot.forEach(doc => {
         const data = doc.data();
@@ -222,23 +228,42 @@ export const resetWeekChecklist = functions.https.onRequest(async (req, res) => 
             return updatedSection;
         });
         const docRef = membersRef.doc(doc.id);
-        batch.update(docRef, { checklist: updatedChecklist })
+        updates.push({
+          ref: docRef,
+          data : { checklist: updatedChecklist }
+        });
     });
 
-    await batch.commit();
+    for (let i = 0; i < updates.length; i += 450) {
+      const chunk = updates.slice(i, i+450);
+      const batch = firestore.batch();
+      for (const u of chunk) {
+        batch.update(u.ref, u.data);
+      }
+      await batch.commit();
+    } 
+
+    functions.logger.info('resetWeekChecklist success');
     res.status(200).send('Daily reset complete');
   } catch (error) {
     console.error('Reset failed:', error);
+    functions.logger.error('resetWeekChecklist failed', error as any);
     res.status(500).send('Reset failed');
   }
 });
 
 // 매일 6시에 일일 숙제 초기화 함수
-export const resetDayChecklist = functions.https.onRequest(async (req, res) => {
+export const resetDayChecklist = onRequest({
+  timeoutSeconds: 300, // 5분
+  memory: "512MiB",    // 메모리
+  region: "asia-northeast3" // 리전
+}, async (req, res) => {
   try {
+    functions.logger.info("ENTER resetDayChecklist");
     const membersRef = firestore.collection('members');
     const snapshot = await membersRef.get();
-    const batch = firestore.batch();
+
+    const updates: any[] = [];
 
     snapshot.forEach(doc => {
         const data = doc.data();
@@ -286,13 +311,26 @@ export const resetDayChecklist = functions.https.onRequest(async (req, res) => {
             return updatedSection;
         });
         const docRef = membersRef.doc(doc.id);
-        batch.update(docRef, { checklist: updatedChecklist })
+        updates.push({
+          ref: docRef,
+          data : { checklist: updatedChecklist }
+        });
     });
 
-    await batch.commit();
+    for (let i = 0; i < updates.length; i += 450) {
+      const chunk = updates.slice(i, i+450);
+      const batch = firestore.batch();
+      for (const u of chunk) {
+        batch.update(u.ref, u.data);
+      }
+      await batch.commit();
+    } 
+
+    functions.logger.info('resetDayChecklist success');
     res.status(200).send('Daily reset complete');
   } catch (error) {
     console.error('Reset failed:', error);
+    functions.logger.error('resetDayChecklist failed', error as any);
     res.status(500).send('Reset failed');
   }
 });
