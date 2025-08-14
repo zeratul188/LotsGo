@@ -3161,6 +3161,26 @@ export function RemainChecklistComponent({ checklist, bosses }: RemainChecklistC
                     </Tabs>
                 </div>
                 <div className="w-full max-h-[400px] sm:h-[max-content] overflow-y-auto scrollbar-hide">
+                    <Card radius="sm" shadow="sm" className="mx-1 mt-1 mb-2">
+                        <CardBody>
+                            <div className="w-full grid grid-cols-[1fr_1px_1fr_1px_1fr] gap-2">
+                                <div className="w-full flex items-center">
+                                    <p className="grow fadedtext text-[10pt]">남은 숙제</p>
+                                    <p className="text-md font-bold">{results.length}</p>
+                                </div>
+                                <Divider orientation="vertical"/>
+                                <div className="w-full flex items-center">
+                                    <p className="grow fadedtext text-[10pt]">골드 획득</p>
+                                    <p className="text-md font-bold">{results.filter(data => data.isGold && data.isGoldCharacter).length}</p>
+                                </div>
+                                <Divider orientation="vertical"/>
+                                <div className="w-full flex items-center">
+                                    <p className="grow fadedtext text-[10pt]">골드X 숙제</p>
+                                    <p className="text-md font-bold">{results.filter(data => !data.isGold || !data.isGoldCharacter).length}</p>
+                                </div>
+                            </div>
+                        </CardBody>
+                    </Card>
                     <div className="w-full h-full grid sm:grid-cols-2 gap-3 sm:gap-2 p-1">
                         {results.map((data, index) => (
                             <Card key={index} radius="sm" shadow="sm" className={clsx(
