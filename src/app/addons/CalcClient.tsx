@@ -11,6 +11,9 @@ import {
 } from "@heroui/react";
 import { useEffect, useState } from "react"
 import { CalData, formatGold, getBreakpointGold, loadData, useClickPersons, useClickResetDatas, useClickSaveData } from "./calcFeat";
+import { useMobileQuery } from "@/utiils/utils";
+import LineAd from "../ad/LineAd";
+import FixedLineAd from "../ad/FixedLineAd";
 
 export default function CalcClient() {
     const [gold, setGold] = useState(0);
@@ -20,6 +23,7 @@ export default function CalcClient() {
     const [datas, setDatas] = useState<CalData[]>([]);
     const [page, setPage] = useState(1);
     const countByPage = 20;
+    const isMobile = useMobileQuery();
 
     const onClickPersons = useClickPersons(inputPerson, setPerson, setType);
     const onClickSaveData = useClickSaveData(datas, setDatas, gold, person);
@@ -400,6 +404,19 @@ export default function CalcClient() {
                     </CardBody>
                 </Card>
             </div>
+            {isMobile ? (
+                <div className="w-full flex justify-center px-4 overflow-hidden mt-4">
+                    <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px]">
+                        <LineAd isLoaded={true}/>
+                    </div>
+                </div>
+            ) : (
+                <div className="w-full flex justify-center mt-4 overflow-hidden">
+                    <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-4 mx-4">
+                        <FixedLineAd isLoaded={true}/>
+                    </div>
+                </div>
+            )}
             <div className="flex gap-2 mt-8 items-center">
                 <div className="flex flex-row gap-3 items-end grow">
                     <p className="text-2xl">저장 기록</p>

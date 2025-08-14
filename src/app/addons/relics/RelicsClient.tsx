@@ -6,6 +6,8 @@ import clsx from "clsx";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useMobileQuery } from "@/utiils/utils";
 import { getEngravingSrcByName } from "../../character/characterFeat";
+import LineAd from "@/app/ad/LineAd";
+import BoxAd from "@/app/ad/BoxAd";
 
 type MonthChartProps = {
     selectedRelic: RelicBook | null
@@ -176,6 +178,7 @@ type RelicsClientProps = {
 export default function RelicsClient({ relics }: RelicsClientProps) {
     const [selectedRelic, setSelectedRelic] = useState<RelicBook | null>(null);
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
+    const isMobile = useMobileQuery();
 
     return (
         <div className="w-full">
@@ -254,6 +257,21 @@ export default function RelicsClient({ relics }: RelicsClientProps) {
                         ))}
                     </TableBody>
                 </Table>
+                {isMobile ? (
+                    <div className="w-full flex justify-center px-4">
+                        <div className="w-full max-w-[360px] min-h-[100px] mt-4">
+                            <BoxAd isLoaded={true}/>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="w-full flex justify-center px-4 overflow-hidden mt-8">
+                        <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-8">
+                            <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px]">
+                                <LineAd isLoaded={true}/>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
             <ChartModal isOpen={isOpen} selectedRelic={selectedRelic} onOpenChange={onOpenChange}/>
         </div>

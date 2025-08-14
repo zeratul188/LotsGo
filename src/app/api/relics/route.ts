@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import admin from "firebase-admin";
 import { RelicBook, RelicList } from "@/app/addons/relics/relicsFeat";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "default-no-store";
+export const runtime = "nodejs";
+
 type Book = {
   name: string,
   icon: string,
@@ -49,9 +54,27 @@ export async function GET(req: NextRequest) {
             relicsBooks.push(newBook);
         }
 
-        return NextResponse.json(relicsBooks);
+        return NextResponse.json(relicsBooks, {
+            headers: {
+                "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+                "CDN-Cache-Control": "no-store",
+                "Vercel-CDN-Cache-Control": "no-store",
+                Pragma: "no-cache",
+                Expires: "0",
+            },
+        });
     } catch(error) {
         console.error(error);
-        return NextResponse.json({ error: 'Failed load Database.' }, { status: 500 });
+        return NextResponse.json(
+            { error: "Failed load Database." },
+            {
+                status: 500,
+                headers: {
+                "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+                "CDN-Cache-Control": "no-store",
+                "Vercel-CDN-Cache-Control": "no-store",
+                },
+            }
+        );
     }
 }

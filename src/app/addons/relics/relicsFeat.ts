@@ -19,7 +19,7 @@ export type ChartData = {
 
 // 유물 각인서 데이터 불러오기
 export async function loadBooks(): Promise<RelicBook[]> {
-    const res = await fetch('https://www.lotsgo.kr/api/relics');
+    const res = await fetch('https://www.lotsgo.kr/api/relics', { cache: 'no-store', next: { revalidate: 0 } });
     if (!res.ok) {
         return [];
     }
