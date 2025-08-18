@@ -16,6 +16,7 @@ export type Boss = {
     id: string,
     name: string,
     simple: string,
+    max: number,
     difficulty: Difficulty[]
 }
 
@@ -26,6 +27,7 @@ export async function GET(_req: NextRequest) {
             id: doc.id,
             name: doc.data().name,
             simple: doc.data().simple ? doc.data().simple : '',
+            max: doc.data().max ? doc.data().max : 0,
             difficulty: doc.data().difficulty.map((d: any) => ({
                 difficulty: d.difficulty,
                 stage: d.stage ? d.stage : 0,

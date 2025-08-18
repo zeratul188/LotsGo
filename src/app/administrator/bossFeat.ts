@@ -16,6 +16,7 @@ export async function loadBoss(
             id: doc.id,
             name: doc.data().name,
             simple: doc.data().simple ? doc.data().simple : '',
+            max: doc.data().max ? doc.data().max : '',
             difficulty: doc.data().difficulty.map((d: any) => ({
                 difficulty: d.difficulty,
                 stage: d.stage ?? 0,
@@ -83,11 +84,13 @@ export function useClearData(
     setInputSimple: SetStateFn<string>, 
     setInputs: SetStateFn<Difficulty[]>,
     setEditMode: SetStateFn<boolean>,
-    setEditIndex: SetStateFn<number>
+    setEditIndex: SetStateFn<number>,
+    setInputMax: SetStateFn<number>
 ) {
     return () => {
         setInputName('');
         setInputSimple('');
+        setInputMax(0);
         setInputs([]);
         setEditMode(false);
         setEditIndex(-1);
@@ -117,6 +120,7 @@ function isEmptyValue(inputs: Difficulty[]) {
 export async function useOnAddData(
     inputName: string, 
     inputSimple: string,
+    inputMax: number,
     inputs: Difficulty[],
     onClose: () => void,
     boss: Boss[],
@@ -157,6 +161,7 @@ export async function useOnAddData(
             const editBoss = [...boss];
             editBoss[editIndex].name = inputName;
             editBoss[editIndex].simple = inputSimple;
+            editBoss[editIndex].max = inputMax;
             editBoss[editIndex].difficulty = inputs;
             setBoss(editBoss);
         } catch(err) {
@@ -178,6 +183,7 @@ export async function useOnAddData(
             const newBoss: Boss = {
                 name: inputName,
                 simple: inputSimple,
+                max: inputMax,
                 difficulty: inputs,
                 id: addRef.id
             }
@@ -203,13 +209,15 @@ export function onClickEdit(
     selectBoss: Boss,
     setInputName: SetStateFn<string>,
     setInputSimple: SetStateFn<string>,
-    setInputs: SetStateFn<Difficulty[]>
+    setInputs: SetStateFn<Difficulty[]>,
+    setInputMax: SetStateFn<number>
 ) {
     setEditMode(true);
     setEditIndex(index);
     setInputName(selectBoss.name);
     setInputs(selectBoss.difficulty);
     setInputSimple(selectBoss.simple);
+    setInputMax(selectBoss.max);
     onOpen();
 }
 
