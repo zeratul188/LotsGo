@@ -31,6 +31,16 @@ export default function Footer() {
                         }}>
                         Lot's Go 디스코드
                     </Button>
+                    <Button
+                        fullWidth
+                        as={Link}
+                        radius="sm"
+                        size="sm"
+                        color="primary"
+                        href="/about"
+                        className="mt-2">
+                        Lot's Go 가이드
+                    </Button>
                     <Popover>
                         <PopoverTrigger>
                             <Button
