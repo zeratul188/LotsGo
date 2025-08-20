@@ -3,6 +3,7 @@
         "id": "4m5Ap1eQcJaychTYbg4d",
         "name": "어비스 던전 - 혼돈의 상아탑",
         "simple": "혼돈의 상아탑",
+        "max": 4,
         "difficulty": [
             {
                 "difficulty": "싱글",
@@ -100,6 +101,7 @@
         "id": "7EjJ5HxbPr0HYEPbgzFO",
         "name": "카제로스 레이드 - 1막 에기르",
         "simple": " 1막 에기르",
+        "max": 8,
         "difficulty": [
             {
                 "difficulty": "싱글",
@@ -167,6 +169,7 @@
         "id": "C4pdMqTDEd4XJbtiumlJ",
         "name": "군단장 레이드 - 발탄",
         "simple": "발탄",
+        "max": 8,
         "difficulty": [
             {
                 "difficulty": "싱글",
@@ -234,6 +237,7 @@
         "id": "FoEtuEP1y7cEUDRgjA5H",
         "name": "어비스 레이드 - 아르고스",
         "simple": "아르고스",
+        "max": 8,
         "difficulty": [
             {
                 "difficulty": "노말",
@@ -268,36 +272,10 @@
         ]
     },
     {
-        "id": "NQ18uuFRKDrxXxoZcBgL",
-        "name": "카멘 익스트림",
-        "simple": "카멘 익스트림",
-        "difficulty": [
-            {
-                "difficulty": "노말",
-                "stage": 1,
-                "level": 1690,
-                "isBiweekly": false,
-                "gold": 15000,
-                "boundGold": 0,
-                "bonus": 0,
-                "isOnce": true
-            },
-            {
-                "difficulty": "하드",
-                "stage": 1,
-                "level": 1720,
-                "isBiweekly": false,
-                "gold": 30000,
-                "boundGold": 0,
-                "bonus": 0,
-                "isOnce": true
-            }
-        ]
-    },
-    {
         "id": "ZF7S7pHdOGCi5LB3ESpn",
         "name": "카제로스 레이드 - 3막 모르둠",
         "simple": "3막 모르둠",
+        "max": 8,
         "difficulty": [
             {
                 "difficulty": "노말",
@@ -365,6 +343,7 @@
         "id": "bXCeMN3vWk6CUQwLvdfv",
         "name": "군단장 레이드 - 쿠크세이튼",
         "simple": "쿠크세이튼",
+        "max": 4,
         "difficulty": [
             {
                 "difficulty": "싱글",
@@ -432,6 +411,7 @@
         "id": "dCUIAh2baeilT7AhkChh",
         "name": "어비스 던전 - 카양겔",
         "simple": "카양겔",
+        "max": 4,
         "difficulty": [
             {
                 "difficulty": "싱글",
@@ -529,6 +509,7 @@
         "id": "eYP5WFusUalAR0wtMvM7",
         "name": "에픽 레이드 - 베히모스",
         "simple": "베히모스",
+        "max": 16,
         "difficulty": [
             {
                 "difficulty": "노말",
@@ -556,6 +537,7 @@
         "id": "f0ez5M1PAO9HvNzZWbvh",
         "name": "어비스던전 - 오레하",
         "simple": "오레하",
+        "max": 4,
         "difficulty": [
             {
                 "difficulty": "노말",
@@ -603,6 +585,7 @@
         "id": "oGJxMV8VWutFzt6QwpU9",
         "name": "카제로스 레이드 - 2막 아브렐슈드",
         "simple": "2막 아브렐슈드",
+        "max": 8,
         "difficulty": [
             {
                 "difficulty": "노말",
@@ -650,6 +633,7 @@
         "id": "qFTlOYgy0AluFy0m11aR",
         "name": "카제로스 레이드 - 에키드나",
         "simple": "에키드나",
+        "max": 8,
         "difficulty": [
             {
                 "difficulty": "싱글",
@@ -717,6 +701,7 @@
         "id": "uBwjzVr6U7LxzW35RJQb",
         "name": "군단장 레이드 - 비아키스",
         "simple": "비아키스",
+        "max": 8,
         "difficulty": [
             {
                 "difficulty": "싱글",
@@ -784,6 +769,7 @@
         "id": "uGz6FmDHig3R3UIujysh",
         "name": "군단장 레이드 - 일리아칸",
         "simple": "일리아칸",
+        "max": 8,
         "difficulty": [
             {
                 "difficulty": "싱글",
@@ -881,6 +867,7 @@
         "id": "wrAQ5R97K4tT4C1bl9ya",
         "name": "군단장 레이드 - 아브렐슈드",
         "simple": "아브렐슈드",
+        "max": 8,
         "difficulty": [
             {
                 "difficulty": "싱글",
@@ -1008,6 +995,7 @@
         "id": "yYz43fIjbREbPXIfhSJO",
         "name": "군단장 레이드 - 카멘",
         "simple": "카멘",
+        "max": 8,
         "difficulty": [
             {
                 "difficulty": "싱글",
