@@ -52,7 +52,7 @@ export const updateRelicsBook = onRequest({
 
       for (const item of items) {
         const newItem: RelicBook = {
-          name: item.Name,
+          name: item.Name.replaceAll('유물 ', ''),
           icon: item.Icon,
           price: item.CurrentMinPrice
         }
@@ -372,4 +372,4 @@ export const removeCacheCalendarData = onRequest({
 })
 
 // firebase functions:secrets:set LOSTARK_API_KEY
-// firebase deploy --only functions:resetWeekChecklist
+// firebase deploy --only functions:updateRelicsBook
