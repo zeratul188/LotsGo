@@ -1,5 +1,5 @@
 import { firestore } from "@/utiils/firebase"
-import { addDoc, collection, doc, getDocs, limit, query, updateDoc, where } from "firebase/firestore"
+import { addDoc, collection, doc, documentId, getDocs, limit, query, updateDoc, where } from "firebase/firestore"
 import { NextRequest, NextResponse } from "next/server"
 
 // 관문 정보
@@ -46,6 +46,7 @@ export type Raid = {
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
+    const link = searchParams.get('link');
 
     try {
         const snapshot = await getDocs(collection(firestore, 'raids'));
@@ -73,6 +74,11 @@ export async function GET(req: NextRequest) {
                 const data = targetDoc.data();
                 const joined: string[] = data.joined ? data.joined : [];
                 joinRaids = raids.filter(raid => joined.includes(raid.id));
+            }
+        } else if (link) {
+            const findRaid = raids.find(raid => raid.link === link);
+            if (findRaid) {
+                joinRaids.push(findRaid);
             }
         }
         
@@ -126,6 +132,39 @@ export async function POST(req: NextRequest) {
                     joined: joined
                 });
                 return NextResponse.json({ message: '데이터 추가가 정상적으로 처리도었습니다.', id: addRef.id }, { status: 200 });       
+            case 'join':
+                const joinRaid: Raid = body.raid;
+
+                if (typeof id !== "string" || id.trim() === "") {
+                    return NextResponse.json({ error: "id가 필요합니다." }, { status: 400 });
+                }
+
+                const jMembers = structuredClone(joinRaid.members);
+                jMembers.push(id);
+                const jrq = query(collection(firestore, 'raids'), where(documentId(), '==', joinRaid.id), limit(1));
+                const jss = await getDocs(jrq);
+                const mq = query(collection(firestore, 'members'), where('id', '==', id), limit(1));
+                const mss = await getDocs(mq);
+
+                if (jss.empty || mss.empty) {
+                    return NextResponse.json({ error: 'Not found a raid or members with a specific ID.' }, { status: 300 });
+                }
+
+                const tdj = jss.docs[0];
+                const rRef = doc(firestore, 'raids', tdj.id);
+                await updateDoc(rRef, {
+                    members: jMembers
+                });
+
+                const mtd = mss.docs[0];
+                const mRef = doc(firestore, "members", mtd.id);
+                const mData = mtd.data();
+                const mJoined: string[] = mData.joined ? mData.joined : [];
+                mJoined.push(joinRaid.id);
+                await updateDoc(mRef, {
+                    joined: mJoined
+                });
+                return NextResponse.json({ message: '데이터 수정이 정상적으로 처리되었습니다.' }, { status: 200 });       
             default: 
                 return NextResponse.json({ message: '처리 종류를 선택하지 않았습니다.' }, { status: 400 });
         }

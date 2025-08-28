@@ -23,7 +23,7 @@ import { Raid } from "../api/raids/route";
 import { useEffect, useState } from "react";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
 import clsx from "clsx";
-import { handleAddRaid, isInvitedParty } from "./raidListFeat";
+import { handleAddRaid, handleJoinParty, handleJoinPrivateParty, isInvitedParty, joinPublicParty } from "./raidListFeat";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { LoadingComponent } from "../UtilsCompnents";
@@ -47,6 +47,10 @@ export function FindComponent({ raids, setRaids, userId, joinRaids, setJoinRaids
     const isMobile = useMobileQuery();
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [page, setPage] = useState(1);
+    const [isOpenJoin, setOpenJoin] = useState(false);
+    const [isOpenPrivate, setOpenPrivate] = useState(false);
+    const [selectedRaid, setSelectedRaid] = useState<Raid | null>(null);
+    const [isLoadingJoin, setLoadingJoin] = useState<{ [id: string]: boolean }>({});
     const rowsPerPage = 30;
 
     useEffect(() => {
@@ -97,7 +101,7 @@ export function FindComponent({ raids, setRaids, userId, joinRaids, setJoinRaids
                                     color="primary"
                                     radius="sm"
                                     isDisabled={!userId || joinRaids.length >= 5}
-                                    onPress={onOpen}>
+                                    onPress={() => setOpenJoin(true)}>
                                     파티 참가
                                 </Button>
                             </div>
@@ -153,8 +157,17 @@ export function FindComponent({ raids, setRaids, userId, joinRaids, setJoinRaids
                                                 <Button
                                                     size="sm"
                                                     color="primary"
+                                                    isLoading={isLoadingJoin[raid.id] ?? false}
                                                     isDisabled={isInvitedParty(raid.id, joinRaids)}
-                                                    radius="sm">
+                                                    radius="sm"
+                                                    onPress={async () => {
+                                                        if (raid.isPwd) {
+                                                            setSelectedRaid(raid);
+                                                            setOpenPrivate(true);
+                                                        } else {
+                                                            await joinPublicParty(userId, raid, joinRaids, setJoinRaids, setLoadingJoin);
+                                                        }
+                                                    }}>
                                                     {isInvitedParty(raid.id, joinRaids) ? '참가 완료' : '참가'}
                                                 </Button>
                                             </div>
@@ -180,6 +193,12 @@ export function FindComponent({ raids, setRaids, userId, joinRaids, setJoinRaids
                     </div>
                 )}
             </div>
+            <JoinPartyModal
+                isOpen={isOpenJoin}
+                setOpen={setOpenJoin}
+                userId={userId}
+                joinRaids={joinRaids}
+                setJoinRaids={setJoinRaids}/>
             <AddPartyModal 
                 isOpen={isOpen} 
                 onOpenChange={onOpenChange} 
@@ -188,18 +207,96 @@ export function FindComponent({ raids, setRaids, userId, joinRaids, setJoinRaids
                 userId={userId}
                 joinRaids={joinRaids}
                 setJoinRaids={setJoinRaids}/>
+            <JoinPrivatePartyModal
+                isOpenPrivate={isOpenPrivate}
+                setOpenPrivate={setOpenPrivate}
+                userId={userId}
+                joinRaids={joinRaids}
+                setJoinRaids={setJoinRaids}
+                selectedRaid={selectedRaid}
+                setSelectedRaid={setSelectedRaid}/>
         </div>
+    )
+}
+
+// 공개 파티 비밀번호 입력 Modal
+type JoinPrivatePartyModalProps = {
+    isOpenPrivate: boolean,
+    setOpenPrivate: SetStateFn<boolean>,
+    userId: string | null,
+    joinRaids: Raid[],
+    setJoinRaids: SetStateFn<Raid[]>,
+    selectedRaid: Raid | null,
+    setSelectedRaid: SetStateFn<Raid | null>
+}
+function JoinPrivatePartyModal({ isOpenPrivate, setOpenPrivate, userId, joinRaids, setJoinRaids, selectedRaid, setSelectedRaid }: JoinPrivatePartyModalProps) {
+    const [inputPwd, setInputPwd] = useState('');
+    const [isLoadingJoin, setLoadingJoin] = useState(false);
+    const [isErrorPwd, setErrorPwd] = useState(false);
+
+    return (
+        <Modal
+            isDismissable={false}
+            isOpen={isOpenPrivate}
+            onClose={() => {
+                setSelectedRaid(null);
+                setInputPwd('');
+                setLoadingJoin(false);
+                setOpenPrivate(false);
+                setErrorPwd(false);
+            }}>
+            <ModalContent>
+                {(onClose) => (
+                    <>
+                        <ModalHeader>공개 파티 참가</ModalHeader>
+                        <ModalBody>
+                            <div className="w-full pb-4">
+                                <Input
+                                    isRequired
+                                    type="password"
+                                    label="비밀번호"
+                                    labelPlacement="outside"
+                                    placeholder="최대 18글자"
+                                    value={inputPwd}
+                                    onValueChange={setInputPwd}
+                                    radius="sm"
+                                    isInvalid={isErrorPwd}
+                                    errorMessage="비밀번호가 일치하지 않습니다."
+                                    maxLength={18}/>
+                                <Button
+                                    fullWidth
+                                    color="primary"
+                                    radius="sm"
+                                    isDisabled={inputPwd === ''}
+                                    isLoading={isLoadingJoin}
+                                    className="mt-4"
+                                    onPress={async () => await handleJoinPrivateParty(userId, selectedRaid, inputPwd, joinRaids, setJoinRaids, setLoadingJoin, onClose)}>
+                                    참가
+                                </Button>
+                            </div>
+                        </ModalBody>
+                    </>
+                )}
+            </ModalContent>
+        </Modal>
     )
 }
 
 // 파티 참가 Modal
 type JoinPartyModalProps = {
-    isOpen: boolean
+    isOpen: boolean,
+    setOpen: SetStateFn<boolean>,
+    userId: string | null,
+    joinRaids: Raid[],
+    setJoinRaids: SetStateFn<Raid[]>
 }
-function JoinPartyModal({ isOpen }: JoinPartyModalProps) {
+function JoinPartyModal({ isOpen, setOpen, userId, joinRaids, setJoinRaids }: JoinPartyModalProps) {
     const [inputLink, setInputLink] = useState('');
     const [inputPwd, setInputPwd] = useState('');
     const [isLoadingJoin, setLoadingJoin] = useState(false);
+    const [party, setParty] = useState<Raid | null>(null);
+    const [isErrorLink, setErrorLink] = useState(false);
+    const [isErrorPwd, setErrorPwd] = useState(false);
 
     return (
         <Modal
@@ -209,6 +306,10 @@ function JoinPartyModal({ isOpen }: JoinPartyModalProps) {
                 setInputLink('');
                 setInputPwd('');
                 setLoadingJoin(false);
+                setOpen(false);
+                setParty(null);
+                setErrorLink(false);
+                setErrorPwd(false);
             }}>
             <ModalContent>
                 {(onClose) => (
@@ -216,7 +317,45 @@ function JoinPartyModal({ isOpen }: JoinPartyModalProps) {
                         <ModalHeader>파티 참가</ModalHeader>
                         <ModalBody>
                             <div className="w-full pb-4">
-                                
+                                <Input
+                                    isRequired
+                                    label="초대 링크"
+                                    labelPlacement="outside"
+                                    placeholder="20글자"
+                                    isDisabled={party !== null}
+                                    value={inputLink}
+                                    onValueChange={setInputLink}
+                                    radius="sm"
+                                    isInvalid={isErrorLink}
+                                    errorMessage="초대 링크가 올바르지 않습니다."
+                                    maxLength={30}/>
+                                {party ? party.isPwd ? (
+                                    <div className="mt-4">
+                                        <p className="mb-8 text-sm">참가할 파티가 비밀번호가 설정되어 있습니다. 비밀번호를 입력해주세요.</p>
+                                        <Input
+                                            isRequired
+                                            type="password"
+                                            label="비밀번호"
+                                            labelPlacement="outside"
+                                            placeholder="최대 18글자"
+                                            value={inputPwd}
+                                            onValueChange={setInputPwd}
+                                            radius="sm"
+                                            isInvalid={isErrorPwd}
+                                            errorMessage="비밀번호가 일치하지 않습니다."
+                                            maxLength={18}/>
+                                    </div>
+                                ) : null : null}
+                                <Button
+                                    fullWidth
+                                    color="primary"
+                                    radius="sm"
+                                    isDisabled={inputLink === '' || (party !== null && inputPwd === '')}
+                                    isLoading={isLoadingJoin}
+                                    className="mt-4"
+                                    onPress={async () => await handleJoinParty(userId, inputLink, inputPwd, setLoadingJoin, party, setParty, setErrorLink, setErrorPwd, onClose, joinRaids, setJoinRaids)}>
+                                    참가
+                                </Button>
                             </div>
                         </ModalBody>
                     </>
@@ -225,6 +364,8 @@ function JoinPartyModal({ isOpen }: JoinPartyModalProps) {
         </Modal>
     )
 }
+
+
 
 // 파티 추가 Modal
 type AddPartyModalProps = {
