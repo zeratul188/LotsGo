@@ -99,7 +99,8 @@ export function useCharacterForm() {
         arkpassive: null,
         skills: null,
         collects: null,
-        avatars: null
+        avatars: null,
+        arkGrid: null
     });
     const [isNothing, setNothing] = useState(false);
     const [gems, setGems] = useState<Gem[]>([]);
