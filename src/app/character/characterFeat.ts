@@ -19,7 +19,8 @@ export type CharacterFile = {
     arkpassive: any | null,
     skills: any[] | null,
     collects: any[] | null,
-    avatars: any[] | null
+    avatars: any[] | null,
+    arkGrid: any | null
 }
 
 export type CharacterInfo = {
@@ -90,6 +91,7 @@ export function useClickUpdate(
                         newFile.skills = data.ArmorySkills;
                         newFile.collects = data.Collectibles;
                         newFile.avatars = data.ArmoryAvatars;
+                        newFile.arkGrid = data.ArkGrid;
                         
                         const newCombatPower = Number(newFile.profile.CombatPower.replaceAll(',', ''));
                         await fetch('/api/caches/characters', {
@@ -306,6 +308,7 @@ export async function loadProfile(
             newFile.skills = data.ArmorySkills;
             newFile.collects = data.Collectibles;
             newFile.avatars = data.ArmoryAvatars;
+            newFile.arkGrid = data.ArkGrid;
             setFile(newFile);
             setNothing(false);
             setExpeditions(newExpeditions);
