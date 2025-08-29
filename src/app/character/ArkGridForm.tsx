@@ -77,7 +77,7 @@ export function ArkGridComponent( { file }: ArkGridComponentProps ) {
                                             </div>
                                             <div className="grow">
                                                 <p className={`${getColorTextByGrade(getGem(getCore(cores, index)?.gems ?? [], idx)?.grade ?? '')}`}>{getGem(getCore(cores, index)?.gems ?? [], idx)?.name ?? '-'}</p>
-                                                <p className="fadedtext text-[8pt]">{getGem(getCore(cores, index)?.gems ?? [], idx)?.grade ?? '-'} {getGem(getCore(cores, index)?.gems ?? [], idx) ? '아크 그리드 코어' : ''}</p>
+                                                <p className="fadedtext text-[8pt]">{getGem(getCore(cores, index)?.gems ?? [], idx)?.grade ?? '-'} {getGem(getCore(cores, index)?.gems ?? [], idx) ? '아크 그리드 젬' : ''}</p>
                                             </div>
                                             <Tooltip showArrow content="의지력 효율">
                                                 <Chip
