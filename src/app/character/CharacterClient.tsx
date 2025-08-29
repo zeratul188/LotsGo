@@ -14,6 +14,7 @@ import LineAd from "../ad/LineAd";
 import BoxAd from "../ad/BoxAd";
 import Script from "next/script";
 import FixedLineAd from "../ad/FixedLineAd";
+import { ArkGridComponent } from "./ArkGridForm";
 
 export default function CharacterClient() {
     const characterForm = useCharacterForm();
@@ -63,6 +64,11 @@ export default function CharacterClient() {
             id: 'skill',
             label: '스킬',
             component: <SkillComponent file={characterForm.file} gems={characterForm.gems}/>
+        },
+        {
+            id: 'arkgrid',
+            label: '아크그리드',
+            component: <ArkGridComponent file={characterForm.file}/>
         },
         {
             id: 'story',
