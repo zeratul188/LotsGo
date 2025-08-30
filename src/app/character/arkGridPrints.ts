@@ -37,8 +37,10 @@ export function loadArkGrid(
             const cores: Core[] = [];
             for (const item of slots) {
                 const gems: ArkGridGem[] = [];
-                for (const gem of item.Gems) {
-                    gems.push(getDataGem(gem));
+                if (item.Gems) {
+                    for (const gem of item.Gems) {
+                        gems.push(getDataGem(gem));
+                    }
                 }
                 const core: Core = {
                     index: Number(item.Index),
