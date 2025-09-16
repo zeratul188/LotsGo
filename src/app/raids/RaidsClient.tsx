@@ -5,6 +5,10 @@ import { Raid } from "../api/raids/route";
 import { FindComponent } from "./RaidListForm";
 import { LoginUser } from "../store/loginSlice";
 import { loadRaids } from "./raidListFeat";
+import { applyChangeParty, loadBosses } from "./partyFeat";
+import { PartyComponent } from "./PartyForm";
+import { Boss } from "../api/checklist/boss/route";
+import { useMobileQuery } from "@/utiils/utils";
 
 // state 관리
 function raidsForm() {
@@ -12,18 +16,23 @@ function raidsForm() {
     const [raids, setRaids] = useState<Raid[]>([]);
     const [userId, setUserId] = useState<string | null>(null);
     const [joinRaids, setJoinedRaids] = useState<Raid[]>([]);
+    const [selectedParty, setSelectedParty] = useState<Raid | null>(null);
+    const [bosses, setBosses] = useState<Boss[]>([]);
 
     return {
         selectedKey, setSelectedKey,
         raids, setRaids,
         userId, setUserId,
-        joinRaids, setJoinedRaids
+        joinRaids, setJoinedRaids,
+        selectedParty, setSelectedParty,
+        bosses, setBosses
     }
 }
 
 export default function RaidsClient() {
     const form = raidsForm();
     const [isLoadingData, setLoadingData] = useState(true);
+    const isMobile = useMobileQuery();
 
     useEffect(() => {
         const userStr = localStorage.getItem('user');
@@ -35,15 +44,23 @@ export default function RaidsClient() {
             form.setUserId(id);
         }
         const loadData = async () => {
-            await loadRaids(userId, form.setRaids, form.setJoinedRaids, setLoadingData);
+            const pRaids = await loadRaids(userId, form.setRaids, form.setJoinedRaids);
+            const pBosses = await loadBosses(form.setBosses);
+            await Promise.all([pRaids, pBosses]);
+            setLoadingData(false);
         }
         loadData();
     }, []);
+
+    useEffect(() => {
+        applyChangeParty(form.selectedKey, form.raids, form.setSelectedParty);
+    }, [form.selectedKey])
 
     return (
         <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
             <div className="mb-3">
                 <Tabs 
+                    fullWidth={isMobile}
                     variant="underlined" 
                     size="lg"
                     selectedKey={form.selectedKey}
@@ -63,7 +80,11 @@ export default function RaidsClient() {
                     setJoinRaids={form.setJoinedRaids}
                     isLoadingData={isLoadingData}
                     setLoadingData={setLoadingData}/>
-            ) : null}
+            ) : (
+                <PartyComponent
+                    selectedParty={form.selectedParty}
+                    bosses={form.bosses}/>
+            )}
         </div>
     )
 }

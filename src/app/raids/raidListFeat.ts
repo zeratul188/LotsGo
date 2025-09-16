@@ -1,17 +1,15 @@
 import { SetStateFn } from "@/utiils/utils";
 import { Raid } from "../api/raids/route";
 import { decrypt, encrypt } from "@/utiils/crypto";
-import { addToast, input } from "@heroui/react";
+import { addToast } from "@heroui/react";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
-const MAX_LENGTH = 100;
 
 // 파티 목록 데이터 가져오기
 export async function loadRaids(
     userId: string | null,
     setRaids: SetStateFn<Raid[]>,
-    setJoinRaids: SetStateFn<Raid[]>,
-    setLoadingData: SetStateFn<boolean>
+    setJoinRaids: SetStateFn<Raid[]>
 ) {
     const fetchLink = userId ? `/api/raids?id=${userId}` : `/api/raids`
     const res = await fetch(fetchLink);
@@ -26,7 +24,6 @@ export async function loadRaids(
     const data = await res.json();
     setRaids(data.raids);
     setJoinRaids(data.joinRaids);
-    setLoadingData(false);
 }
 
 // 파티 추가 이벤트
@@ -181,6 +178,9 @@ export async function handleJoinParty(
                     return;
                 }
                 const cloneRaids = structuredClone(joinRaids);
+                if (userId) {
+                    raid.members.push(userId);
+                }
                 cloneRaids.push(raid);
                 setJoinRaids(cloneRaids);
                 setLoadingJoin(false);
@@ -223,6 +223,9 @@ export async function handleJoinParty(
                 return;
             }
             const cloneRaids = structuredClone(joinRaids);
+            if (userId) {
+                party.members.push(userId);
+            }
             cloneRaids.push(party);
             setJoinRaids(cloneRaids);
             setLoadingJoin(false);
@@ -274,6 +277,9 @@ export async function joinPublicParty(
         return;
     }
     const cloneRaids = structuredClone(joinRaids);
+    if (userId) {
+        raid.members.push(userId);
+    }
     cloneRaids.push(raid);
     setJoinRaids(cloneRaids);
     setLoadingJoin(prev => ({...prev, [raid.id]: false}));
@@ -317,6 +323,9 @@ export async function handleJoinPrivateParty(
                 return;
             }
             const cloneRaids = structuredClone(joinRaids);
+            if (userId) {
+                selectedRaid.members.push(userId);
+            }
             cloneRaids.push(selectedRaid);
             setJoinRaids(cloneRaids);
             addToast({

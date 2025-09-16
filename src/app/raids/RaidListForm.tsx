@@ -10,12 +10,6 @@ import {
     Tooltip,
     Tabs,
     Tab,
-    Table,
-    TableColumn,
-    TableBody,
-    TableRow,
-    TableCell,
-    TableHeader,
     Pagination,
     Chip
 } from "@heroui/react";
@@ -158,7 +152,7 @@ export function FindComponent({ raids, setRaids, userId, joinRaids, setJoinRaids
                                                     size="sm"
                                                     color="primary"
                                                     isLoading={isLoadingJoin[raid.id] ?? false}
-                                                    isDisabled={isInvitedParty(raid.id, joinRaids)}
+                                                    isDisabled={isInvitedParty(raid.id, joinRaids) || !userId}
                                                     radius="sm"
                                                     onPress={async () => {
                                                         if (raid.isPwd) {
