@@ -27,6 +27,7 @@ export async function loadPartyData(
     setMembers: SetStateFn<RaidMember[]>,
     setLoading: SetStateFn<boolean>
 ) {
+    setLoading(true);
     const sp = new URLSearchParams();
     party.members.forEach(member => sp.append('list', member));
     const res = await fetch(`/api/raids/members?${sp.toString()}`);

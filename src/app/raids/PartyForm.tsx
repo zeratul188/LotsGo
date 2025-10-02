@@ -20,6 +20,7 @@ import { getImgByJob } from "../character/expeditionFeat"
 import LeaderIcon from "@/Icons/LeaderIcon"
 import clsx from "clsx"
 import { getBackground50ByStage, getBackgroundByStage, getBorderByStage, getBossGoldByContent, getSimpleBossName, getTextColorByDifficulty } from "../checklist/checklistFeat"
+import { PartyRaidsComponent } from "./RaidsForm"
 
 // 홈 컴포넌트
 type ChecklistComponentProps = {
@@ -283,7 +284,7 @@ function ChecklistComponent({ members, bosses, party }: ChecklistComponentProps)
     )
 }
 
-// 파티 컴포넌트
+// 파티 컴포넌트 
 type PartyComponentProps = {
     selectedParty: Raid | null,
     bosses: Boss[]
@@ -312,7 +313,7 @@ export function PartyComponent({ selectedParty, bosses }: PartyComponentProps) {
                         <ChecklistComponent members={members} bosses={bosses} party={selectedParty}/>
                     </Tab>
                     <Tab key="party" title="레이드 목록">
-                        <ChecklistComponent members={members} bosses={bosses} party={selectedParty}/>
+                        <PartyRaidsComponent selectedParty={selectedParty} bosses={bosses}/>
                     </Tab>
                     <Tab key="setting" title="파티 설정">
                         <ChecklistComponent members={members} bosses={bosses} party={selectedParty}/>
