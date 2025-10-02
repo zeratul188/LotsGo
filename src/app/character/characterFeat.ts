@@ -782,6 +782,27 @@ export function applyArmData(data: any, setArm: SetStateFn<Arm | null>) {
     }
 }
 
+// 보주 가져오기
+export type Orb = {
+    icon: string,
+    type: string,
+    name: string,
+    grade: string
+}
+export function applyOrbData(data: any, setOrb: SetStateFn<Orb | null>) {
+    const objs = getListByArmorType(data, '보주');
+    if (objs.length > 0) {
+        const obj = objs[0];
+        const newOrb: Orb = {
+            icon: obj.Icon,
+            type: '보주',
+            name: obj.Name,
+            grade: obj.Grade
+        }
+        setOrb(newOrb);
+    }
+}
+
 // 어빌리티 스톤 가져오기
 export type StoneEffect = {
     name: string,

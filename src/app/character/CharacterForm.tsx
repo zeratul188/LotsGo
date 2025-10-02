@@ -23,6 +23,7 @@ import {
     applyArmData, 
     applyColorElixir, 
     applyEquipment, 
+    applyOrbData, 
     applyStoneData, 
     ArkpassiveItem, 
     ArkpassivePoint, 
@@ -66,6 +67,7 @@ import {
     loadEngraving, 
     loadGems, 
     loadStats, 
+    Orb, 
     printEngravingLevel, 
     Stat, 
     Stone 
@@ -533,6 +535,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
     const [accessories, setAccessories] = useState<Accessory[]>([]);
     const [arm, setArm] = useState<Arm | null>(null);
     const [stone, setStone] = useState<Stone | null>(null);
+    const [orb, setOrb] = useState<Orb | null>(null);
     const equipment = file.equipment;
     const isMobile = useMobileQuery();
 
@@ -541,6 +544,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
         applyAccessories(equipment, setAccessories);
         applyArmData(equipment, setArm);
         applyStoneData(equipment, setStone);
+        applyOrbData(equipment, setOrb);
     }, []);
 
     return (
@@ -1049,6 +1053,20 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                 </PopoverContent>
                             </Popover>
                         ) : <></>}
+                        {orb ? (
+                            <div className="flex gap-2 mb-2 items-center">
+                                <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(orb.grade)}`}>
+                                    <img
+                                        src={orb.icon}
+                                        alt="stone-icon"
+                                        className="w-10 h-10"/>
+                                </div>
+                                <div className="grow">
+                                    <p className={`${getColorTextByGrade(orb.grade)} grow truncate`}>{orb.name}</p>
+                                    <p className="fadedtext text-[9pt]">{orb.grade} {orb.type}</p>
+                                </div>
+                            </div>
+                        ) : null}
                     </div>
                 </div>
             </CardBody>
