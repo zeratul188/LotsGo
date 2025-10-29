@@ -92,6 +92,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     const body = await req.json();
     const id = body.id;
+    let selectedPaarty: Raid | null = null;
 
     try {
         switch(body.type) {
@@ -164,7 +165,11 @@ export async function POST(req: NextRequest) {
                 await updateDoc(mRef, {
                     joined: mJoined
                 });
-                return NextResponse.json({ message: '데이터 수정이 정상적으로 처리되었습니다.' }, { status: 200 });       
+                return NextResponse.json({ message: '데이터 수정이 정상적으로 처리되었습니다.' }, { status: 200 });
+            case 'add-party':
+                selectedPaarty = body.selectedPaarty;
+
+                
             default: 
                 return NextResponse.json({ message: '처리 종류를 선택하지 않았습니다.' }, { status: 400 });
         }
