@@ -1266,25 +1266,25 @@ export function ChecklistComponent({
                                                                             onKeyDown={(e) => e.stopPropagation()}
                                                                             className="w-4 h-4 cursor-pointer">
                                                                             <BusIcon size={16} className={clsx(
-                                                                                item.busGold > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-500/70'
+                                                                                item.busGold > 0 ? 'text-green-600 dark:text-green-400' : item.busGold < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500/70'
                                                                             )}/>
                                                                         </button>
                                                                     </PopoverTrigger>
                                                                     <PopoverContent>
-                                                                        <div className="pb-2 pt-1"> 
+                                                                        <div className="pb-2 pt-1 max-w-[200px]"> 
                                                                             <NumberInput
                                                                                 label="버스비 설정"
                                                                                 placeholder="0~99999999"
                                                                                 size="sm"
-                                                                                variant="underlined"
                                                                                 hideStepper
+                                                                                color={item.busGold > 0 ? 'success' : item.busGold < 0 ? 'danger' : 'default'}
                                                                                 value={item.busGold}
                                                                                 maxLength={8}
-                                                                                min={0}
                                                                                 onKeyDownCapture={(e) => e.stopPropagation()}
                                                                                 onValueChange={async (value: number) => {
                                                                                     await handleEditBusGold(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch, value);
                                                                                 }}/>
+                                                                            <p className="fadedtext text-[8pt] mt-2">버스를 손님으로 참여할 경우 음수(마이너스)로 표현하면 됩니다. (ex. -10000)</p>
                                                                         </div>
                                                                     </PopoverContent>
                                                                 </Popover>
