@@ -1354,3 +1354,37 @@ export function printEngravingLevel(level: number): string {
     }
     return '◇◇◇◇';
 }
+
+// 명예 진행값 반환
+export function getProgressValueByHonor(honorPoint: number): number {
+    if (honorPoint >= 100 && honorPoint < 300) return honorPoint - 100;
+    else if (honorPoint >= 300 && honorPoint < 500) return honorPoint - 300;
+    else if (honorPoint >= 500 && honorPoint < 1000) return honorPoint - 500;
+    return honorPoint;
+}
+
+// 명예 최댓값 반환
+export function getProgressMaxByHonor(honorPoint: number): number {
+    if (honorPoint < 100) return 100;
+    else if (honorPoint >= 100 && honorPoint < 300) return 200;
+    else if (honorPoint >= 300 && honorPoint < 500) return 200;
+    return 500;
+}
+
+// 명예 색상 반환
+export function getProgressColorByHonor(honorPoint: number): "default" | "success" | "primary" | "secondary" | "warning" {
+    if (honorPoint < 100) return "default";
+    else if (honorPoint >= 100 && honorPoint < 300) return "success";
+    else if (honorPoint >= 300 && honorPoint < 500) return "primary";
+    else if (honorPoint >= 500 && honorPoint < 1000) return "secondary"
+    return "warning";
+}
+
+// 다음 명예까지 남은 포인트 반환 함수
+export function getRemainHonor(honorPoint: number): number {
+    if (honorPoint < 100) return 100 - honorPoint;
+    else if (honorPoint >= 100 && honorPoint < 300) return 300 - honorPoint;
+    else if (honorPoint >= 300 && honorPoint < 500) return 500 - honorPoint;
+    else if (honorPoint >= 500 && honorPoint < 1000) return 1000 - honorPoint;
+    return 0;
+}
