@@ -86,7 +86,7 @@ function getDataGem(data: any): ArkGridGem {
 
         const element000 = value?.Element_000;
         const element001 = value?.Element_001;
-        if (typeof element000 === 'string' && typeof element001 === 'string' && element000.includes('젬 옵션')) {
+        if (typeof element000 === 'string' && typeof element001 === 'string' && element000.includes('젬 효과')) {
             const strs = element001?.split('<br>');
             for (const str of strs) {
                 options.push(getParsedText(str));
@@ -118,7 +118,8 @@ export function getGem(gems: ArkGridGem[], index: number): ArkGridGem | undefine
 export function getPower(options: string[]): number {
     const item = options.find(item => item.includes('의지력 효율'));
     if (item) {
-        return Number(item.split(' : ')[1]);
+        console.log(item.split(' : ')[1]);
+        return Number(item.split(' : ')[1].split('의지력 효율 ')[1].replaceAll(')', ""));
     }
     return 0;
 }

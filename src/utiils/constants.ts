@@ -1,4 +1,4 @@
-export const MAX_CHARACTER_COUNT = 24;
+export const MAX_CHARACTER_COUNT = 40;
 
 export const DARK_COLORS = {
     normal: "#ffffff",

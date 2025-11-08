@@ -561,24 +561,34 @@ export function ChecklistStatue({
                 <CardBody>
                     <div className="w-full grid grid-cols-1 md960:grid-cols-[4fr_1px_3fr_1px_3fr] gap-2">
                         <div className="w-full flex flex-col sm:flex-row items-center gap-2">
-                             <Progress 
-                                aria-label="all-gold"
-                                size="md"
-                                color="warning"
-                                label={(
-                                    <div className="flex items-center">
-                                        <img 
-                                            src="/icons/gold.png" 
-                                            alt="goldicon"
-                                            className="w-[19px] h-[19px]"/>
-                                        <span className="ml-1 text-md">주간 골드량 : {getHaveGolds(bosses, checklist).toLocaleString()} / {getAllGolds(bosses, checklist).toLocaleString()}</span>
-                                    </div>
-                                )}
-                                showValueLabel={true}
-                                radius="sm"
-                                value={getHaveGolds(bosses, checklist)}
-                                maxValue={getAllGolds(bosses, checklist)}
-                                className="grow"/>
+                             <div className="grow">
+                                <Progress 
+                                    aria-label="all-gold"
+                                    size="md"
+                                    color="warning"
+                                    label={(
+                                        <div className="flex items-center">
+                                            <img 
+                                                src="/icons/gold.png" 
+                                                alt="goldicon"
+                                                className="w-[19px] h-[19px]"/>
+                                            <span className="ml-1 text-md">주간 골드량 : {getHaveGolds(bosses, checklist).toLocaleString()} / {getAllGolds(bosses, checklist).toLocaleString()}</span>
+                                        </div>
+                                    )}
+                                    showValueLabel={true}
+                                    radius="sm"
+                                    value={getHaveGolds(bosses, checklist)}
+                                    maxValue={getAllGolds(bosses, checklist)}/>
+                                <div className="flex items-center gap-1 fadedtext text-[10pt] mt-1">
+                                    <p>이번 주에 </p>
+                                    <img 
+                                        src="/icons/gold.png" 
+                                        alt="goldicon"
+                                        className="w-[16px] h-[16px]"/>
+                                    <p className="font-bold text-black dark:text-white">{(getAllGolds(bosses, checklist) - getHaveGolds(bosses, checklist)).toLocaleString()}</p>
+                                    <p>를 더 획득하실 수 있습니다.</p>
+                                </div>
+                             </div>
                             <Popover showArrow disableAnimation>
                                 <PopoverTrigger>
                                     <Button
@@ -1266,25 +1276,25 @@ export function ChecklistComponent({
                                                                             onKeyDown={(e) => e.stopPropagation()}
                                                                             className="w-4 h-4 cursor-pointer">
                                                                             <BusIcon size={16} className={clsx(
-                                                                                item.busGold > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-500/70'
+                                                                                item.busGold > 0 ? 'text-green-600 dark:text-green-400' : item.busGold < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500/70'
                                                                             )}/>
                                                                         </button>
                                                                     </PopoverTrigger>
                                                                     <PopoverContent>
-                                                                        <div className="pb-2 pt-1"> 
+                                                                        <div className="pb-2 pt-1 max-w-[200px]"> 
                                                                             <NumberInput
                                                                                 label="버스비 설정"
                                                                                 placeholder="0~99999999"
                                                                                 size="sm"
-                                                                                variant="underlined"
                                                                                 hideStepper
+                                                                                color={item.busGold > 0 ? 'success' : item.busGold < 0 ? 'danger' : 'default'}
                                                                                 value={item.busGold}
                                                                                 maxLength={8}
-                                                                                min={0}
                                                                                 onKeyDownCapture={(e) => e.stopPropagation()}
                                                                                 onValueChange={async (value: number) => {
                                                                                     await handleEditBusGold(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch, value);
                                                                                 }}/>
+                                                                            <p className="fadedtext text-[8pt] mt-2">버스를 손님으로 참여할 경우 음수(마이너스)로 표현하면 됩니다. (ex. -10000)</p>
                                                                         </div>
                                                                     </PopoverContent>
                                                                 </Popover>
