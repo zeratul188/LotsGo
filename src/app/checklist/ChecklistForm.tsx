@@ -561,24 +561,34 @@ export function ChecklistStatue({
                 <CardBody>
                     <div className="w-full grid grid-cols-1 md960:grid-cols-[4fr_1px_3fr_1px_3fr] gap-2">
                         <div className="w-full flex flex-col sm:flex-row items-center gap-2">
-                             <Progress 
-                                aria-label="all-gold"
-                                size="md"
-                                color="warning"
-                                label={(
-                                    <div className="flex items-center">
-                                        <img 
-                                            src="/icons/gold.png" 
-                                            alt="goldicon"
-                                            className="w-[19px] h-[19px]"/>
-                                        <span className="ml-1 text-md">주간 골드량 : {getHaveGolds(bosses, checklist).toLocaleString()} / {getAllGolds(bosses, checklist).toLocaleString()}</span>
-                                    </div>
-                                )}
-                                showValueLabel={true}
-                                radius="sm"
-                                value={getHaveGolds(bosses, checklist)}
-                                maxValue={getAllGolds(bosses, checklist)}
-                                className="grow"/>
+                             <div className="grow">
+                                <Progress 
+                                    aria-label="all-gold"
+                                    size="md"
+                                    color="warning"
+                                    label={(
+                                        <div className="flex items-center">
+                                            <img 
+                                                src="/icons/gold.png" 
+                                                alt="goldicon"
+                                                className="w-[19px] h-[19px]"/>
+                                            <span className="ml-1 text-md">주간 골드량 : {getHaveGolds(bosses, checklist).toLocaleString()} / {getAllGolds(bosses, checklist).toLocaleString()}</span>
+                                        </div>
+                                    )}
+                                    showValueLabel={true}
+                                    radius="sm"
+                                    value={getHaveGolds(bosses, checklist)}
+                                    maxValue={getAllGolds(bosses, checklist)}/>
+                                <div className="flex items-center gap-1 fadedtext text-[10pt] mt-1">
+                                    <p>이번 주에 </p>
+                                    <img 
+                                        src="/icons/gold.png" 
+                                        alt="goldicon"
+                                        className="w-[16px] h-[16px]"/>
+                                    <p className="font-bold text-black dark:text-white">{(getAllGolds(bosses, checklist) - getHaveGolds(bosses, checklist)).toLocaleString()}</p>
+                                    <p>를 더 획득하실 수 있습니다.</p>
+                                </div>
+                             </div>
                             <Popover showArrow disableAnimation>
                                 <PopoverTrigger>
                                     <Button
