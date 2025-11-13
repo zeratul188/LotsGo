@@ -452,6 +452,7 @@ function PositionModal({ isOpenModalPosition, onOpenChangePosition, checklist, d
                             <Button
                                 fullWidth
                                 color="primary"
+                                radius="sm"
                                 isLoading={isLoading}
                                 onPress={async () => {
                                     await handleApplyPositions(positions, onClose, setLoading, dispatch);
@@ -466,6 +467,11 @@ function PositionModal({ isOpenModalPosition, onOpenChangePosition, checklist, d
 
 // 체크리스트 현황 컴포넌트
 type ChecklistStatueProps = {
+    server: string,
+    filterContent: Selection,
+    filterAccount: Selection,
+    isRemainHomework: boolean,
+    isShowGoldCharacter: boolean,
     checklist: CheckCharacter[],
     bosses: Boss[],
     dispatch: AppDispatch,
@@ -479,6 +485,11 @@ type ChecklistStatueProps = {
     setAccounts: SetStateFn<string[]>
 }
 export function ChecklistStatue({ 
+    server,
+    filterContent,
+    filterAccount,
+    isRemainHomework,
+    isShowGoldCharacter,
     checklist, 
     bosses, 
     dispatch, 
@@ -552,6 +563,8 @@ export function ChecklistStatue({
     const [selected, setSelected] = useState(accounts.length > 0 ? accounts[0] : '본계정');
     const onClickAddAccount = useClickAddAccount(inputAccount, setInputAccount, accounts, setAccounts);
 
+    const filteredChecklist = checklist.filter((character) => (character.server === server || server === '전체') && filterChecklist(character, filterContent, bosses, checklist, isRemainHomework, isShowGoldCharacter, filterAccount));
+
     return (
         <>
             <Card 
@@ -572,20 +585,20 @@ export function ChecklistStatue({
                                                 src="/icons/gold.png" 
                                                 alt="goldicon"
                                                 className="w-[19px] h-[19px]"/>
-                                            <span className="ml-1 text-md">주간 골드량 : {getHaveGolds(bosses, checklist).toLocaleString()} / {getAllGolds(bosses, checklist).toLocaleString()}</span>
+                                            <span className="ml-1 text-md">주간 골드량 : {getHaveGolds(bosses, filteredChecklist).toLocaleString()} / {getAllGolds(bosses, filteredChecklist).toLocaleString()}</span>
                                         </div>
                                     )}
                                     showValueLabel={true}
                                     radius="sm"
-                                    value={getHaveGolds(bosses, checklist)}
-                                    maxValue={getAllGolds(bosses, checklist)}/>
+                                    value={getHaveGolds(bosses, filteredChecklist)}
+                                    maxValue={getAllGolds(bosses, filteredChecklist)}/>
                                 <div className="flex items-center gap-1 fadedtext text-[10pt] mt-1">
                                     <p>이번 주에 </p>
                                     <img 
                                         src="/icons/gold.png" 
                                         alt="goldicon"
                                         className="w-[16px] h-[16px]"/>
-                                    <p className="font-bold text-black dark:text-white">{(getAllGolds(bosses, checklist) - getHaveGolds(bosses, checklist)).toLocaleString()}</p>
+                                    <p className="font-bold text-black dark:text-white">{(getAllGolds(bosses, filteredChecklist) - getHaveGolds(bosses, filteredChecklist)).toLocaleString()}</p>
                                     <p>를 더 획득하실 수 있습니다.</p>
                                 </div>
                              </div>
@@ -612,7 +625,7 @@ export function ChecklistStatue({
                                                         <TableColumn>부수입</TableColumn>
                                                     </TableHeader>
                                                     <TableBody>
-                                                        {checklist.map((character, index) => (
+                                                        {filteredChecklist.map((character, index) => (
                                                             <TableRow key={index}>
                                                                 <TableCell>{character.nickname}</TableCell>
                                                                 <TableCell>{getCompleteSharedGoldCharacter(bosses, character).toLocaleString()}</TableCell>
@@ -632,7 +645,7 @@ export function ChecklistStatue({
                                                     src="/icons/gold.png" 
                                                     alt="goldicon"
                                                     className="w-[14px] h-[14px]"/>
-                                                <p className="test-sm">{getAllContentGold(bosses, checklist).toLocaleString()}</p>
+                                                <p className="test-sm">{getAllContentGold(bosses, filteredChecklist).toLocaleString()}</p>
                                             </div>
                                             <div className="w-full flex items-center gap-1">
                                                 <p className="grow text-[9pt] fadedtext">총 귀속 골드</p>
@@ -640,7 +653,7 @@ export function ChecklistStatue({
                                                     src="/icons/gold.png" 
                                                     alt="goldicon"
                                                     className="w-[14px] h-[14px]"/>
-                                                <p className="test-sm">{getAllBoundGold(bosses, checklist).toLocaleString()}</p>
+                                                <p className="test-sm">{getAllBoundGold(bosses, filteredChecklist).toLocaleString()}</p>
                                             </div>
                                             <div className="w-full flex items-center gap-1">
                                                 <p className="grow text-[9pt] fadedtext">총 부수입</p>
@@ -648,29 +661,29 @@ export function ChecklistStatue({
                                                     src="/icons/gold.png" 
                                                     alt="goldicon"
                                                     className="w-[14px] h-[14px]"/>
-                                                <p className="test-sm">{getAllContentOtherGold(bosses, checklist).toLocaleString()}</p>
+                                                <p className="test-sm">{getAllContentOtherGold(bosses, filteredChecklist).toLocaleString()}</p>
                                             </div>
                                             <div className="w-full flex items-center gap-1.5">
                                                 <p className="grow text-[9pt] fadedtext">콘텐츠 비율</p>
                                                 <div className="w-[9px] h-[9px] rounded-full bg-green-500"/>
-                                                <p className="test-sm">{getHaveSharedGolds(bosses, checklist) !== 0 ? Math.round(getAllContentGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 : 0}%</p>
+                                                <p className="test-sm">{getHaveSharedGolds(bosses, filteredChecklist) !== 0 ? Math.round(getAllContentGold(bosses, filteredChecklist) / getHaveGolds(bosses, filteredChecklist) * 1000) / 10 : 0}%</p>
                                             </div>
                                             <div className="w-full flex items-center gap-1.5">
                                                 <p className="grow text-[9pt] fadedtext">귀속 골드 비율</p>
                                                 <div className="w-[9px] h-[9px] rounded-full bg-yellow-500"/>
-                                                <p className="test-sm">{getHaveBoundGolds(bosses, checklist) !== 0 ? Math.round(getAllBoundGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 : 0}%</p>
+                                                <p className="test-sm">{getHaveBoundGolds(bosses, filteredChecklist) !== 0 ? Math.round(getAllBoundGold(bosses, filteredChecklist) / getHaveGolds(bosses, filteredChecklist) * 1000) / 10 : 0}%</p>
                                             </div>
                                             <div className="w-full flex items-center gap-1.5">
                                                 <p className="grow text-[9pt] fadedtext">부수입 비율</p>
                                                 <div className="w-[9px] h-[9px] rounded-full bg-purple-600"/>
-                                                <p className="test-sm">{getHaveGolds(bosses, checklist) !== 0 ? Math.round(getAllContentOtherGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 : 0}%</p>
+                                                <p className="test-sm">{getHaveGolds(bosses, filteredChecklist) !== 0 ? Math.round(getAllContentOtherGold(bosses, filteredChecklist) / getHaveGolds(bosses, filteredChecklist) * 1000) / 10 : 0}%</p>
                                             </div>
                                         </div>
-                                        {bosses.length && checklist.length ? (
+                                        {bosses.length && filteredChecklist.length ? (
                                             <div className="w-full h-2 bg-gray-200 rounded-full relative overflow-hidden mt-2">
                                                 <div className="absolute top-0 left-0 h-full bg-purple-600" style={{ width: '100%' }}></div>
-                                                <div className="absolute top-0 left-0 h-full bg-yellow-500" style={{ width: `${getHaveGolds(bosses, checklist) !== 0 ? Math.round(getAllContentGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 + Math.round(getAllBoundGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 : 0}%` }}></div>
-                                                <div className="absolute top-0 left-0 h-full bg-green-500" style={{ width: `${getHaveGolds(bosses, checklist) !== 0 ? Math.round(getAllContentGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 : 0}%` }}></div>
+                                                <div className="absolute top-0 left-0 h-full bg-yellow-500" style={{ width: `${getHaveGolds(bosses, filteredChecklist) !== 0 ? Math.round(getAllContentGold(bosses, filteredChecklist) / getHaveGolds(bosses, filteredChecklist) * 1000) / 10 + Math.round(getAllBoundGold(bosses, filteredChecklist) / getHaveGolds(bosses, filteredChecklist) * 1000) / 10 : 0}%` }}></div>
+                                                <div className="absolute top-0 left-0 h-full bg-green-500" style={{ width: `${getHaveGolds(bosses, filteredChecklist) !== 0 ? Math.round(getAllContentGold(bosses, filteredChecklist) / getHaveGolds(bosses, filteredChecklist) * 1000) / 10 : 0}%` }}></div>
                                             </div>
                                         ) : <></>}
                                     </div>

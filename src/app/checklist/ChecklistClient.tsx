@@ -143,6 +143,11 @@ export default function ChecklistClient() {
         <div className="min-h-[calc(100vh-65px)] p-5 w-full relative">
             <div className="w-full max-w-[1280px] mx-auto">
                 <ChecklistStatue 
+                    server={checklistForm.server}
+                    filterContent={checklistForm.filterContent}
+                    filterAccount={checklistForm.filterAccount}
+                    isRemainHomework={checklistForm.isRemainHomework}
+                    isShowGoldCharacter={checklistForm.isShowGoldCharacter}
                     checklist={checklist} 
                     bosses={checklistForm.bosses}
                     dispatch={dispatch}
