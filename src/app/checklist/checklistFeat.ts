@@ -1424,7 +1424,7 @@ export async function useOnClickAddItem(
             color: "danger"
         });
         dispatch(removeWeek({
-            characterIndex: characterIndex,
+            characterIndex: characterIndex, 
             checklist: prevChecklist
         }));
     }
