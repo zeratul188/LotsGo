@@ -2378,6 +2378,7 @@ function WeekContentComponent({
                                 items: items,
                                 busGold: 0
                             }
+                            setContent(new Set());
                             await useOnClickAddItem(checklist, index, addItem, dispatch, setLoadingAdd, bosses);
                         }
                     }}
