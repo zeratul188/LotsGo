@@ -1424,11 +1424,11 @@ export async function useOnClickAddItem(
             color: "danger"
         });
         dispatch(removeWeek({
-            characterIndex: characterIndex,
+            characterIndex: characterIndex, 
             checklist: prevChecklist
         }));
     }
-    setLoadingAdd(false);
+    setLoadingAdd(false); 
 }
 
 // 골드 받는 콘텐츠 개수 반환 함수

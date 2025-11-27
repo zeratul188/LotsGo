@@ -68,6 +68,33 @@ export default function ChecklistClient() {
         checklistForm.setAccounts(results);
     }, [checklist]);
 
+    let lastFetch = Date.now(); // 최근 새로고침 시점
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        // ⚠ PC에서는 자동 새로고침 안 하고 그냥 리턴
+        //const isMobileStatue = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        //if (!isMobileStatue) return;
+
+        const handleVisibility = () => {
+            if (document.visibilityState === 'visible') {
+                const now = Date.now();
+                if (now - lastFetch > 20 * 60 * 1000) {
+                    lastFetch = now;
+                    checklistForm.setLoading(true);
+                    loadChecklist(checklistForm.setLoading, dispatch, expedition, checklistForm.bosses, checklistForm.setLife, checklistForm.setBlessing, checklistForm.setMax, checklistForm.setBiweekly);
+                }
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibility);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibility);
+        }
+    }, [loadChecklist]);
+
     useEffect(() => {
         const auth = getAuth();
         onAuthStateChanged(auth, async (user) => {
@@ -143,6 +170,11 @@ export default function ChecklistClient() {
         <div className="min-h-[calc(100vh-65px)] p-5 w-full relative">
             <div className="w-full max-w-[1280px] mx-auto">
                 <ChecklistStatue 
+                    server={checklistForm.server}
+                    filterContent={checklistForm.filterContent}
+                    filterAccount={checklistForm.filterAccount}
+                    isRemainHomework={checklistForm.isRemainHomework}
+                    isShowGoldCharacter={checklistForm.isShowGoldCharacter}
                     checklist={checklist} 
                     bosses={checklistForm.bosses}
                     dispatch={dispatch}
