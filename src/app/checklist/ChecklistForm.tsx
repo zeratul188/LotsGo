@@ -574,7 +574,7 @@ export function ChecklistStatue({
                 <CardBody>
                     <div className="w-full grid grid-cols-1 md960:grid-cols-[4fr_1px_3fr_1px_3fr] gap-2">
                         <div className="w-full flex flex-col sm:flex-row items-center gap-2">
-                             <div className="grow">
+                             <div className="w-full grow">
                                 <Progress 
                                     aria-label="all-gold"
                                     size="md"
@@ -2380,7 +2380,6 @@ function WeekContentComponent({
                             }
                             await useOnClickAddItem(checklist, index, addItem, dispatch, setLoadingAdd, bosses);
                         }
-                        
                     }}
                     className={clsx(
                         "mt-4",
