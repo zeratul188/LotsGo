@@ -1186,7 +1186,6 @@ export function ChecklistComponent({
                                         className="min-w-full text-center">일일 콘텐츠</Chip>
                                     <RestCheckButton checklist={checklist} character={character} type="전선" dispatch={dispatch}/>
                                     <RestCheckButton checklist={checklist} character={character} type="가디언" dispatch={dispatch}/>
-                                    <RestCheckButton checklist={checklist} character={character} type="에포나" dispatch={dispatch}/>
                                     <div className="w-full pl-2.5">
                                         {character.daylist.map((item, idx) => (
                                             <div key={idx}>
