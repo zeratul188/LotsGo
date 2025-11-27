@@ -1428,7 +1428,7 @@ export async function useOnClickAddItem(
             checklist: prevChecklist
         }));
     }
-    setLoadingAdd(false);
+    setLoadingAdd(false); 
 }
 
 // 골드 받는 콘텐츠 개수 반환 함수

@@ -69,6 +69,27 @@ export default function ChecklistClient() {
     }, [checklist]);
 
     useEffect(() => {
+        if (typeof window === 'undefined') return;
+
+        // ⚠ PC에서는 자동 새로고침 안 하고 그냥 리턴
+        //const isMobileStatue = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        //if (!isMobileStatue) return;
+
+        const handleVisibility = () => {
+            if (document.visibilityState === 'visible') {
+                checklistForm.setLoading(true);
+                loadChecklist(checklistForm.setLoading, dispatch, expedition, checklistForm.bosses, checklistForm.setLife, checklistForm.setBlessing, checklistForm.setMax, checklistForm.setBiweekly);
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibility);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibility);
+        }
+    }, [loadChecklist]);
+
+    useEffect(() => {
         const auth = getAuth();
         onAuthStateChanged(auth, async (user) => {
             const loadCubes = async () => {
