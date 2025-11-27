@@ -68,6 +68,8 @@ export default function ChecklistClient() {
         checklistForm.setAccounts(results);
     }, [checklist]);
 
+    let lastFetch = 0; // 최근 새로고침 시점
+
     useEffect(() => {
         if (typeof window === 'undefined') return;
 
@@ -77,8 +79,12 @@ export default function ChecklistClient() {
 
         const handleVisibility = () => {
             if (document.visibilityState === 'visible') {
-                checklistForm.setLoading(true);
-                loadChecklist(checklistForm.setLoading, dispatch, expedition, checklistForm.bosses, checklistForm.setLife, checklistForm.setBlessing, checklistForm.setMax, checklistForm.setBiweekly);
+                const now = Date.now();
+                if (now - lastFetch > 10 * 60 * 1000) {
+                    lastFetch = now;
+                    checklistForm.setLoading(true);
+                    loadChecklist(checklistForm.setLoading, dispatch, expedition, checklistForm.bosses, checklistForm.setLife, checklistForm.setBlessing, checklistForm.setMax, checklistForm.setBiweekly);
+                }
             }
         };
 
