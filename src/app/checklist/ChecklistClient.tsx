@@ -68,7 +68,7 @@ export default function ChecklistClient() {
         checklistForm.setAccounts(results);
     }, [checklist]);
 
-    let lastFetch = 0; // 최근 새로고침 시점
+    let lastFetch = Date.now(); // 최근 새로고침 시점
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
