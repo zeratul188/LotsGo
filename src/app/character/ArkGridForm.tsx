@@ -20,7 +20,7 @@ export function ArkGridComponent( { file }: ArkGridComponentProps ) {
         <div className="w-full">
             <p className="fadedtext mb-2">장착 중인 아크 그리드 효과</p>
             <div className="w-full flex flex-wrap gap-2 mb-4">
-                {options.map((item, index) => (
+                {options.sort((a, b) => b.level - a.level).map((item, index) => (
                     <Tooltip key={index} showArrow content={item.description}>
                         <Chip
                             radius="sm"
