@@ -400,7 +400,7 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
                             'mt-2',
                             arkpassiveTitle ? 'flex' : 'hidden')
                         }>{arkpassiveTitle}</Chip>
-                    <p className="text-[#dddddd] text-sm mt-4">{profile.Title ? profile.Title : '-'}{profile.GuildName ?` · ${profile.GuildName} 길드` : ''}</p>
+                    <p className="text-[#dddddd] text-sm mt-4">{profile.Title ? getParsedText(profile.Title) : '-'}{profile.GuildName ?` · ${profile.GuildName} 길드` : ''}</p>
                     {isBadge ? (
                         <div className="flex gap-2 items-center">
                             <div className="tag-container-mobile mt-2">
