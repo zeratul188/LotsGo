@@ -139,6 +139,11 @@
             "job": "환수사",
             "img": "/character/classimgs/class27.jpg",
             "type": "default"
+        },
+        {
+            "job": "가디언나이트",
+            "img": "/character/classimgs/class29.jpg",
+            "type": "default"
         }
     ]
 }
