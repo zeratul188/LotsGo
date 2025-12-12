@@ -400,7 +400,7 @@ export function getAllGoldCharacter(
         .filter(item => item.isGold)
         .reduce((total, item) => total + getBossGold(bosses, item.name, item.items) + getBossBoundGold(bosses, item.name, item.items), 0) : 0;
     golds += character.checklist
-        .filter(item => item.busGold > 0)
+        .filter(item => item.busGold !== 0 && item.busGold)
         .reduce((total, item) => total + (item.busGold ?? 0), 0);
     return golds;
 }
@@ -414,7 +414,7 @@ export function getCompleteGoldCharacter(
         .filter(item => item.isGold)
         .reduce((total, item) => total + getBossCheckedGold(bosses, item.name, item.items) + getBossBoundCheckGold(bosses, item.name, item.items), 0) : 0;
     golds += character.checklist
-        .filter(item => item.busGold > 0)
+        .filter(item => item.busGold !== 0 && item.busGold)
         .reduce((total, item) => total + (isCheckHomework(item) ? item.busGold ?? 0 : 0), 0);
     return golds;
 }
@@ -428,7 +428,7 @@ export function getCompleteSharedGoldCharacter(
         .filter(item => item.isGold)
         .reduce((total, item) => total + getBossCheckedGold(bosses, item.name, item.items), 0) : 0;
     golds += character.checklist
-        .filter(item => item.busGold > 0)
+        .filter(item => item.busGold !== 0 && item.busGold)
         .reduce((total, item) => total + (isCheckHomework(item) ? item.busGold ?? 0 : 0), 0);
     return golds;
 }
@@ -461,7 +461,7 @@ export function getAllGolds(
     sum += checklist
         .reduce((total, character) => {
         const goldFromChecklist = character.checklist
-            .filter(item => item.busGold > 0)
+            .filter(item => item.busGold !== 0 && item.busGold)
             .reduce((total, item) => total + (item.busGold ?? 0), 0);
         return total + goldFromChecklist;
     }, 0);
@@ -488,7 +488,7 @@ export function getHaveGolds(
     sum += checklist
         .reduce((total, character) => {
         const goldFromChecklist = character.checklist
-            .filter(item => item.busGold > 0)
+            .filter(item => item.busGold !== 0 && item.busGold)
             .reduce((total, item) => total + (isCheckHomework(item) ? item.busGold ?? 0 : 0), 0);
         return total + goldFromChecklist;
     }, 0);
@@ -511,7 +511,7 @@ export function getHaveSharedGolds(
             .filter(item => item.isGold)
             .reduce((sum, item) => sum + getBossCheckedGold(bosses, item.name, item.items), 0);
         goldFromChecklist += character.checklist
-            .filter(item => item.busGold > 0)
+            .filter(item => item.busGold !== 0 && item.busGold)
             .reduce((total, item) => total + (isCheckHomework(item) ? item.busGold ?? 0 : 0), 0);
         return total + goldFromChecklist;
     }, 0);
@@ -1425,11 +1425,11 @@ export async function useOnClickAddItem(
             color: "danger"
         });
         dispatch(removeWeek({
-            characterIndex: characterIndex,
+            characterIndex: characterIndex, 
             checklist: prevChecklist
         }));
     }
-    setLoadingAdd(false);
+    setLoadingAdd(false); 
 }
 
 // 골드 받는 콘텐츠 개수 반환 함수

@@ -23,6 +23,7 @@ import {
     applyArmData, 
     applyColorElixir, 
     applyEquipment, 
+    applyOrbData, 
     applyStoneData, 
     ArkpassiveItem, 
     ArkpassivePoint, 
@@ -51,6 +52,10 @@ import {
     getGemSimpleTailName, 
     getObjectByArmorType, 
     getParsedText, 
+    getProgressColorByHonor, 
+    getProgressMaxByHonor, 
+    getProgressValueByHonor, 
+    getRemainHonor, 
     getSmallGradeByAccessory, 
     getSmallGradeByArm, 
     getSrcByGrade, 
@@ -66,6 +71,7 @@ import {
     loadEngraving, 
     loadGems, 
     loadStats, 
+    Orb, 
     printEngravingLevel, 
     Stat, 
     Stone 
@@ -341,7 +347,7 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
                         <Chip color="warning" variant="solid" radius="sm">{profile.CharacterClassName}</Chip>
                         <Chip color="primary" variant="solid" radius="sm" className={clsx(arkpassiveTitle ? 'flex' : 'hidden')}>{arkpassiveTitle}</Chip>
                     </div>
-                    <p className="fadedtext mt-4">{profile.Title ? profile.Title : '-'}{profile.GuildName ?` · ${profile.GuildName} 길드` : ''}</p>
+                    <p className="fadedtext mt-4">{profile.Title ? getParsedText(profile.Title) : '-'}{profile.GuildName ?` · ${profile.GuildName} 길드` : ''}</p>
                     {isBadge ? (
                         <div className="flex gap-2 items-center">
                             <div className="tag-container">
@@ -394,7 +400,7 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
                             'mt-2',
                             arkpassiveTitle ? 'flex' : 'hidden')
                         }>{arkpassiveTitle}</Chip>
-                    <p className="text-[#dddddd] text-sm mt-4">{profile.Title ? profile.Title : '-'}{profile.GuildName ?` · ${profile.GuildName} 길드` : ''}</p>
+                    <p className="text-[#dddddd] text-sm mt-4">{profile.Title ? getParsedText(profile.Title) : '-'}{profile.GuildName ?` · ${profile.GuildName} 길드` : ''}</p>
                     {isBadge ? (
                         <div className="flex gap-2 items-center">
                             <div className="tag-container-mobile mt-2">
@@ -522,6 +528,24 @@ function CombatPowerComponent({ file, combat }: CombatPowerComponentProps) {
                     <p className="grow fadedtext">최고 전투력</p>
                     <p>{combat.toLocaleString()}</p>
                 </div>
+                <div className="w-full flex gap-1 mt-2">
+                    <p className="grow fadedtext">명예 포인트</p>
+                    <p>{profile.HonorPoint.toLocaleString()}</p>
+                </div>
+                <Progress
+                    size="sm"
+                    color={getProgressColorByHonor(profile.HonorPoint)}
+                    value={getProgressValueByHonor(profile.HonorPoint)}
+                    maxValue={getProgressMaxByHonor(profile.HonorPoint)}
+                    className="w-full mt-2"/>
+                <p className="fadedtext text-[8pt] mt-2">다음 명예 등급까지 <span className="text-black dark:text-white font-bold text-[9pt]">{getRemainHonor(profile.HonorPoint)}</span> p 남음.</p>
+                <Divider className="mt-2 mb-2"/>
+                <p className="fadedtext mb-2">휘장</p>
+                <div className="w-full grid grid-cols-4 gap-2">
+                    {profile.Decorations.Emblems ? (profile.Decorations.Emblems as string[]).map((emblem, idx) => (
+                        <img key={idx} src={emblem} alt={`emblem-${idx}`} className="w-[50px] h-[50px]"/>
+                    )) : null}
+                </div>
             </CardBody>
         </Card>
     )
@@ -533,6 +557,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
     const [accessories, setAccessories] = useState<Accessory[]>([]);
     const [arm, setArm] = useState<Arm | null>(null);
     const [stone, setStone] = useState<Stone | null>(null);
+    const [orb, setOrb] = useState<Orb | null>(null);
     const equipment = file.equipment;
     const isMobile = useMobileQuery();
 
@@ -541,6 +566,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
         applyAccessories(equipment, setAccessories);
         applyArmData(equipment, setArm);
         applyStoneData(equipment, setStone);
+        applyOrbData(equipment, setOrb);
     }, []);
 
     return (
@@ -1049,6 +1075,20 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                 </PopoverContent>
                             </Popover>
                         ) : <></>}
+                        {orb ? (
+                            <div className="flex gap-2 mb-2 items-center">
+                                <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(orb.grade)}`}>
+                                    <img
+                                        src={orb.icon}
+                                        alt="stone-icon"
+                                        className="w-10 h-10"/>
+                                </div>
+                                <div className="grow">
+                                    <p className={`${getColorTextByGrade(orb.grade)} grow truncate`}>{orb.name}</p>
+                                    <p className="fadedtext text-[9pt]">{orb.grade} {orb.type}</p>
+                                </div>
+                            </div>
+                        ) : null}
                     </div>
                 </div>
             </CardBody>

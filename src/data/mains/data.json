@@ -1,5 +1,12 @@
 [
     {
+        "url": "/main/main6.webp",
+        "title": "분노의 복수자 : 가디언나이트",
+        "sub": "신규 클래스",
+        "color": "#a51e1e",
+        "isBlack": false
+    },
+    {
         "url": "/main/main5.webp",
         "title": "종막 : 카제로스",
         "sub": "카제로스 레이드",
@@ -12,12 +19,5 @@
         "sub": "카제로스 레이드",
         "color": "#3b219a",
         "isBlack": false
-    },
-    {
-        "url": "/main/main2.webp",
-        "title": "승리의 빛 : 발키리",
-        "sub": "신규 클래스",
-        "color": "#FFEB5A",
-        "isBlack": true
     }
 ]
