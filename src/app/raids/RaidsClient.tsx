@@ -82,6 +82,7 @@ export default function RaidsClient() {
                     setLoadingData={setLoadingData}/>
             ) : (
                 <PartyComponent
+                    userId={form.userId}
                     selectedParty={form.selectedParty}
                     bosses={form.bosses}/>
             )}

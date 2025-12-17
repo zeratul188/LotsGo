@@ -286,10 +286,11 @@ function ChecklistComponent({ members, bosses, party }: ChecklistComponentProps)
 
 // 파티 컴포넌트 
 type PartyComponentProps = {
+    userId: string| null,
     selectedParty: Raid | null,
     bosses: Boss[]
 }
-export function PartyComponent({ selectedParty, bosses }: PartyComponentProps) {
+export function PartyComponent({ userId, selectedParty, bosses }: PartyComponentProps) {
     const [isLoading, setLoading] = useState(true);
     const [members, setMembers] = useState<RaidMember[]>([]);
 
@@ -313,7 +314,7 @@ export function PartyComponent({ selectedParty, bosses }: PartyComponentProps) {
                         <ChecklistComponent members={members} bosses={bosses} party={selectedParty}/>
                     </Tab>
                     <Tab key="party" title="레이드 목록">
-                        <PartyRaidsComponent selectedParty={selectedParty} bosses={bosses}/>
+                        <PartyRaidsComponent userId={userId} members={members} selectedParty={selectedParty} bosses={bosses}/>
                     </Tab>
                     <Tab key="setting" title="파티 설정">
                         <ChecklistComponent members={members} bosses={bosses} party={selectedParty}/>

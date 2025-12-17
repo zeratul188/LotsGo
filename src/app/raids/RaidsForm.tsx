@@ -1,20 +1,23 @@
 import { useEffect, useState } from "react";
 import { Boss } from "../api/checklist/boss/route";
 import { Party, Raid } from "../api/raids/route";
-import { loadPartys } from "./raidsFeat";
+import { handleAddParty, isSelectedDifficulty, loadPartys } from "./raidsFeat";
 import { Button, DatePicker, Input, Modal, ModalBody, ModalContent, ModalHeader, Select, Selection, SelectItem, Tab, Tabs } from "@heroui/react";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
 import { DateValue, getLocalTimeZone, now } from "@internationalized/date";
 import CalendarIcon from "@/Icons/CalendarIcon";
 import { getBossesById, getDifficultyByStage, getWeekContents, getWeekStages } from "../checklist/checklistFeat";
 import { ControlStage } from "../checklist/ChecklistForm";
+import { RaidMember } from "../api/raids/members/route";
 
 // 파티 내 레이드 목록 컴포넌트
 type PartyRaidsComponentProps = {
+    userId: string | null,
+    members: RaidMember[],
     selectedParty: Raid | null,
     bosses: Boss[]
 }
-export function PartyRaidsComponent({selectedParty, bosses}: PartyRaidsComponentProps) {
+export function PartyRaidsComponent({userId, members, selectedParty, bosses}: PartyRaidsComponentProps) {
     const [partys, setPartys] = useState<Party[]>([]);
     const [results, setResults] = useState<Party[]>([]);
     const [searchContent, setSearchContent] = useState<Selection>(new Set([]));
@@ -100,7 +103,12 @@ export function PartyRaidsComponent({selectedParty, bosses}: PartyRaidsComponent
                     파티 추가
                 </Button>
             </div>
+            <div>
+                
+            </div>
             <AddPartyModal 
+                selectedParty={selectedParty}
+                userId={userId}
                 isOpenAdd={isOpenAdd}
                 setOpenAdd={setOpenAdd}
                 partys={partys}
@@ -112,17 +120,20 @@ export function PartyRaidsComponent({selectedParty, bosses}: PartyRaidsComponent
 
 // 파티 추가 Modal
 type AddPartyModalProps = {
+    selectedParty: Raid | null,
+    userId: string | null,
     isOpenAdd: boolean,
     setOpenAdd: SetStateFn<boolean>,
     partys: Party[],
     setPartys: SetStateFn<Party[]>,
     bosses: Boss[]
 }
-function AddPartyModal({ isOpenAdd, setOpenAdd, partys, setPartys, bosses }: AddPartyModalProps) {
+function AddPartyModal({ selectedParty, userId, isOpenAdd, setOpenAdd, partys, setPartys, bosses }: AddPartyModalProps) {
     const [name, setName] = useState('');
     const [selectDate, setSelectDate] = useState<DateValue | null>(now(getLocalTimeZone()));
     const [content, setContent] = useState<Selection>(new Set([]));
     const [stages, setStages] = useState<ControlStage[]>([]);
+    const [isLoadingAdd, setLoadingAdd] = useState(false);
     
     useEffect(() => {
         if (!Array.from(content)[0]) setStages([]);
@@ -221,8 +232,10 @@ function AddPartyModal({ isOpenAdd, setOpenAdd, partys, setPartys, bosses }: Add
                                     fullWidth
                                     radius="sm"
                                     color="primary"
-                                    isDisabled={name.trim() === '' || !Array.from(content)[0] || stages.length === 0}
-                                    className="mb-3 mt-4">
+                                    isLoading={isLoadingAdd}
+                                    isDisabled={name.trim() === '' || !Array.from(content)[0] || stages.length === 0 || isSelectedDifficulty(stages)}
+                                    className="mb-3 mt-4"
+                                    onPress={async () => await handleAddParty(userId, selectedParty, name, selectDate, Array.from(content)[0].toString(), stages, partys, setPartys, onClose, setLoadingAdd, getWeekContents(bosses, [], -1))}>
                                     추가
                                 </Button>
                             </div>
