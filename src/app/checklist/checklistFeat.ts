@@ -2669,7 +2669,7 @@ export function getBorderByStage(diff: string, isDisable: boolean): string {
     if (diff.includes('싱글')) return 'border-blue-400 dark:border-blue-600';
     else if (diff.includes('노말')) return 'border-green-600 dark:border-green-400';
     else if (diff.includes('하드')) return 'border-red-600 dark:border-red-400';
-    else if (diff.includes('더퍼스트')) return 'border-purple-600 dark:border-purple-400';
+    else if (diff.includes('더퍼스트') || diff.includes('나이트메어')) return 'border-purple-600 dark:border-purple-400';
     return 'border-yellow-600 dark:border-yellow-400';
 }
 
@@ -2679,7 +2679,7 @@ export function getBackgroundByStage(diff: string, isDisable: boolean): string {
     if (diff.includes('싱글')) return 'bg-blue-400 dark:bg-blue-600';
     else if (diff.includes('노말')) return 'bg-green-600 dark:bg-green-400';
     else if (diff.includes('하드')) return 'bg-red-600 dark:bg-red-400';
-    else if (diff.includes('더퍼스트')) return 'bg-purple-600 dark:bg-purple-400';
+    else if (diff.includes('더퍼스트') || diff.includes('나이트메어')) return 'bg-purple-600 dark:bg-purple-400';
     return 'bg-gray-600 dark:bg-gray-400';
 }
 
@@ -2689,7 +2689,7 @@ export function getBackground50ByStage(diff: string, isDisable: boolean): string
     if (diff.includes('싱글')) return 'bg-blue-400/50 dark:bg-blue-600/50 text-white';
     else if (diff.includes('노말')) return 'bg-green-600/50 dark:bg-green-400/50 text-white';
     else if (diff.includes('하드')) return 'bg-red-600/50 dark:bg-red-400/50 text-white';
-    else if (diff.includes('더퍼스트')) return 'bg-purple-600/50 dark:bg-purple-400/50 text-white';
+    else if (diff.includes('더퍼스트') || diff.includes('나이트메어')) return 'bg-purple-600/50 dark:bg-purple-400/50 text-white';
     return 'bg-gray-600/50 dark:bg-gray-400/50 text-white';
 }
 
@@ -2698,7 +2698,7 @@ export function getTextColorByDifficulty(diff: string): 'primary' | 'danger' | '
     if (diff.includes('싱글')) return 'primary';
     else if (diff.includes('노말')) return 'success';
     else if (diff.includes('하드')) return 'danger';
-    else if (diff.includes('더퍼스트')) return 'secondary';
+    else if (diff.includes('더퍼스트') || diff.includes('나이트메어')) return 'secondary';
     return 'default';
 }
 

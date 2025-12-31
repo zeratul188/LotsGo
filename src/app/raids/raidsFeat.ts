@@ -1,9 +1,10 @@
 import { dateValueToDate, SetStateFn } from "@/utiils/utils";
-import { Party, Raid } from "../api/raids/route";
+import { Party, Raid, TeamCharacter } from "../api/raids/route";
 import { ControlStage } from "../checklist/ChecklistForm";
 import { DateValue } from "@internationalized/date";
 import { addToast } from "@heroui/react";
-import { WeekContent } from "../checklist/checklistFeat";
+import { getWeekContents, WeekContent } from "../checklist/checklistFeat";
+import { Boss } from "../api/checklist/boss/route";
 
 // 파티 데이터 불러오기
 export function loadPartys(
@@ -34,8 +35,7 @@ export async function handleAddParty(
     partys: Party[],
     setPartys: SetStateFn<Party[]>,
     onClose: () => void,
-    setLoadingAdd: SetStateFn<boolean>,
-    weekContents: WeekContent[]
+    setLoadingAdd: SetStateFn<boolean>
 ) {
     setLoadingAdd(true);
     if (selectedParty) {
@@ -44,12 +44,11 @@ export async function handleAddParty(
         do {
             partyId = generateRandom12DigitString();
         } while (partys.some(p => p.id === partyId));
-        const contentName: string = weekContents.find(c => c.key === content)?.name ?? 'none';
         const party: Party = {
             id: partyId,
             name: name,
             date: dateValueToDate(date) ?? now,
-            content: contentName,
+            content: content,
             stages: stages,
             teams: []
         }
@@ -58,9 +57,8 @@ export async function handleAddParty(
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 type: 'add-party',
-                selectedParty: selectedParty,
+                partyId: selectedParty.id,
                 id: userId,
-                partys: partys,
                 addParty: party
             })
         });
@@ -96,3 +94,55 @@ export async function handleAddParty(
 function generateRandom12DigitString(): string {
     return Math.floor(100000000000 + Math.random() * 900000000000).toString();
 }
+
+// 보스 이름 가져오기
+export function getBossById(bosses: Boss[], contentId: string): WeekContent | null {
+    return getWeekContents(bosses, [], -1).find(c => c.key === contentId) ?? null;
+}
+
+// 레이드 날짜 문자열 표기
+export function toStringByRaidDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = date.getMonth()+1;
+    const day = date.getDate();
+    const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
+    const weekDay = weekdays[date.getDay()];
+    const hour24 = date.getHours();
+    const min = date.getMinutes();
+    const period = hour24 < 12 ? '오전' : '오후';
+    const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+    return `${year}년 ${month}월 ${day}일 ${weekDay}요일 ${period} ${hour12}시 ${min !== 0 ? `${min}분` : ''}`;
+}
+
+// 이미 파티에 참여했는지 파악 여부
+export function isExistPartyMember(userId: string | null, teams: TeamCharacter[]): boolean {
+    if (!userId) return true;
+    return teams.some(member => member.userId === userId);
+}
+
+// 체크박스 리스트
+export type InvolvedCharacter = {
+    nickname: string,
+    level: number,
+    server: string,
+    job: string,
+    isDisable: boolean
+}
+type InvolvedSource = Pick<
+    InvolvedCharacter,
+    "nickname" | "job" | "level" | "server"
+>
+
+// 원정대 혹은 체크리스트 데이터 리스트 -> 체크박스 리스트
+export function toCheckData<T extends InvolvedSource>(list: T[], maxLevel: number): InvolvedCharacter[] {
+    return list.map(({nickname, job, level, server}) => {
+        const isDisable = level < maxLevel;
+        return { nickname, job, level, server, isDisable: isDisable }
+        
+    });
+}
+
+// 컨텐츠 ID로 콘텐츠 데이터 가져오기
+export function getBossDataById(bosses: Boss[], id: string): Boss | null {
+    return bosses.find(b => b.id === id) ?? null;
+} 

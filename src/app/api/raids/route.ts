@@ -1,6 +1,6 @@
 import { ControlStage } from "@/app/checklist/ChecklistForm"
 import { firestore } from "@/utiils/firebase"
-import { addDoc, collection, doc, documentId, getDocs, limit, query, updateDoc, where } from "firebase/firestore"
+import { addDoc, arrayUnion, collection, doc, documentId, getDoc, getDocs, limit, query, updateDoc, where } from "firebase/firestore"
 import { NextRequest, NextResponse } from "next/server"
 
 // 파티 인원
@@ -88,6 +88,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const id = body.id;
     let selectedParty: Raid | null = null;
+    let partyId: string | null = null;
 
     try {
         switch(body.type) {
@@ -162,28 +163,25 @@ export async function POST(req: NextRequest) {
                 });
                 return NextResponse.json({ message: '데이터 수정이 정상적으로 처리되었습니다.' }, { status: 200 });
             case 'add-party':
-                selectedParty = body.selectedParty;
-                const partys: Party[] = body.partys;
+                partyId = body.partyId;
                 const addParty: Party = body.addParty;
 
-                if (!selectedParty) {
+                if (!partyId) {
                     return NextResponse.json({ error: 'Not found a raid with a specific ID.' }, { status: 300 });
                 } else {
-                    const arq = query(collection(firestore, 'raids'), where(documentId(), '==', selectedParty.id), limit(1));
-                    const ass = await getDocs(arq);
+                    const arq = doc(firestore, "raids", partyId);
+                    const ass = await getDoc(arq);
 
-                    if (ass.empty) {
+                    if (!ass.exists()) {
                         return NextResponse.json({ error: 'Not found a raid with a specific ID.' }, { status: 300 });
                     }
 
-                    partys.push(addParty);
-                    const atd = ass.docs[0];
-                    const arRef = doc(firestore, 'raids', atd.id);
-                    await updateDoc(arRef, {
-                        party: partys
-                    });
+                    await updateDoc(arq, { party: arrayUnion(addParty) });
                     return NextResponse.json({ message: '데이터 수정이 정상적으로 처리되었습니다.' }, { status: 200 });
                 }
+            case 'involved-party':
+                partyId = body.partyId;
+                const teamCharacter: TeamCharacter = body.teamCharacter;
             default: 
                 return NextResponse.json({ message: '처리 종류를 선택하지 않았습니다.' }, { status: 400 });
         }
