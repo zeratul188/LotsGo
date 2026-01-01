@@ -138,6 +138,7 @@ function BossComponent() {
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [inputName, setInputName] = useState('');
     const [inputSimple, setInputSimple] = useState('');
+    const [inputMax, setInputMax] = useState(0);
     const [inputs, setInputs] = useState<Difficulty[]>([]);
     const [isEditMode, setEditMode] = useState(false);
     const [editIndex, setEditIndex] = useState(-1);
@@ -191,7 +192,7 @@ function BossComponent() {
                                 <CardHeader>
                                     <div className="w-full flex gap-2 items-center">
                                         <h2 className="grow text-xl font-bold">{item.name}</h2>
-                                        <p className="fadedtext text-sm">{item.simple}</p>
+                                        <p className="fadedtext text-sm">{item.max}인 | {item.simple}</p>
                                     </div>
                                 </CardHeader>
                                 <Divider/>
@@ -233,7 +234,7 @@ function BossComponent() {
                                     <div className="w-full flex gap-4">
                                         <div className="grow-1"/>
                                         <Button color="danger" onPress={async () => await onClickRemove(index, boss, setBoss)}>삭제</Button>
-                                        <Button color="primary" onPress={() => onClickEdit(index, setEditMode, setEditIndex, onOpen, boss[index], setInputName, setInputSimple, setInputs)}>수정</Button>
+                                        <Button color="primary" onPress={() => onClickEdit(index, setEditMode, setEditIndex, onOpen, boss[index], setInputName, setInputSimple, setInputMax, setInputs)}>수정</Button>
                                     </div>
                                 </CardFooter>
                             </Card>
@@ -260,12 +261,23 @@ function BossComponent() {
                                     placeholder="군단장 레이드 - 카멘"
                                     value={inputName}
                                     onValueChange={setInputName}/>
-                                <Input
-                                    label="간단 콘텐츠 명"
-                                    labelPlacement="outside"
-                                    placeholder="카멘"
-                                    value={inputSimple}
-                                    onValueChange={setInputSimple}/>
+                                <div className="w-full grid sm:grid-cols-[2fr_1fr] gap-2">
+                                    <Input
+                                        label="간단 콘텐츠 명"
+                                        labelPlacement="outside"
+                                        placeholder="카멘"
+                                        value={inputSimple}
+                                        onValueChange={setInputSimple}/>
+                                    <NumberInput
+                                        label="최대 인원"
+                                        labelPlacement="outside"
+                                        placeholder="0 ~ 99"
+                                        minValue={0}
+                                        maxValue={99}
+                                        step={1}
+                                        value={inputMax}
+                                        onValueChange={setInputMax}/>
+                                </div>
                                 <div className="max-h-[500px] overflow-y-auto">
                                     {inputs.map((input: Difficulty, index: number) => (
                                         <div key={index} className="mt-4">
@@ -347,7 +359,7 @@ function BossComponent() {
                             <Divider/>
                             <ModalFooter>
                                 <Button color="default" variant="light" onPress={onClose}>취소</Button>
-                                <Button color="primary" onPress={async () => await useOnAddData(inputName, inputSimple, inputs, onClose, boss, setBoss, isEditMode, editIndex)}>{isEditMode ? '수정' : '추가'}</Button>
+                                <Button color="primary" onPress={async () => await useOnAddData(inputName, inputSimple, inputMax, inputs, onClose, boss, setBoss, isEditMode, editIndex)}>{isEditMode ? '수정' : '추가'}</Button>
                             </ModalFooter>
                         </>
                     )}
