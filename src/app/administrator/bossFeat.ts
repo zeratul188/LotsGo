@@ -84,11 +84,13 @@ export function useClearData(
     setInputSimple: SetStateFn<string>, 
     setInputs: SetStateFn<Difficulty[]>,
     setEditMode: SetStateFn<boolean>,
-    setEditIndex: SetStateFn<number>
+    setEditIndex: SetStateFn<number>,
+    setInputMax: SetStateFn<number>
 ) {
     return () => {
         setInputName('');
         setInputSimple('');
+        setInputMax(0);
         setInputs([]);
         setEditMode(false);
         setEditIndex(-1);
@@ -196,6 +198,7 @@ export async function useOnAddData(
             const newBoss: Boss = {
                 name: inputName,
                 simple: inputSimple,
+                max: inputMax,
                 difficulty: inputs,
                 max: inputMax,
                 id: addRef.id

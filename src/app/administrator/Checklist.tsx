@@ -154,7 +154,7 @@ function BossComponent() {
         onValueChangeBonus,
         onValueChangeOnce
     } = useInputHandlers(inputs, setInputs);
-    const onCloseModal = useClearData(setInputName, setInputSimple, setInputs, setEditMode, setEditIndex);
+    const onCloseModal = useClearData(setInputName, setInputSimple, setInputs, setEditMode, setEditIndex, setInputMax);
 
     useEffect(() => {
         const fetchBoss = async () => {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-
+import { DateValue } from "@internationalized/date";
 
 export type SetStateFn<T> = React.Dispatch<React.SetStateAction<T>>;
 
@@ -63,4 +63,10 @@ export function getBackgroundRightByGrade(grade: string): string {
         case '에스더': return "bgc-special-r";
     }
     return "bgc-nothing";
+}
+
+// DateValue 객체를 Date 객체로 변환
+export function dateValueToDate(date: DateValue | null): Date | null {
+    if (!date) return null;
+    return date.toDate("Asia/Seoul"); // 서울 타임존으로 변경
 }

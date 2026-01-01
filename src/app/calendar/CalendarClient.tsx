@@ -1,12 +1,11 @@
 'use client'
 import { useEffect } from "react";
-import { NotLoginedComponent, useCalendarForm, WeekComponent } from "./CalendarForm"
+import { useCalendarForm, WeekComponent } from "./CalendarForm"
 import { addToast, Divider } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { loadBosses, loadGuild, loadWorks, removeAutoCalendarsByGuild, removeAutoCalendarsByWorks } from "./calendarFeat";
 import { getAuth, onAuthStateChanged } from "firebase/auth";import BigComponent from "./CalendarForm";
 import { checkLogin } from "../checklist/checklistFeat";
-import Script from "next/script";
 
 export default function CalendarClient() {
     const calendarForm = useCalendarForm();

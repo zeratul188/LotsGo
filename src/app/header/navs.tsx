@@ -22,6 +22,7 @@ import CharacterIcon from "@/Icons/CharacterIcon";
 import { useRouter } from "next/navigation";
 import AddonIcon from "@/Icons/AddonIcon";
 import GuideBookIcon from "@/Icons/GuidIcon";
+import RaidIcon from "@/Icons/RaidIcon";
 
 // 헤더 메뉴
 const menuItems = [
@@ -46,9 +47,9 @@ const menuItems = [
         icon: <AddonIcon className="w-6 h-6"/>
     },
     {
-        item: "가이드",
-        link: '/about',
-        icon: <GuideBookIcon className="w-6 h-6"/>
+        item: "파티",
+        link: '/raids',
+        icon: <RaidIcon size={24}/>
     }
 ];
 // 헤더 메뉴 - 로그인한 상태
@@ -221,8 +222,8 @@ export function NavContents() {
                 </Link>
             </NavbarItem>
             <NavbarItem>
-                <Link color="foreground" href="/about">
-                    가이드
+                <Link color="foreground" href="/raids">
+                    파티
                 </Link>
             </NavbarItem>
         </>
