@@ -200,7 +200,6 @@ export async function useOnAddData(
                 simple: inputSimple,
                 max: inputMax,
                 difficulty: inputs,
-                max: inputMax,
                 id: addRef.id
             }
             setBoss([...(boss || []), newBoss]);
