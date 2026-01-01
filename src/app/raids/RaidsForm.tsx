@@ -247,12 +247,14 @@ function InvolvedModal({ partyId, members, userId, bosses, partys, selectedParty
     const [selectedCharacter, setSelectedCharacter] = useState<InvolvedCharacter | null>(null);
 
     useEffect(() => {
-        if (party) {
-            setHaveManager(party.teams.some(t => t.isManager));
-            const findBoss = getBossDataById(bosses, party?.content ?? 'null');
-            if (findBoss) {
-                setMaxLength(findBoss.max);
-            }
+        console.log("party statue : ", party);
+        if (!party) return;
+        console.log("party name : ", party.name);
+        setHaveManager(party.teams.some(t => t.isManager));
+        const findBoss = getBossDataById(bosses, party?.content ?? 'null');
+        console.log(findBoss);
+        if (findBoss) {
+            setMaxLength(findBoss.max);
         }
     }, [party]);
     
@@ -344,7 +346,7 @@ function InvolvedModal({ partyId, members, userId, bosses, partys, selectedParty
                                     해당 파티를 공대장으로 참여합니다.
                                 </Checkbox>
                             </Tooltip>
-                            <p>총 {maxLength}명 중 {0}명이 참여하였습니다.</p>
+                            <p>총 {maxLength ?? 0}명 중 {0}명이 참여하였습니다.</p>
                         </ModalBody>
                         <ModalFooter>
                             <Button
