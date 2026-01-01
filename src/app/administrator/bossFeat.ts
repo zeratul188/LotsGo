@@ -16,7 +16,7 @@ export async function loadBoss(
             id: doc.id,
             name: doc.data().name,
             simple: doc.data().simple ? doc.data().simple : '',
-            max: doc.data().max ? doc.data().max : '',
+            max: doc.data().max ?? 0,
             difficulty: doc.data().difficulty.map((d: any) => ({
                 difficulty: d.difficulty,
                 stage: d.stage ?? 0,
@@ -138,7 +138,21 @@ export async function useOnAddData(
     } else if (isEmptyValue(inputs)) {
         addToast({
             title: "내용 없음",
-            description: `난이도의 내용용이 비어있습니다. 입력 후 다시 시도해주세요.`,
+            description: `난이도의 내용이 비어있습니다. 입력 후 다시 시도해주세요.`,
+            color: "danger"
+        });
+        return;
+    } else if (isEmptyValue(inputs)) {
+        addToast({
+            title: "내용 없음",
+            description: `난이도의 내용이 비어있습니다. 입력 후 다시 시도해주세요.`,
+            color: "danger"
+        });
+        return;
+    } else if (isNaN(inputMax)) {
+        addToast({
+            title: "내용 없음",
+            description: `최대 인원의 내용이 비어있습니다. 입력 후 다시 시도해주세요.`,
             color: "danger"
         });
         return;
@@ -147,6 +161,7 @@ export async function useOnAddData(
     const inputBoss = {
         name: inputName,
         simple: inputSimple,
+        max: inputMax,
         difficulty: inputs
     }
     if (isEditMode) {
@@ -185,6 +200,7 @@ export async function useOnAddData(
                 simple: inputSimple,
                 max: inputMax,
                 difficulty: inputs,
+                max: inputMax,
                 id: addRef.id
             }
             setBoss([...(boss || []), newBoss]);
@@ -209,8 +225,8 @@ export function onClickEdit(
     selectBoss: Boss,
     setInputName: SetStateFn<string>,
     setInputSimple: SetStateFn<string>,
-    setInputs: SetStateFn<Difficulty[]>,
-    setInputMax: SetStateFn<number>
+    setInputMax: SetStateFn<number>,
+    setInputs: SetStateFn<Difficulty[]>
 ) {
     setEditMode(true);
     setEditIndex(index);

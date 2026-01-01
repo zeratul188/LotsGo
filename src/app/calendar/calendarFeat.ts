@@ -98,7 +98,7 @@ export async function loadBosses(setBosses: SetStateFn<Boss[]>) {
         id: doc.id,
         name: doc.data().name,
         simple: doc.data().simple ? doc.data().simple : '',
-        max: doc.data().max ? doc.data().max : 0,
+        max: doc.data().max ?? 0,
         difficulty: doc.data().difficulty
     }));
     setBosses(bosses);

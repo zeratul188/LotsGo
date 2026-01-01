@@ -349,7 +349,7 @@ export async function getBosses(): Promise<Boss[]> {
         id: doc.id,
         name: doc.data().name,
         simple: doc.data().simple ? doc.data().simple : '',
-        max: doc.data().max,
+        max: doc.data().max ?? 0,
         difficulty: doc.data().difficulty
     }));
     return bosses;

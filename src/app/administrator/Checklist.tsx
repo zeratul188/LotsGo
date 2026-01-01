@@ -192,9 +192,7 @@ function BossComponent() {
                                 <CardHeader>
                                     <div className="w-full flex gap-2 items-center">
                                         <h2 className="grow text-xl font-bold">{item.name}</h2>
-                                        <p className="fadedtext text-sm">{item.simple}</p>
-                                        <Divider orientation="vertical" className="h-5"/>
-                                        <p className="fadedtext text-sm">{item.max}인</p>
+                                        <p className="fadedtext text-sm">{item.max}인 | {item.simple}</p>
                                     </div>
                                 </CardHeader>
                                 <Divider/>
@@ -236,7 +234,7 @@ function BossComponent() {
                                     <div className="w-full flex gap-4">
                                         <div className="grow-1"/>
                                         <Button color="danger" onPress={async () => await onClickRemove(index, boss, setBoss)}>삭제</Button>
-                                        <Button color="primary" onPress={() => onClickEdit(index, setEditMode, setEditIndex, onOpen, boss[index], setInputName, setInputSimple, setInputs, setInputMax)}>수정</Button>
+                                        <Button color="primary" onPress={() => onClickEdit(index, setEditMode, setEditIndex, onOpen, boss[index], setInputName, setInputSimple, setInputMax, setInputs)}>수정</Button>
                                     </div>
                                 </CardFooter>
                             </Card>
@@ -263,7 +261,7 @@ function BossComponent() {
                                     placeholder="군단장 레이드 - 카멘"
                                     value={inputName}
                                     onValueChange={setInputName}/>
-                                <div className="w-full grid sm:grid-cols-2 gap-2">
+                                <div className="w-full grid sm:grid-cols-[2fr_1fr] gap-2">
                                     <Input
                                         label="간단 콘텐츠 명"
                                         labelPlacement="outside"
@@ -271,7 +269,7 @@ function BossComponent() {
                                         value={inputSimple}
                                         onValueChange={setInputSimple}/>
                                     <NumberInput
-                                        label="인원수"
+                                        label="최대 인원"
                                         labelPlacement="outside"
                                         placeholder="0 ~ 99"
                                         minValue={0}

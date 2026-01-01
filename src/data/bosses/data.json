@@ -272,6 +272,34 @@
         ]
     },
     {
+        "id": "NQ18uuFRKDrxXxoZcBgL",
+        "name": "카멘 익스트림",
+        "simple": "카멘 익스트림",
+        "max": 8,
+        "difficulty": [
+            {
+                "difficulty": "노말",
+                "stage": 1,
+                "level": 1690,
+                "isBiweekly": false,
+                "gold": 15000,
+                "boundGold": 0,
+                "bonus": 0,
+                "isOnce": true
+            },
+            {
+                "difficulty": "하드",
+                "stage": 1,
+                "level": 1720,
+                "isBiweekly": false,
+                "gold": 30000,
+                "boundGold": 0,
+                "bonus": 0,
+                "isOnce": true
+            }
+        ]
+    },
+    {
         "id": "ZF7S7pHdOGCi5LB3ESpn",
         "name": "카제로스 레이드 - 3막 모르둠",
         "simple": "3막 모르둠",
