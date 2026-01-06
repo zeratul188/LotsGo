@@ -2,13 +2,15 @@ import { SetStateFn } from "@/utiils/utils";
 import { Raid } from "../api/raids/route";
 import { decrypt, encrypt } from "@/utiils/crypto";
 import { addToast } from "@heroui/react";
+import type { AppDispatch } from "../store/store";
+import { addRaid, initialRaids } from "../store/partySlice";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
 // 파티 목록 데이터 가져오기
 export async function loadRaids(
+    dispatch: AppDispatch,
     userId: string | null,
-    setRaids: SetStateFn<Raid[]>,
     setJoinRaids: SetStateFn<Raid[]>
 ) {
     const fetchLink = userId ? `/api/raids?id=${userId}` : `/api/raids`
@@ -22,18 +24,18 @@ export async function loadRaids(
         return;
     }
     const data = await res.json();
-    setRaids(data.raids);
+    dispatch(initialRaids(data.raids));
     setJoinRaids(data.joinRaids);
 }
 
 // 파티 추가 이벤트
 export async function handleAddRaid(
+    dispatch: AppDispatch,
     name: string,
     isOpen: boolean,
     isPwd: boolean,
     pwd: string,
     raids: Raid[],
-    setRaids: SetStateFn<Raid[]>,
     onClose: () => void,
     userId: string | null,
     setLoadingAdd: SetStateFn<boolean>,
@@ -77,9 +79,7 @@ export async function handleAddRaid(
     const data = await res.json();
     const raidId = data.id;
     newRaid.id = raidId;
-    const cloneRaids = structuredClone(raids);
-    cloneRaids.push(newRaid);
-    setRaids(cloneRaids);
+    dispatch(addRaid(newRaid));
     const cloneJoinRaids = structuredClone(joinRaids);
     cloneJoinRaids.push(newRaid);
     setJoinRaids(cloneJoinRaids);

@@ -18,8 +18,8 @@ import { useEffect, useState } from "react";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
 import clsx from "clsx";
 import { handleAddRaid, handleJoinParty, handleJoinPrivateParty, isInvitedParty, joinPublicParty } from "./raidListFeat";
-import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../store/store";
 import { LoadingComponent } from "../UtilsCompnents";
 import { Character } from "../store/loginSlice";
 import LeaderIcon from "@/Icons/LeaderIcon";
@@ -27,15 +27,12 @@ import LockerIcon from "@/Icons/LockerIcon";
 
 // 파티 찾기 컴포넌트
 type FindComponentProps = {
-    raids: Raid[],
-    setRaids: SetStateFn<Raid[]>,
-    userId: string | null,
     joinRaids: Raid[],
     setJoinRaids: SetStateFn<Raid[]>,
     isLoadingData: boolean,
     setLoadingData: SetStateFn<boolean>
 }
-export function FindComponent({ raids, setRaids, userId, joinRaids, setJoinRaids, isLoadingData, setLoadingData }: FindComponentProps) {
+export function FindComponent({ joinRaids, setJoinRaids, isLoadingData, setLoadingData }: FindComponentProps) {
     const [results, setResults] = useState<Raid[]>([]);
     const [searchValue, setSearchValue] = useState('');
     const isMobile = useMobileQuery();
@@ -46,6 +43,8 @@ export function FindComponent({ raids, setRaids, userId, joinRaids, setJoinRaids
     const [selectedRaid, setSelectedRaid] = useState<Raid | null>(null);
     const [isLoadingJoin, setLoadingJoin] = useState<{ [id: string]: boolean }>({});
     const rowsPerPage = 30;
+    const raids = useSelector((state: RootState) => state.party.raids);
+    const userId = useSelector((state: RootState) => state.party.userId);
 
     useEffect(() => {
         const searchRaids: Raid[] = [];
@@ -197,7 +196,6 @@ export function FindComponent({ raids, setRaids, userId, joinRaids, setJoinRaids
                 isOpen={isOpen} 
                 onOpenChange={onOpenChange} 
                 raids={raids} 
-                setRaids={setRaids} 
                 userId={userId}
                 joinRaids={joinRaids}
                 setJoinRaids={setJoinRaids}/>
@@ -366,12 +364,11 @@ type AddPartyModalProps = {
     isOpen: boolean,
     onOpenChange: () => void,
     raids: Raid[],
-    setRaids: SetStateFn<Raid[]>,
     userId: string | null,
     joinRaids: Raid[],
     setJoinRaids: SetStateFn<Raid[]>
 }
-function AddPartyModal({ isOpen, onOpenChange, raids, setRaids, userId, joinRaids, setJoinRaids }: AddPartyModalProps) {
+function AddPartyModal({ isOpen, onOpenChange, raids, userId, joinRaids, setJoinRaids }: AddPartyModalProps) {
     const [inputName, setInputName] = useState("");
     const [selectedPwd, setSelectedPwd] = useState('yes');
     const [selectedOpen, setSelectedOpen] = useState('yes');
@@ -381,6 +378,7 @@ function AddPartyModal({ isOpen, onOpenChange, raids, setRaids, userId, joinRaid
     const expeditions: Character[] = useSelector((state: RootState) => state.login.user.expedition);
     const findCharacter = expeditions.find(character => character.nickname === titleCharacter);
     const level = findCharacter ? findCharacter.level : 0;
+    const dispatch = useDispatch<AppDispatch>();
 
     return (
         <Modal 
@@ -451,7 +449,7 @@ function AddPartyModal({ isOpen, onOpenChange, raids, setRaids, userId, joinRaid
                                     isLoading={isLoadingAdd}
                                     isDisabled={inputName.trim() === '' || (selectedPwd === 'no' && inputPwd.trim() === '')}
                                     radius="sm"
-                                    onPress={async () => await handleAddRaid(inputName, selectedOpen === 'yes', selectedPwd === 'no', inputPwd, raids, setRaids, onClose, userId, setLoadingAdd, titleCharacter, joinRaids, setJoinRaids, level)}>
+                                    onPress={async () => await handleAddRaid(dispatch, inputName, selectedOpen === 'yes', selectedPwd === 'no', inputPwd, raids, onClose, userId, setLoadingAdd, titleCharacter, joinRaids, setJoinRaids, level)}>
                                     추가
                                 </Button>
                             </div>

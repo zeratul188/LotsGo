@@ -6,18 +6,20 @@ import { Boss } from "../api/checklist/boss/route";
 import { collection, getDocs } from "firebase/firestore";
 import { firestore } from "@/utiils/firebase";
 import { Character } from "../signup/signupFeat";
+import type { AppDispatch } from "../store/store";
+import { changeSelectedRaid } from "../store/partySlice";
 
 // 선택한 파티 적용 함수
 export function applyChangeParty(
     selectedKey: string,
     raids: Raid[],
-    setSelectedParty: SetStateFn<Raid | null>
+    dispatch: AppDispatch
 ) {
     const findRaid = raids.find(raid => raid.id === selectedKey);
     if (findRaid) {
-        setSelectedParty(findRaid);
+        dispatch(changeSelectedRaid(findRaid));
     } else {
-        setSelectedParty(null);
+        dispatch(changeSelectedRaid(null));
     }
 }
 

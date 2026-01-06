@@ -12,15 +12,15 @@ import { RaidMember } from "../api/raids/members/route";
 import { SettingIcon } from "../icons/SettingIcon";
 import clsx from "clsx";
 import data from "@/data/characters/data.json";
+import { useSelector } from "react-redux";
+import { RootState } from "../store/store";
 
 // 파티 내 레이드 목록 컴포넌트
 type PartyRaidsComponentProps = {
-    userId: string | null,
     members: RaidMember[],
-    selectedParty: Raid | null,
     bosses: Boss[]
 }
-export function PartyRaidsComponent({userId, members, selectedParty, bosses}: PartyRaidsComponentProps) {
+export function PartyRaidsComponent({members, bosses}: PartyRaidsComponentProps) {
     const [partys, setPartys] = useState<Party[]>([]);
     const [results, setResults] = useState<Party[]>([]);
     const [searchContent, setSearchContent] = useState<Selection>(new Set([]));
@@ -31,6 +31,9 @@ export function PartyRaidsComponent({userId, members, selectedParty, bosses}: Pa
     const [isOpenInvolved, setOpenInvolved] = useState(false);
     const [partyId, setPartyId] = useState<string | null>(null);
     const [isLoadingRefresh, setLoadingRefresh] = useState(false);
+
+    const selectedParty = useSelector((state: RootState) => state.party.selectedRaid);
+    const userId = useSelector((state: RootState) => state.party.userId);
 
     useEffect(() => {
         loadPartys(selectedParty, setPartys, setResults);
@@ -247,12 +250,9 @@ function InvolvedModal({ partyId, members, userId, bosses, partys, selectedParty
     const [selectedCharacter, setSelectedCharacter] = useState<InvolvedCharacter | null>(null);
 
     useEffect(() => {
-        console.log("party statue : ", party);
         if (!party) return;
-        console.log("party name : ", party.name);
         setHaveManager(party.teams.some(t => t.isManager));
         const findBoss = getBossDataById(bosses, party?.content ?? 'null');
-        console.log(findBoss);
         if (findBoss) {
             setMaxLength(findBoss.max);
         }

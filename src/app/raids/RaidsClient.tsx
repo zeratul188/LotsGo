@@ -9,22 +9,19 @@ import { applyChangeParty, loadBosses } from "./partyFeat";
 import { PartyComponent } from "./PartyForm";
 import { Boss } from "../api/checklist/boss/route";
 import { useMobileQuery } from "@/utiils/utils";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "../store/store";
+import { changeUserId } from "../store/partySlice";
 
 // state 관리
 function raidsForm() {
     const [selectedKey, setSelectedKey] = useState<string>('find');
-    const [raids, setRaids] = useState<Raid[]>([]);
-    const [userId, setUserId] = useState<string | null>(null);
     const [joinRaids, setJoinedRaids] = useState<Raid[]>([]);
-    const [selectedParty, setSelectedParty] = useState<Raid | null>(null);
     const [bosses, setBosses] = useState<Boss[]>([]);
 
     return {
         selectedKey, setSelectedKey,
-        raids, setRaids,
-        userId, setUserId,
         joinRaids, setJoinedRaids,
-        selectedParty, setSelectedParty,
         bosses, setBosses
     }
 }
@@ -33,6 +30,8 @@ export default function RaidsClient() {
     const form = raidsForm();
     const [isLoadingData, setLoadingData] = useState(true);
     const isMobile = useMobileQuery();
+    const dispatch = useDispatch<AppDispatch>();
+    const raids = useSelector((state: RootState) => state.party.raids);
 
     useEffect(() => {
         const userStr = localStorage.getItem('user');
@@ -41,10 +40,10 @@ export default function RaidsClient() {
         if (storedUser) {
             const id = storedUser.id;
             userId = id;
-            form.setUserId(id);
+            dispatch(changeUserId(id));
         }
         const loadData = async () => {
-            const pRaids = await loadRaids(userId, form.setRaids, form.setJoinedRaids);
+            const pRaids = await loadRaids(dispatch, userId, form.setJoinedRaids);
             const pBosses = await loadBosses(form.setBosses);
             await Promise.all([pRaids, pBosses]);
             setLoadingData(false);
@@ -53,7 +52,7 @@ export default function RaidsClient() {
     }, []);
 
     useEffect(() => {
-        applyChangeParty(form.selectedKey, form.raids, form.setSelectedParty);
+        applyChangeParty(form.selectedKey, raids, dispatch);
     }, [form.selectedKey])
 
     return (
@@ -73,17 +72,12 @@ export default function RaidsClient() {
             </div>
             {form.selectedKey === 'find' ? (
                 <FindComponent 
-                    raids={form.raids} 
-                    setRaids={form.setRaids} 
-                    userId={form.userId}
                     joinRaids={form.joinRaids}
                     setJoinRaids={form.setJoinedRaids}
                     isLoadingData={isLoadingData}
                     setLoadingData={setLoadingData}/>
             ) : (
                 <PartyComponent
-                    userId={form.userId}
-                    selectedParty={form.selectedParty}
                     bosses={form.bosses}/>
             )}
         </div>

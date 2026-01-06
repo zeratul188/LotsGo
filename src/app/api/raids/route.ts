@@ -87,7 +87,6 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     const body = await req.json();
     const id = body.id;
-    let selectedParty: Raid | null = null;
     let partyId: string | null = null;
 
     try {
