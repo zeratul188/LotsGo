@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from "react";
-import { Tab, Tabs } from "@heroui/react"
+import { addToast, Tab, Tabs } from "@heroui/react"
 import { Raid } from "../api/raids/route";
 import { FindComponent } from "./RaidListForm";
 import { LoginUser } from "../store/loginSlice";
@@ -12,6 +12,7 @@ import { useMobileQuery } from "@/utiils/utils";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../store/store";
 import { changeUserId } from "../store/partySlice";
+import { useRouter } from "next/navigation";
 
 // state 관리
 function raidsForm() {
@@ -32,6 +33,7 @@ export default function RaidsClient() {
     const isMobile = useMobileQuery();
     const dispatch = useDispatch<AppDispatch>();
     const raids = useSelector((state: RootState) => state.party.raids);
+    const router = useRouter();
 
     useEffect(() => {
         const userStr = localStorage.getItem('user');
@@ -41,6 +43,13 @@ export default function RaidsClient() {
             const id = storedUser.id;
             userId = id;
             dispatch(changeUserId(id));
+        } else {
+            addToast({
+                title: "이용 불가",
+                description: `로그인을 해야만 이용 가능합니다.`,
+                color: "danger"
+            });
+            router.push('/login');
         }
         const loadData = async () => {
             const pRaids = await loadRaids(dispatch, userId, form.setJoinedRaids);
