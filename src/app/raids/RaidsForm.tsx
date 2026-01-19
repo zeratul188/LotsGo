@@ -13,14 +13,16 @@ import { SettingIcon } from "../icons/SettingIcon";
 import clsx from "clsx";
 import data from "@/data/characters/data.json";
 import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
+import { AppDispatch, RootState } from "../store/store";
+import { handleRefreshPartys } from "./raidListFeat";
 
 // 파티 내 레이드 목록 컴포넌트
 type PartyRaidsComponentProps = {
+    dispatch: AppDispatch,
     members: RaidMember[],
     bosses: Boss[]
 }
-export function PartyRaidsComponent({members, bosses}: PartyRaidsComponentProps) {
+export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsComponentProps) {
     const [partys, setPartys] = useState<Party[]>([]);
     const [results, setResults] = useState<Party[]>([]);
     const [searchContent, setSearchContent] = useState<Selection>(new Set([]));
@@ -31,6 +33,7 @@ export function PartyRaidsComponent({members, bosses}: PartyRaidsComponentProps)
     const [isOpenInvolved, setOpenInvolved] = useState(false);
     const [partyId, setPartyId] = useState<string | null>(null);
     const [isLoadingRefresh, setLoadingRefresh] = useState(false);
+    const [isRefreshCooldown, setRefreshCooldown] = useState(false);
 
     const selectedParty = useSelector((state: RootState) => state.party.selectedRaid);
     const userId = useSelector((state: RootState) => state.party.userId);
@@ -103,15 +106,18 @@ export function PartyRaidsComponent({members, bosses}: PartyRaidsComponentProps)
                     검색
                 </Button>
                 <div className="grow"/>
-                <Button
-                    fullWidth={isMobile}
-                    radius="sm"
-                    size="lg"
-                    color="primary"
-                    isLoading={isLoadingRefresh}
-                    onPress={() => setOpenAdd(true)}>
-                    새로고침
-                </Button>
+                <Tooltip showArrow content="새로고침은 5초에 한 번씩 가능합니다.">
+                    <Button
+                        fullWidth={isMobile}
+                        radius="sm"
+                        size="lg"
+                        color="primary"
+                        isLoading={isLoadingRefresh}
+                        isDisabled={isRefreshCooldown}
+                        onPress={async () => await handleRefreshPartys(setLoadingRefresh, isRefreshCooldown, setRefreshCooldown, selectedParty?.id, dispatch)}>
+                        새로고침
+                    </Button>
+                </Tooltip>
                 <Button
                     fullWidth={isMobile}
                     radius="sm"

@@ -145,13 +145,4 @@ export function toCheckData<T extends InvolvedSource>(list: T[], maxLevel: numbe
 // 컨텐츠 ID로 콘텐츠 데이터 가져오기
 export function getBossDataById(bosses: Boss[], id: string): Boss | null {
     return bosses.find(b => b.id === id) ?? null;
-} 
-
-// 파티 정보 새로고침하는 함수
-export async function handleRefresh(
-    partyId: string | null,
-    setLoadingRefresh: SetStateFn<boolean>
-) {
-
-    
 }

@@ -1,11 +1,12 @@
 import { SetStateFn } from "@/utiils/utils";
-import { Raid } from "../api/raids/route";
+import { Party, Raid } from "../api/raids/route";
 import { decrypt, encrypt } from "@/utiils/crypto";
 import { addToast } from "@heroui/react";
 import type { AppDispatch } from "../store/store";
-import { addRaid, initialRaids } from "../store/partySlice";
+import { addRaid, initialRaids, updatePartys } from "../store/partySlice";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
+const REFRESH_COOLDOWN = 5000; // 새로고침 빈도 시간
 
 // 파티 목록 데이터 가져오기
 export async function loadRaids(
@@ -350,5 +351,49 @@ export async function handleJoinPrivateParty(
             color: "danger"
         });
         setLoadingJoin(false);
+    }
+}
+
+// 파티의 레이드 목록의 새로고침 이벤트 함수
+export async function handleRefreshPartys(
+    setLoadingRefresh: SetStateFn<boolean>,
+    isRefreshCooldown: boolean,
+    setRefreshCooldown: SetStateFn<boolean>,
+    raidId: string | undefined,
+    dispatch: AppDispatch
+) {
+    if (isRefreshCooldown) {
+        addToast({
+            title: "요청 거부",
+            description: `새로고침은 5초에 한 번만 가능합니다.`,
+            color: "danger"
+        });
+    }
+    setLoadingRefresh(true);
+    try {
+        const res = await fetch(`/api/raids/partys?raidId=${raidId}`);
+        if (!res.ok || !raidId) throw new Error();
+        const partys: Party[] = await res.json();
+        dispatch(updatePartys({
+            id: raidId,
+            partys: partys
+        }));
+        addToast({
+            title: "새로고침 완료",
+            description: `레이드 목록이 최신 상태로 업데이트되었습니다.`,
+            color: "success"
+        });
+    } catch {
+        addToast({
+            title: "요청 오류",
+            description: `데이터를 불러오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+    } finally {
+        setLoadingRefresh(false);
+        setRefreshCooldown(true);
+        setTimeout(() => {
+            setRefreshCooldown(false);
+        }, REFRESH_COOLDOWN);
     }
 }

@@ -87,6 +87,7 @@ export default function RaidsClient() {
                     setLoadingData={setLoadingData}/>
             ) : (
                 <PartyComponent
+                    dispatch={dispatch}
                     bosses={form.bosses}/>
             )}
         </div>

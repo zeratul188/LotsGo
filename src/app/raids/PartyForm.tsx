@@ -288,9 +288,10 @@ function ChecklistComponent({ members, bosses, party }: ChecklistComponentProps)
 
 // 파티 컴포넌트 
 type PartyComponentProps = {
+    dispatch: AppDispatch,
     bosses: Boss[]
 }
-export function PartyComponent({ bosses }: PartyComponentProps) {
+export function PartyComponent({ dispatch, bosses }: PartyComponentProps) {
     const [isLoading, setLoading] = useState(true);
     const [members, setMembers] = useState<RaidMember[]>([]);
     const selectedParty = useSelector((state: RootState) => state.party.selectedRaid);
@@ -302,7 +303,7 @@ export function PartyComponent({ bosses }: PartyComponentProps) {
             }
         }
         loadData();
-    }, [selectedParty]);
+    }, [selectedParty?.id]);
 
     if (isLoading) {
         return <LoadingComponent heightStyle="min-h-[calc(100vh-65px)]"/>
@@ -315,7 +316,7 @@ export function PartyComponent({ bosses }: PartyComponentProps) {
                         <ChecklistComponent members={members} bosses={bosses} party={selectedParty}/>
                     </Tab>
                     <Tab key="party" title="레이드 목록">
-                        <PartyRaidsComponent members={members} bosses={bosses}/>
+                        <PartyRaidsComponent dispatch={dispatch} members={members} bosses={bosses}/>
                     </Tab>
                     <Tab key="setting" title="파티 설정">
                         <ChecklistComponent members={members} bosses={bosses} party={selectedParty}/>

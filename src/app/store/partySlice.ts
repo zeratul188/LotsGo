@@ -46,8 +46,9 @@ const partySlice = createSlice({
         },
         updatePartys(state, action: PayloadAction<ChangePartys>) {
             const findIndex = state.raids.findIndex(r => r.id === action.payload.id);
-            if (findIndex > -1) {
+            if (findIndex > -1 && state.selectedRaid) {
                 state.raids[findIndex].party = action.payload.partys;
+                state.selectedRaid.party = action.payload.partys;
             }
         }
     }
