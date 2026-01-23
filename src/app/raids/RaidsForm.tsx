@@ -14,7 +14,7 @@ import clsx from "clsx";
 import data from "@/data/characters/data.json";
 import { useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
-import { getCharacterInfoById, getMaxLengthByContent, handleJoinRaid, handleRefreshPartys, JoinRaidPayload } from "./raidListFeat";
+import { getCharacterInfoById, getMaxLengthByContent, handleCancelInvolvedParty, handleJoinRaid, handleRefreshPartys, JoinRaidPayload } from "./raidListFeat";
 import { getImgByJob } from "../character/expeditionFeat";
 import LeaderIcon from "@/Icons/LeaderIcon";
 
@@ -37,6 +37,7 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
     const [partyPosition, setPartyPosition] = useState(-1);
     const [partyNumber, setPartyNumber] = useState(-1);
     const [isLoadingRefresh, setLoadingRefresh] = useState(false);
+    const [isLoadingCancel, setLoadingCancel] = useState(false);
     const [isRefreshCooldown, setRefreshCooldown] = useState(false);
 
     const selectedParty = useSelector((state: RootState) => state.party.selectedRaid);
@@ -246,11 +247,8 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                                 fullWidth
                                 color='danger'
                                 radius="sm"
-                                isDisabled={!isExistPartyMember(userId, party.teams)}
-                                onPress={() => {
-                                    setPartyId(party.id);
-                                    setOpenInvolved(true);
-                                }}>
+                                isDisabled={!isExistPartyMember(userId, party.teams) || isLoadingCancel}
+                                onPress={async () => await handleCancelInvolvedParty({setLoadingCancel, dispatch}, {partyId: party.id, userId, raidId: selectedParty?.id})}>
                                 참여 취소
                             </Button>
                         </CardFooter>

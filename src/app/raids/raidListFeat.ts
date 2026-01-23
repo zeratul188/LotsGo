@@ -479,7 +479,7 @@ export async function handleJoinRaid(ui: JoinRaidUI, payload: JoinRaidPayload) {
     }));
     addToast({
         title: `참여 완료`,
-        description: `해당 레이드에 참여하였습니다.`,
+        description: data.message,
         color: "success"
     });
     ui.setLoadingJoin(false);
@@ -508,4 +508,57 @@ export function getCharacterInfoById(members: RaidMember[], userId: string, nick
         level: character.level,
         server: character.server
     } : EMPTY_CHARACTER;
+}
+
+// 해당 파티의 참여를 취소하는 이벤트 함수
+type CancelRaidUI = {
+    setLoadingCancel: SetStateFn<boolean>,
+    dispatch: AppDispatch
+}
+type CancelRaidPayload = {
+    raidId: string | undefined,
+    partyId: string | null,
+    userId: string | null    
+}
+export async function handleCancelInvolvedParty(ui: CancelRaidUI, payload: CancelRaidPayload) {
+    ui.setLoadingCancel(true);
+    if (!payload.raidId || !payload.partyId || !payload.userId) {
+        addToast({
+            title: `오류 발생!`,
+            description: `참여를 취소하는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        ui.setLoadingCancel(false);
+        return;
+    }
+    const res = await fetch(`/api/raids`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            type: 'cancelInvolvedParty',
+            raidId: payload.raidId,
+            partyId: payload.partyId,
+            userId: payload.userId,
+        })
+    });
+    if (!res.ok) {
+        addToast({
+            title: `요청 오류`,
+            description: `데이터를 수정하는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        ui.setLoadingCancel(false);
+        return;
+    }
+    const data: InvolvedPartyResponse = await res.json();
+    ui.dispatch(updatePartys({
+        id: payload.raidId,
+        partys: data.partys
+    }));
+    addToast({
+        title: `취소 완료`,
+        description: data.message,
+        color: "success"
+    });
+    ui.setLoadingCancel(false);
 }

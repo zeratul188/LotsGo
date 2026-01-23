@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
     }
 }
 
-type ActionType = "add" | "join" | "addParty" | "involvedParty";
+type ActionType = "add" | "join" | "addParty" | "involvedParty" | "cancelInvolvedParty";
 type Handler = (body: any) => Promise<NextResponse>;
 
 const handlers: Record<ActionType, Handler> = {
@@ -222,6 +222,44 @@ const handlers: Record<ActionType, Handler> = {
             }
             if (e.message === "ALREADY_JOINED") {
                 return NextResponse.json({ error: '이미 해당 파티에 참여하였습니다.' }, { status: 400 });
+            }
+            return NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
+        }
+    },
+    cancelInvolvedParty: async (body) => {
+        const raidId = body.raidId;
+        const partyId = body.partyId;
+        const userId = body.userId;
+        try {
+            const raidDoc = doc(firestore, 'raids', raidId);
+
+            const nextPartys = await runTransaction(firestore, async (tx) => {
+                const raidSnapshot = await tx.get(raidDoc);
+                if (!raidSnapshot.exists()) throw new Error('RAID_NOT_FOUND');
+
+                const partys: Party[] = raidSnapshot.data()?.party ?? [];
+                const party = partys.find(p => p.id === partyId);
+
+                if (!party) throw new Error('PARTY_NOT_FOUND');
+
+                const nextPartys = partys.map((p) => {
+                    if (p.id !== partyId) return p;
+                    return {
+                        ...p,
+                        teams: (p.teams ?? []).filter(t => t.userId !== userId)
+                    };
+                });
+
+                tx.update(raidDoc, { party: nextPartys });
+                return nextPartys;
+            });
+            return NextResponse.json({ message: '해당 레이드의 참여를 취소하였습니다.', partys: nextPartys }, { status: 200 });
+        } catch (e: any) {
+            if (e.message === "RAID_NOT_FOUND") {
+                return NextResponse.json({ error: '해당 레이드의 데이터를 찾을 수 없습니다.' }, { status: 400 });
+                }
+            if (e.message === "PARTY_NOT_FOUND") {
+                return NextResponse.json({ error: '찾고자 한 파티가 존재하지 않습니다.' }, { status: 400 });
             }
             return NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
         }
