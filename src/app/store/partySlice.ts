@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { Party, Raid } from "../api/raids/route"
+import { RaidMember } from "../api/raids/members/route"
 
 export type ChangePartys = {
     id: string,
@@ -9,19 +10,24 @@ export type ChangePartys = {
 type PartyState = {
     raids: Raid[],
     selectedRaid: Raid | null,
-    userId: string | null
+    userId: string | null,
+    members: RaidMember[]
 }
 
 const initialState: PartyState = {
     raids: [],
     selectedRaid: null,
-    userId: null
+    userId: null,
+    members: []
 }
 
 const partySlice = createSlice({
     name: 'party',
     initialState,
     reducers: {
+        initialMembers(state, action: PayloadAction<RaidMember[]>) {
+            state.members = action.payload;
+        },
         initialRaids(state, action: PayloadAction<Raid[]>) {
             state.raids = action.payload;
         },
@@ -55,6 +61,7 @@ const partySlice = createSlice({
 })
 
 export const { 
+    initialMembers,
     initialRaids, 
     addRaid, 
     updateRaid, 

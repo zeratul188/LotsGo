@@ -7,7 +7,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { firestore } from "@/utiils/firebase";
 import { Character } from "../signup/signupFeat";
 import type { AppDispatch } from "../store/store";
-import { changeSelectedRaid } from "../store/partySlice";
+import { changeSelectedRaid, initialMembers } from "../store/partySlice";
 
 // 선택한 파티 적용 함수
 export function applyChangeParty(
@@ -26,8 +26,8 @@ export function applyChangeParty(
 // 해당 파티 인원 데이터 가져오기
 export async function loadPartyData(
     party: Raid,
-    setMembers: SetStateFn<RaidMember[]>,
-    setLoading: SetStateFn<boolean>
+    setLoading: SetStateFn<boolean>,
+    dispatch: AppDispatch
 ) {
     setLoading(true);
     const sp = new URLSearchParams();
@@ -42,7 +42,7 @@ export async function loadPartyData(
         return;
     }
     const members: RaidMember[] = await res.json();
-    setMembers(members);
+    dispatch(initialMembers(members));
     setLoading(false);
 }
 

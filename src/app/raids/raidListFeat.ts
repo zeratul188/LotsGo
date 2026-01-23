@@ -1,12 +1,17 @@
-import { SetStateFn } from "@/utiils/utils";
-import { Party, Raid } from "../api/raids/route";
+import { normalize, SetStateFn } from "@/utiils/utils";
+import { Party, Raid, TeamCharacter } from "../api/raids/route";
 import { decrypt, encrypt } from "@/utiils/crypto";
 import { addToast } from "@heroui/react";
 import type { AppDispatch } from "../store/store";
 import { addRaid, initialRaids, updatePartys } from "../store/partySlice";
+import { getBossDataById, InvolvedCharacter } from "./raidsFeat";
+import { Boss } from "../api/checklist/boss/route";
+import { RaidMember } from "../api/raids/members/route";
+import characterData from "@/data/characters/data.json";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 const REFRESH_COOLDOWN = 5000; // 새로고침 빈도 시간
+const TEAM_MAX = 4;
 
 // 파티 목록 데이터 가져오기
 export async function loadRaids(
@@ -396,4 +401,111 @@ export async function handleRefreshPartys(
             setRefreshCooldown(false);
         }, REFRESH_COOLDOWN);
     }
+}
+
+// 참여할 파티의 콘텐츠 최대 인원 반환 함수
+export function getMaxLengthByContent(bosses: Boss[], contentName: string): number {
+    const findBoss = getBossDataById(bosses, contentName);
+    return findBoss ? findBoss.max : 0;
+}
+
+// 파티 참여 이벤트 함수
+type InvolvedPartyResponse = {
+    message: string,
+    partys: Party[]
+}
+export type JoinRaidUI = {
+    onClose: () => void,
+    setLoadingJoin: SetStateFn<boolean>,
+    dispatch: AppDispatch
+}
+export type JoinRaidPayload = {
+    selectedCharacter: InvolvedCharacter | null,
+    isManager: boolean,
+    tabType: string,
+    raidId: string | null,
+    partyId: string,
+    userId: string,
+    position: number,
+    partyNumber: number
+}
+export async function handleJoinRaid(ui: JoinRaidUI, payload: JoinRaidPayload) {
+    ui.setLoadingJoin(true);
+    if (!payload.raidId || !payload.selectedCharacter) {
+        addToast({
+            title: `오류 발생!`,
+            description: `참여하는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        ui.setLoadingJoin(false);
+        return;
+    }
+    let type = payload.tabType;
+    if (!characterData.classSupporters.includes(payload.selectedCharacter.job)) {
+        type = 'attack';
+    }
+    const teamCharacter: TeamCharacter = {
+        isManager: payload.isManager,
+        nickname: payload.selectedCharacter.nickname,
+        userId: payload.userId,
+        type: type,
+        partyIndex: payload.partyNumber,
+        position: payload.position
+    }
+    const res = await fetch(`/api/raids`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            type: 'involvedParty',
+            raidId: payload.raidId,
+            partyId: payload.partyId,
+            userId: payload.userId,
+            teamCharacter: teamCharacter
+        })
+    });
+    if (!res.ok) {
+        addToast({
+            title: `요청 오류`,
+            description: `데이터를 수정하는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        ui.setLoadingJoin(false);
+        return;
+    }
+    const data: InvolvedPartyResponse = await res.json();
+    ui.dispatch(updatePartys({
+        id: payload.raidId,
+        partys: data.partys
+    }));
+    addToast({
+        title: `참여 완료`,
+        description: `해당 레이드에 참여하였습니다.`,
+        color: "success"
+    });
+    ui.setLoadingJoin(false);
+    ui.onClose();
+}  
+
+// 유저ID와 캐릭터명으로 캐릭터 정보 가져오기
+export type CharacterInfo = {
+    level: number,
+    server: string,
+    job: string
+}
+const EMPTY_CHARACTER: CharacterInfo = {
+    job: 'null',
+    level: 0,
+    server: 'null'
+}
+export function getCharacterInfoById(members: RaidMember[], userId: string, nickname: string): CharacterInfo {
+    const member = members.find(m => m.id === userId);
+    if (!member) return EMPTY_CHARACTER;
+
+    const character = member.expeditions.find(c => normalize(c.nickname) === normalize(nickname)) ?? member.checklist.find(c => normalize(c.nickname) === normalize(nickname));
+
+    return character ? {
+        job: character.job,
+        level: character.level,
+        server: character.server
+    } : EMPTY_CHARACTER;
 }

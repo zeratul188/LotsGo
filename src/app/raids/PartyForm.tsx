@@ -293,13 +293,13 @@ type PartyComponentProps = {
 }
 export function PartyComponent({ dispatch, bosses }: PartyComponentProps) {
     const [isLoading, setLoading] = useState(true);
-    const [members, setMembers] = useState<RaidMember[]>([]);
+    const members = useSelector((state: RootState) => state.party.members);
     const selectedParty = useSelector((state: RootState) => state.party.selectedRaid);
 
     useEffect(() => {
         const loadData = async () => {
             if (selectedParty) {
-                await loadPartyData(selectedParty, setMembers, setLoading);
+                await loadPartyData(selectedParty, setLoading, dispatch);
             }
         }
         loadData();

@@ -2,7 +2,7 @@ import { Key, useEffect, useMemo, useState } from "react";
 import { Boss } from "../api/checklist/boss/route";
 import { Party, Raid } from "../api/raids/route";
 import { getBossById, getBossDataById, handleAddParty, InvolvedCharacter, isExistPartyMember, isSelectedDifficulty, loadPartys, toCheckData, toStringByRaidDate } from "./raidsFeat";
-import { Button, Card, CardBody, CardFooter, CardHeader, Checkbox, Chip, cn, DatePicker, Divider, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, Selection, SelectItem, Tab, Tabs, Tooltip } from "@heroui/react";
+import { addToast, Avatar, Button, Card, CardBody, CardFooter, CardHeader, Checkbox, Chip, cn, DatePicker, Divider, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, Selection, SelectItem, Tab, Tabs, Tooltip } from "@heroui/react";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
 import { DateValue, getLocalTimeZone, now } from "@internationalized/date";
 import CalendarIcon from "@/Icons/CalendarIcon";
@@ -14,7 +14,8 @@ import clsx from "clsx";
 import data from "@/data/characters/data.json";
 import { useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
-import { handleRefreshPartys } from "./raidListFeat";
+import { getCharacterInfoById, getMaxLengthByContent, handleJoinRaid, handleRefreshPartys, JoinRaidPayload } from "./raidListFeat";
+import { getImgByJob } from "../character/expeditionFeat";
 
 // 파티 내 레이드 목록 컴포넌트
 type PartyRaidsComponentProps = {
@@ -32,6 +33,8 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
     const [isOpenAdd, setOpenAdd] = useState(false);
     const [isOpenInvolved, setOpenInvolved] = useState(false);
     const [partyId, setPartyId] = useState<string | null>(null);
+    const [partyPosition, setPartyPosition] = useState(-1);
+    const [partyNumber, setPartyNumber] = useState(-1);
     const [isLoadingRefresh, setLoadingRefresh] = useState(false);
     const [isRefreshCooldown, setRefreshCooldown] = useState(false);
 
@@ -163,18 +166,85 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                         </CardHeader>
                         <Divider/>
                         <CardBody>
-                            
+                            <Tabs
+                                fullWidth
+                                radius="sm"
+                                size="sm">
+                                {Array.from({ length: Math.ceil(getMaxLengthByContent(bosses, party.content)/4) }, (_, i) => i + 1).map((index) => (
+                                    <Tab key={index} title={`${index}파티`}>
+                                        <div className="w-full flex flex-col gap-2">
+                                            {[1, 2, 3, 4].map((position) => {
+                                                const teamCharacter = party.teams.find(t => t.partyIndex === index && t.position === position);
+                                                return teamCharacter ? (
+                                                    <Button
+                                                        key={position}
+                                                        variant="bordered"
+                                                        radius="sm"
+                                                        color={teamCharacter.type === 'supporter' ? 'success' : 'danger'}
+                                                        className="h-14">
+                                                        <div className="w-full flex gap-4 items-center">
+                                                            <Avatar isBordered size="sm" src={getImgByJob(getCharacterInfoById(members, teamCharacter.userId, teamCharacter.nickname).job)}/>
+                                                            <div className="grow text-left">
+                                                                <div className="flex gap-1">
+                                                                    <p className="text-black dark:text-white grow">{teamCharacter.nickname}</p>
+                                                                    <div className="flex gap-1">
+                                                                        {teamCharacter.type === 'attack' ? data.classEffects.find(c => c.job === getCharacterInfoById(members, teamCharacter.userId, teamCharacter.nickname).job)?.effects.map((effect, index) => (
+                                                                            <div key={index} className="rounded-md px-1 py-0.2 bg-[#f0f0f0] dark:bg-[#222222] text-[8pt] text-black dark:text-white">{effect}</div>
+                                                                        )) : data.classEffects.find(c => c.job === getCharacterInfoById(members, teamCharacter.userId, teamCharacter.nickname).job)?.burf.map((effect, index) => (
+                                                                            <div key={index} className="rounded-md px-1 py-0.2 bg-[#f0f0f0] dark:bg-[#222222] text-[8pt] text-black dark:text-white">{effect}</div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex gap-1">
+                                                                    <p className="fadedtext text-[9pt] grow">{getCharacterInfoById(members, teamCharacter.userId, teamCharacter.nickname).job} · Lv.{getCharacterInfoById(members, teamCharacter.userId, teamCharacter.nickname).level} · {getCharacterInfoById(members, teamCharacter.userId, teamCharacter.nickname).server}</p>
+                                                                    <p className="fadedtext text-[9pt]">{teamCharacter.userId}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        key={position}
+                                                        variant="bordered"
+                                                        radius="sm"
+                                                        className="h-14 hover:bg-[#f4f4f4] hover:dark:bg-[#232323]"
+                                                        onPress={() => {
+                                                            if (isExistPartyMember(userId, party.teams)) {
+                                                                addToast({
+                                                                    title: `참여 뷸가`,
+                                                                    description: `이미 해당 파티에 참여하였습니다.`,
+                                                                    color: "danger"
+                                                                });
+                                                                return;
+                                                            }
+                                                            setPartyId(party.id);
+                                                            setPartyPosition(position);
+                                                            setPartyNumber(index);
+                                                            setOpenInvolved(true);
+                                                        }}>
+                                                        <div className="w-full flex gap-4 items-center">
+                                                            <p className="text-lg font-bold fadedtext">{position}</p>
+                                                            <p className="fadedtext">모집 중입니다...</p>
+                                                        </div>
+                                                    </Button>
+                                                )
+                                            })}
+                                        </div>
+                                    </Tab>
+                                ))}
+                            </Tabs>
                         </CardBody>
                         <CardFooter>
                             <Button
                                 fullWidth
-                                color={isExistPartyMember(userId, party.teams) ? 'danger' : 'primary'}
+                                color='danger'
                                 radius="sm"
+                                isDisabled={!isExistPartyMember(userId, party.teams)}
                                 onPress={() => {
                                     setPartyId(party.id);
-                                    setOpenInvolved(true)
+                                    setOpenInvolved(true);
                                 }}>
-                                {isExistPartyMember(userId, party.teams) ? '참여 취소' : '참여하기'}
+                                참여 취소
                             </Button>
                         </CardFooter>
                     </Card>
@@ -195,37 +265,42 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                 setPartys={setPartys}
                 bosses={bosses}/>
             <InvolvedModal
+                dispatch={dispatch}
                 partyId={partyId}
-                setPartyId={setPartyId}
                 members={members}
                 userId={userId}
                 bosses={bosses}
                 partys={partys}
                 selectedParty={selectedParty}
                 isOpenInvoled={isOpenInvolved}
-                setOpenInvoled={setOpenInvolved}/>
+                setOpenInvoled={setOpenInvolved}
+                position={partyPosition}
+                partyNumber={partyNumber}/>
         </div>
     )
 }
 
 // 파티 참여 Modal
 type InvoledModalProps = {
+    dispatch: AppDispatch,
     partyId: string | null,
-    setPartyId: SetStateFn<string | null>,
     members: RaidMember[],
     userId: string | null,
     bosses: Boss[],
     partys: Party[],
     selectedParty: Raid | null,
     isOpenInvoled: boolean,
-    setOpenInvoled: SetStateFn<boolean>
+    setOpenInvoled: SetStateFn<boolean>,
+    position: number,
+    partyNumber: number
 }
-function InvolvedModal({ partyId, members, userId, bosses, partys, selectedParty, isOpenInvoled, setOpenInvoled }: InvoledModalProps) {
+function InvolvedModal({ dispatch, partyId, members, userId, bosses, partys, selectedParty, isOpenInvoled, setOpenInvoled, position, partyNumber }: InvoledModalProps) {
     const [tab, setTab] = useState('expeditions');
     const [tabType, setTabType] = useState('supporter');
     const [isManager, setManager] = useState(false);
     const [isHaveManager, setHaveManager] = useState(false);
     const [maxLength, setMaxLength] = useState(0);
+    const [isLoadingJoin, setLoadingJoin] = useState(false);
     const party = useMemo(
         () => partys.find(p => p.id === partyId),
         [partys, partyId]
@@ -263,23 +338,61 @@ function InvolvedModal({ partyId, members, userId, bosses, partys, selectedParty
             setMaxLength(findBoss.max);
         }
     }, [party]);
+
+    if (!selectedParty || !partyId || !userId || !party) {
+        return (
+            <Modal
+                radius="sm"
+                isOpen={isOpenInvoled}
+                onOpenChange={(isOpen) => setOpenInvoled(isOpen)}>
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader>오류 발생!</ModalHeader>
+                            <ModalContent>
+                                <div className="min-h-[200px] flex justify-center items-center text-md">
+                                    데이터를 가져오는데 문제가 발생하였습니다.
+                                </div>
+                            </ModalContent>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+        )
+    }
+
+    const joinPayload: JoinRaidPayload = {
+        selectedCharacter,
+        isManager,
+        tabType,
+        raidId: selectedParty.id,
+        partyId,
+        userId,
+        position,
+        partyNumber
+    }
     
     return (
         <Modal
             radius="sm"
             isOpen={isOpenInvoled}
             onOpenChange={(isOpen) => setOpenInvoled(isOpen)}
+            scrollBehavior="inside"
             onClose={() => {
                 setSelectedCharacter(null);
                 setHaveManager(false);
                 setManager(false);
-                setMaxLength(0);
                 setTabType('supporter');
             }}>
             <ModalContent>
                 {(onClose) => (
                     <>
-                        <ModalHeader>{party?.name}</ModalHeader>
+                        <ModalHeader>
+                            <div>
+                                <h1>{party.name}</h1>
+                                <p className="fadedtext text-sm">{partyNumber}파티 {position}번</p>
+                            </div>
+                        </ModalHeader>
                         <ModalBody>
                             <Tabs
                                 fullWidth
@@ -359,7 +472,9 @@ function InvolvedModal({ partyId, members, userId, bosses, partys, selectedParty
                                 fullWidth
                                 radius="sm"
                                 color="primary"
-                                isDisabled={selectedCharacter === null}>
+                                isLoading={isLoadingJoin}
+                                isDisabled={selectedCharacter === null}
+                                onPress={async () => await handleJoinRaid({onClose, setLoadingJoin, dispatch}, joinPayload)}>
                                 참여하기
                             </Button>
                         </ModalFooter>

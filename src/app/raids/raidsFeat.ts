@@ -56,7 +56,7 @@ export async function handleAddParty(
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                type: 'add-party',
+                type: 'addParty',
                 partyId: selectedParty.id,
                 id: userId,
                 addParty: party
@@ -71,8 +71,9 @@ export async function handleAddParty(
             setLoadingAdd(false);
             return;
         }
-        partys.push(party);
-        setPartys(partys);
+        const clonePartys = structuredClone(partys);
+        clonePartys.push(party);
+        setPartys(clonePartys);
         addToast({
             title: `추가 완료`,
             description: `파티를 성공적으로 추가하였습니다.`,

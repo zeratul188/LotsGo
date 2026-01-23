@@ -1,3 +1,4 @@
+'use client'
 import { useEffect, useState } from "react";
 import { DateValue } from "@internationalized/date";
 
@@ -70,3 +71,6 @@ export function dateValueToDate(date: DateValue | null): Date | null {
     if (!date) return null;
     return date.toDate("Asia/Seoul"); // 서울 타임존으로 변경
 }
+
+// 공백/문자 방어 함수
+export const normalize = (v: string) => v.trim();

@@ -1,6 +1,6 @@
 import { ControlStage } from "@/app/checklist/ChecklistForm"
 import { firestore } from "@/utiils/firebase"
-import { addDoc, arrayUnion, collection, doc, documentId, getDoc, getDocs, limit, query, updateDoc, where } from "firebase/firestore"
+import { addDoc, arrayUnion, collection, doc, documentId, getDoc, getDocs, limit, query, runTransaction, updateDoc, where } from "firebase/firestore"
 import { NextRequest, NextResponse } from "next/server"
 
 // 파티 인원
@@ -84,106 +84,160 @@ export async function GET(req: NextRequest) {
     }
 }
 
-export async function POST(req: NextRequest) {
-    const body = await req.json();
-    const id = body.id;
-    let partyId: string | null = null;
+type ActionType = "add" | "join" | "addParty" | "involvedParty";
+type Handler = (body: any) => Promise<NextResponse>;
 
-    try {
-        switch(body.type) {
-            case 'add':
-                const raid: Raid = body.raid;
-                const addRaid = {
-                    name: raid.name,
-                    managerId: raid.managerId,
-                    managerNickname: raid.managerNickname,
-                    link: raid.link,
-                    isOpen: raid.isOpen,
-                    isPwd: raid.isPwd,
-                    pwd: raid.pwd,
-                    members: raid.members,
-                    party: raid.party,
-                    avgLevel: raid.avgLevel
-                }
-
-                if (typeof id !== "string" || id.trim() === "") {
-                    return NextResponse.json({ error: "id가 필요합니다." }, { status: 400 });
-                }
-
-                const addRef = await addDoc(collection(firestore, 'raids'), addRaid);
-                const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));
-                const snapshot = await getDocs(q);
-        
-                if (snapshot.empty) {
-                    return NextResponse.json({ error: 'Not found a member with a specific ID.' }, { status: 300 });
-                }
-        
-                const targetDoc = snapshot.docs[0];
-                const docRef = doc(firestore, "members", targetDoc.id);
-                const data = targetDoc.data();
-                const joined: string[] = data.joined ? data.joined : [];
-                joined.push(addRef.id);
-
-                await updateDoc(docRef, {
-                    joined: joined
-                });
-                return NextResponse.json({ message: '데이터 추가가 정상적으로 처리도었습니다.', id: addRef.id }, { status: 200 });       
-            case 'join':
-                const joinRaid: Raid = body.raid;
-
-                if (typeof id !== "string" || id.trim() === "") {
-                    return NextResponse.json({ error: "id가 필요합니다." }, { status: 400 });
-                }
-
-                const jMembers = structuredClone(joinRaid.members);
-                jMembers.push(id);
-                const jrq = query(collection(firestore, 'raids'), where(documentId(), '==', joinRaid.id), limit(1));
-                const jss = await getDocs(jrq);
-                const mq = query(collection(firestore, 'members'), where('id', '==', id), limit(1));
-                const mss = await getDocs(mq);
-
-                if (jss.empty || mss.empty) {
-                    return NextResponse.json({ error: 'Not found a raid or members with a specific ID.' }, { status: 300 });
-                }
-
-                const tdj = jss.docs[0];
-                const rRef = doc(firestore, 'raids', tdj.id);
-                await updateDoc(rRef, {
-                    members: jMembers
-                });
-
-                const mtd = mss.docs[0];
-                const mRef = doc(firestore, "members", mtd.id);
-                const mData = mtd.data();
-                const mJoined: string[] = mData.joined ? mData.joined : [];
-                mJoined.push(joinRaid.id);
-                await updateDoc(mRef, {
-                    joined: mJoined
-                });
-                return NextResponse.json({ message: '데이터 수정이 정상적으로 처리되었습니다.' }, { status: 200 });
-            case 'add-party':
-                partyId = body.partyId;
-                const addParty: Party = body.addParty;
-
-                if (!partyId) {
-                    return NextResponse.json({ error: 'Not found a raid with a specific ID.' }, { status: 300 });
-                } else {
-                    const arq = doc(firestore, "raids", partyId);
-                    const ass = await getDoc(arq);
-
-                    if (!ass.exists()) {
-                        return NextResponse.json({ error: 'Not found a raid with a specific ID.' }, { status: 300 });
-                    }
-
-                    await updateDoc(arq, { party: arrayUnion(addParty) });
-                    return NextResponse.json({ message: '데이터 수정이 정상적으로 처리되었습니다.' }, { status: 200 });
-                }
-            case 'involved-party':
-                partyId = body.partyId;
-                const teamCharacter: TeamCharacter = body.teamCharacter;
-            default: 
-                return NextResponse.json({ message: '처리 종류를 선택하지 않았습니다.' }, { status: 400 });
+const handlers: Record<ActionType, Handler> = {
+    add: async (body) => {
+        const id = body.id;
+        const raid: Raid = body.raid;
+        const addRaid = {
+            name: raid.name,
+            managerId: raid.managerId,
+            managerNickname: raid.managerNickname,
+            link: raid.link,
+            isOpen: raid.isOpen,
+            isPwd: raid.isPwd,
+            pwd: raid.pwd,
+            members: raid.members,
+            party: raid.party,
+            avgLevel: raid.avgLevel
         }
+
+        if (typeof id !== "string" || id.trim() === "") {
+            return NextResponse.json({ error: "id가 필요합니다." }, { status: 400 });
+        }
+
+        const addRef = await addDoc(collection(firestore, 'raids'), addRaid);
+        const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            return NextResponse.json({ error: 'Not found a member with a specific ID.' }, { status: 300 });
+        }
+
+        const targetDoc = snapshot.docs[0];
+        const docRef = doc(firestore, "members", targetDoc.id);
+        const data = targetDoc.data();
+        const joined: string[] = data.joined ? data.joined : [];
+        joined.push(addRef.id);
+
+        await updateDoc(docRef, {
+            joined: joined
+        });
+        return NextResponse.json({ message: '데이터 추가가 정상적으로 처리도었습니다.', id: addRef.id }, { status: 200 });       
+    },
+    join: async (body) => {
+        const id = body.id;
+        const joinRaid: Raid = body.raid;
+
+        if (typeof id !== "string" || id.trim() === "") {
+            return NextResponse.json({ error: "id가 필요합니다." }, { status: 400 });
+        }
+
+        const jMembers = structuredClone(joinRaid.members);
+        jMembers.push(id);
+        const jrq = query(collection(firestore, 'raids'), where(documentId(), '==', joinRaid.id), limit(1));
+        const jss = await getDocs(jrq);
+        const mq = query(collection(firestore, 'members'), where('id', '==', id), limit(1));
+        const mss = await getDocs(mq);
+
+        if (jss.empty || mss.empty) {
+            return NextResponse.json({ error: 'Not found a raid or members with a specific ID.' }, { status: 300 });
+        }
+
+        const tdj = jss.docs[0];
+        const rRef = doc(firestore, 'raids', tdj.id);
+        await updateDoc(rRef, {
+            members: jMembers
+        });
+
+        const mtd = mss.docs[0];
+        const mRef = doc(firestore, "members", mtd.id);
+        const mData = mtd.data();
+        const mJoined: string[] = mData.joined ? mData.joined : [];
+        mJoined.push(joinRaid.id);
+        await updateDoc(mRef, {
+            joined: mJoined
+        });
+        return NextResponse.json({ message: '데이터 수정이 정상적으로 처리되었습니다.' }, { status: 200 });
+    },
+    addParty: async (body) => {
+        const partyId = body.partyId;
+        const addParty: Party = body.addParty;
+
+        if (!partyId) {
+            return NextResponse.json({ error: 'Not found a raid with a specific ID.' }, { status: 300 });
+        } else {
+            const arq = doc(firestore, "raids", partyId);
+            const ass = await getDoc(arq);
+
+            if (!ass.exists()) {
+                return NextResponse.json({ error: 'Not found a raid with a specific ID.' }, { status: 300 });
+            }
+
+            await updateDoc(arq, { party: arrayUnion(addParty) });
+            return NextResponse.json({ message: '데이터 수정이 정상적으로 처리되었습니다.' }, { status: 200 });
+        }
+    },
+    involvedParty: async (body) => {
+        const raidId = body.raidId;
+        const partyId = body.partyId;
+        const userId = body.userId;
+        const character: TeamCharacter = body.teamCharacter;
+        try {
+            const raidDoc = doc(firestore, 'raids', raidId);
+
+            const nextPartys = await runTransaction(firestore, async (tx) => {
+                const raidSnapshot = await tx.get(raidDoc);
+                if (!raidSnapshot.exists()) throw new Error('RAID_NOT_FOUND');
+
+                const partys: Party[] = raidSnapshot.data()?.party ?? [];
+                const party = partys.find(p => p.id === partyId);
+
+                if (!party) throw new Error('PARTY_NOT_FOUND');
+                if (party.teams.some(t => t.userId === userId)) throw new Error('ALREADY_JOINED');
+
+                const nextPartys = partys.map((p) => {
+                    if (p.id !== partyId) return p;
+                    return {
+                        ...p,
+                        teams: [...(p.teams ?? []), character]
+                    };
+                });
+
+                tx.update(raidDoc, { party: nextPartys });
+                return nextPartys;
+            });
+            return NextResponse.json({ message: '해당 레이드에 참여하였습니다.', partys: nextPartys }, { status: 200 });
+        } catch (e: any) {
+            if (e.message === "RAID_NOT_FOUND") {
+                return NextResponse.json({ error: '해당 레이드의 데이터를 찾을 수 없습니다.' }, { status: 400 });
+                }
+            if (e.message === "PARTY_NOT_FOUND") {
+                return NextResponse.json({ error: '찾고자 한 파티가 존재하지 않습니다.' }, { status: 400 });
+            }
+            if (e.message === "PARTY_FULL") {
+                return NextResponse.json({ error: '이미 해당 파티의 인원이 가득 찼습니다.' }, { status: 400 });
+            }
+            if (e.message === "ALREADY_JOINED") {
+                return NextResponse.json({ error: '이미 해당 파티에 참여하였습니다.' }, { status: 400 });
+            }
+            return NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
+        }
+    }
+}
+
+export async function POST(req: NextRequest) {
+    try {
+        const body = await req.json();
+        const type = body?.type as ActionType | undefined;
+
+        if (!type || !(type in handlers)) {
+            return NextResponse.json({ error: "처리 종류(type)가 올바르지 않습니다." }, { status: 400 });
+        }
+
+        return await handlers[type](body);
     } catch(error) {
         console.error(error);
         return NextResponse.json({ error: 'Failed load Database.' }, { status: 500 });
