@@ -16,6 +16,7 @@ import { useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { getCharacterInfoById, getMaxLengthByContent, handleJoinRaid, handleRefreshPartys, JoinRaidPayload } from "./raidListFeat";
 import { getImgByJob } from "../character/expeditionFeat";
+import LeaderIcon from "@/Icons/LeaderIcon";
 
 // 파티 내 레이드 목록 컴포넌트
 type PartyRaidsComponentProps = {
@@ -186,12 +187,18 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                                                             <Avatar isBordered size="sm" src={getImgByJob(getCharacterInfoById(members, teamCharacter.userId, teamCharacter.nickname).job)}/>
                                                             <div className="grow text-left">
                                                                 <div className="flex gap-1">
-                                                                    <p className="text-black dark:text-white grow">{teamCharacter.nickname}</p>
+                                                                    <div className="flex items-center grow gap-1">
+                                                                        <p className="text-black dark:text-white">{teamCharacter.nickname}</p>
+                                                                        <div className={clsx(
+                                                                            "text-yellow-600 dark:text-yellow-400",
+                                                                            teamCharacter.isManager ? '' : 'hidden'
+                                                                        )}><LeaderIcon size={12}/></div>
+                                                                    </div>
                                                                     <div className="flex gap-1">
                                                                         {teamCharacter.type === 'attack' ? data.classEffects.find(c => c.job === getCharacterInfoById(members, teamCharacter.userId, teamCharacter.nickname).job)?.effects.map((effect, index) => (
-                                                                            <div key={index} className="rounded-md px-1 py-0.2 bg-[#f0f0f0] dark:bg-[#222222] text-[8pt] text-black dark:text-white">{effect}</div>
+                                                                            <div key={index} className="rounded-md px-1 py-0.2 bg-[#eeeeee] dark:bg-[#2a2a2a] text-[8pt] text-black dark:text-white">{effect}</div>
                                                                         )) : data.classEffects.find(c => c.job === getCharacterInfoById(members, teamCharacter.userId, teamCharacter.nickname).job)?.burf.map((effect, index) => (
-                                                                            <div key={index} className="rounded-md px-1 py-0.2 bg-[#f0f0f0] dark:bg-[#222222] text-[8pt] text-black dark:text-white">{effect}</div>
+                                                                            <div key={index} className="rounded-md px-1 py-0.2 bg-[#eeeeee] dark:bg-[#2a2a2a] text-[8pt] text-black dark:text-white">{effect}</div>
                                                                         ))}
                                                                     </div>
                                                                 </div>
