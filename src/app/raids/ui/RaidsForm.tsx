@@ -1,22 +1,23 @@
 import { Key, useEffect, useMemo, useState } from "react";
-import { Boss } from "../api/checklist/boss/route";
-import { Party, Raid } from "../api/raids/route";
-import { getBossById, getBossDataById, handleAddParty, InvolvedCharacter, isExistPartyMember, isSelectedDifficulty, loadPartys, toCheckData, toStringByRaidDate } from "./raidsFeat";
-import { addToast, Avatar, Button, Card, CardBody, CardFooter, CardHeader, Checkbox, Chip, cn, DatePicker, Divider, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, Selection, SelectItem, Tab, Tabs, Tooltip } from "@heroui/react";
+import { Boss } from "@/app/api/checklist/boss/route";
+import { Party, Raid } from "@/app/api/raids/route";
+import { getBossById, getBossDataById, handleAddParty, InvolvedCharacter, isExistPartyMember, isSelectedDifficulty, toCheckData, toStringByRaidDate } from "../lib/raidsFeat";
+import { addToast, Avatar, Button, Card, CardBody, CardFooter, CardHeader, Checkbox, Chip, cn, DatePicker, Divider, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, Selection, SelectItem, Tab, Tabs, Tooltip } from "@heroui/react";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
 import { DateValue, getLocalTimeZone, now } from "@internationalized/date";
 import CalendarIcon from "@/Icons/CalendarIcon";
-import { getBossesById, getDifficultyByStage, getTextColorByDifficulty, getWeekContents, getWeekStages } from "../checklist/checklistFeat";
-import { ControlStage } from "../checklist/ChecklistForm";
-import { RaidMember } from "../api/raids/members/route";
-import { SettingIcon } from "../icons/SettingIcon";
+import { getBossesById, getDifficultyByStage, getTextColorByDifficulty, getWeekContents, getWeekStages } from "@/app/checklist/checklistFeat";
+import { ControlStage } from "@/app/checklist/ChecklistForm";
+import { RaidMember } from "@/app/api/raids/members/route";
+import { SettingIcon } from "@/app/icons/SettingIcon";
 import clsx from "clsx";
 import data from "@/data/characters/data.json";
 import { useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../store/store";
-import { getCharacterInfoById, getMaxLengthByContent, handleCancelInvolvedParty, handleJoinRaid, handleRefreshPartys, JoinRaidPayload } from "./raidListFeat";
-import { getImgByJob } from "../character/expeditionFeat";
+import { AppDispatch, RootState } from "@/app/store/store";
+import { getCharacterInfoById, getMaxLengthByContent, handleCancelInvolvedParty, handleJoinRaid, handleRefreshPartys, JoinRaidPayload } from "../lib/raidListFeat";
+import { getImgByJob } from "@/app/character/expeditionFeat";
 import LeaderIcon from "@/Icons/LeaderIcon";
+import { ListTurnBackIcon } from "@/Icons/ListTurnBackIcon";
 
 // 파티 내 레이드 목록 컴포넌트
 type PartyRaidsComponentProps = {
@@ -25,8 +26,6 @@ type PartyRaidsComponentProps = {
     bosses: Boss[]
 }
 export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsComponentProps) {
-    const [partys, setPartys] = useState<Party[]>([]);
-    const [results, setResults] = useState<Party[]>([]);
     const [searchContent, setSearchContent] = useState<Selection>(new Set([]));
     const [searchValue, setSearchValue] = useState(''); 
     const isMobile = useMobileQuery();
@@ -39,19 +38,15 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
     const [isLoadingRefresh, setLoadingRefresh] = useState(false);
     const [isLoadingCancel, setLoadingCancel] = useState(false);
     const [isRefreshCooldown, setRefreshCooldown] = useState(false);
+    const [isOpenChangePosition, setOpenChangePosition] = useState(false);
 
     const selectedParty = useSelector((state: RootState) => state.party.selectedRaid);
     const userId = useSelector((state: RootState) => state.party.userId);
 
-    useEffect(() => {
-        loadPartys(selectedParty, setPartys, setResults);
-    }, [selectedParty]);
-
-    useEffect(() => {
+    const filterPartys = (party: Party) => {
         const valueList = Array.from(searchContent);
-        if (valueList.length === 0) {
-            setResults(partys);
-        } else {
+        if (valueList.length === 0) return true;
+        else {
             const selectedIndex = Number(valueList[0]);
             const selectedBoss = bosses.sort((a, b) => {
                 const bDiff = bosses.find(boss => boss.name === b.name);
@@ -65,9 +60,18 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                 }
                 return bValue - aValue;
             })[selectedIndex];
-            setResults(partys.filter(party => getBossById(bosses, party.content)?.name === selectedBoss.name));
+            const isSameBossContent = getBossById(bosses, party.content)?.name === selectedBoss.name;
+            return isSameBossContent;
         }
-    }, [searchContent, partys]);
+    }
+
+    if (!selectedParty) {
+        return (
+            <div className="w-full">
+                <p>ㅗ디ㅣ재</p>
+            </div>
+        )
+    }
 
     return (
         <div className="w-full">
@@ -134,9 +138,9 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
             </div>
             <div className={clsx(
                 `grid gap-4 min-[816px]:grid-cols-2 min-[1232px]:grid-cols-3 mt-4`,
-                results.length > 0 ? '' : 'hidden'
+                selectedParty.party.filter(filterPartys).length > 0 ? '' : 'hidden'
             )}>
-                {results.map((party) => (
+                {selectedParty.party.filter(filterPartys).map((party) => (
                     <Card
                         key={party.id}
                         radius="sm"
@@ -148,7 +152,18 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                                         <p className="font-bold text-lg">{party.name}</p>
                                         <p className="text-sm">{toStringByRaidDate(new Date(party.date))}</p>
                                     </div>
-                                    <Button isIconOnly variant="light" size="sm"><SettingIcon size={24} className="text-gray-500 hover:text-gray-800 cursor-pointer" /></Button>
+                                    <Dropdown>
+                                        <DropdownTrigger>
+                                            <Button isIconOnly variant="light" size="sm"><SettingIcon size={24} className="text-gray-500 hover:text-gray-800 cursor-pointer" /></Button>
+                                        </DropdownTrigger>
+                                        <DropdownMenu aria-label="raid-actions">
+                                            <DropdownItem 
+                                                key="change-position"
+                                                startContent={<ListTurnBackIcon/>}>
+                                                순서 변경하기
+                                            </DropdownItem>
+                                        </DropdownMenu>
+                                    </Dropdown>
                                 </div>
                                 <p className="fadedtext text-sm mt-1">{getBossById(bosses, party.content)?.name}</p>
                                 <div className="grid gap-2 grid-cols-4 mt-1">
@@ -257,17 +272,16 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
             </div>
             <div className={clsx(
                 `w-full h-[500px] flex items-center justify-center flex-col`,
-                results.length === 0 ? '' : 'hidden'
+                selectedParty.party.filter(filterPartys).length === 0 ? '' : 'hidden'
             )}>
-                Nothing else.
+                추가된 레이드가 없습니다.
             </div>
             <AddPartyModal 
+                dispatch={dispatch}
                 selectedParty={selectedParty}
                 userId={userId}
                 isOpenAdd={isOpenAdd}
                 setOpenAdd={setOpenAdd}
-                partys={partys}
-                setPartys={setPartys}
                 bosses={bosses}/>
             <InvolvedModal
                 dispatch={dispatch}
@@ -275,7 +289,6 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                 members={members}
                 userId={userId}
                 bosses={bosses}
-                partys={partys}
                 selectedParty={selectedParty}
                 isOpenInvoled={isOpenInvolved}
                 setOpenInvoled={setOpenInvolved}
@@ -292,14 +305,13 @@ type InvoledModalProps = {
     members: RaidMember[],
     userId: string | null,
     bosses: Boss[],
-    partys: Party[],
     selectedParty: Raid | null,
     isOpenInvoled: boolean,
     setOpenInvoled: SetStateFn<boolean>,
     position: number,
     partyNumber: number
 }
-function InvolvedModal({ dispatch, partyId, members, userId, bosses, partys, selectedParty, isOpenInvoled, setOpenInvoled, position, partyNumber }: InvoledModalProps) {
+function InvolvedModal({ dispatch, partyId, members, userId, bosses, selectedParty, isOpenInvoled, setOpenInvoled, position, partyNumber }: InvoledModalProps) {
     const [tab, setTab] = useState('expeditions');
     const [tabType, setTabType] = useState('supporter');
     const [isManager, setManager] = useState(false);
@@ -307,8 +319,8 @@ function InvolvedModal({ dispatch, partyId, members, userId, bosses, partys, sel
     const [maxLength, setMaxLength] = useState(0);
     const [isLoadingJoin, setLoadingJoin] = useState(false);
     const party = useMemo(
-        () => partys.find(p => p.id === partyId),
-        [partys, partyId]
+        () => selectedParty?.party.find(p => p.id === partyId),
+        [selectedParty?.party, partyId]
     );
     const characters = useMemo(
         () => {
@@ -492,15 +504,14 @@ function InvolvedModal({ dispatch, partyId, members, userId, bosses, partys, sel
 
 // 파티 추가 Modal
 type AddPartyModalProps = {
+    dispatch: AppDispatch,
     selectedParty: Raid | null,
     userId: string | null,
     isOpenAdd: boolean,
     setOpenAdd: SetStateFn<boolean>,
-    partys: Party[],
-    setPartys: SetStateFn<Party[]>,
     bosses: Boss[]
 }
-function AddPartyModal({ selectedParty, userId, isOpenAdd, setOpenAdd, partys, setPartys, bosses }: AddPartyModalProps) {
+function AddPartyModal({ dispatch, selectedParty, userId, isOpenAdd, setOpenAdd, bosses }: AddPartyModalProps) {
     const [name, setName] = useState('');
     const [selectDate, setSelectDate] = useState<DateValue | null>(now(getLocalTimeZone()));
     const [content, setContent] = useState<Selection>(new Set([]));
@@ -607,7 +618,7 @@ function AddPartyModal({ selectedParty, userId, isOpenAdd, setOpenAdd, partys, s
                                     isLoading={isLoadingAdd}
                                     isDisabled={name.trim() === '' || !Array.from(content)[0] || stages.length === 0 || isSelectedDifficulty(stages)}
                                     className="mb-3 mt-4"
-                                    onPress={async () => await handleAddParty(userId, selectedParty, name, selectDate, Array.from(content)[0].toString(), stages, partys, setPartys, onClose, setLoadingAdd)}>
+                                    onPress={async () => await handleAddParty(userId, selectedParty, name, selectDate, Array.from(content)[0].toString(), stages, selectedParty?.party ?? [], onClose, setLoadingAdd, dispatch)}>
                                     추가
                                 </Button>
                             </div>
@@ -617,4 +628,14 @@ function AddPartyModal({ selectedParty, userId, isOpenAdd, setOpenAdd, partys, s
             </ModalContent>
         </Modal>
     )
+}
+
+// 순서 변경 Modal
+type ChangePositionModalProps = {
+    ui: {
+        isOpenChangePosition: boolean
+    },
+    payload: {
+        selectedParty: Raid | null
+    }
 }

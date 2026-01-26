@@ -10,18 +10,18 @@ import {
     Table, TableBody, TableCell, TableColumn, TableHeader, TableRow,
     Tooltip,
 } from "@heroui/react"
-import { Raid } from "../api/raids/route"
+import { Raid } from "@/app/api/raids/route"
 import React, { useEffect, useState } from "react"
-import { RaidMember } from "../api/raids/members/route"
-import { LoadingComponent } from "../UtilsCompnents"
-import { getCharacterByMain, getRemainContents, loadPartyData, printDifficulty } from "./partyFeat"
-import { Boss } from "../api/checklist/boss/route"
-import { getImgByJob } from "../character/expeditionFeat"
+import { RaidMember } from "@/app/api/raids/members/route"
+import { LoadingComponent } from "@/app/UtilsCompnents"
+import { getCharacterByMain, getRemainContents, loadPartyData, printDifficulty } from "../lib/partyFeat"
+import { Boss } from "@/app/api/checklist/boss/route"
+import { getImgByJob } from "@/app/character/expeditionFeat"
 import LeaderIcon from "@/Icons/LeaderIcon"
 import clsx from "clsx"
-import { getBackground50ByStage, getBackgroundByStage, getBorderByStage, getBossGoldByContent, getSimpleBossName, getTextColorByDifficulty } from "../checklist/checklistFeat"
+import { getBackground50ByStage, getBackgroundByStage, getBorderByStage, getBossGoldByContent, getSimpleBossName, getTextColorByDifficulty } from "@/app/checklist/checklistFeat"
 import { PartyRaidsComponent } from "./RaidsForm"
-import { AppDispatch, RootState } from "../store/store"
+import { AppDispatch, RootState } from "@/app/store/store"
 import { useSelector } from "react-redux"
 
 // 홈 컴포넌트

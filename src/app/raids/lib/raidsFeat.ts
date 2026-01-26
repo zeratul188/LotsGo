@@ -1,23 +1,12 @@
 import { dateValueToDate, SetStateFn } from "@/utiils/utils";
-import { Party, Raid, TeamCharacter } from "../api/raids/route";
-import { ControlStage } from "../checklist/ChecklistForm";
+import { Party, Raid, TeamCharacter } from "../../api/raids/route";
+import { ControlStage } from "../../checklist/ChecklistForm";
 import { DateValue } from "@internationalized/date";
 import { addToast } from "@heroui/react";
-import { getWeekContents, WeekContent } from "../checklist/checklistFeat";
-import { Boss } from "../api/checklist/boss/route";
-
-// 파티 데이터 불러오기
-export function loadPartys(
-    selectedParty: Raid | null, 
-    setPartys: SetStateFn<Party[]>,
-    setResults: SetStateFn<Party[]>
-) {
-    if (selectedParty) {
-        const partys: Party[] = selectedParty.party;
-        setPartys(partys);
-        setResults(partys);
-    }
-}
+import { getWeekContents, WeekContent } from "../../checklist/checklistFeat";
+import { Boss } from "../../api/checklist/boss/route";
+import { AppDispatch } from "../../store/store";
+import { updatePartys } from "../../store/partySlice";
 
 // 난이도 선택했는지 여부 파악 함수
 export function isSelectedDifficulty(stages: ControlStage[]) {
@@ -33,9 +22,9 @@ export async function handleAddParty(
     content: string,
     stages: ControlStage[],
     partys: Party[],
-    setPartys: SetStateFn<Party[]>,
     onClose: () => void,
-    setLoadingAdd: SetStateFn<boolean>
+    setLoadingAdd: SetStateFn<boolean>,
+    dispatch: AppDispatch
 ) {
     setLoadingAdd(true);
     if (selectedParty) {
@@ -73,7 +62,10 @@ export async function handleAddParty(
         }
         const clonePartys = structuredClone(partys);
         clonePartys.push(party);
-        setPartys(clonePartys);
+        dispatch(updatePartys({
+            id: selectedParty.id,
+            partys: clonePartys
+        }));
         addToast({
             title: `추가 완료`,
             description: `파티를 성공적으로 추가하였습니다.`,

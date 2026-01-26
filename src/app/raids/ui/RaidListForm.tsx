@@ -13,15 +13,15 @@ import {
     Pagination,
     Chip
 } from "@heroui/react";
-import { Raid } from "../api/raids/route";
+import { Raid } from "@/app/api/raids/route";
 import { useEffect, useState } from "react";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
 import clsx from "clsx";
-import { handleAddRaid, handleJoinParty, handleJoinPrivateParty, isInvitedParty, joinPublicParty } from "./raidListFeat";
+import { handleAddRaid, handleJoinParty, handleJoinPrivateParty, isInvitedParty, joinPublicParty } from "../lib/raidListFeat";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../store/store";
-import { LoadingComponent } from "../UtilsCompnents";
-import { Character } from "../store/loginSlice";
+import { AppDispatch, RootState } from "@/app/store/store";
+import { LoadingComponent } from "@/app/UtilsCompnents";
+import { Character } from "@/app/store/loginSlice";
 import LeaderIcon from "@/Icons/LeaderIcon";
 import LockerIcon from "@/Icons/LockerIcon";
 

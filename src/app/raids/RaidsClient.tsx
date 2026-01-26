@@ -2,11 +2,11 @@
 import { useEffect, useState } from "react";
 import { addToast, Tab, Tabs } from "@heroui/react"
 import { Raid } from "../api/raids/route";
-import { FindComponent } from "./RaidListForm";
+import { FindComponent } from "./ui/RaidListForm";
 import { LoginUser } from "../store/loginSlice";
-import { loadRaids } from "./raidListFeat";
-import { applyChangeParty, loadBosses } from "./partyFeat";
-import { PartyComponent } from "./PartyForm";
+import { loadRaids } from "./lib/raidListFeat";
+import { applyChangeParty, loadBosses } from "./lib/partyFeat";
+import { PartyComponent } from "./ui/PartyForm";
 import { Boss } from "../api/checklist/boss/route";
 import { useMobileQuery } from "@/utiils/utils";
 import { useDispatch, useSelector } from "react-redux";

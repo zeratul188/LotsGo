@@ -1,12 +1,12 @@
 import { normalize, SetStateFn } from "@/utiils/utils";
-import { Party, Raid, TeamCharacter } from "../api/raids/route";
+import { Party, Raid, TeamCharacter } from "../../api/raids/route";
 import { decrypt, encrypt } from "@/utiils/crypto";
 import { addToast } from "@heroui/react";
-import type { AppDispatch } from "../store/store";
-import { addRaid, initialRaids, updatePartys } from "../store/partySlice";
+import type { AppDispatch } from "../../store/store";
+import { addRaid, initialRaids, updatePartys } from "../../store/partySlice";
 import { getBossDataById, InvolvedCharacter } from "./raidsFeat";
-import { Boss } from "../api/checklist/boss/route";
-import { RaidMember } from "../api/raids/members/route";
+import { Boss } from "../../api/checklist/boss/route";
+import { RaidMember } from "../../api/raids/members/route";
 import characterData from "@/data/characters/data.json";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
