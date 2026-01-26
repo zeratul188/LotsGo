@@ -2,7 +2,7 @@ import { dateValueToDate, SetStateFn } from "@/utiils/utils";
 import { Party, Raid, TeamCharacter } from "../model/types";
 import { ControlStage } from "../../checklist/ChecklistForm";
 import { DateValue } from "@internationalized/date";
-import { addToast } from "@heroui/react";
+import { addToast, Selection } from "@heroui/react";
 import { getWeekContents, WeekContent } from "../../checklist/checklistFeat";
 import { Boss } from "../../api/checklist/boss/route";
 import { AppDispatch } from "../../store/store";
@@ -138,4 +138,28 @@ export function toCheckData<T extends InvolvedSource>(list: T[], maxLevel: numbe
 // 컨텐츠 ID로 콘텐츠 데이터 가져오기
 export function getBossDataById(bosses: Boss[], id: string): Boss | null {
     return bosses.find(b => b.id === id) ?? null;
+}
+
+export function filterPartys(bosses: Boss[], searchContent: Selection): (party: Party) => boolean {
+    return (party: Party) => {
+        const valueList = Array.from(searchContent);
+        if (valueList.length === 0) return true;
+        else {
+            const selectedIndex = Number(valueList[0]);
+            const selectedBoss = bosses.sort((a, b) => {
+                const bDiff = bosses.find(boss => boss.name === b.name);
+                const aDiff = bosses.find(boss => boss.name === a.name);
+                let bValue = 0, aValue = 0;
+                if (bDiff){
+                    bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
+                }
+                if (aDiff) {
+                    aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
+                }
+                return bValue - aValue;
+            })[selectedIndex];
+            const isSameBossContent = getBossById(bosses, party.content)?.name === selectedBoss.name;
+            return isSameBossContent;
+        }
+    }
 }

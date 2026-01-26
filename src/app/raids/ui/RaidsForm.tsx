@@ -1,8 +1,24 @@
 import { Key, useEffect, useMemo, useState } from "react";
 import { Boss } from "@/app/api/checklist/boss/route";
 import { Party, Raid } from "../model/types";
-import { getBossById, getBossDataById, handleAddParty, InvolvedCharacter, isExistPartyMember, isSelectedDifficulty, toCheckData, toStringByRaidDate } from "../lib/raidsFeat";
-import { addToast, Avatar, Button, Card, CardBody, CardFooter, CardHeader, Checkbox, Chip, cn, DatePicker, Divider, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, Selection, SelectItem, Tab, Tabs, Tooltip } from "@heroui/react";
+import { filterPartys, getBossById, getBossDataById, handleAddParty, InvolvedCharacter, isExistPartyMember, isSelectedDifficulty, toCheckData, toStringByRaidDate } from "../lib/raidsFeat";
+import { 
+    addToast, 
+    Avatar, 
+    Button, 
+    Card, CardBody, CardFooter, CardHeader, 
+    Checkbox, 
+    Chip, 
+    cn, 
+    DatePicker, 
+    Divider, 
+    Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, 
+    Input, 
+    Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, 
+    Select, Selection, SelectItem, 
+    Tab, Tabs, 
+    Tooltip 
+} from "@heroui/react";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
 import { DateValue, getLocalTimeZone, now } from "@internationalized/date";
 import CalendarIcon from "@/Icons/CalendarIcon";
@@ -43,32 +59,10 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
     const selectedParty = useSelector((state: RootState) => state.party.selectedRaid);
     const userId = useSelector((state: RootState) => state.party.userId);
 
-    const filterPartys = (party: Party) => {
-        const valueList = Array.from(searchContent);
-        if (valueList.length === 0) return true;
-        else {
-            const selectedIndex = Number(valueList[0]);
-            const selectedBoss = bosses.sort((a, b) => {
-                const bDiff = bosses.find(boss => boss.name === b.name);
-                const aDiff = bosses.find(boss => boss.name === a.name);
-                let bValue = 0, aValue = 0;
-                if (bDiff){
-                    bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
-                }
-                if (aDiff) {
-                    aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
-                }
-                return bValue - aValue;
-            })[selectedIndex];
-            const isSameBossContent = getBossById(bosses, party.content)?.name === selectedBoss.name;
-            return isSameBossContent;
-        }
-    }
-
     if (!selectedParty) {
         return (
-            <div className="w-full">
-                <p>ㅗ디ㅣ재</p>
+            <div className="w-full min-h-[800px] flex justify-center items-center">
+                <p>선택된 파티가 존재하지 않습니다.</p>
             </div>
         )
     }
@@ -138,9 +132,9 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
             </div>
             <div className={clsx(
                 `grid gap-4 min-[816px]:grid-cols-2 min-[1232px]:grid-cols-3 mt-4`,
-                selectedParty.party.filter(filterPartys).length > 0 ? '' : 'hidden'
+                selectedParty.party.filter(filterPartys(bosses, searchContent)).length > 0 ? '' : 'hidden'
             )}>
-                {selectedParty.party.filter(filterPartys).map((party) => (
+                {selectedParty.party.filter(filterPartys(bosses, searchContent)).map((party) => (
                     <Card
                         key={party.id}
                         radius="sm"
@@ -156,7 +150,13 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                                         <DropdownTrigger>
                                             <Button isIconOnly variant="light" size="sm"><SettingIcon size={24} className="text-gray-500 hover:text-gray-800 cursor-pointer" /></Button>
                                         </DropdownTrigger>
-                                        <DropdownMenu aria-label="raid-actions">
+                                        <DropdownMenu 
+                                            aria-label="raid-actions"
+                                            onAction={(key) => {
+                                                if (key === 'change-position') {
+                                                    setOpenChangePosition(true);
+                                                }
+                                            }}>
                                             <DropdownItem 
                                                 key="change-position"
                                                 startContent={<ListTurnBackIcon/>}>
@@ -272,7 +272,7 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
             </div>
             <div className={clsx(
                 `w-full h-[500px] flex items-center justify-center flex-col`,
-                selectedParty.party.filter(filterPartys).length === 0 ? '' : 'hidden'
+                selectedParty.party.filter(filterPartys(bosses, searchContent)).length === 0 ? '' : 'hidden'
             )}>
                 추가된 레이드가 없습니다.
             </div>
@@ -294,6 +294,16 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                 setOpenInvoled={setOpenInvolved}
                 position={partyPosition}
                 partyNumber={partyNumber}/>
+            <ChangePositionModal
+                ui={{
+                    dispatch: dispatch,
+                    isOpenChangePosition: isOpenChangePosition,
+                    setOpenChangePosition: setOpenChangePosition
+                }}
+                payload={{
+                    bosses: bosses,
+                    selectedParty: selectedParty
+                }}/>
         </div>
     )
 }
@@ -633,9 +643,30 @@ function AddPartyModal({ dispatch, selectedParty, userId, isOpenAdd, setOpenAdd,
 // 순서 변경 Modal
 type ChangePositionModalProps = {
     ui: {
-        isOpenChangePosition: boolean
+        isOpenChangePosition: boolean,
+        setOpenChangePosition: SetStateFn<boolean>,
+        dispatch: AppDispatch
     },
     payload: {
-        selectedParty: Raid | null
+        selectedParty: Raid | null,
+        bosses: Boss[]
     }
+}
+function ChangePositionModal({ui, payload}: ChangePositionModalProps) {
+    const [isLoadingApply, setLoadingApply] = useState(false);
+
+    return (
+        <Modal
+            radius="sm"
+            isOpen={ui.isOpenChangePosition}
+            onOpenChange={(isOpen) => ui.setOpenChangePosition(isOpen)}>
+            <ModalContent>
+                {(onClose) => (
+                    <>
+                        <ModalHeader>파티원 순서 변경</ModalHeader>
+                    </>
+                )}
+            </ModalContent>
+        </Modal>
+    )
 }
