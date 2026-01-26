@@ -1,5 +1,5 @@
 import { dateValueToDate, SetStateFn } from "@/utiils/utils";
-import { Party, Raid, TeamCharacter } from "../../api/raids/route";
+import { Party, Raid, TeamCharacter } from "../model/types";
 import { ControlStage } from "../../checklist/ChecklistForm";
 import { DateValue } from "@internationalized/date";
 import { addToast } from "@heroui/react";

@@ -1,42 +1,7 @@
-import { ControlStage } from "@/app/checklist/ChecklistForm"
+import { Party, Raid, TeamCharacter } from "@/app/raids/model/types";
 import { firestore } from "@/utiils/firebase"
 import { addDoc, arrayUnion, collection, doc, documentId, getDoc, getDocs, limit, query, runTransaction, updateDoc, where } from "firebase/firestore"
 import { NextRequest, NextResponse } from "next/server"
-
-// 파티 인원
-export type TeamCharacter = {
-    partyIndex: number,
-    position: number,
-    nickname: string,
-    userId: string,
-    type: string,
-    isManager: boolean
-}
-
-// 파티
-export type Party = {
-    id: string,
-    name: string,
-    date: Date,
-    content: string,
-    stages: ControlStage[],
-    teams: TeamCharacter[]
-}
-
-// 레이드 파티 정보
-export type Raid = {
-    id: string,
-    name: string,
-    managerId: string,
-    managerNickname: string,
-    avgLevel: number,
-    link: string,
-    isOpen: boolean,
-    isPwd: boolean,
-    pwd: string,
-    members: string[],
-    party: Party[]
-}
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);

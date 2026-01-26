@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from "react";
 import { addToast, Tab, Tabs } from "@heroui/react"
-import { Raid } from "../api/raids/route";
+import { Raid } from "./model/types";
 import { FindComponent } from "./ui/RaidListForm";
 import { LoginUser } from "../store/loginSlice";
 import { loadRaids } from "./lib/raidListFeat";

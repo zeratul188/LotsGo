@@ -1,6 +1,6 @@
 import { Key, useEffect, useMemo, useState } from "react";
 import { Boss } from "@/app/api/checklist/boss/route";
-import { Party, Raid } from "@/app/api/raids/route";
+import { Party, Raid } from "../model/types";
 import { getBossById, getBossDataById, handleAddParty, InvolvedCharacter, isExistPartyMember, isSelectedDifficulty, toCheckData, toStringByRaidDate } from "../lib/raidsFeat";
 import { addToast, Avatar, Button, Card, CardBody, CardFooter, CardHeader, Checkbox, Chip, cn, DatePicker, Divider, Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, Selection, SelectItem, Tab, Tabs, Tooltip } from "@heroui/react";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";

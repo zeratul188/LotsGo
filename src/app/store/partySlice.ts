@@ -1,11 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
-import { Party, Raid } from "../api/raids/route"
 import { RaidMember } from "../api/raids/members/route"
-
-export type ChangePartys = {
-    id: string,
-    partys: Party[]
-}
+import { ChangePartys, Raid } from "../raids/model/types"
 
 type PartyState = {
     raids: Raid[],

@@ -1,5 +1,5 @@
 import { normalize, SetStateFn } from "@/utiils/utils";
-import { Party, Raid, TeamCharacter } from "../../api/raids/route";
+import { Party, Raid, TeamCharacter } from "../model/types";
 import { decrypt, encrypt } from "@/utiils/crypto";
 import { addToast } from "@heroui/react";
 import type { AppDispatch } from "../../store/store";

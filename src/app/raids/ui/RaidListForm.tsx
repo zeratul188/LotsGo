@@ -13,7 +13,7 @@ import {
     Pagination,
     Chip
 } from "@heroui/react";
-import { Raid } from "@/app/api/raids/route";
+import { Raid } from "../model/types";
 import { useEffect, useState } from "react";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
 import clsx from "clsx";

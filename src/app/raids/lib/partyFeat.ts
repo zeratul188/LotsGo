@@ -1,6 +1,5 @@
 import { SetStateFn } from "@/utiils/utils";
-import { Raid } from "../../api/raids/route";
-import { Checklist, ChecklistContent, ContentItem, RaidMember } from "../../api/raids/members/route";
+import { Checklist, ContentItem, RaidMember } from "../../api/raids/members/route";
 import { addToast } from "@heroui/react";
 import { Boss } from "../../api/checklist/boss/route";
 import { collection, getDocs } from "firebase/firestore";
@@ -8,6 +7,7 @@ import { firestore } from "@/utiils/firebase";
 import { Character } from "../../signup/signupFeat";
 import type { AppDispatch } from "../../store/store";
 import { changeSelectedRaid, initialMembers } from "../../store/partySlice";
+import { Raid } from "../model/types";
 
 // 선택한 파티 적용 함수
 export function applyChangeParty(

@@ -10,7 +10,7 @@ import {
     Table, TableBody, TableCell, TableColumn, TableHeader, TableRow,
     Tooltip,
 } from "@heroui/react"
-import { Raid } from "@/app/api/raids/route"
+import { Raid } from "../model/types";
 import React, { useEffect, useState } from "react"
 import { RaidMember } from "@/app/api/raids/members/route"
 import { LoadingComponent } from "@/app/UtilsCompnents"
