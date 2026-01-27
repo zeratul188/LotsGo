@@ -1,7 +1,7 @@
 import { Key, useEffect, useMemo, useState } from "react";
 import { Boss } from "@/app/api/checklist/boss/route";
-import { DragableParty, Party, Raid, TeamCharacter, TeamMember } from "../model/types";
-import { filterPartys, getBossById, getBossDataById, handleAddParty, InvolvedCharacter, isExistPartyMember, isSelectedDifficulty, moveOrSwapPartys, toCheckData, toSlots, toStringByRaidDate } from "../lib/raidsFeat";
+import { DragableParty, Raid, TeamCharacter, TeamMember } from "../model/types";
+import { filterPartys, getBossById, getBossDataById, handleAddParty, handleChangePosition, InvolvedCharacter, isExistPartyMember, isSelectedDifficulty, moveOrSwapPartys, toCheckData, toSlots, toStringByRaidDate } from "../lib/raidsFeat";
 import { 
     addToast, 
     Avatar, 
@@ -653,7 +653,7 @@ type ChangePositionModalProps = {
     },
     payload: {
         partyId: string,
-        selectedParty: Raid | null,
+        selectedParty: Raid,
         bosses: Boss[],
         members: RaidMember[]
     }
@@ -674,7 +674,7 @@ function ChangePositionModal({ui, payload}: ChangePositionModalProps) {
     }, [payload.partyId]);
 
     useEffect(() => {
-        const findParty = payload.selectedParty?.party.find(p => p.id === payload.partyId);
+        const findParty = payload.selectedParty.party.find(p => p.id === payload.partyId);
         if (findParty) {
             const partyCount = Math.ceil(maxLength/4);
             const tempPartys: DragableParty[] = [];
@@ -689,6 +689,7 @@ function ChangePositionModal({ui, payload}: ChangePositionModalProps) {
                 }))
                 tempPartys.push({
                     id: `party-${i}`,
+                    index: i,
                     members: members
                 });
             }
@@ -711,7 +712,7 @@ function ChangePositionModal({ui, payload}: ChangePositionModalProps) {
         <Modal
             scrollBehavior="inside"
             isDismissable={false}
-            size="2xl"
+            size={maxLength > 4 ? "3xl" : 'md'}
             radius="sm"
             isOpen={ui.isOpenChangePosition}
             onOpenChange={(isOpen) => ui.setOpenChangePosition(isOpen)}>
@@ -721,7 +722,10 @@ function ChangePositionModal({ui, payload}: ChangePositionModalProps) {
                         <ModalHeader>파티원 순서 변경</ModalHeader>
                         <ModalBody>
                             <DndContext onDragEnd={onDragEnd}>
-                                <div className="w-full grid min-[808px]:grid-cols-2 gap-3">
+                                <div className={clsx(
+                                    "w-full grid gap-3",
+                                    maxLength > 4 ? 'min-[808px]:grid-cols-2' : ''
+                                )}>
                                     {partys.map((party, index) => (
                                         <PartyCard party={party} key={index} partyIndex={index+1} members={payload.members}/>
                                     ))}
@@ -733,7 +737,12 @@ function ChangePositionModal({ui, payload}: ChangePositionModalProps) {
                                 fullWidth
                                 radius="sm"
                                 color="primary"
-                                isLoading={isLoadingApply}>
+                                isLoading={isLoadingApply}
+                                onPress={async () => await handleChangePosition({
+                                    setLoadingApply, onClose, dispatch: ui.dispatch
+                                }, {
+                                    changePartys: partys, partyId: payload.partyId, raid: payload.selectedParty
+                                })}>
                                 적용하기
                             </Button>
                         </ModalFooter>

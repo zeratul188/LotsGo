@@ -51,5 +51,11 @@ export type TeamMember = {
 
 export type DragableParty = {
     id: string,
+    index: number,
     members: TeamMember[]
+}
+
+export type PartyResponse = {
+    message: string,
+    partys: Party[]
 }

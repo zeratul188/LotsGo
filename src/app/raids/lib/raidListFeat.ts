@@ -1,5 +1,5 @@
 import { normalize, SetStateFn } from "@/utiils/utils";
-import { Party, Raid, TeamCharacter } from "../model/types";
+import { Party, PartyResponse, Raid, TeamCharacter } from "../model/types";
 import { decrypt, encrypt } from "@/utiils/crypto";
 import { addToast } from "@heroui/react";
 import type { AppDispatch } from "../../store/store";
@@ -410,10 +410,6 @@ export function getMaxLengthByContent(bosses: Boss[], contentName: string): numb
 }
 
 // 파티 참여 이벤트 함수
-type InvolvedPartyResponse = {
-    message: string,
-    partys: Party[]
-}
 export type JoinRaidUI = {
     onClose: () => void,
     setLoadingJoin: SetStateFn<boolean>,
@@ -472,7 +468,7 @@ export async function handleJoinRaid(ui: JoinRaidUI, payload: JoinRaidPayload) {
         ui.setLoadingJoin(false);
         return;
     }
-    const data: InvolvedPartyResponse = await res.json();
+    const data: PartyResponse = await res.json();
     ui.dispatch(updatePartys({
         id: payload.raidId,
         partys: data.partys
@@ -550,7 +546,7 @@ export async function handleCancelInvolvedParty(ui: CancelRaidUI, payload: Cance
         ui.setLoadingCancel(false);
         return;
     }
-    const data: InvolvedPartyResponse = await res.json();
+    const data: PartyResponse = await res.json();
     ui.dispatch(updatePartys({
         id: payload.raidId,
         partys: data.partys

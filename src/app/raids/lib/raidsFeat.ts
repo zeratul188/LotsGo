@@ -1,5 +1,5 @@
 import { dateValueToDate, SetStateFn } from "@/utiils/utils";
-import { DragableParty, Party, Raid, TeamCharacter, TeamMember } from "../model/types";
+import { DragableParty, Party, PartyResponse, Raid, TeamCharacter, TeamMember } from "../model/types";
 import { ControlStage } from "../../checklist/ChecklistForm";
 import { DateValue } from "@internationalized/date";
 import { addToast, Selection } from "@heroui/react";
@@ -232,4 +232,78 @@ export function moveOrSwapPartys(partys: DragableParty[], activeId: string, over
         if (p.id === toPartyId) return { ...p, members: nextToTeams };
         return p;
     });
+}
+
+// 순서 변경 이벤트 함수
+type ChangePositionUI = {
+    setLoadingApply: SetStateFn<boolean>,
+    onClose: () => void,
+    dispatch: AppDispatch
+}
+type ChangePositionPayload = {
+    changePartys: DragableParty[],
+    raid: Raid,
+    partyId: string
+}
+export async function handleChangePosition(ui: ChangePositionUI, payload: ChangePositionPayload) {
+    ui.setLoadingApply(true);
+    const findParty = payload.raid.party.find(p => p.id === payload.partyId);
+    if (!findParty) {
+        addToast({
+            title: `오류 발생!`,
+            description: `순서를 변경할 파티가 존재하지 않습니다.`,
+            color: "danger"
+        });
+        ui.setLoadingApply(false);
+        return;
+    }
+    const newMembers: TeamCharacter[] = [];
+    payload.changePartys.forEach(party => {
+        party.members.forEach(member => {
+            const findCharacter = findParty.teams.find(t => t.userId === member.userId);
+            if (findCharacter) {
+                newMembers.push({
+                    ...findCharacter,
+                    partyIndex: party.index,
+                    position: member.partyIndex
+                });
+            }
+        });
+    });
+    const res = await fetch(`/api/raids`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            type: 'changePositionParty',
+            raidId: payload.raid.id,
+            partyId: payload.partyId,
+            changeTeams: newMembers
+        })
+    });
+    if (!res.ok) {
+        let message = '요청 중 오류가 발생하였습니다.';
+        try {
+            const data = await res.json();
+            message = data?.error ?? message;
+        } catch {}
+        addToast({
+            title: `요청 오류`,
+            description: message,
+            color: "danger"
+        });
+        ui.setLoadingApply(false);
+        return;
+    }
+    const data: PartyResponse = await res.json();
+    ui.dispatch(updatePartys({
+        id: payload.raid.id,
+        partys: data.partys
+    }));
+    addToast({
+        title: `변경 완료`,
+        description: data.message,
+        color: "success"
+    });
+    ui.setLoadingApply(false);
+    ui.onClose();
 }
