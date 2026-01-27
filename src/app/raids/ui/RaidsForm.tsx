@@ -1,7 +1,7 @@
 import { Key, useEffect, useMemo, useState } from "react";
 import { Boss } from "@/app/api/checklist/boss/route";
-import { Party, Raid } from "../model/types";
-import { filterPartys, getBossById, getBossDataById, handleAddParty, InvolvedCharacter, isExistPartyMember, isSelectedDifficulty, toCheckData, toStringByRaidDate } from "../lib/raidsFeat";
+import { DragableParty, Party, Raid, TeamCharacter, TeamMember } from "../model/types";
+import { filterPartys, getBossById, getBossDataById, handleAddParty, InvolvedCharacter, isExistPartyMember, isSelectedDifficulty, moveOrSwapPartys, toCheckData, toSlots, toStringByRaidDate } from "../lib/raidsFeat";
 import { 
     addToast, 
     Avatar, 
@@ -34,6 +34,7 @@ import { getCharacterInfoById, getMaxLengthByContent, handleCancelInvolvedParty,
 import { getImgByJob } from "@/app/character/expeditionFeat";
 import LeaderIcon from "@/Icons/LeaderIcon";
 import { ListTurnBackIcon } from "@/Icons/ListTurnBackIcon";
+import { DndContext, DragEndEvent, useDraggable, useDroppable } from "@dnd-kit/core";
 
 // 파티 내 레이드 목록 컴포넌트
 type PartyRaidsComponentProps = {
@@ -154,6 +155,7 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                                             aria-label="raid-actions"
                                             onAction={(key) => {
                                                 if (key === 'change-position') {
+                                                    setPartyId(party.id);
                                                     setOpenChangePosition(true);
                                                 }
                                             }}>
@@ -302,7 +304,9 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                 }}
                 payload={{
                     bosses: bosses,
-                    selectedParty: selectedParty
+                    selectedParty: selectedParty,
+                    partyId: partyId ?? 'null',
+                    members: members
                 }}/>
         </div>
     )
@@ -648,15 +652,66 @@ type ChangePositionModalProps = {
         dispatch: AppDispatch
     },
     payload: {
+        partyId: string,
         selectedParty: Raid | null,
-        bosses: Boss[]
+        bosses: Boss[],
+        members: RaidMember[]
     }
 }
 function ChangePositionModal({ui, payload}: ChangePositionModalProps) {
     const [isLoadingApply, setLoadingApply] = useState(false);
+    const [partys, setPartys] = useState<DragableParty[]>([]);
+
+    const maxLength = useMemo(() => {
+        if (payload.selectedParty) {
+            const party = payload.selectedParty.party.find(p => p.id === payload.partyId);
+            if (party) {
+                const findBoss = getBossDataById(payload.bosses, party.content);
+                if (findBoss) return findBoss.max;
+            }
+        }
+        return 0;
+    }, [payload.partyId]);
+
+    useEffect(() => {
+        const findParty = payload.selectedParty?.party.find(p => p.id === payload.partyId);
+        if (findParty) {
+            const partyCount = Math.ceil(maxLength/4);
+            const tempPartys: DragableParty[] = [];
+            for (let i = 1; i <= partyCount; i++) {
+                const partyMembers: TeamCharacter[] = findParty.teams.filter(t => t.partyIndex === i);
+                const members: TeamMember[] = partyMembers.map(c => ({
+                    userId: c.userId,
+                    nickname: c.nickname,
+                    type: c.type,
+                    isManager: c.isManager,
+                    partyIndex: c.position
+                }))
+                tempPartys.push({
+                    id: `party-${i}`,
+                    members: members
+                });
+            }
+            setPartys(tempPartys);
+        }
+    }, [ui.isOpenChangePosition]);
+
+    const onDragEnd = (e: DragEndEvent) => {
+        const activeId = String(e.active.id);
+        const overId = e.over?.id ? String(e.over.id) : null;
+        if (!overId) return;
+
+        if (!overId.startsWith("slot:")) return;
+        if (!activeId.startsWith('char:')) return;
+
+        setPartys(prev => moveOrSwapPartys(prev, activeId, overId));
+    }
 
     return (
         <Modal
+            scrollBehavior="inside"
+            isDismissable={false}
+            size="2xl"
             radius="sm"
             isOpen={ui.isOpenChangePosition}
             onOpenChange={(isOpen) => ui.setOpenChangePosition(isOpen)}>
@@ -664,9 +719,103 @@ function ChangePositionModal({ui, payload}: ChangePositionModalProps) {
                 {(onClose) => (
                     <>
                         <ModalHeader>파티원 순서 변경</ModalHeader>
+                        <ModalBody>
+                            <DndContext onDragEnd={onDragEnd}>
+                                <div className="w-full grid min-[808px]:grid-cols-2 gap-3">
+                                    {partys.map((party, index) => (
+                                        <PartyCard party={party} key={index} partyIndex={index+1} members={payload.members}/>
+                                    ))}
+                                </div>
+                            </DndContext>
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button
+                                fullWidth
+                                radius="sm"
+                                color="primary"
+                                isLoading={isLoadingApply}>
+                                적용하기
+                            </Button>
+                        </ModalFooter>
                     </>
                 )}
             </ModalContent>
         </Modal>
+    )
+}
+
+// 순서 변경 파티 영역
+function PartyCard({ members, party, partyIndex }: { members: RaidMember[], party: DragableParty, partyIndex: number }) {
+    const slots = toSlots(party);
+    return (
+        <div className="w-full flex flex-col gap-2">
+            <h3 className="font-bold">{partyIndex}파티</h3>
+            {slots.map((member, slotIndex) => (
+                <PartySlot key={slotIndex} partyId={party.id} slotIndex={slotIndex} member={member} members={members}/>
+            ))}
+        </div>
+    )
+}
+
+// 슬롯에 있는 캐릭터 정보 표시
+type PartySlotProps = {
+    partyId: string,
+    slotIndex: number,
+    member: TeamMember | null,
+    members: RaidMember[]
+}
+function PartySlot({ partyId, slotIndex, member, members }: PartySlotProps) {
+    const { setNodeRef, isOver } = useDroppable({ id: `slot:${partyId}:${slotIndex}` });
+    const { attributes, listeners, setNodeRef: setDraggableRef, transform } = useDraggable({
+        id: `char:${partyId}:${member?.userId}`,
+    });
+    const style = transform ? {transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`} : undefined;
+
+    return (
+        <div 
+            ref={setNodeRef} 
+            className={clsx(
+                'h-14 py-2 px-3 rounded-[8px] border-2 flex items-center gap-2 touch-none ',
+                member ? member.type === 'attack' ? 'border-red-700' : 'border-green-500' : 'border-gray-300 dark:border-gray-700',
+                isOver ? 'bg-gray-300 dark:bg-gray-700' : ''
+            )}>
+            {member ? (
+                <div
+                    ref={setDraggableRef}
+                    {...listeners}
+                    {...attributes}
+                    style={style}
+                    className="w-full cursor-grab flex gap-4 items-center rounded-[8px] bg-white dark:bg-[#171717]">
+                    <Avatar isBordered size="sm" src={getImgByJob(getCharacterInfoById(members, member.userId, member.nickname).job)}/>
+                    <div className="grow text-left">
+                        <div className="flex gap-1">
+                            <div className="flex items-center grow gap-1">
+                                <p className="text-black dark:text-white">{member.nickname}</p>
+                                <div className={clsx(
+                                    "text-yellow-600 dark:text-yellow-400",
+                                    member.isManager ? '' : 'hidden'
+                                )}><LeaderIcon size={12}/></div>
+                            </div>
+                            <div className="flex gap-1">
+                                {member.type === 'attack' ? data.classEffects.find(c => c.job === getCharacterInfoById(members, member.userId, member.nickname).job)?.effects.map((effect, index) => (
+                                    <div key={index} className="rounded-md px-1 py-0.2 bg-[#eeeeee] dark:bg-[#2a2a2a] text-[8pt] text-black dark:text-white flex items-center text-center">{effect}</div>
+                                )) : data.classEffects.find(c => c.job === getCharacterInfoById(members, member.userId, member.nickname).job)?.burf.map((effect, index) => (
+                                    <div key={index} className="rounded-md px-1 py-0.2 bg-[#eeeeee] dark:bg-[#2a2a2a] text-[8pt] text-black dark:text-white flex items-center text-center">{effect}</div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="flex gap-1">
+                            <p className="fadedtext text-[9pt] grow">{getCharacterInfoById(members, member.userId, member.nickname).job} · Lv.{getCharacterInfoById(members, member.userId, member.nickname).level} · {getCharacterInfoById(members, member.userId, member.nickname).server}</p>
+                            <p className="fadedtext text-[9pt]">{member.userId}</p>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <>
+                    <p className="text-lg font-bold fadedtext">{slotIndex+1}</p>
+                    <p className="fadedtext ml-1">파티원이 비어있습니다.</p>
+                </>
+            )}
+        </div>
     )
 }

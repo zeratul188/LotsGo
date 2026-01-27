@@ -39,3 +39,17 @@ export type ChangePartys = {
     id: string,
     partys: Party[]
 }
+
+// Dragable 타입들 - 순서 변경
+export type TeamMember = {
+    userId: string,
+    nickname: string,
+    type: string,
+    isManager: boolean,
+    partyIndex: number
+}
+
+export type DragableParty = {
+    id: string,
+    members: TeamMember[]
+}

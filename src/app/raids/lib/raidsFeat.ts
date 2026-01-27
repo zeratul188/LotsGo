@@ -1,5 +1,5 @@
 import { dateValueToDate, SetStateFn } from "@/utiils/utils";
-import { Party, Raid, TeamCharacter } from "../model/types";
+import { DragableParty, Party, Raid, TeamCharacter, TeamMember } from "../model/types";
 import { ControlStage } from "../../checklist/ChecklistForm";
 import { DateValue } from "@internationalized/date";
 import { addToast, Selection } from "@heroui/react";
@@ -7,6 +7,9 @@ import { getWeekContents, WeekContent } from "../../checklist/checklistFeat";
 import { Boss } from "../../api/checklist/boss/route";
 import { AppDispatch } from "../../store/store";
 import { updatePartys } from "../../store/partySlice";
+
+// 파티 1개당 참여가능한 최대 인원 수
+const MAX_MEMBER_LENGTH = 4;
 
 // 난이도 선택했는지 여부 파악 함수
 export function isSelectedDifficulty(stages: ControlStage[]) {
@@ -162,4 +165,71 @@ export function filterPartys(bosses: Boss[], searchContent: Selection): (party: 
             return isSameBossContent;
         }
     }
+}
+
+function parseSlotId(id: string) {
+  // slot:{partyId}:{slotIndex}
+    const [, partyId, slotIndex] = id.split(':');
+    return { partyId, slotIndex: Number(slotIndex)};
+}
+
+function parseCharId(id: string) {
+  // char:{partyId}:{charId}
+  const [, partyId, charId] = id.split(":");
+  return { partyId, charId };
+}
+
+// teams를 slotIndex 기준으로 "슬롯 배열(길이 max)"로 만들기
+export function toSlots(party: DragableParty) {
+    const slots: (TeamMember | null)[] = Array(MAX_MEMBER_LENGTH).fill(null);
+    for (const c of party.members) {
+        const idx = (c.partyIndex ?? 1) -1;
+        if (idx >= 0 && idx < MAX_MEMBER_LENGTH) slots[idx] = c;
+    }
+    return slots;
+}
+
+// 슬롯 배열을 다시 teams로 (null 제거, partyIndex 재정리)
+function fromSlots(slots: (TeamMember | null)[]) {
+    return slots
+        .map((c, idx) => (c ? {...c, partyIndex: idx + 1} : null))
+        .filter(Boolean) as TeamMember[];
+}
+
+export function moveOrSwapPartys(partys: DragableParty[], activeId: string, overId: string): DragableParty[] {
+    const { partyId: fromPartyId, charId } = parseCharId(activeId);
+    const { partyId: toPartyId, slotIndex: toSlotIndex } = parseSlotId(overId);
+
+    const fromParty = partys.find(p => p.id === fromPartyId);
+    const toParty = partys.find(p => p.id === toPartyId);
+    if (!fromParty || !toParty) return partys;
+
+    const fromSlotsArr = toSlots(fromParty);
+    const toSlotsArr = fromPartyId === toPartyId ? fromSlotsArr : toSlots(toParty);
+
+    const fromSlotIndex = fromSlotsArr.findIndex(c => c?.userId === charId);
+    if (fromSlotIndex === -1) return partys;
+
+    const moving = fromSlotsArr[fromSlotIndex];
+    if (!moving) return partys;
+
+    const target = toSlotsArr[toSlotIndex] ?? null;
+
+    if (fromPartyId === toPartyId) {
+        fromSlotsArr[fromSlotIndex] = target ?? null;
+        fromSlotsArr[toSlotIndex] = moving;
+        const nextTeams = fromSlots(fromSlotsArr);
+        return partys.map(p => (p.id === fromPartyId ? { ...p, members: nextTeams } : p));
+    }
+
+    fromSlotsArr[fromSlotIndex] = target;
+    toSlotsArr[toSlotIndex] = moving;  
+    const nextFromTeams = fromSlots(fromSlotsArr);
+    const nextToTeams = fromSlots(toSlotsArr);
+
+    return partys.map(p => {
+        if (p.id === fromPartyId) return { ...p, members: nextFromTeams };
+        if (p.id === toPartyId) return { ...p, members: nextToTeams };
+        return p;
+    });
 }
