@@ -14,7 +14,7 @@ export type TeamCharacter = {
 export type Party = {
     id: string,
     name: string,
-    date: Date,
+    date: string,
     content: string,
     stages: ControlStage[],
     teams: TeamCharacter[]

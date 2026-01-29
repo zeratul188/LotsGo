@@ -1,7 +1,7 @@
 import { Key, useEffect, useMemo, useState } from "react";
 import { Boss } from "@/app/api/checklist/boss/route";
 import { DragableParty, Raid, TeamCharacter, TeamMember } from "../model/types";
-import { filterPartys, getBossById, getBossDataById, getTeamCharactersList, handleAddParty, handleChangeManager, handleChangePosition, InvolvedCharacter, isExistPartyMember, isManagerOfParty, isSelectedDifficulty, moveOrSwapPartys, toCheckData, toSlots, toStringByRaidDate } from "../lib/raidsFeat";
+import { deleteParty, filterPartys, getBossById, getBossDataById, getTeamCharactersList, handleAddParty, handleChangeManager, handleChangePosition, InvolvedCharacter, isExistPartyMember, isManagerOfParty, isSelectedDifficulty, moveOrSwapPartys, toCheckData, toSlots, toStringByRaidDate } from "../lib/raidsFeat";
 import { 
     addToast, 
     Avatar, 
@@ -36,6 +36,7 @@ import LeaderIcon from "@/Icons/LeaderIcon";
 import { ListTurnBackIcon } from "@/Icons/ListTurnBackIcon";
 import { DndContext, DragEndEvent, useDraggable, useDroppable } from "@dnd-kit/core";
 import { CrownIcon } from "@/Icons/CrownIcon";
+import DeleteIcon from "@/app/icons/DeleteIcon";
 
 // 파티 내 레이드 목록 컴포넌트
 type PartyRaidsComponentProps = {
@@ -155,7 +156,7 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                                         </DropdownTrigger>
                                         <DropdownMenu 
                                             aria-label="raid-actions"
-                                            onAction={(key) => {
+                                            onAction={async (key) => {
                                                 if (key === 'change-position') {
                                                     if (!isManagerOfParty(userId, party)) {
                                                         addToast({
@@ -178,6 +179,10 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                                                     }
                                                     setPartyId(party.id);
                                                     setOpenChangeManager(true);
+                                                } else if (key === 'delete-party') {
+                                                    if (confirm('해당 파티를 삭제하시겠습니까? 삭제하면 복구하실 수 없습니다.')) {
+                                                        await deleteParty(dispatch, selectedParty, party.id);
+                                                    }
                                                 }
                                             }}>
                                             <DropdownItem 
@@ -190,22 +195,32 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                                                 startContent={<CrownIcon className="w-5 h-5" />}>
                                                 공대장 변경하기
                                             </DropdownItem>
+                                            <DropdownItem 
+                                                key="delete-party"
+                                                color="danger"
+                                                startContent={<DeleteIcon/>}
+                                                className="text-danger">
+                                                파티 삭제하기
+                                            </DropdownItem>
                                         </DropdownMenu>
                                     </Dropdown>
                                 </div>
                                 <p className="fadedtext text-sm mt-1">{getBossById(bosses, party.content)?.name}</p>
                                 <div className="grid gap-2 grid-cols-4 mt-1">
-                                    {party.stages.map((stage, index) => (
-                                        <Chip
-                                            key={index}
-                                            color={getTextColorByDifficulty(stage.difficulty)}
-                                            radius="sm"
-                                            variant="flat"
-                                            size="sm"
-                                            className="min-w-full text-center">
-                                            {stage.difficulty} {stage.stage}관
-                                        </Chip>
-                                    ))}
+                                    {party.stages.map((stage, index) => {
+                                        if (stage.difficulty === '선택안함') return null;
+                                        return (
+                                            <Chip
+                                                key={index}
+                                                color={getTextColorByDifficulty(stage.difficulty)}
+                                                radius="sm"
+                                                variant="flat"
+                                                size="sm"
+                                                className="min-w-full text-center">
+                                                {stage.difficulty} {stage.stage}관
+                                            </Chip>
+                                        )
+                                    })}
                                 </div>
                             </div>
                         </CardHeader>
@@ -591,7 +606,13 @@ function AddPartyModal({ dispatch, selectedParty, userId, isOpenAdd, setOpenAdd,
         <Modal 
             radius="sm"
             isOpen={isOpenAdd}
-            onOpenChange={(isOpen) => setOpenAdd(isOpen)}>
+            onOpenChange={(isOpen) => setOpenAdd(isOpen)}
+            onClose={() => {
+                setName('');
+                setSelectDate(now(getLocalTimeZone()));
+                setContent(new Set([]));
+                setStages([]);
+            }}>
             <ModalContent>
                 {(onClose) => (
                     <>

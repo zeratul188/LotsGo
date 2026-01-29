@@ -40,7 +40,7 @@ export async function handleAddParty(
         const party: Party = {
             id: partyId,
             name: name,
-            date: dateValueToDate(date) ?? now,
+            date: (dateValueToDate(date) ?? now).toISOString(),
             content: content,
             stages: stages,
             teams: []
@@ -386,4 +386,62 @@ export async function handleChangeManager(ui: ChangeManagerUI, payload: ChangeMa
     });
     ui.setLoadingChange(false);
     ui.onClose();
+}
+
+// 파티 삭제 이벤트 함수
+export async function deleteParty(
+    dispatch: AppDispatch,
+    raid: Raid | null,
+    partyId: string
+) {
+    console.log(partyId);
+    if (!raid) {
+        addToast({
+            title: `오류 발생!`,
+            description: `처리 중 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        return;
+    }
+    const prevPartys = structuredClone(raid.party);
+    dispatch(updatePartys({
+        id: raid.id,
+        partys: raid.party.filter(p => p.id !== partyId)
+    }));
+    const res = await fetch(`/api/raids`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            type: 'deleteParty',
+            raidId: raid.id,
+            partyId: partyId
+        })
+    });
+    if (!res.ok) {
+        let message = '요청 중 오류가 발생하였습니다.';
+        try {
+            const data = await res.json();
+            message = data?.error ?? message;
+        } catch {}
+        dispatch(updatePartys({
+            id: raid.id,
+            partys: prevPartys
+        }));
+        addToast({
+            title: `요청 오류`,
+            description: message,
+            color: "danger"
+        });
+        return;
+    }
+    const data: PartyResponse = await res.json();
+    dispatch(updatePartys({
+        id: raid.id,
+        partys: data.partys
+    }));
+    addToast({
+        title: `삭제 완료`,
+        description: data.message,
+        color: "success"
+    });
 }
