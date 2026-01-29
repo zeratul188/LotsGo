@@ -1,7 +1,7 @@
 import { Key, useEffect, useMemo, useState } from "react";
 import { Boss } from "@/app/api/checklist/boss/route";
 import { DragableParty, Raid, TeamCharacter, TeamMember } from "../model/types";
-import { filterPartys, getBossById, getBossDataById, handleAddParty, handleChangePosition, InvolvedCharacter, isExistPartyMember, isSelectedDifficulty, moveOrSwapPartys, toCheckData, toSlots, toStringByRaidDate } from "../lib/raidsFeat";
+import { filterPartys, getBossById, getBossDataById, getTeamCharactersList, handleAddParty, handleChangeManager, handleChangePosition, InvolvedCharacter, isExistPartyMember, isManagerOfParty, isSelectedDifficulty, moveOrSwapPartys, toCheckData, toSlots, toStringByRaidDate } from "../lib/raidsFeat";
 import { 
     addToast, 
     Avatar, 
@@ -35,6 +35,7 @@ import { getImgByJob } from "@/app/character/expeditionFeat";
 import LeaderIcon from "@/Icons/LeaderIcon";
 import { ListTurnBackIcon } from "@/Icons/ListTurnBackIcon";
 import { DndContext, DragEndEvent, useDraggable, useDroppable } from "@dnd-kit/core";
+import { CrownIcon } from "@/Icons/CrownIcon";
 
 // 파티 내 레이드 목록 컴포넌트
 type PartyRaidsComponentProps = {
@@ -56,6 +57,7 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
     const [isLoadingCancel, setLoadingCancel] = useState(false);
     const [isRefreshCooldown, setRefreshCooldown] = useState(false);
     const [isOpenChangePosition, setOpenChangePosition] = useState(false);
+    const [isOpenChangeManager, setOpenChangeManager] = useState(false);
 
     const selectedParty = useSelector((state: RootState) => state.party.selectedRaid);
     const userId = useSelector((state: RootState) => state.party.userId);
@@ -155,14 +157,38 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                                             aria-label="raid-actions"
                                             onAction={(key) => {
                                                 if (key === 'change-position') {
+                                                    if (!isManagerOfParty(userId, party)) {
+                                                        addToast({
+                                                            title: `권한 없음`,
+                                                            description: "해당 파티의 공대장만 순서를 변경하실 수 있습니다.",
+                                                            color: "danger"
+                                                        });
+                                                        return;
+                                                    }
                                                     setPartyId(party.id);
                                                     setOpenChangePosition(true);
+                                                } else if (key === 'change-manager') {
+                                                    if (!isManagerOfParty(userId, party)) {
+                                                        addToast({
+                                                            title: `권한 없음`,
+                                                            description: "해당 파티의 공대장만 공대장을 위임할 수 있습니다.",
+                                                            color: "danger"
+                                                        });
+                                                        return;
+                                                    }
+                                                    setPartyId(party.id);
+                                                    setOpenChangeManager(true);
                                                 }
                                             }}>
                                             <DropdownItem 
                                                 key="change-position"
                                                 startContent={<ListTurnBackIcon/>}>
                                                 순서 변경하기
+                                            </DropdownItem>
+                                            <DropdownItem 
+                                                key="change-manager"
+                                                startContent={<CrownIcon className="w-5 h-5" />}>
+                                                공대장 변경하기
                                             </DropdownItem>
                                         </DropdownMenu>
                                     </Dropdown>
@@ -308,6 +334,14 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                     partyId: partyId ?? 'null',
                     members: members
                 }}/>
+            <ChangeManagerModal
+                dispatch={dispatch}
+                isOpenChangeManager={isOpenChangeManager}
+                partyId={partyId}
+                selectedParty={selectedParty}
+                setOpenChangeManager={setOpenChangeManager}
+                userId={userId}
+                members={members}/>
         </div>
     )
 }
@@ -411,7 +445,6 @@ function InvolvedModal({ dispatch, partyId, members, userId, bosses, selectedPar
             scrollBehavior="inside"
             onClose={() => {
                 setSelectedCharacter(null);
-                setHaveManager(false);
                 setManager(false);
                 setTabType('supporter');
             }}>
@@ -826,5 +859,127 @@ function PartySlot({ partyId, slotIndex, member, members }: PartySlotProps) {
                 </>
             )}
         </div>
+    )
+}
+
+// 공대장 변경 Modal
+type ChangeManagerModalProps = {
+    dispatch: AppDispatch,
+    setOpenChangeManager: SetStateFn<boolean>,
+    isOpenChangeManager: boolean,
+    selectedParty: Raid | null,
+    partyId: string | null,
+    userId: string | null,
+    members: RaidMember[]
+}
+function ChangeManagerModal({ dispatch, setOpenChangeManager, isOpenChangeManager, selectedParty, partyId, userId, members }: ChangeManagerModalProps) {
+    const characters = useMemo(() => { return getTeamCharactersList(selectedParty, partyId) }, [partyId]);
+    const [selectedCharacter, setSelectedCharacter] = useState<TeamCharacter | null>(null);
+    const [isLoadingChange, setLoadingChange] = useState(false);
+
+    if (!selectedParty || !partyId || !userId) {
+        return (
+            <Modal
+                radius="sm"
+                isOpen={isOpenChangeManager}
+                onOpenChange={(isOpen) => setOpenChangeManager(isOpen)}>
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader>오류 발생!</ModalHeader>
+                            <ModalContent>
+                                <div className="min-h-[200px] flex justify-center items-center text-md">
+                                    데이터를 가져오는데 문제가 발생하였습니다.
+                                </div>
+                            </ModalContent>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+        )
+    }
+
+    return (
+        <Modal
+            radius="sm"
+            scrollBehavior="inside"
+            isOpen={isOpenChangeManager}
+            onOpenChange={(isOpen) => setOpenChangeManager(isOpen)}
+            onClose={() => {
+                setSelectedCharacter(null);
+            }}>
+            <ModalContent>
+                {(onClose) => (
+                    <>
+                        <ModalHeader>공대장 변경</ModalHeader>
+                        <ModalBody>
+                            <p>공대장을 위임할 캐릭터를 선택하세요.</p>
+                            <div className="w-full max-h-[400px] overflow-y-auto overflow-x-hidden">
+                                {characters.map((character, index) => {
+                                    const characterInfo = getCharacterInfoById(members, character.userId, character.nickname);
+                                    return (
+                                        <div key={index} className="w-full min-h-[64px] mb-1">
+                                            <Checkbox
+                                                aria-label={character.nickname}
+                                                classNames={{
+                                                    base: cn(
+                                                        "w-full max-w-full bg-content1",
+                                                        "hover:bg-content2",
+                                                        "cursor-pointer rounded-lg gap-2 border-2 border-transparent m-auto box-border",
+                                                        "data-[selected=true]:border-primary"
+                                                    ),
+                                                    label: "w-full",
+                                                }}
+                                                isSelected={selectedCharacter ? selectedCharacter.nickname === character.nickname : false}
+                                                onValueChange={(isSelected) => {
+                                                    if (selectedCharacter) {
+                                                        if (selectedCharacter.nickname === character.nickname) {
+                                                            setSelectedCharacter(null);
+                                                            return;
+                                                        }
+                                                    }
+                                                    setSelectedCharacter(character);
+                                                }}>
+                                                <div className="w-full flex flex-col">
+                                                    <span className="fadedtext text-sm">@{characterInfo.server} · {characterInfo.job} · Lv.{characterInfo.level}</span>
+                                                    <div className="w-full flex gap-1 items-center">
+                                                        <span className="text-md grow">{character.nickname}</span>
+                                                        <span className="fadedtext text-sm">{character.userId}</span>
+                                                    </div>
+                                                </div>
+                                            </Checkbox>
+                                        </div>
+                                    )
+                                })}
+                                <div className={clsx(
+                                    "w-full h-[100px] flex justify-center items-center fadedtext",
+                                    characters.length === 0 ? '' : 'hidden'
+                                )}>
+                                    공대장을 위임할 인원이 존재하지 않습니다.
+                                </div>
+                            </div>
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button
+                                fullWidth
+                                radius="sm"
+                                color="primary"
+                                isLoading={isLoadingChange}
+                                isDisabled={selectedCharacter === null}
+                                onPress={async () => await handleChangeManager({
+                                    setLoadingChange, onClose, dispatch
+                                }, {
+                                    changeCharacter: selectedCharacter,
+                                    partyId: partyId,
+                                    raid: selectedParty,
+                                    userId: userId
+                                })}>
+                                위임하기
+                            </Button>
+                        </ModalFooter>
+                    </>
+                )}
+            </ModalContent>
+        </Modal>
     )
 }

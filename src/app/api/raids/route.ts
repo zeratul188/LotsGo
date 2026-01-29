@@ -67,7 +67,17 @@ function isSameUserIds(a: TeamCharacter[], b: TeamCharacter[]): boolean {
     return true;
 }
 
-type ActionType = "add" | "join" | "addParty" | "involvedParty" | "cancelInvolvedParty" | "changePositionParty";
+// 참여했을 때 해당 자리에 사람이 있는지 파악하는 함수
+function isAlreadyExistPosition(joinCharacter: TeamCharacter, members: TeamCharacter[]): boolean {
+    return members.some(m => m.partyIndex === joinCharacter.partyIndex && m.position === joinCharacter.position);
+}
+
+// 해당 파티에 userId가 있는 사람이 존재하는지 파악하는 함수
+function isHaveUserIdByParty(members: TeamCharacter[], userId: string): boolean {
+    return members.some(c => c.userId === userId);
+}
+
+type ActionType = "add" | "join" | "addParty" | "involvedParty" | "cancelInvolvedParty" | "changePositionParty" | "changeManagerParty";
 type Handler = (body: any) => Promise<NextResponse>;
 
 const handlers: Record<ActionType, Handler> = {
@@ -180,6 +190,7 @@ const handlers: Record<ActionType, Handler> = {
 
                 if (!party) throw new Error('PARTY_NOT_FOUND');
                 if (party.teams.some(t => t.userId === userId)) throw new Error('ALREADY_JOINED');
+                if (isAlreadyExistPosition(character, party.teams)) throw new Error('ALREADY_EXISTS');
 
                 const nextPartys = partys.map((p) => {
                     if (p.id !== partyId) return p;
@@ -205,6 +216,9 @@ const handlers: Record<ActionType, Handler> = {
             }
             if (e.message === "ALREADY_JOINED") {
                 return NextResponse.json({ error: '이미 해당 파티에 참여하였습니다.' }, { status: 400 });
+            }
+            if (e.message === "ALREADY_EXISTS") {
+                return NextResponse.json({ error: '이미 해당 파티의 자리에 참여한 사람이 있습니다.' }, { status: 400 });
             }
             return NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
         }
@@ -285,6 +299,56 @@ const handlers: Record<ActionType, Handler> = {
             }
             if (e.message === "PARTY_NOT_SAME") {
                 return NextResponse.json({ error: '파티의 정보가 최신의 정보가 아닙니다. 새로고침을 통해 데이터 최신화 진행 후 다시 시도하십시오.' }, { status: 400 });
+            }
+            console.log(e);
+            return NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
+        }
+    },
+    changeManagerParty: async (body) => {
+        const raidId = body.raidId;
+        const partyId = body.partyId;
+        const notUserId = body.notUserId;
+        const changeUserId = body.changeUserId;
+        try {
+            const raidDoc = doc(firestore, 'raids', raidId);
+
+            const nextPartys = await runTransaction(firestore, async (tx) => {
+                const raidSnapshot = await tx.get(raidDoc);
+                if (!raidSnapshot.exists()) throw new Error('RAID_NOT_FOUND');
+
+                const partys: Party[] = raidSnapshot.data()?.party ?? [];
+                const party = partys.find(p => p.id === partyId);
+
+                if (!party) throw new Error('PARTY_NOT_FOUND');
+                if (!isHaveUserIdByParty(party.teams, notUserId) || !isHaveUserIdByParty(party.teams, changeUserId)) throw new Error('NOT_FOUND_USERID');
+
+                const changeTeams = party.teams.map(t => {
+                    if (t.userId === notUserId) return { ...t, isManager: false };
+                    if (t.userId === changeUserId) return { ...t, isManager: true };
+                    return t;
+                })
+
+                const nextPartys = partys.map(p => {
+                    if (p.id !== partyId) return p;
+                    return {
+                        ...p,
+                        teams: changeTeams
+                    }
+                })
+
+                tx.update(raidDoc, { party: nextPartys });
+                return nextPartys;
+            });
+            return NextResponse.json({ message: '해당 레이드의 파티원의 순서를 변경하였습니다.', partys: nextPartys }, { status: 200 });
+        } catch (e: any) {
+            if (e.message === "RAID_NOT_FOUND") {
+                return NextResponse.json({ error: '해당 레이드의 데이터를 찾을 수 없습니다.' }, { status: 400 });
+            }
+            if (e.message === "PARTY_NOT_FOUND") {
+                return NextResponse.json({ error: '찾고자 한 파티가 존재하지 않습니다.' }, { status: 400 });
+            }
+            if (e.message === "NOT_FOUND_USERID") {
+                return NextResponse.json({ error: '위임할 캐릭터 또는 위임받을 캐릭터가 존재하지 않습니다.' }, { status: 400 });
             }
             console.log(e);
             return NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });

@@ -7,6 +7,7 @@ import { getWeekContents, WeekContent } from "../../checklist/checklistFeat";
 import { Boss } from "../../api/checklist/boss/route";
 import { AppDispatch } from "../../store/store";
 import { updatePartys } from "../../store/partySlice";
+import { changeChracter } from "@/app/store/loginSlice";
 
 // 파티 1개당 참여가능한 최대 인원 수
 const MAX_MEMBER_LENGTH = 4;
@@ -305,5 +306,84 @@ export async function handleChangePosition(ui: ChangePositionUI, payload: Change
         color: "success"
     });
     ui.setLoadingApply(false);
+    ui.onClose();
+}
+
+// 해당 파티의 파티장인지 확인 함수
+export function isManagerOfParty(userId: string | null, party: Party): boolean {
+    if (!userId) return false;
+    const findMember = party.teams.find(t => t.userId === userId);
+    if (!findMember) return false;
+    return findMember.isManager;
+}
+
+// 해당 파티의 공대장을 위임 가능한 맴버들 반환 함수
+export function getTeamCharactersList(raid: Raid | null, partyId: string | null): TeamCharacter[] {
+    if (!raid || !partyId) return [];
+    const findParty = raid.party.find(p => p.id === partyId);
+    if (!findParty) return [];
+    return findParty.teams.filter(t => !t.isManager);
+}
+
+// 공대장 변경 이벤트 함수
+type ChangeManagerUI = {
+    setLoadingChange: SetStateFn<boolean>,
+    onClose: () => void,
+    dispatch: AppDispatch
+}
+type ChangeManagerPayload = {
+    changeCharacter: TeamCharacter | null,
+    raid: Raid,
+    partyId: string,
+    userId: string
+}
+export async function handleChangeManager(ui: ChangeManagerUI, payload: ChangeManagerPayload) {
+    ui.setLoadingChange(true);
+    const findParty = payload.raid.party.find(p => p.id === payload.partyId);
+    if (!findParty || !payload.changeCharacter) {
+        addToast({
+            title: `오류 발생!`,
+            description: `처리 중 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        ui.setLoadingChange(false);
+        return;
+    }
+    const res = await fetch(`/api/raids`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            type: 'changeManagerParty',
+            raidId: payload.raid.id,
+            partyId: payload.partyId,
+            notUserId: payload.userId,
+            changeUserId: payload.changeCharacter.userId
+        })
+    });
+    if (!res.ok) {
+        let message = '요청 중 오류가 발생하였습니다.';
+        try {
+            const data = await res.json();
+            message = data?.error ?? message;
+        } catch {}
+        addToast({
+            title: `요청 오류`,
+            description: message,
+            color: "danger"
+        });
+        ui.setLoadingChange(false);
+        return;
+    }
+    const data: PartyResponse = await res.json();
+    ui.dispatch(updatePartys({
+        id: payload.raid.id,
+        partys: data.partys
+    }));
+    addToast({
+        title: `변경 완료`,
+        description: data.message,
+        color: "success"
+    });
+    ui.setLoadingChange(false);
     ui.onClose();
 }
