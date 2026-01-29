@@ -517,6 +517,10 @@ function InvolvedModal({ dispatch, partyId, members, userId, bosses, selectedPar
                                 <Tab key="supporter" title="서폿"/>
                                 <Tab key="attack" title="딜러"/>
                             </Tabs>
+                            <p className={clsx(
+                                'text-red-600 dark:text-red-400 text-[10pt]',
+                                isHaveManager ? '' : 'hidden'
+                            )}>해당 파티에 이미 공대장이 존재합니다.</p>
                             <Tooltip
                                 showArrow
                                 isDisabled={!isHaveManager}
@@ -529,7 +533,7 @@ function InvolvedModal({ dispatch, partyId, members, userId, bosses, selectedPar
                                     해당 파티를 공대장으로 참여합니다.
                                 </Checkbox>
                             </Tooltip>
-                            <p>총 {maxLength ?? 0}명 중 {0}명이 참여하였습니다.</p>
+                            <p>총 {maxLength ?? 0}명 중 {party.teams.length}명이 참여하였습니다.</p>
                         </ModalBody>
                         <ModalFooter>
                             <Button
