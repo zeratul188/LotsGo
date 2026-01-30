@@ -20,7 +20,7 @@ import {
     Tooltip 
 } from "@heroui/react";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
-import { DateValue, getLocalTimeZone, now, parseAbsolute, parseDate } from "@internationalized/date";
+import { DateValue, getLocalTimeZone, now, parseAbsolute } from "@internationalized/date";
 import CalendarIcon from "@/Icons/CalendarIcon";
 import { getBossesById, getDifficultyByStage, getTextColorByDifficulty, getWeekContents, getWeekStages } from "@/app/checklist/checklistFeat";
 import { ControlStage } from "@/app/checklist/ChecklistForm";

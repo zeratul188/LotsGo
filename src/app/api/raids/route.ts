@@ -396,7 +396,6 @@ const handlers: Record<ActionType, Handler> = {
         const partyLength: number = body.partyLength;
         try {
             const raidDoc = doc(firestore, 'raids', raidId);
-            console.log(`length : ${partyLength}`);
 
             const nextPartys = await runTransaction(firestore, async (tx) => {
                 const raidSnapshot = await tx.get(raidDoc);
