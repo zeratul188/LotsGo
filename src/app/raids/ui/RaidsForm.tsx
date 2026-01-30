@@ -754,7 +754,7 @@ function ChangePositionModal({ui, payload}: ChangePositionModalProps) {
             }
         }
         return 0;
-    }, [payload.partyId]);
+    }, [ui.isOpenChangePosition]);
 
     useEffect(() => {
         const findParty = payload.selectedParty.party.find(p => p.id === payload.partyId);
