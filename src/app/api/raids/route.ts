@@ -1,4 +1,5 @@
 import { Party, Raid, TeamCharacter } from "@/app/raids/model/types";
+import { EditBox } from "@/app/raids/ui/RaidsForm";
 import { firestore } from "@/utiils/firebase"
 import { addDoc, arrayUnion, collection, doc, documentId, getDoc, getDocs, limit, query, runTransaction, updateDoc, where } from "firebase/firestore"
 import { NextRequest, NextResponse } from "next/server"
@@ -77,7 +78,7 @@ function isHaveUserIdByParty(members: TeamCharacter[], userId: string): boolean 
     return members.some(c => c.userId === userId);
 }
 
-type ActionType = "add" | "join" | "addParty" | "involvedParty" | "cancelInvolvedParty" | "changePositionParty" | "changeManagerParty" | "deleteParty";
+type ActionType = "add" | "join" | "addParty" | "involvedParty" | "cancelInvolvedParty" | "changePositionParty" | "changeManagerParty" | "deleteParty" | "editParty";
 type Handler = (body: any) => Promise<NextResponse>;
 
 const handlers: Record<ActionType, Handler> = {
@@ -375,6 +376,53 @@ const handlers: Record<ActionType, Handler> = {
                 return nextPartys;
             });
             return NextResponse.json({ message: '해당 레이드의 파티를 삭제하였습니다.', partys: nextPartys }, { status: 200 });
+        } catch (e: any) {
+            if (e.message === "RAID_NOT_FOUND") {
+                return NextResponse.json({ error: '해당 레이드의 데이터를 찾을 수 없습니다.' }, { status: 400 });
+            }
+            if (e.message === "PARTY_NOT_FOUND") {
+                return NextResponse.json({ error: '찾고자 한 파티가 존재하지 않습니다.' }, { status: 400 });
+            }
+            console.log(e);
+            return NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
+        }
+    },
+    editParty: async (body) => {
+        const raidId = body.raidId;
+        const partyId = body.partyId;
+        const box: EditBox = body.editBox;
+        const boxDate: Date = body.boxDate;
+        const boxContent = body.boxContent;
+        const partyLength: number = body.partyLength;
+        try {
+            const raidDoc = doc(firestore, 'raids', raidId);
+            console.log(`length : ${partyLength}`);
+
+            const nextPartys = await runTransaction(firestore, async (tx) => {
+                const raidSnapshot = await tx.get(raidDoc);
+                if (!raidSnapshot.exists()) throw new Error('RAID_NOT_FOUND');
+
+                const partys: Party[] = raidSnapshot.data()?.party ?? [];
+                const party = partys.find(p => p.id === partyId);
+
+                if (!party) throw new Error('PARTY_NOT_FOUND');
+
+                const nextPartys = partys.map(p => {
+                    if (p.id !== partyId) return p;
+                    return {
+                        ...p,
+                        name: box.name,
+                        date: boxDate,
+                        content: boxContent,
+                        stages: box.stages,
+                        teams: p.teams.filter(t => t.partyIndex <= partyLength)
+                    }
+                })
+
+                tx.update(raidDoc, { party: nextPartys });
+                return nextPartys;
+            });
+            return NextResponse.json({ message: '해당 레이드의 파티를 수정하였습니다.', partys: nextPartys }, { status: 200 });
         } catch (e: any) {
             if (e.message === "RAID_NOT_FOUND") {
                 return NextResponse.json({ error: '해당 레이드의 데이터를 찾을 수 없습니다.' }, { status: 400 });

@@ -1,7 +1,7 @@
 import { Key, useEffect, useMemo, useState } from "react";
 import { Boss } from "@/app/api/checklist/boss/route";
 import { DragableParty, Raid, TeamCharacter, TeamMember } from "../model/types";
-import { deleteParty, filterPartys, getBossById, getBossDataById, getTeamCharactersList, handleAddParty, handleChangeManager, handleChangePosition, InvolvedCharacter, isExistPartyMember, isManagerOfParty, isSelectedDifficulty, moveOrSwapPartys, toCheckData, toSlots, toStringByRaidDate } from "../lib/raidsFeat";
+import { deleteParty, filterPartys, getBossById, getBossDataById, getTeamCharactersList, handleAddParty, handleChangeManager, handleChangePosition, handleEditParty, InvolvedCharacter, isDisableEditParty, isExistPartyMember, isManagerOfParty, isSelectedDifficulty, moveOrSwapPartys, onSelectionChangeContent, onSelectionChangeStages, toCheckData, toSlots, toStringByRaidDate } from "../lib/raidsFeat";
 import { 
     addToast, 
     Avatar, 
@@ -20,7 +20,7 @@ import {
     Tooltip 
 } from "@heroui/react";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
-import { DateValue, getLocalTimeZone, now } from "@internationalized/date";
+import { DateValue, getLocalTimeZone, now, parseAbsolute, parseDate } from "@internationalized/date";
 import CalendarIcon from "@/Icons/CalendarIcon";
 import { getBossesById, getDifficultyByStage, getTextColorByDifficulty, getWeekContents, getWeekStages } from "@/app/checklist/checklistFeat";
 import { ControlStage } from "@/app/checklist/ChecklistForm";
@@ -37,6 +37,7 @@ import { ListTurnBackIcon } from "@/Icons/ListTurnBackIcon";
 import { DndContext, DragEndEvent, useDraggable, useDroppable } from "@dnd-kit/core";
 import { CrownIcon } from "@/Icons/CrownIcon";
 import DeleteIcon from "@/app/icons/DeleteIcon";
+import { EditIcon } from "@/Icons/EditIcon";
 
 // 파티 내 레이드 목록 컴포넌트
 type PartyRaidsComponentProps = {
@@ -59,6 +60,7 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
     const [isRefreshCooldown, setRefreshCooldown] = useState(false);
     const [isOpenChangePosition, setOpenChangePosition] = useState(false);
     const [isOpenChangeManager, setOpenChangeManager] = useState(false);
+    const [isOpenEdit, setOpenEdit] = useState(false);
 
     const selectedParty = useSelector((state: RootState) => state.party.selectedRaid);
     const userId = useSelector((state: RootState) => state.party.userId);
@@ -183,6 +185,17 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                                                     if (confirm('해당 파티를 삭제하시겠습니까? 삭제하면 복구하실 수 없습니다.')) {
                                                         await deleteParty(dispatch, selectedParty, party.id);
                                                     }
+                                                } else if (key === 'change-info') {
+                                                    if (!isManagerOfParty(userId, party)) {
+                                                        addToast({
+                                                            title: `권한 없음`,
+                                                            description: "해당 파티의 공대장만 파티를 수정할 수 있습니다.",
+                                                            color: "danger"
+                                                        });
+                                                        return;
+                                                    }
+                                                    setPartyId(party.id);
+                                                    setOpenEdit(true);
                                                 }
                                             }}>
                                             <DropdownItem 
@@ -192,8 +205,13 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                                             </DropdownItem>
                                             <DropdownItem 
                                                 key="change-manager"
-                                                startContent={<CrownIcon className="w-5 h-5" />}>
+                                                startContent={<CrownIcon className="w-5 h-5"/>}>
                                                 공대장 변경하기
+                                            </DropdownItem>
+                                            <DropdownItem 
+                                                key="change-info"
+                                                startContent={<EditIcon className="w-5 h-5"/>}>
+                                                파티 수정하기
                                             </DropdownItem>
                                             <DropdownItem 
                                                 key="delete-party"
@@ -357,6 +375,13 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                 setOpenChangeManager={setOpenChangeManager}
                 userId={userId}
                 members={members}/>
+            <EditPartyModal
+                dispatch={dispatch}
+                isOpenEdit={isOpenEdit}
+                partyId={partyId}
+                selectedParty={selectedParty}
+                setOpenEdit={setOpenEdit}
+                bosses={bosses}/>
         </div>
     )
 }
@@ -1000,6 +1025,145 @@ function ChangeManagerModal({ dispatch, setOpenChangeManager, isOpenChangeManage
                                     userId: userId
                                 })}>
                                 위임하기
+                            </Button>
+                        </ModalFooter>
+                    </>
+                )}
+            </ModalContent>
+        </Modal>
+    )
+}
+
+// 파티 수정 Modal
+type EditPartyModalProps = {
+    dispatch: AppDispatch,
+    setOpenEdit: SetStateFn<boolean>,
+    isOpenEdit: boolean,
+    selectedParty: Raid | null,
+    partyId: string | null,
+    bosses: Boss[]
+}
+export type EditBox = {
+    name: string,
+    date: DateValue | null,
+    content: Selection,
+    stages: ControlStage[]
+}
+function EditPartyModal({ dispatch, setOpenEdit, isOpenEdit, selectedParty, partyId, bosses }: EditPartyModalProps) {
+    const [isLoadingEdit, setLoadingEdit] = useState(false);
+    const [box, setBox] = useState<EditBox>({
+        name: '',
+        date: null,
+        content: new Set([]),
+        stages: []
+    });
+
+    useEffect(() => {
+        if (!selectedParty || !partyId) return;
+        const findParty = selectedParty.party.find(p => p.id === partyId);
+        if (!findParty) return;
+        setBox({
+            name: findParty.name,
+            date: parseAbsolute(findParty.date, 'Asia/Seoul'),
+            content: new Set([findParty.content]),
+            stages: findParty.stages
+        })
+    }, [isOpenEdit]);
+
+    if (!selectedParty || !partyId) {
+        return (
+            <Modal
+                radius="sm"
+                isOpen={isOpenEdit}
+                onOpenChange={(isOpen) => setOpenEdit(isOpen)}>
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader>오류 발생!</ModalHeader>
+                            <ModalContent>
+                                <div className="min-h-[200px] flex justify-center items-center text-md">
+                                    데이터를 가져오는데 문제가 발생하였습니다.
+                                </div>
+                            </ModalContent>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+        )
+    }
+
+    return (
+        <Modal
+            radius="sm"
+            scrollBehavior="inside"
+            isOpen={isOpenEdit}
+            onOpenChange={(isOpen) => setOpenEdit(isOpen)}>
+            <ModalContent>
+                {(onClose) => (
+                    <>
+                        <ModalHeader>파티 수정</ModalHeader>
+                        <ModalBody>
+                            <Input
+                                fullWidth
+                                isRequired
+                                label="파티명"
+                                placeholder="최대 20글자"
+                                value={box.name}
+                                radius="sm"
+                                size="sm"
+                                maxLength={20} 
+                                onValueChange={(value) => setBox(prev => ({ ...prev, name: value }))}
+                                className="mb-4"/>
+                            <DatePicker
+                                isRequired
+                                label="일정 날짜"
+                                radius="sm"
+                                showMonthAndYearPickers
+                                defaultValue={box.date}
+                                startContent={<CalendarIcon/>}
+                                onChange={(value) => setBox(prev => ({ ...prev, date: value }))}
+                                className="mb-4"/>
+                            <Select
+                                isRequired
+                                label="콘텐츠"
+                                placeholder="콘텐츠 선택"
+                                radius="sm" 
+                                selectedKeys={box.content}
+                                onSelectionChange={onSelectionChangeContent(bosses, box, setBox)}
+                                className="mb-4">
+                                {getWeekContents(bosses, [], -1).map((boss) => (
+                                    <SelectItem key={boss.key}>{boss.name}</SelectItem>
+                                ))}
+                            </Select>
+                            {Array.from(box.content)[0] ? getWeekStages(bosses, Array.from(box.content)[0].toString()).map((level, idx) => (
+                                <div key={idx} className="mb-3">
+                                    <h3 className="font-bold mb-1">{level}관문</h3>
+                                    <Tabs 
+                                        fullWidth 
+                                        radius="sm" 
+                                        color="primary"
+                                        selectedKey={box.stages.length > idx ? box.stages[idx].difficulty : '선택안함'}
+                                        onSelectionChange={onSelectionChangeStages(idx, box, setBox)}>
+                                        {getDifficultyByStage(bosses, Array.from(box.content)[0].toString(), level).map((diff) => (
+                                            <Tab key={diff} title={diff}/>
+                                        ))}
+                                    </Tabs>
+                                </div>
+                            )) : null}
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button
+                                fullWidth
+                                radius="sm"
+                                color="primary"
+                                isLoading={isLoadingEdit}
+                                isDisabled={isDisableEditParty(box)}
+                                onPress={async () => await handleEditParty({
+                                    setLoadingEdit, onClose, dispatch
+                                }, {
+                                    box, partyId, raid: selectedParty, bosses
+                                })}>
+                                수정하기
                             </Button>
                         </ModalFooter>
                     </>

@@ -2,12 +2,13 @@ import { dateValueToDate, SetStateFn } from "@/utiils/utils";
 import { DragableParty, Party, PartyResponse, Raid, TeamCharacter, TeamMember } from "../model/types";
 import { ControlStage } from "../../checklist/ChecklistForm";
 import { DateValue } from "@internationalized/date";
-import { addToast, Selection } from "@heroui/react";
-import { getWeekContents, WeekContent } from "../../checklist/checklistFeat";
+import { addToast, Selection, SharedSelection } from "@heroui/react";
+import { getBossesById, getWeekContents, getWeekStages, WeekContent } from "../../checklist/checklistFeat";
 import { Boss } from "../../api/checklist/boss/route";
 import { AppDispatch } from "../../store/store";
 import { updatePartys } from "../../store/partySlice";
-import { changeChracter } from "@/app/store/loginSlice";
+import { EditBox } from "../ui/RaidsForm";
+import { Key } from "react";
 
 // 파티 1개당 참여가능한 최대 인원 수
 const MAX_MEMBER_LENGTH = 4;
@@ -394,7 +395,6 @@ export async function deleteParty(
     raid: Raid | null,
     partyId: string
 ) {
-    console.log(partyId);
     if (!raid) {
         addToast({
             title: `오류 발생!`,
@@ -444,4 +444,121 @@ export async function deleteParty(
         description: data.message,
         color: "success"
     });
+}
+
+// 파티 수정 시 콘텐츠 관문 변경 이벤트 함수 (Edit)
+export function onSelectionChangeContent(bosses: Boss[], box: EditBox, setBox: SetStateFn<EditBox>) {
+    return (keys: SharedSelection) => {
+        const content = Array.from(keys)[0];
+        if (!content) {
+            setBox(prev => ({ ...prev, stages: [], content: keys }));
+            return;
+        }
+        const findBoss = getBossesById(bosses, content.toString());
+        const newStages: ControlStage[] = [];
+        if (findBoss) {
+            for (const st of getWeekStages(bosses, content.toString())) {
+                const newStage: ControlStage = {
+                    stage: st,
+                    difficulty: '선택안함'
+                }
+                newStages.push(newStage);
+            }
+            setBox(prev => ({ ...prev, stages: newStages, content: keys }));
+        }
+    }
+}
+
+// 난이도 선택 이벤트 함수 (Edit)
+export function onSelectionChangeStages(idx: number, box: EditBox, setBox: SetStateFn<EditBox>) {
+    return (key: Key) => {
+        const diff = key.toString();
+        if (box.stages.length > idx) {
+            const cloneStages = structuredClone(box.stages);
+            if (idx > 0) {
+                if (cloneStages[idx-1].difficulty === '선택안함') {
+                    return;
+                }
+            }
+            cloneStages[idx].difficulty = diff;
+            if (diff === '선택안함') {
+                for (let i = idx; i < cloneStages.length; i++) {
+                    cloneStages[i].difficulty = '선택안함';
+                }
+            }
+            setBox(prev => ({ ...prev, stages: cloneStages }));
+        }
+    }
+}
+
+// 파티 수정 이벤트 함수
+type EditPartyUI = {
+    setLoadingEdit: SetStateFn<boolean>,
+    onClose: () => void,
+    dispatch: AppDispatch
+}
+type EditPartyPayload = {
+    raid: Raid,
+    partyId: string,
+    box: EditBox,
+    bosses: Boss[]
+}
+export async function handleEditParty(ui: EditPartyUI, payload: EditPartyPayload) {
+    ui.setLoadingEdit(true);
+    const findParty = payload.raid.party.find(p => p.id === payload.partyId);
+    const findBoss = getBossDataById(payload.bosses, Array.from(payload.box.content)[0].toString() ?? 'null');
+    if (!findParty || !findBoss) {
+        addToast({
+            title: `오류 발생!`,
+            description: `처리 중 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        ui.setLoadingEdit(false);
+        return;
+    }
+    const now = new Date();
+    const res = await fetch(`/api/raids`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            type: 'editParty',
+            raidId: payload.raid.id,
+            partyId: payload.partyId,
+            editBox: payload.box,
+            boxDate: (dateValueToDate(payload.box.date) ?? now).toISOString(),
+            boxContent: Array.from(payload.box.content)[0].toString(),
+            partyLength: Math.ceil(findBoss.max/4)
+        })
+    });
+    if (!res.ok) {
+        let message = '요청 중 오류가 발생하였습니다.';
+        try {
+            const data = await res.json();
+            message = data?.error ?? message;
+        } catch {}
+        addToast({
+            title: `요청 오류`,
+            description: message,
+            color: "danger"
+        });
+        ui.setLoadingEdit(false);
+        return;
+    }
+    const data: PartyResponse = await res.json();
+    ui.dispatch(updatePartys({
+        id: payload.raid.id,
+        partys: data.partys
+    }));
+    addToast({
+        title: `변경 완료`,
+        description: data.message,
+        color: "success"
+    });
+    ui.setLoadingEdit(false);
+    ui.onClose();
+}
+
+// 파티 수정 버튼 비활성화 조건
+export function isDisableEditParty(box: EditBox): boolean {
+    return box.name === '' || Array.from(box.content).length === 0 || !box.date || box.stages.every(s => s.difficulty === '선택안함');
 }
