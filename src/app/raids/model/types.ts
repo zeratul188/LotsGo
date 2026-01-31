@@ -59,3 +59,12 @@ export type PartyResponse = {
     message: string,
     partys: Party[]
 }
+
+// 레이드 일정
+export type RaidWork = {
+    name: string,
+    raidName: string,
+    date: Date,
+    content: string,
+    stages: ControlStage[],
+}

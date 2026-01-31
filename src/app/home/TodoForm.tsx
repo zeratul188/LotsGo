@@ -3,12 +3,14 @@ import {
     Calendar, 
     formatHours, 
     formatKoreanDate, 
+    getCalendarByPartyWorks, 
     getCalendarByWeek, 
     Guild, 
     initialWeekData, 
     isTodayDate, 
     loadGuild, 
     loadWorks, 
+    loadWorksByParty, 
     removeAutoCalendarsByGuild, 
     removeAutoCalendarsByWorks 
 } from "../calendar/calendarFeat";
@@ -18,11 +20,13 @@ import { WeekBox } from "../calendar/CalendarForm";
 import clsx from "clsx";
 import { LoadingComponent } from "../UtilsCompnents";
 import { useRouter } from "next/navigation";
+import { RaidWork } from "../raids/model/types";
 
 // state 관리
 export function useTodoForm() {
     const [guild, setGuild] = useState<Guild | null>(null);
     const [works, setWorks] = useState<Calendar[]>([]);
+    const [partyWorks, setPartyWorks] = useState<RaidWork[]>([]);
     const [isLoading, setLoading] = useState(true);
     const [isResetWorks, setResetWorks] = useState(false);
     const [isResetGuild, setResetGuild] = useState(false);
@@ -32,6 +36,7 @@ export function useTodoForm() {
     return {
         guild, setGuild,
         works, setWorks,
+        partyWorks, setPartyWorks,
         isLoading, setLoading,
         isResetWorks, setResetWorks,
         isResetGuild, setResetGuild,
@@ -62,7 +67,8 @@ export function TodoComponent() {
         const loadData = async () => {
             const guildPromise = loadGuild(todoForm.setGuild);
             const workPromise = loadWorks(todoForm.setWorks);
-            await Promise.all([guildPromise, workPromise]);
+            const partyWorksPromise = loadWorksByParty(todoForm.setPartyWorks);
+            await Promise.all([guildPromise, workPromise, partyWorksPromise]);
             todoForm.setLoading(false);
         }
         if (todoForm.isLogin && !todoForm.isAdministrator) {
@@ -144,6 +150,16 @@ export function TodoComponent() {
                                         <p className="w-full truncate text-sm">{box.calendar.name}</p>
                                     </div>
                                 ))}
+                                {getCalendarByPartyWorks(week, todoForm.partyWorks).map((work, idx) => (
+                                    <div key={idx} className="rounded-md border-2 pl-2 pr-2 pt-1 pb-1 mb-2 border-[#b61500] dark:border-[#a31300] hover:bg-[#f0f1f3] hover:dark:bg-[#242f3b]">
+                                        <div className="w-full flex gap-2 items-center mb-1">
+                                            <div className="w-[12px] h-[12px] rounded-full bg-[#b61500] dark:bg-[#a31300]"/>
+                                            <p className="text-[9pt] fadedtext grow">파티 일정</p>
+                                            <p className="truncate text-[9pt] fadedtext">{formatHours(work.date)}</p>
+                                        </div>
+                                        <p className="w-full truncate text-sm">{work.name}</p>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     ))}
@@ -177,6 +193,16 @@ export function TodoComponent() {
                                             <p className="truncate text-[9pt] fadedtext">{formatHours(box.calendar.date)}</p>
                                         </div>
                                         <p className="w-full truncate text-sm">{box.calendar.name}</p>
+                                    </div>
+                                ))}
+                                {getCalendarByPartyWorks(week, todoForm.partyWorks).map((work, idx) => (
+                                    <div key={idx} className="rounded-md border-2 pl-2 pr-2 pt-1 pb-1 mb-2 border-[#b61500] dark:border-[#a31300] hover:bg-[#f0f1f3] hover:dark:bg-[#242f3b]">
+                                        <div className="w-full flex gap-2 items-center mb-1">
+                                            <div className="w-[12px] h-[12px] rounded-full bg-[#b61500] dark:bg-[#a31300]"/>
+                                            <p className="text-[9pt] fadedtext grow">파티 일정</p>
+                                            <p className="truncate text-[9pt] fadedtext">{formatHours(work.date)}</p>
+                                        </div>
+                                        <p className="w-full truncate text-sm">{work.name}</p>
                                     </div>
                                 ))}
                             </div>
