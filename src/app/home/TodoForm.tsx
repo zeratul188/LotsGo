@@ -151,7 +151,7 @@ export function TodoComponent() {
                                     </div>
                                 ))}
                                 {getCalendarByPartyWorks(week, todoForm.partyWorks).map((work, idx) => (
-                                    <div key={idx} className="rounded-md border-2 pl-2 pr-2 pt-1 pb-1 mb-2 border-[#b61500] dark:border-[#a31300] hover:bg-[#f0f1f3] hover:dark:bg-[#242f3b]">
+                                    <div key={idx} className="rounded-md border-2 pl-2 pr-2 pt-1 pb-1 mb-2 border-[#b61500] dark:border-[#a31300]">
                                         <div className="w-full flex gap-2 items-center mb-1">
                                             <div className="w-[12px] h-[12px] rounded-full bg-[#b61500] dark:bg-[#a31300]"/>
                                             <p className="text-[9pt] fadedtext grow">파티 일정</p>
@@ -196,7 +196,7 @@ export function TodoComponent() {
                                     </div>
                                 ))}
                                 {getCalendarByPartyWorks(week, todoForm.partyWorks).map((work, idx) => (
-                                    <div key={idx} className="rounded-md border-2 pl-2 pr-2 pt-1 pb-1 mb-2 border-[#b61500] dark:border-[#a31300] hover:bg-[#f0f1f3] hover:dark:bg-[#242f3b]">
+                                    <div key={idx} className="rounded-md border-2 pl-2 pr-2 pt-1 pb-1 mb-2 border-[#b61500] dark:border-[#a31300]">
                                         <div className="w-full flex gap-2 items-center mb-1">
                                             <div className="w-[12px] h-[12px] rounded-full bg-[#b61500] dark:bg-[#a31300]"/>
                                             <p className="text-[9pt] fadedtext grow">파티 일정</p>
