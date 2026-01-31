@@ -1119,7 +1119,7 @@ function EditPartyModal({ dispatch, setOpenEdit, isOpenEdit, selectedParty, part
                                 label="일정 날짜"
                                 radius="sm"
                                 showMonthAndYearPickers
-                                defaultValue={box.date}
+                                value={box.date}
                                 startContent={<CalendarIcon/>}
                                 onChange={(value) => setBox(prev => ({ ...prev, date: value }))}
                                 className="mb-4"/>
