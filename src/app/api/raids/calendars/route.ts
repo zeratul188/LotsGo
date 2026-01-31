@@ -38,12 +38,6 @@ export async function GET(req: NextRequest) {
         if (e.message === "MEMBER_NOT_FOUND") {
             return NextResponse.json({ error: '해당 ID를 가진 데이터를 찾을 수 없습니다.' }, { status: 400 });
         }
-        if (e.message === "RAID_NOT_FOUND") {
-            return NextResponse.json({ error: '해당 레이드의 데이터를 찾을 수 없습니다.' }, { status: 400 });
-        }
-        if (e.message === "PARTY_NOT_FOUND") {
-            return NextResponse.json({ error: '찾고자 한 파티가 존재하지 않습니다.' }, { status: 400 });
-        }
         console.log(e);
         return NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
     }
