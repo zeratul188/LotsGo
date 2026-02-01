@@ -1,5 +1,5 @@
 import { SetStateFn } from "@/utiils/utils";
-import { Checklist, ContentItem, RaidMember } from "../../api/raids/members/route";
+import { Checklist, RaidMember } from "../../api/raids/members/route";
 import { addToast } from "@heroui/react";
 import { Boss } from "../../api/checklist/boss/route";
 import { collection, getDocs } from "firebase/firestore";
@@ -8,6 +8,8 @@ import { Character } from "../../signup/signupFeat";
 import type { AppDispatch } from "../../store/store";
 import { changeSelectedRaid, initialMembers } from "../../store/partySlice";
 import { Raid } from "../model/types";
+import { getBossBoundCheckGold, getBossBoundGold, getBossCheckedGold, getBossGold } from "@/app/checklist/checklistFeat";
+import { ChecklistItem } from "@/app/store/checklistSlice";
 
 // 선택한 파티 적용 함수
 export function applyChangeParty(
@@ -114,7 +116,7 @@ type PrintDifficulty = {
     difficulty: string,
     result: string
 }
-export function printDifficulty(items: ContentItem[]): string {
+export function printDifficulty(items: ChecklistItem[]): string {
     const prints: PrintDifficulty[] = [];
     for (const item of items) {
         if (prints.length > 0) {
@@ -141,4 +143,35 @@ export function printDifficulty(items: ContentItem[]): string {
         result += `${prints[i].difficulty}${prints[i].result}`;
     }
     return result;
+}
+
+
+// 해당 맴버의 총 골드량 체크
+export function getAllGoldByMember(bosses: Boss[], checklist: Checklist[]): number {
+    let sum = 0;
+    sum = checklist
+        .filter(character => character.isGold)
+        .reduce((total, character) => {
+            const goldFromChecklist = character.contents
+                .filter(content => content.isGold)
+                .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.items) + getBossBoundGold(bosses, item.name, item.items), 0);
+            return total + goldFromChecklist;
+        }, 0);
+    for (const character of checklist) sum += character.otherGold;
+    return sum;
+}
+
+// 해당 맴버의 완료한 총 골드량 체크
+export function getHaveGoldByMember(bosses: Boss[], checklist: Checklist[]): number {
+    let sum = 0;
+    sum = checklist
+        .filter(character => character.isGold)
+        .reduce((total, character) => {
+            const goldFromChecklist = character.contents
+                .filter(item => item.isGold)
+                .reduce((sum, item) => sum + getBossCheckedGold(bosses, item.name, item.items) + getBossBoundCheckGold(bosses, item.name, item.items), 0);
+            return total + goldFromChecklist;
+        }, 0);
+    for (const character of checklist) sum += character.otherGold;
+    return sum;
 }

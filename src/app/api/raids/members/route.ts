@@ -1,3 +1,4 @@
+import { ChecklistItem } from "@/app/store/checklistSlice"
 import { Character } from "@/app/store/loginSlice"
 import { firestore } from "@/utiils/firebase"
 import { collection, getDocs, query, where } from "firebase/firestore"
@@ -23,13 +24,7 @@ export type Checklist = {
 export type ChecklistContent = {
     name: string,
     isGold: boolean,
-    items: ContentItem[]
-}
-
-export type ContentItem = {
-    stage: number,
-    difficulty: string,
-    isCheck: boolean
+    items: ChecklistItem[]
 }
 
 export async function GET(req: NextRequest) {
@@ -69,9 +64,12 @@ export async function GET(req: NextRequest) {
                             name: content.name,
                             isGold: content.isGold,
                             items: content.items.map((stage: any) => ({
-                                stage: Number(stage.stage),
                                 difficulty: stage.difficulty,
-                                isCheck: stage.isCheck
+                                stage: stage.stage,
+                                isCheck: stage.isCheck,
+                                isDisable: stage.isDisable,
+                                isBonus: stage.isBonus,
+                                isBiweekly: stage.isBiweekly ?? false
                             }))
                         }))
                     })) : []
