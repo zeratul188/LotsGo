@@ -404,8 +404,8 @@ export async function handleRefreshPartys(
 }
 
 // 참여할 파티의 콘텐츠 최대 인원 반환 함수
-export function getMaxLengthByContent(bosses: Boss[], contentName: string): number {
-    const findBoss = getBossDataById(bosses, contentName);
+export function getMaxLengthByContent(bosses: Boss[], contentId: string): number {
+    const findBoss = getBossDataById(bosses, contentId);
     return findBoss ? findBoss.max : 0;
 }
 

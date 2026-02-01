@@ -1,7 +1,7 @@
 import { Key, useEffect, useMemo, useState } from "react";
 import { Boss } from "@/app/api/checklist/boss/route";
 import { DragableParty, Raid, TeamCharacter, TeamMember } from "../model/types";
-import { deleteParty, filterPartys, getBossById, getBossDataById, getTeamCharactersList, handleAddParty, handleChangeManager, handleChangePosition, handleEditParty, InvolvedCharacter, isDisableEditParty, isExistPartyMember, isManagerOfParty, isSelectedDifficulty, moveOrSwapPartys, onSelectionChangeContent, onSelectionChangeStages, toCheckData, toSlots, toStringByRaidDate } from "../lib/raidsFeat";
+import { deleteParty, filterPartys, getBossById, getBossDataById, getEffectsByPartyMembers, getInvolvedNickname, getTeamCharactersList, handleAddParty, handleChangeManager, handleChangePosition, handleEditParty, InvolvedCharacter, isDisableEditParty, isExistPartyMember, isInvolvedPosition, isManagerOfParty, isSelectedDifficulty, moveOrSwapPartys, onSelectionChangeContent, onSelectionChangeStages, toCheckData, toSlots, toStringByRaidDate } from "../lib/raidsFeat";
 import { 
     addToast, 
     Avatar, 
@@ -38,6 +38,7 @@ import { DndContext, DragEndEvent, useDraggable, useDroppable } from "@dnd-kit/c
 import { CrownIcon } from "@/Icons/CrownIcon";
 import DeleteIcon from "@/app/icons/DeleteIcon";
 import { EditIcon } from "@/Icons/EditIcon";
+import PersonIcon from "@/Icons/PersonIcon";
 
 // 파티 내 레이드 목록 컴포넌트
 type PartyRaidsComponentProps = {
@@ -314,9 +315,36 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                                                 )
                                             })}
                                         </div>
+                                        <p className="fadedtext text-sm mt-3">파티 총 시너지</p>
+                                        <div className="w-full flex flex-wrap gap-2 mt-1">
+                                            {getEffectsByPartyMembers(members, party.teams, index).map((effect, index) => (
+                                                <Chip key={index} variant="flat" size="sm" radius="sm" color="secondary">{effect}</Chip>
+                                            ))}
+                                        </div>
                                     </Tab>
                                 ))}
                             </Tabs>
+                            <div className="w-full flex gap-1 items-center">
+                                <div className="grow flex flex-wrap gap-0.5">
+                                    {Array.from({ length: Math.ceil(getMaxLengthByContent(bosses, party.content)/4) }).map((_, partyIndex) => (
+                                        <div key={partyIndex} className="flex gap-0.5">
+                                            {Array.from({ length: 4 }).map((_, position) => (
+                                                <Tooltip 
+                                                    key={position} 
+                                                    showArrow 
+                                                    content={getInvolvedNickname(party.teams, partyIndex+1, position+1)}
+                                                    isDisabled={!isInvolvedPosition(party.teams, partyIndex+1, position+1)}>
+                                                    <PersonIcon className={clsx(
+                                                        "w-[15px] h-[25px] fill-current",
+                                                        isInvolvedPosition(party.teams, partyIndex+1, position+1) ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-600'
+                                                    )}/>
+                                                </Tooltip>
+                                            ))}
+                                        </div>
+                                    ))}
+                                </div>
+                                <p>{party.teams.length}/{getMaxLengthByContent(bosses, party.content)}</p>
+                            </div>
                         </CardBody>
                         <CardFooter>
                             <Button
@@ -438,10 +466,7 @@ function InvolvedModal({ dispatch, partyId, members, userId, bosses, selectedPar
     useEffect(() => {
         if (!party) return;
         setHaveManager(party.teams.some(t => t.isManager));
-        const findBoss = getBossDataById(bosses, party?.content ?? 'null');
-        if (findBoss) {
-            setMaxLength(findBoss.max);
-        }
+        setMaxLength(getMaxLengthByContent(bosses, party?.content ?? 'null'));
     }, [party]);
 
     if (!selectedParty || !partyId || !userId || !party) {

@@ -9,6 +9,9 @@ import { AppDispatch } from "../../store/store";
 import { updatePartys } from "../../store/partySlice";
 import { EditBox } from "../ui/RaidsForm";
 import { Key } from "react";
+import data from "@/data/characters/data.json";
+import { RaidMember } from "@/app/api/raids/members/route";
+import { getCharacterInfoById } from "./raidListFeat";
 
 // 파티 1개당 참여가능한 최대 인원 수
 const MAX_MEMBER_LENGTH = 4;
@@ -561,4 +564,29 @@ export async function handleEditParty(ui: EditPartyUI, payload: EditPartyPayload
 // 파티 수정 버튼 비활성화 조건
 export function isDisableEditParty(box: EditBox): boolean {
     return box.name === '' || Array.from(box.content).length === 0 || !box.date || box.stages.every(s => s.difficulty === '선택안함');
+}
+
+// 파티 시너지 가져오기
+export function getEffectsByPartyMembers(members: RaidMember[], teams: TeamCharacter[], partyIndex: number): string[] {
+    const effectList = new Set<string>([]);
+    teams.filter(t => t.partyIndex === partyIndex).forEach(character => {
+        const classInfo = data.classEffects.find(c => c.job === getCharacterInfoById(members, character.userId, character.nickname).job);
+        if (classInfo) {
+            if (character.type === 'attack') classInfo.effects.forEach(e => effectList.add(e));
+            else classInfo.burf.forEach(b => effectList.add(b));
+        }
+    })
+    return Array.from(effectList);
+}
+
+// 해당 인원 아이콘 위치에 참여된 인원이 있는지 파악하는 함수
+export function isInvolvedPosition(members: TeamCharacter[], partyIndex: number, position: number): boolean {
+    return members.some(member => member.partyIndex === partyIndex && member.position === position);
+}
+
+// 해당 인원 아이콘 위치에 참여된 인원의 닉네임을 반환하는 함수
+export function getInvolvedNickname(members: TeamCharacter[], partyIndex: number, position: number): string {
+    const findMember = members.find(member => member.partyIndex === partyIndex && member.position === position);
+    if (!findMember) return '-';
+    return findMember.nickname;
 }
