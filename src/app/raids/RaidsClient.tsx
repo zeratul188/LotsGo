@@ -17,12 +17,10 @@ import { useRouter } from "next/navigation";
 // state 관리
 function raidsForm() {
     const [selectedKey, setSelectedKey] = useState<string>('find');
-    const [joinRaids, setJoinedRaids] = useState<Raid[]>([]);
     const [bosses, setBosses] = useState<Boss[]>([]);
 
     return {
         selectedKey, setSelectedKey,
-        joinRaids, setJoinedRaids,
         bosses, setBosses
     }
 }
@@ -33,6 +31,7 @@ export default function RaidsClient() {
     const isMobile = useMobileQuery();
     const dispatch = useDispatch<AppDispatch>();
     const raids = useSelector((state: RootState) => state.party.raids);
+    const joinRaids = useSelector((state: RootState) => state.party.joinRaids);
     const router = useRouter();
 
     useEffect(() => {
@@ -52,7 +51,7 @@ export default function RaidsClient() {
             router.push('/login');
         }
         const loadData = async () => {
-            const pRaids = await loadRaids(dispatch, userId, form.setJoinedRaids);
+            const pRaids = await loadRaids(dispatch, userId);
             const pBosses = await loadBosses(form.setBosses);
             await Promise.all([pRaids, pBosses]);
             setLoadingData(false);
@@ -74,17 +73,16 @@ export default function RaidsClient() {
                     selectedKey={form.selectedKey}
                     onSelectionChange={(key) => form.setSelectedKey(String(key))}>
                     <Tab key="find" title="파티 찾기"/>
-                    {form.joinRaids.map((raid) => (
+                    {joinRaids.map((raid) => (
                         <Tab key={raid.id} title={raid.name}/>
                     ))}
                 </Tabs>
             </div>
             {form.selectedKey === 'find' ? (
                 <FindComponent 
-                    joinRaids={form.joinRaids}
-                    setJoinRaids={form.setJoinedRaids}
+                    joinRaids={joinRaids}
                     isLoadingData={isLoadingData}
-                    setLoadingData={setLoadingData}/>
+                    dispatch={dispatch}/>
             ) : (
                 <PartyComponent
                     dispatch={dispatch}

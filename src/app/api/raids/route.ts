@@ -56,8 +56,6 @@ function isSameUserIds(a: TeamCharacter[], b: TeamCharacter[]): boolean {
 
     const setA = new Set(a.map(v => v.userId));
     const setB = new Set(b.map(v => v.userId));
-    console.log(setA);
-    console.log(setB);
 
     if (setA.size !== setB.size) return false;
 

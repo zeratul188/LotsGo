@@ -6,14 +6,21 @@ type PartyState = {
     raids: Raid[],
     selectedRaid: Raid | null,
     userId: string | null,
-    members: RaidMember[]
+    members: RaidMember[],
+    joinRaids: Raid[]
+}
+
+export type initialRaid = {
+    raids: Raid[],
+    joinRaids: Raid[]
 }
 
 const initialState: PartyState = {
     raids: [],
     selectedRaid: null,
     userId: null,
-    members: []
+    members: [],
+    joinRaids: []
 }
 
 const partySlice = createSlice({
@@ -23,8 +30,12 @@ const partySlice = createSlice({
         initialMembers(state, action: PayloadAction<RaidMember[]>) {
             state.members = action.payload;
         },
-        initialRaids(state, action: PayloadAction<Raid[]>) {
-            state.raids = action.payload;
+        initialRaids(state, action: PayloadAction<initialRaid>) {
+            state.raids = action.payload.raids;
+            state.joinRaids = action.payload.joinRaids;
+        },
+        changeJoinRaids(state, action: PayloadAction<Raid[]>) {
+            state.joinRaids = action.payload;
         },
         addRaid(state, action: PayloadAction<Raid>) {
             state.raids.push(action.payload);
@@ -51,6 +62,15 @@ const partySlice = createSlice({
                 state.raids[findIndex].party = action.payload.partys;
                 state.selectedRaid.party = action.payload.partys;
             }
+        },
+        updateRaidData(state, action: PayloadAction<Raid>) {
+            const findIndex = state.raids.findIndex(r => r.id === action.payload.id);
+            const findIndexJoined = state.raids.findIndex(r => r.id === action.payload.id);
+            if (findIndexJoined > -1 && findIndex > -1 && state.selectedRaid) {
+                state.raids[findIndex] = action.payload;
+                state.selectedRaid = action.payload;
+                state.joinRaids[findIndexJoined] = action.payload;
+            }
         }
     }
 })
@@ -63,6 +83,8 @@ export const {
     removeRaid, 
     changeSelectedRaid,
     changeUserId,
-    updatePartys
+    updatePartys,
+    updateRaidData,
+    changeJoinRaids
 } = partySlice.actions;
 export default partySlice.reducer;

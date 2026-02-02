@@ -3,7 +3,7 @@ import { Party, PartyResponse, Raid, TeamCharacter } from "../model/types";
 import { decrypt, encrypt } from "@/utiils/crypto";
 import { addToast } from "@heroui/react";
 import type { AppDispatch } from "../../store/store";
-import { addRaid, initialRaids, updatePartys } from "../../store/partySlice";
+import { addRaid, changeJoinRaids, initialRaids, updatePartys } from "../../store/partySlice";
 import { getBossDataById, InvolvedCharacter } from "./raidsFeat";
 import { Boss } from "../../api/checklist/boss/route";
 import { RaidMember } from "../../api/raids/members/route";
@@ -16,8 +16,7 @@ const TEAM_MAX = 4;
 // 파티 목록 데이터 가져오기
 export async function loadRaids(
     dispatch: AppDispatch,
-    userId: string | null,
-    setJoinRaids: SetStateFn<Raid[]>
+    userId: string | null
 ) {
     const fetchLink = userId ? `/api/raids?id=${userId}` : `/api/raids`
     const res = await fetch(fetchLink);
@@ -30,8 +29,10 @@ export async function loadRaids(
         return;
     }
     const data = await res.json();
-    dispatch(initialRaids(data.raids));
-    setJoinRaids(data.joinRaids);
+    dispatch(initialRaids({
+        raids: data.raids,
+        joinRaids: data.joinRaids
+    }));
 }
 
 // 파티 추가 이벤트
@@ -41,13 +42,11 @@ export async function handleAddRaid(
     isOpen: boolean,
     isPwd: boolean,
     pwd: string,
-    raids: Raid[],
     onClose: () => void,
     userId: string | null,
     setLoadingAdd: SetStateFn<boolean>,
     titleCharacter: string,
     joinRaids: Raid[],
-    setJoinRaids: SetStateFn<Raid[]>,
     avgLevel: number
 ) {
     setLoadingAdd(true);
@@ -88,7 +87,7 @@ export async function handleAddRaid(
     dispatch(addRaid(newRaid));
     const cloneJoinRaids = structuredClone(joinRaids);
     cloneJoinRaids.push(newRaid);
-    setJoinRaids(cloneJoinRaids);
+    dispatch(changeJoinRaids(cloneJoinRaids));
     addToast({
         title: `파티 추가`,
         description: `파티를 추가하였습니다.`,
@@ -140,7 +139,7 @@ export async function handleJoinParty(
     setErrorPwd: SetStateFn<boolean>,
     onClose: () => void,
     joinRaids: Raid[],
-    setJoinRaids: SetStateFn<Raid[]>
+    dispatch: AppDispatch
 ) {
     setLoadingJoin(true);
     setErrorLink(false);
@@ -188,7 +187,7 @@ export async function handleJoinParty(
                     raid.members.push(userId);
                 }
                 cloneRaids.push(raid);
-                setJoinRaids(cloneRaids);
+                dispatch(changeJoinRaids(cloneRaids));
                 setLoadingJoin(false);
                 onClose();
                 addToast({
@@ -233,7 +232,7 @@ export async function handleJoinParty(
                 party.members.push(userId);
             }
             cloneRaids.push(party);
-            setJoinRaids(cloneRaids);
+            dispatch(changeJoinRaids(cloneRaids));
             setLoadingJoin(false);
             addToast({
                 title: `참가 완료`,
@@ -260,8 +259,8 @@ export async function joinPublicParty(
     userId: string | null,
     raid: Raid,
     joinRaids: Raid[],
-    setJoinRaids: SetStateFn<Raid[]>,
-    setLoadingJoin: SetStateFn<{ [id: string]: boolean }>
+    setLoadingJoin: SetStateFn<{ [id: string]: boolean }>,
+    dispatch: AppDispatch
 ) {
     setLoadingJoin(prev => ({...prev, [raid.id]: true}));
     const res = await fetch(`/api/raids`, {
@@ -287,7 +286,7 @@ export async function joinPublicParty(
         raid.members.push(userId);
     }
     cloneRaids.push(raid);
-    setJoinRaids(cloneRaids);
+    dispatch(changeJoinRaids(cloneRaids));
     setLoadingJoin(prev => ({...prev, [raid.id]: false}));
     addToast({
         title: `참가 완료`,
@@ -302,9 +301,9 @@ export async function handleJoinPrivateParty(
     selectedRaid: Raid | null,
     inputPwd: string,
     joinRaids: Raid[],
-    setJoinRaids: SetStateFn<Raid[]>,
     setLoadingJoin: SetStateFn<boolean>,
-    onClose: () => void
+    onClose: () => void,
+    dispatch: AppDispatch
 ) {
     setLoadingJoin(true);
     if (selectedRaid) {
@@ -333,7 +332,7 @@ export async function handleJoinPrivateParty(
                 selectedRaid.members.push(userId);
             }
             cloneRaids.push(selectedRaid);
-            setJoinRaids(cloneRaids);
+            dispatch(changeJoinRaids(cloneRaids));
             addToast({
                 title: `참가 완료`,
                 description: `\"${selectedRaid.name}\" 파티에 참가하였습니다.`,

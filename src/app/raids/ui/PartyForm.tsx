@@ -22,6 +22,8 @@ import { getBackground50ByStage, getBackgroundByStage, getBorderByStage, getBoss
 import { PartyRaidsComponent } from "./RaidsForm"
 import { AppDispatch, RootState } from "@/app/store/store"
 import { useSelector } from "react-redux"
+import { PartySettingComponent } from "./SettingFrom";
+import { SetStateFn } from "@/utiils/utils";
 
 // 홈 컴포넌트
 type ChecklistComponentProps = {
@@ -316,7 +318,7 @@ export function PartyComponent({ dispatch, bosses }: PartyComponentProps) {
                         <PartyRaidsComponent dispatch={dispatch} members={members} bosses={bosses}/>
                     </Tab>
                     <Tab key="setting" title="파티 설정">
-                        <ChecklistComponent members={members} bosses={bosses} party={selectedParty}/>
+                        <PartySettingComponent raid={selectedParty} members={members} dispatch={dispatch}/>
                     </Tab>
                 </Tabs>
             </div>

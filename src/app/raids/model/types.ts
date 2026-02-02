@@ -68,3 +68,12 @@ export type RaidWork = {
     content: string,
     stages: ControlStage[],
 }
+
+// 파티장 위임 리스트
+export type MemberBox = {
+    userId: string,
+    nickname: string,
+    level: number,
+    job: string,
+    server: string
+}

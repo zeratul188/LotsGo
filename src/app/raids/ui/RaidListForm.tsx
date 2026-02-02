@@ -28,11 +28,10 @@ import LockerIcon from "@/Icons/LockerIcon";
 // 파티 찾기 컴포넌트
 type FindComponentProps = {
     joinRaids: Raid[],
-    setJoinRaids: SetStateFn<Raid[]>,
     isLoadingData: boolean,
-    setLoadingData: SetStateFn<boolean>
+    dispatch: AppDispatch
 }
-export function FindComponent({ joinRaids, setJoinRaids, isLoadingData, setLoadingData }: FindComponentProps) {
+export function FindComponent({ joinRaids, isLoadingData, dispatch }: FindComponentProps) {
     const [results, setResults] = useState<Raid[]>([]);
     const [searchValue, setSearchValue] = useState('');
     const isMobile = useMobileQuery();
@@ -158,7 +157,7 @@ export function FindComponent({ joinRaids, setJoinRaids, isLoadingData, setLoadi
                                                             setSelectedRaid(raid);
                                                             setOpenPrivate(true);
                                                         } else {
-                                                            await joinPublicParty(userId, raid, joinRaids, setJoinRaids, setLoadingJoin);
+                                                            await joinPublicParty(userId, raid, joinRaids, setLoadingJoin, dispatch);
                                                         }
                                                     }}>
                                                     {isInvitedParty(raid.id, joinRaids) ? '참가 완료' : '참가'}
@@ -191,22 +190,22 @@ export function FindComponent({ joinRaids, setJoinRaids, isLoadingData, setLoadi
                 setOpen={setOpenJoin}
                 userId={userId}
                 joinRaids={joinRaids}
-                setJoinRaids={setJoinRaids}/>
+                dispatch={dispatch}/>
             <AddPartyModal 
                 isOpen={isOpen} 
                 onOpenChange={onOpenChange} 
                 raids={raids} 
                 userId={userId}
                 joinRaids={joinRaids}
-                setJoinRaids={setJoinRaids}/>
+                dispatch={dispatch}/>
             <JoinPrivatePartyModal
                 isOpenPrivate={isOpenPrivate}
                 setOpenPrivate={setOpenPrivate}
                 userId={userId}
                 joinRaids={joinRaids}
-                setJoinRaids={setJoinRaids}
                 selectedRaid={selectedRaid}
-                setSelectedRaid={setSelectedRaid}/>
+                setSelectedRaid={setSelectedRaid}
+                dispatch={dispatch}/>
         </div>
     )
 }
@@ -217,11 +216,11 @@ type JoinPrivatePartyModalProps = {
     setOpenPrivate: SetStateFn<boolean>,
     userId: string | null,
     joinRaids: Raid[],
-    setJoinRaids: SetStateFn<Raid[]>,
     selectedRaid: Raid | null,
-    setSelectedRaid: SetStateFn<Raid | null>
+    setSelectedRaid: SetStateFn<Raid | null>,
+    dispatch: AppDispatch
 }
-function JoinPrivatePartyModal({ isOpenPrivate, setOpenPrivate, userId, joinRaids, setJoinRaids, selectedRaid, setSelectedRaid }: JoinPrivatePartyModalProps) {
+function JoinPrivatePartyModal({ isOpenPrivate, setOpenPrivate, userId, joinRaids, selectedRaid, setSelectedRaid, dispatch }: JoinPrivatePartyModalProps) {
     const [inputPwd, setInputPwd] = useState('');
     const [isLoadingJoin, setLoadingJoin] = useState(false);
     const [isErrorPwd, setErrorPwd] = useState(false);
@@ -262,7 +261,7 @@ function JoinPrivatePartyModal({ isOpenPrivate, setOpenPrivate, userId, joinRaid
                                     isDisabled={inputPwd === ''}
                                     isLoading={isLoadingJoin}
                                     className="mt-4"
-                                    onPress={async () => await handleJoinPrivateParty(userId, selectedRaid, inputPwd, joinRaids, setJoinRaids, setLoadingJoin, onClose)}>
+                                    onPress={async () => await handleJoinPrivateParty(userId, selectedRaid, inputPwd, joinRaids, setLoadingJoin, onClose, dispatch)}>
                                     참가
                                 </Button>
                             </div>
@@ -280,9 +279,9 @@ type JoinPartyModalProps = {
     setOpen: SetStateFn<boolean>,
     userId: string | null,
     joinRaids: Raid[],
-    setJoinRaids: SetStateFn<Raid[]>
+    dispatch: AppDispatch
 }
-function JoinPartyModal({ isOpen, setOpen, userId, joinRaids, setJoinRaids }: JoinPartyModalProps) {
+function JoinPartyModal({ isOpen, setOpen, userId, joinRaids, dispatch }: JoinPartyModalProps) {
     const [inputLink, setInputLink] = useState('');
     const [inputPwd, setInputPwd] = useState('');
     const [isLoadingJoin, setLoadingJoin] = useState(false);
@@ -345,7 +344,7 @@ function JoinPartyModal({ isOpen, setOpen, userId, joinRaids, setJoinRaids }: Jo
                                     isDisabled={inputLink === '' || (party !== null && inputPwd === '')}
                                     isLoading={isLoadingJoin}
                                     className="mt-4"
-                                    onPress={async () => await handleJoinParty(userId, inputLink, inputPwd, setLoadingJoin, party, setParty, setErrorLink, setErrorPwd, onClose, joinRaids, setJoinRaids)}>
+                                    onPress={async () => await handleJoinParty(userId, inputLink, inputPwd, setLoadingJoin, party, setParty, setErrorLink, setErrorPwd, onClose, joinRaids, dispatch)}>
                                     참가
                                 </Button>
                             </div>
@@ -366,9 +365,9 @@ type AddPartyModalProps = {
     raids: Raid[],
     userId: string | null,
     joinRaids: Raid[],
-    setJoinRaids: SetStateFn<Raid[]>
+    dispatch: AppDispatch
 }
-function AddPartyModal({ isOpen, onOpenChange, raids, userId, joinRaids, setJoinRaids }: AddPartyModalProps) {
+function AddPartyModal({ isOpen, onOpenChange, raids, userId, joinRaids, dispatch }: AddPartyModalProps) {
     const [inputName, setInputName] = useState("");
     const [selectedPwd, setSelectedPwd] = useState('yes');
     const [selectedOpen, setSelectedOpen] = useState('yes');
@@ -378,7 +377,6 @@ function AddPartyModal({ isOpen, onOpenChange, raids, userId, joinRaids, setJoin
     const expeditions: Character[] = useSelector((state: RootState) => state.login.user.expedition);
     const findCharacter = expeditions.find(character => character.nickname === titleCharacter);
     const level = findCharacter ? findCharacter.level : 0;
-    const dispatch = useDispatch<AppDispatch>();
 
     return (
         <Modal 
@@ -449,7 +447,7 @@ function AddPartyModal({ isOpen, onOpenChange, raids, userId, joinRaids, setJoin
                                     isLoading={isLoadingAdd}
                                     isDisabled={inputName.trim() === '' || (selectedPwd === 'no' && inputPwd.trim() === '')}
                                     radius="sm"
-                                    onPress={async () => await handleAddRaid(dispatch, inputName, selectedOpen === 'yes', selectedPwd === 'no', inputPwd, raids, onClose, userId, setLoadingAdd, titleCharacter, joinRaids, setJoinRaids, level)}>
+                                    onPress={async () => await handleAddRaid(dispatch, inputName, selectedOpen === 'yes', selectedPwd === 'no', inputPwd, onClose, userId, setLoadingAdd, titleCharacter, joinRaids, level)}>
                                     추가
                                 </Button>
                             </div>
