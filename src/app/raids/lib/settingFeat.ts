@@ -298,3 +298,49 @@ export function handleChangePwd(
         setLoadingChangePwd(false);
     }
 }
+
+// 파티 공개 여부 Switch 작동 이벤트
+export function handleChangePublicSetting(
+    dispatch: AppDispatch,
+    setDisablePublic: SetStateFn<boolean>,
+    raid: Raid
+) {
+    return async (isSelected: boolean) => {
+        setDisablePublic(true);
+        const res = await fetch(`/api/raids/partys`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: 'switchPublic',
+                raidId: raid.id,
+                isSelected: isSelected
+            })
+        });
+        if (!res.ok) {
+            let message = '요청 중 오류가 발생하였습니다.';
+            try {
+                const data = await res.json();
+                message = data?.error ?? message;
+            } catch {}
+            addToast({
+                title: `요청 오류`,
+                description: message,
+                color: "danger"
+            });
+            setDisablePublic(false);
+            return;
+        }
+        const newRaid: Raid = {
+            ...raid,
+            isOpen: isSelected
+        }
+        const data = await res.json();
+        dispatch(updateRaidData(newRaid));
+        addToast({
+            title: `설정 완료`,
+            description: data.message,
+            color: "success"
+        });
+        setDisablePublic(false);
+    }
+}

@@ -3,7 +3,7 @@ import { MemberBox, Raid } from "../model/types"
 import { addToast, Button, Checkbox, cn, Code, Divider, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Switch } from "@heroui/react"
 import { useState } from "react"
 import { useSelector } from "react-redux"
-import { getMemberBoxs, handleChangeLink, handleChangeManager, handleChangeName, handleChangePwd, handleChangePwdSetting, isManagerByUserId } from "../lib/settingFeat"
+import { getMemberBoxs, handleChangeLink, handleChangeManager, handleChangeName, handleChangePublicSetting, handleChangePwd, handleChangePwdSetting, isManagerByUserId } from "../lib/settingFeat"
 import { RaidMember } from "@/app/api/raids/members/route"
 import { copyToClipboard, SetStateFn } from "@/utiils/utils"
 import clsx from "clsx"
@@ -30,6 +30,8 @@ export function PartySettingComponent({ raid, members, dispatch }: PartySettingC
     const [isLoadingChangePwd, setLoadingChangePwd] = useState(false);
     const [isShowPwd, setShowPwd] = useState(false);
     const [isDisabledPwd, setDisabledPwd] = useState(false);
+    // 공개 여부 관리
+    const [isDisablePublic, setDisablePublic] = useState(false);
     
     const userId = useSelector((state: RootState) => state.party.userId);
 
@@ -45,6 +47,7 @@ export function PartySettingComponent({ raid, members, dispatch }: PartySettingC
     const onChangeLink = handleChangeLink(dispatch, setLoadingChangeLink, raid);
     const onValueChangeSetPwd = handleChangePwdSetting(dispatch, setDisabledPwd, setShowPwd, raid);
     const onChangePwd = handleChangePwd(dispatch, setLoadingChangePwd, setShowPwd, setChangePwd, raid, changePwd);
+    const onValueChangePublic = handleChangePublicSetting(dispatch, setDisablePublic, raid);
 
     return (
         <div className="w-full pt-2">
@@ -102,7 +105,7 @@ export function PartySettingComponent({ raid, members, dispatch }: PartySettingC
             <div className="w-full flex flex-col sm:flex-row gap-3 sm:items-center">
                 <div className="grow">
                     <h3 className="font-bold text-xl">초대코드 관리</h3>
-                    <p>현재 초대코드 : {raid.link}</p>
+                    <p>현재 초대코드 : {isManagerByUserId(raid, userId) ? raid.link : "공대장만 확인 가능"}</p>
                 </div>
                 <div className="flex flex-col items-end">
                     <div className="w-full grid grid-cols-2 gap-2">
@@ -149,7 +152,7 @@ export function PartySettingComponent({ raid, members, dispatch }: PartySettingC
                     <Switch
                         size="sm"
                         isSelected={raid.isPwd}
-                        isDisabled={isDisabledPwd}
+                        isDisabled={isDisabledPwd || !isManagerByUserId(raid, userId)}
                         onValueChange={onValueChangeSetPwd}>
                         비밀번호 설정
                     </Switch>
@@ -184,18 +187,16 @@ export function PartySettingComponent({ raid, members, dispatch }: PartySettingC
             <Divider className="my-4"/>
             <div className="w-full flex flex-col sm:flex-row gap-3 sm:items-center">
                 <div className="grow">
-                    <h3 className="font-bold text-xl">파티장 위임</h3>
-                    <p>현재 파티장 : {raid.managerNickname} ({raid.managerId})</p>
+                    <h3 className="font-bold text-xl">파티 공개 여부</h3>
+                    <p>파티 찾기에서 파티를 공개할 것인지 선택하는 항목입니다.</p>
                 </div>
                 <div className="flex flex-col items-end">
-                    <Button
-                        fullWidth
-                        radius="sm"
-                        color="primary"
-                        isDisabled={!isManagerByUserId(raid, userId)}
-                        onPress={() => setOpenChangeManager(true)}>
-                        변경하기
-                    </Button>
+                    <Switch
+                        isSelected={raid.isOpen}
+                        isDisabled={!isManagerByUserId(raid, userId) || isDisablePublic}
+                        onValueChange={onValueChangePublic}>
+                        {raid.isOpen ? "공개" : "비공개"}
+                    </Switch>
                     <p className={clsx(
                         "text-sm text-red-400 dark:text-red-600 mt-1",
                         !isManagerByUserId(raid, userId) ? '' : 'hidden'
