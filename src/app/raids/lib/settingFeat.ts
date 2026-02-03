@@ -5,6 +5,7 @@ import { addToast } from "@heroui/react";
 import { MemberBox, Raid } from "../model/types";
 import { RaidMember } from "@/app/api/raids/members/route";
 import { Character } from "@/app/store/loginSlice";
+import { getRandomInviteLink } from "./raidListFeat";
 
 // 파티명 변경 이벤트
 export function handleChangeName(
@@ -135,4 +136,51 @@ export async function handleChangeManager(ui: ChangeManagerUI, payload: CHangeMa
     });
     ui.setLoadingChange(false);
     ui.onClose();
+}
+
+// 초대코드 재변경 이벤트
+export function handleChangeLink(
+    dispatch: AppDispatch,
+    setLoadingChangeLink: SetStateFn<boolean>,
+    raid: Raid
+) {
+    return async () => {
+        setLoadingChangeLink(true);
+        const newLink = getRandomInviteLink();
+        const res = await fetch(`/api/raids/partys`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: 'changeLink',
+                raidId: raid.id,
+                link: newLink
+            })
+        });
+        if (!res.ok) {
+            let message = '요청 중 오류가 발생하였습니다.';
+            try {
+                const data = await res.json();
+                message = data?.error ?? message;
+            } catch {}
+            addToast({
+                title: `요청 오류`,
+                description: message,
+                color: "danger"
+            });
+            setLoadingChangeLink(false);
+            return;
+        }
+        const newRaid: Raid = {
+            ...raid,
+            link: newLink
+        }
+        const data = await res.json();
+        dispatch(updateRaidData(newRaid));
+        addToast({
+            title: `변경 완료`,
+            description: data.message,
+            color: "success"
+        });
+        setLoadingChangeLink(false);
+    }
 }

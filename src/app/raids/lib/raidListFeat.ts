@@ -11,7 +11,6 @@ import characterData from "@/data/characters/data.json";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 const REFRESH_COOLDOWN = 5000; // 새로고침 빈도 시간
-const TEAM_MAX = 4;
 
 // 파티 목록 데이터 가져오기
 export async function loadRaids(

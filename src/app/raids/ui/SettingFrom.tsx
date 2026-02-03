@@ -1,11 +1,11 @@
 import { AppDispatch, RootState } from "@/app/store/store"
 import { MemberBox, Raid } from "../model/types"
-import { Button, Checkbox, cn, Divider, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/react"
+import { addToast, Button, Checkbox, cn, Divider, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/react"
 import { useState } from "react"
 import { useSelector } from "react-redux"
-import { getMemberBoxs, handleChangeManager, handleChangeName, isManagerByUserId } from "../lib/settingFeat"
+import { getMemberBoxs, handleChangeLink, handleChangeManager, handleChangeName, isManagerByUserId } from "../lib/settingFeat"
 import { RaidMember } from "@/app/api/raids/members/route"
-import { SetStateFn } from "@/utiils/utils"
+import { copyToClipboard, SetStateFn } from "@/utiils/utils"
 import clsx from "clsx"
 
 // 파티 설정 컴포넌트
@@ -19,12 +19,22 @@ export function PartySettingComponent({ raid, members, dispatch }: PartySettingC
     const [isLoadingChangeName, setLoadingChangeName] = useState(false);
     const userId = useSelector((state: RootState) => state.party.userId);
     const [isOpenChangeManager, setOpenChangeManager] = useState(false);
+    const [isLoadingChangeLink, setLoadingChangeLink] = useState(false);
 
     const onChangeName = handleChangeName(changeName, raid, dispatch, setLoadingChangeName);
+    const onPressCopyToClipboard = async () => {
+        await copyToClipboard(raid.link);
+        addToast({
+            title: `복사 완료`,
+            description: "초대코드를 클립보드에 복사하였습니다.",
+            color: "success"
+        });
+    }
+    const onChangeLink = handleChangeLink(dispatch, setLoadingChangeLink, raid);
 
     return (
         <div className="w-full pt-2">
-            <div className="w-full flex flex-col sm:flex-row gap-1 items-center">
+            <div className="w-full flex flex-col sm:flex-row gap-3 sm:items-center">
                 <div className="grow">
                     <h3 className="font-bold text-xl">파티명 변경</h3>
                     <p>기존 파티명 : {raid.name}</p>
@@ -54,19 +64,52 @@ export function PartySettingComponent({ raid, members, dispatch }: PartySettingC
                 </div>
             </div>
             <Divider className="my-4"/>
-            <div className="w-full flex flex-col sm:flex-row gap-1 items-center">
+            <div className="w-full flex flex-col sm:flex-row gap-3 sm:items-center">
                 <div className="grow">
                     <h3 className="font-bold text-xl">파티장 위임</h3>
                     <p>현재 파티장 : {raid.managerNickname} ({raid.managerId})</p>
                 </div>
                 <div className="flex flex-col items-end">
                     <Button
+                        fullWidth
                         radius="sm"
                         color="primary"
                         isDisabled={!isManagerByUserId(raid, userId)}
                         onPress={() => setOpenChangeManager(true)}>
                         변경하기
                     </Button>
+                    <p className={clsx(
+                        "text-sm text-red-400 dark:text-red-600 mt-1",
+                        !isManagerByUserId(raid, userId) ? '' : 'hidden'
+                    )}>파티장만 조작이 가능합니다.</p>
+                </div>
+            </div>
+            <Divider className="my-4"/>
+            <div className="w-full flex flex-col sm:flex-row gap-3 sm:items-center">
+                <div className="grow">
+                    <h3 className="font-bold text-xl">초대코드 관리</h3>
+                    <p>현재 초대코드 : {raid.link}</p>
+                </div>
+                <div className="flex flex-col items-end">
+                    <div className="w-full grid grid-cols-2 gap-2">
+                        <Button
+                            fullWidth
+                            radius="sm"
+                            color="primary"
+                            isDisabled={!isManagerByUserId(raid, userId)}
+                            onPress={onPressCopyToClipboard}>
+                            복사하기
+                        </Button>
+                        <Button
+                            fullWidth
+                            radius="sm"
+                            color="primary"
+                            isDisabled={!isManagerByUserId(raid, userId)}
+                            isLoading={isLoadingChangeLink}
+                            onPress={onChangeLink}>
+                            변경하기
+                        </Button>
+                    </div>
                     <p className={clsx(
                         "text-sm text-red-400 dark:text-red-600 mt-1",
                         !isManagerByUserId(raid, userId) ? '' : 'hidden'

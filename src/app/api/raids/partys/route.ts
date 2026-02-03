@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     }
 }
 
-type ActionType = "changeName" | "changeManager";
+type ActionType = "changeName" | "changeManager" | "changeLink";
 type Handler = (body: any) => Promise<NextResponse>;
 
 const handlers: Record<ActionType, Handler> = {
@@ -63,7 +63,27 @@ const handlers: Record<ActionType, Handler> = {
 
                 tx.update(raidDoc, { managerId: managerBox.userId, managerNickname: managerBox.nickname });
             });
-            return NextResponse.json({ message: '해당 레이드의 파티명을 수정하였습니다.' }, { status: 200 });
+            return NextResponse.json({ message: '해당 레이드의 파티장을 변경하였습니다.' }, { status: 200 });
+        } catch (e: any) {
+            if (e.message === "RAID_NOT_FOUND") {
+                return NextResponse.json({ error: '해당 레이드의 데이터를 찾을 수 없습니다.' }, { status: 400 });
+            }
+            console.log(e);
+            return NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
+        }
+    },
+    changeLink: async (body) => {
+        const raidId = body.raidId;
+        const link = body.link;
+        try {
+            const raidDoc = doc(firestore, "raids", raidId);
+            await runTransaction(firestore, async (tx) => {
+                const raidSnapshot = await tx.get(raidDoc);
+                if (!raidSnapshot.exists()) throw new Error('RAID_NOT_FOUND');
+
+                tx.update(raidDoc, { link: link });
+            });
+            return NextResponse.json({ message: '해당 레이드의 초대 코드를 다시 생성하였습니다.' }, { status: 200 });
         } catch (e: any) {
             if (e.message === "RAID_NOT_FOUND") {
                 return NextResponse.json({ error: '해당 레이드의 데이터를 찾을 수 없습니다.' }, { status: 400 });
