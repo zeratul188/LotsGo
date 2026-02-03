@@ -6,6 +6,9 @@ import { MemberBox, Raid } from "../model/types";
 import { RaidMember } from "@/app/api/raids/members/route";
 import { Character } from "@/app/store/loginSlice";
 import { getRandomInviteLink } from "./raidListFeat";
+import { encrypt } from "@/utiils/crypto";
+
+const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
 // 파티명 변경 이벤트
 export function handleChangeName(
@@ -182,5 +185,105 @@ export function handleChangeLink(
             color: "success"
         });
         setLoadingChangeLink(false);
+    }
+}
+
+// 비밀번호 설정 Switch 작동 이벤트
+export function handleChangePwdSetting(
+    dispatch: AppDispatch,
+    setDisabledPwd: SetStateFn<boolean>,
+    setShowPwd: SetStateFn<boolean>,
+    raid: Raid
+) {
+    return async (isSelected: boolean) => {
+        setDisabledPwd(true);
+        setShowPwd(false);
+        const res = await fetch(`/api/raids/partys`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: 'settingPwd',
+                raidId: raid.id,
+                isSelected: isSelected
+            })
+        });
+        if (!res.ok) {
+            let message = '요청 중 오류가 발생하였습니다.';
+            try {
+                const data = await res.json();
+                message = data?.error ?? message;
+            } catch {}
+            addToast({
+                title: `요청 오류`,
+                description: message,
+                color: "danger"
+            });
+            setDisabledPwd(false);
+            return;
+        }
+        const newRaid: Raid = {
+            ...raid,
+            isPwd: isSelected
+        }
+        const data = await res.json();
+        dispatch(updateRaidData(newRaid));
+        addToast({
+            title: `설정 완료`,
+            description: data.message,
+            color: "success"
+        });
+        setDisabledPwd(false);
+    }
+}
+
+// 비밀번호 변경 이벤트
+export function handleChangePwd(
+    dispatch: AppDispatch,
+    setLoadingChangePwd: SetStateFn<boolean>,
+    setShowPwd: SetStateFn<boolean>,
+    setChangePwd: SetStateFn<string>,
+    raid: Raid,
+    changePwd: string
+) {
+    return async () => {
+        setLoadingChangePwd(true);
+        setShowPwd(false);
+        const encryptedPwd = encrypt(changePwd, secretKey);
+        const res = await fetch(`/api/raids/partys`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: 'changePwd',
+                raidId: raid.id,
+                encryptedPwd: encryptedPwd
+            })
+        });
+        if (!res.ok) {
+            let message = '요청 중 오류가 발생하였습니다.';
+            try {
+                const data = await res.json();
+                message = data?.error ?? message;
+            } catch {}
+            addToast({
+                title: `요청 오류`,
+                description: message,
+                color: "danger"
+            });
+            setLoadingChangePwd(false);
+            return;
+        }
+        const newRaid: Raid = {
+            ...raid,
+            pwd: encryptedPwd
+        }
+        const data = await res.json();
+        dispatch(updateRaidData(newRaid));
+        addToast({
+            title: `변경 완료`,
+            description: data.message,
+            color: "success"
+        });
+        setChangePwd('');
+        setLoadingChangePwd(false);
     }
 }

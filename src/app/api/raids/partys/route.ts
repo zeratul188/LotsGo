@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     }
 }
 
-type ActionType = "changeName" | "changeManager" | "changeLink";
+type ActionType = "changeName" | "changeManager" | "changeLink" | "settingPwd" | "changePwd";
 type Handler = (body: any) => Promise<NextResponse>;
 
 const handlers: Record<ActionType, Handler> = {
@@ -84,6 +84,47 @@ const handlers: Record<ActionType, Handler> = {
                 tx.update(raidDoc, { link: link });
             });
             return NextResponse.json({ message: '해당 레이드의 초대 코드를 다시 생성하였습니다.' }, { status: 200 });
+        } catch (e: any) {
+            if (e.message === "RAID_NOT_FOUND") {
+                return NextResponse.json({ error: '해당 레이드의 데이터를 찾을 수 없습니다.' }, { status: 400 });
+            }
+            console.log(e);
+            return NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
+        }
+    },
+    settingPwd: async (body) => {
+        const raidId = body.raidId;
+        const isSelected: boolean = body.isSelected;
+        try {
+            const raidDoc = doc(firestore, "raids", raidId);
+            await runTransaction(firestore, async (tx) => {
+                const raidSnapshot = await tx.get(raidDoc);
+                if (!raidSnapshot.exists()) throw new Error('RAID_NOT_FOUND');
+
+                tx.update(raidDoc, { isPwd: isSelected });
+            });
+            const message = isSelected ? '해당 레이드의 비밀번호 설정을 활성화하였습니다.' : '해당 레이드의 비밀번호 설정을 비활성화하였습니다.'
+            return NextResponse.json({ message: message }, { status: 200 });
+        } catch (e: any) {
+            if (e.message === "RAID_NOT_FOUND") {
+                return NextResponse.json({ error: '해당 레이드의 데이터를 찾을 수 없습니다.' }, { status: 400 });
+            }
+            console.log(e);
+            return NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
+        }
+    },
+    changePwd: async (body) => {
+        const raidId = body.raidId;
+        const encryptedPwd = body.encryptedPwd;
+        try {
+            const raidDoc = doc(firestore, "raids", raidId);
+            await runTransaction(firestore, async (tx) => {
+                const raidSnapshot = await tx.get(raidDoc);
+                if (!raidSnapshot.exists()) throw new Error('RAID_NOT_FOUND');
+
+                tx.update(raidDoc, { pwd: encryptedPwd });
+            });
+            return NextResponse.json({ message: '해당 레이드의 비밀번호가 변경되었습니다.' }, { status: 200 });
         } catch (e: any) {
             if (e.message === "RAID_NOT_FOUND") {
                 return NextResponse.json({ error: '해당 레이드의 데이터를 찾을 수 없습니다.' }, { status: 400 });
