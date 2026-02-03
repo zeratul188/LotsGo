@@ -23,7 +23,6 @@ import { PartyRaidsComponent } from "./RaidsForm"
 import { AppDispatch, RootState } from "@/app/store/store"
 import { useSelector } from "react-redux"
 import { PartySettingComponent } from "./SettingFrom";
-import { SetStateFn } from "@/utiils/utils";
 
 // 홈 컴포넌트
 type ChecklistComponentProps = {

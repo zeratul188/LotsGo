@@ -3,7 +3,7 @@ import { Party, PartyResponse, Raid, TeamCharacter } from "../model/types";
 import { decrypt, encrypt } from "@/utiils/crypto";
 import { addToast } from "@heroui/react";
 import type { AppDispatch } from "../../store/store";
-import { addRaid, changeJoinRaids, initialRaids, updatePartys } from "../../store/partySlice";
+import { addMember, addRaid, changeJoinRaids, changeRaidMembers, initialRaids, updatePartys } from "../../store/partySlice";
 import { getBossDataById, InvolvedCharacter } from "./raidsFeat";
 import { Boss } from "../../api/checklist/boss/route";
 import { RaidMember } from "../../api/raids/members/route";
@@ -181,12 +181,38 @@ export async function handleJoinParty(
                     setLoadingJoin(false);
                     return;
                 }
+                const memberRes = await fetch(`/api/raids/members`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: userId
+                    })
+                });
+                if (!memberRes.ok) {
+                    let message = '요청 중 오류가 발생하였습니다.';
+                    try {
+                        const data = await res.json();
+                        message = data?.error ?? message;
+                    } catch {}
+                    addToast({
+                        title: `요청 오류`,
+                        description: message,
+                        color: "danger"
+                    });
+                    return;
+                }
+                const memberData = await memberRes.json();
+                dispatch(addMember(memberData.member));
                 const cloneRaids = structuredClone(joinRaids);
                 if (userId) {
                     raid.members.push(userId);
                 }
                 cloneRaids.push(raid);
                 dispatch(changeJoinRaids(cloneRaids));
+                dispatch(changeRaidMembers({
+                    id: raid.id,
+                    members: raid.members
+                }));
                 setLoadingJoin(false);
                 onClose();
                 addToast({
@@ -226,11 +252,37 @@ export async function handleJoinParty(
                 setLoadingJoin(false);
                 return;
             }
+            const memberRes = await fetch(`/api/raids/members`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: userId
+                })
+            });
+            if (!memberRes.ok) {
+                let message = '요청 중 오류가 발생하였습니다.';
+                try {
+                    const data = await res.json();
+                    message = data?.error ?? message;
+                } catch {}
+                addToast({
+                    title: `요청 오류`,
+                    description: message,
+                    color: "danger"
+                });
+                return;
+            }
+            const memberData = await memberRes.json();
+            dispatch(addMember(memberData.member));
             const cloneRaids = structuredClone(joinRaids);
             if (userId) {
                 party.members.push(userId);
             }
             cloneRaids.push(party);
+            dispatch(changeRaidMembers({
+                id: party.id,
+                members: party.members
+            }));
             dispatch(changeJoinRaids(cloneRaids));
             setLoadingJoin(false);
             addToast({
@@ -280,12 +332,39 @@ export async function joinPublicParty(
         setLoadingJoin(prev => ({...prev, [raid.id]: false}));
         return;
     }
-    const cloneRaids = structuredClone(joinRaids);
-    if (userId) {
-        raid.members.push(userId);
+    const memberRes = await fetch(`/api/raids/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            userId: userId
+        })
+    });
+    if (!memberRes.ok) {
+        let message = '요청 중 오류가 발생하였습니다.';
+        try {
+            const data = await res.json();
+            message = data?.error ?? message;
+        } catch {}
+        addToast({
+            title: `요청 오류`,
+            description: message,
+            color: "danger"
+        });
+        return;
     }
-    cloneRaids.push(raid);
+    const data = await memberRes.json();
+    dispatch(addMember(data.member));
+    const cloneRaids = structuredClone(joinRaids);
+    const cloneRaid = structuredClone(raid);
+    if (userId) {
+        cloneRaid.members.push(userId);
+    }
+    cloneRaids.push(cloneRaid);
     dispatch(changeJoinRaids(cloneRaids));
+    dispatch(changeRaidMembers({
+        id: cloneRaid.id,
+        members: cloneRaid.members
+    }));
     setLoadingJoin(prev => ({...prev, [raid.id]: false}));
     addToast({
         title: `참가 완료`,
@@ -305,7 +384,7 @@ export async function handleJoinPrivateParty(
     dispatch: AppDispatch
 ) {
     setLoadingJoin(true);
-    if (selectedRaid) {
+    if (selectedRaid && userId) {
         const decryptedPassword = decrypt(selectedRaid.pwd, secretKey);
         if (decryptedPassword === inputPwd) {
             const res = await fetch(`/api/raids`, {
@@ -326,15 +405,42 @@ export async function handleJoinPrivateParty(
                 setLoadingJoin(false);
                 return;
             }
+            const memberRes = await fetch(`/api/raids/members`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: userId
+                })
+            });
+            if (!memberRes.ok) {
+                let message = '요청 중 오류가 발생하였습니다.';
+                try {
+                    const data = await res.json();
+                    message = data?.error ?? message;
+                } catch {}
+                addToast({
+                    title: `요청 오류`,
+                    description: message,
+                    color: "danger"
+                });
+                return;
+            }
+            const data = await memberRes.json();
+            dispatch(addMember(data.member));
+            const cloneRaid = structuredClone(selectedRaid);
             const cloneRaids = structuredClone(joinRaids);
             if (userId) {
-                selectedRaid.members.push(userId);
+                cloneRaid.members.push(userId);
             }
-            cloneRaids.push(selectedRaid);
+            cloneRaids.push(cloneRaid);
             dispatch(changeJoinRaids(cloneRaids));
+            dispatch(changeRaidMembers({
+                id: cloneRaid.id,
+                members: cloneRaid.members
+            }));
             addToast({
                 title: `참가 완료`,
-                description: `\"${selectedRaid.name}\" 파티에 참가하였습니다.`,
+                description: `\"${cloneRaid.name}\" 파티에 참가하였습니다.`,
                 color: "success"
             });
             onClose();

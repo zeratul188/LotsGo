@@ -446,6 +446,7 @@ function InvolvedModal({ dispatch, partyId, members, userId, bosses, selectedPar
                     const level = findBoss.difficulty.find(d => d.stage === s.stage && d.difficulty === s.difficulty)?.level;
                     return level !== undefined ? Math.max(max, level) : max;
                 }, 0) : 0;
+            console.log(members);
             const findMember = members.find(m => m.id === userId);
             if (findMember) {
                 switch(tab) {

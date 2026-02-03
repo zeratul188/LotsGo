@@ -181,6 +181,27 @@ export function PartySettingComponent({ raid, members, dispatch }: PartySettingC
                     )}>파티장만 조작이 가능합니다.</p>
                 </div>
             </div>
+            <Divider className="my-4"/>
+            <div className="w-full flex flex-col sm:flex-row gap-3 sm:items-center">
+                <div className="grow">
+                    <h3 className="font-bold text-xl">파티장 위임</h3>
+                    <p>현재 파티장 : {raid.managerNickname} ({raid.managerId})</p>
+                </div>
+                <div className="flex flex-col items-end">
+                    <Button
+                        fullWidth
+                        radius="sm"
+                        color="primary"
+                        isDisabled={!isManagerByUserId(raid, userId)}
+                        onPress={() => setOpenChangeManager(true)}>
+                        변경하기
+                    </Button>
+                    <p className={clsx(
+                        "text-sm text-red-400 dark:text-red-600 mt-1",
+                        !isManagerByUserId(raid, userId) ? '' : 'hidden'
+                    )}>파티장만 조작이 가능합니다.</p>
+                </div>
+            </div>
             <ChangeManagerModal
                 dispatch={dispatch}
                 setOpenChangeManager={setOpenChangeManager}

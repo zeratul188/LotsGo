@@ -15,6 +15,11 @@ export type initialRaid = {
     joinRaids: Raid[]
 }
 
+export type ChangeMemberPayload = {
+    id: string,
+    members: string[]
+}
+
 const initialState: PartyState = {
     raids: [],
     selectedRaid: null,
@@ -29,6 +34,7 @@ const partySlice = createSlice({
     reducers: {
         initialMembers(state, action: PayloadAction<RaidMember[]>) {
             state.members = action.payload;
+            console.log(`initialed members`);
         },
         initialRaids(state, action: PayloadAction<initialRaid>) {
             state.raids = action.payload.raids;
@@ -39,6 +45,12 @@ const partySlice = createSlice({
         },
         addRaid(state, action: PayloadAction<Raid>) {
             state.raids.push(action.payload);
+        },
+        changeRaidMembers(state, action: PayloadAction<ChangeMemberPayload>) {
+            const findIndex = state.raids.findIndex(r => r.id === action.payload.id);
+            if (findIndex > -1) {
+                state.raids[findIndex].members = action.payload.members;
+            }
         },
         updateRaid(state, action: PayloadAction<Raid>) {
             const findIndex = state.raids.findIndex(r => r.id === action.payload.id);
@@ -71,6 +83,10 @@ const partySlice = createSlice({
                 state.selectedRaid = action.payload;
                 state.joinRaids[findIndexJoined] = action.payload;
             }
+        },
+        addMember(state, action: PayloadAction<RaidMember>) {
+            const isExist = state.members.some(m => m.id  === action.payload.id);
+            if (!isExist) state.members.push(action.payload);
         }
     }
 })
@@ -85,6 +101,8 @@ export const {
     changeUserId,
     updatePartys,
     updateRaidData,
-    changeJoinRaids
+    changeJoinRaids,
+    addMember,
+    changeRaidMembers
 } = partySlice.actions;
 export default partySlice.reducer;
