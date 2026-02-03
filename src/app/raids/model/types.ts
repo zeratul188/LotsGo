@@ -77,3 +77,14 @@ export type MemberBox = {
     job: string,
     server: string
 }
+
+// 파티 탈퇴 시 데이터 처림 묶음
+export type LeaveDataBox = {
+    raidId: string,
+    party: Party[],
+    members: string[]
+}
+export type LeaveData = {
+    message: string,
+    leaveBox: LeaveDataBox
+}

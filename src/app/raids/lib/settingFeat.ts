@@ -1,8 +1,8 @@
-import { updateRaidData } from "@/app/store/partySlice";
+import { changeKey, leaveRaid, updateRaidData } from "@/app/store/partySlice";
 import { AppDispatch } from "@/app/store/store";
 import { containsKorean, SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
-import { MemberBox, Raid } from "../model/types";
+import { LeaveData, MemberBox, Raid } from "../model/types";
 import { RaidMember } from "@/app/api/raids/members/route";
 import { Character } from "@/app/store/loginSlice";
 import { getRandomInviteLink } from "./raidListFeat";
@@ -342,5 +342,57 @@ export function handleChangePublicSetting(
             color: "success"
         });
         setDisablePublic(false);
+    }
+}
+
+// 파티 탈퇴 이벤트
+export function handleLeaveRaid(
+    dispatch: AppDispatch,
+    setLoadingLeave: SetStateFn<boolean>,
+    raid: Raid,
+    userId: string | null
+) {
+    return async () => {
+        if (!userId) {
+            addToast({
+                title: `오류 발생!`,
+                description: `처리 중 문제가 발생하였습니다.`,
+                color: "danger"
+            });
+            return;
+        }
+        setLoadingLeave(true);
+        const res = await fetch(`/api/raids/partys`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: 'leaveParty',
+                raidId: raid.id,
+                userId: userId
+            })
+        });
+        if (!res.ok) {
+            let message = '요청 중 오류가 발생하였습니다.';
+            try {
+                const data = await res.json();
+                message = data?.error ?? message;
+            } catch {}
+            addToast({
+                title: `요청 오류`,
+                description: message,
+                color: "danger"
+            });
+            setLoadingLeave(false);
+            return;
+        }
+        const data: LeaveData = await res.json();
+        dispatch(leaveRaid(data.leaveBox));
+        addToast({
+            title: `설정 완료`,
+            description: data.message,
+            color: "success"
+        });
+        dispatch(changeKey('find'));
+        setLoadingLeave(false);
     }
 }

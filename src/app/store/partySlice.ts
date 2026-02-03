@@ -1,13 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
 import { RaidMember } from "../api/raids/members/route"
-import { ChangePartys, Raid } from "../raids/model/types"
+import { ChangePartys, LeaveDataBox, Raid } from "../raids/model/types"
 
 type PartyState = {
     raids: Raid[],
     selectedRaid: Raid | null,
     userId: string | null,
     members: RaidMember[],
-    joinRaids: Raid[]
+    joinRaids: Raid[],
+    selectedKey: string
 }
 
 export type initialRaid = {
@@ -25,16 +26,19 @@ const initialState: PartyState = {
     selectedRaid: null,
     userId: null,
     members: [],
-    joinRaids: []
+    joinRaids: [],
+    selectedKey: 'find'
 }
 
 const partySlice = createSlice({
     name: 'party',
     initialState,
     reducers: {
+        changeKey(state, action: PayloadAction<string>) {
+            state.selectedKey = action.payload;
+        },
         initialMembers(state, action: PayloadAction<RaidMember[]>) {
             state.members = action.payload;
-            console.log(`initialed members`);
         },
         initialRaids(state, action: PayloadAction<initialRaid>) {
             state.raids = action.payload.raids;
@@ -87,11 +91,21 @@ const partySlice = createSlice({
         addMember(state, action: PayloadAction<RaidMember>) {
             const isExist = state.members.some(m => m.id  === action.payload.id);
             if (!isExist) state.members.push(action.payload);
+        },
+        leaveRaid(state, action: PayloadAction<LeaveDataBox>) {
+            const findIndex = state.raids.findIndex(r => r.id === action.payload.raidId);
+            if (findIndex > -1) {
+                state.raids[findIndex].party = action.payload.party;
+                state.raids[findIndex].members = action.payload.members;
+                state.joinRaids = state.joinRaids.filter(r => r.id !== action.payload.raidId);
+                state.selectedRaid = null;
+            }
         }
     }
 })
 
 export const { 
+    changeKey,
     initialMembers,
     initialRaids, 
     addRaid, 
@@ -103,6 +117,7 @@ export const {
     updateRaidData,
     changeJoinRaids,
     addMember,
-    changeRaidMembers
+    changeRaidMembers,
+    leaveRaid
 } = partySlice.actions;
 export default partySlice.reducer;

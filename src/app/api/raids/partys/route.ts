@@ -1,6 +1,6 @@
-import { MemberBox, Party, Raid } from "@/app/raids/model/types";
+import { LeaveDataBox, MemberBox, Party, Raid } from "@/app/raids/model/types";
 import { firestore } from "@/utiils/firebase";
-import { doc, getDoc, runTransaction } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, limit, query, runTransaction, where } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
     }
 }
 
-type ActionType = "changeName" | "changeManager" | "changeLink" | "settingPwd" | "changePwd" | "switchPublic";
+type ActionType = "changeName" | "changeManager" | "changeLink" | "settingPwd" | "changePwd" | "switchPublic" | "leaveParty";
 type Handler = (body: any) => Promise<NextResponse>;
 
 const handlers: Record<ActionType, Handler> = {
@@ -146,6 +146,57 @@ const handlers: Record<ActionType, Handler> = {
             });
             return NextResponse.json({ message: '해당 레이드의 공개상태가 변경되었습니다.' }, { status: 200 });
         } catch (e: any) {
+            if (e.message === "RAID_NOT_FOUND") {
+                return NextResponse.json({ error: '해당 레이드의 데이터를 찾을 수 없습니다.' }, { status: 400 });
+            }
+            console.log(e);
+            return NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
+        }
+    },
+    leaveParty: async (body) => {
+        const raidId = body.raidId;
+        const userId = body.userId;
+        try {
+            const raidDoc = doc(firestore, "raids", raidId);
+            if (!userId || !raidId) throw new Error('BODY_ERROR');
+            const memberQuery = query(collection(firestore, 'members'), where('id', '==', userId), limit(1));
+            const memberSnapshot = await getDocs(memberQuery);
+            if (memberSnapshot.empty) throw new Error('MEMBER_NOT_FOUND');
+            const memberDoc = memberSnapshot.docs[0];
+            const memberRef = memberSnapshot.docs[0].ref;
+            const leaveBox: LeaveDataBox = await runTransaction(firestore, async (tx) => {
+                const raidSnapshot = await tx.get(raidDoc);
+                if (!raidSnapshot.exists()) throw new Error('RAID_NOT_FOUND');
+                if (!raidSnapshot.data()?.party || !raidSnapshot.data()?.members || !memberDoc.data()?.joined) throw new Error("LOADED_UNDEFINED");
+                
+                const partys: Party[] = raidSnapshot.data()?.party;
+
+                const nextPartys = partys.map(p => {
+                    if (!p.teams.some(t => t.userId === userId)) return p;
+                    return {
+                        ...p,
+                        teams: (p.teams ?? []).filter(t => t.userId !== userId)
+                    }
+                });
+                const members: string[] = raidSnapshot.data()?.members;
+                const nextMembers = members.filter(m => m !== userId);
+
+                tx.update(raidDoc, { party: nextPartys, members: nextMembers });
+
+                const joined: string[] = memberDoc.data()?.joined;
+                const nextJoined = joined.filter(j => j !== raidId);
+
+                tx.update(memberRef, { joined: nextJoined });
+                return { raidId: raidId, party: nextPartys, members: nextMembers };
+            });
+            return NextResponse.json({ message: '해당 파티를 탈퇴하였습니다.', leaveBox: leaveBox }, { status: 200 });
+        } catch (e: any) {
+            if (e.message === "BODY_ERROR" || e.message === 'LOADED_UNDEFINED') {
+                return NextResponse.json({ error: '데이터 불러오는데 문제가 발생하였습니다.' }, { status: 400 });
+            }
+            if (e.message === "MEMBER_NOT_FOUND") {
+                return NextResponse.json({ error: '해당 ID를 가진 회원의 데이터를 찾을 수 없습니다.' }, { status: 400 });
+            }
             if (e.message === "RAID_NOT_FOUND") {
                 return NextResponse.json({ error: '해당 레이드의 데이터를 찾을 수 없습니다.' }, { status: 400 });
             }

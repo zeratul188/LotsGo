@@ -10,16 +10,14 @@ import { Boss } from "../api/checklist/boss/route";
 import { useMobileQuery } from "@/utiils/utils";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../store/store";
-import { changeUserId } from "../store/partySlice";
+import { changeKey, changeUserId } from "../store/partySlice";
 import { useRouter } from "next/navigation";
 
 // state 관리
 function raidsForm() {
-    const [selectedKey, setSelectedKey] = useState<string>('find');
     const [bosses, setBosses] = useState<Boss[]>([]);
 
     return {
-        selectedKey, setSelectedKey,
         bosses, setBosses
     }
 }
@@ -31,6 +29,7 @@ export default function RaidsClient() {
     const dispatch = useDispatch<AppDispatch>();
     const raids = useSelector((state: RootState) => state.party.raids);
     const joinRaids = useSelector((state: RootState) => state.party.joinRaids);
+    const selectedKey = useSelector((state: RootState) => state.party.selectedKey);
     const router = useRouter();
 
     useEffect(() => {
@@ -59,8 +58,8 @@ export default function RaidsClient() {
     }, []);
 
     useEffect(() => {
-        applyChangeParty(form.selectedKey, raids, dispatch);
-    }, [form.selectedKey])
+        applyChangeParty(selectedKey, raids, dispatch);
+    }, [selectedKey])
 
     return (
         <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
@@ -69,15 +68,15 @@ export default function RaidsClient() {
                     fullWidth={isMobile}
                     variant="underlined" 
                     size="lg"
-                    selectedKey={form.selectedKey}
-                    onSelectionChange={(key) => form.setSelectedKey(String(key))}>
+                    selectedKey={selectedKey}
+                    onSelectionChange={(key) => dispatch(changeKey(String(key)))}>
                     <Tab key="find" title="파티 찾기"/>
                     {joinRaids.map((raid) => (
                         <Tab key={raid.id} title={raid.name}/>
                     ))}
                 </Tabs>
             </div>
-            {form.selectedKey === 'find' ? (
+            {selectedKey === 'find' ? (
                 <FindComponent 
                     joinRaids={joinRaids}
                     isLoadingData={isLoadingData}
