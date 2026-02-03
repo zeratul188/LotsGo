@@ -95,3 +95,8 @@ function copyToClipboardFallback(text: string) {
     document.execCommand("copy");
     document.body.removeChild(textarea);
 }
+
+// 문자열에 한글이 포함되어 있는지 파악하는 함수
+export function containsKorean(text: string): boolean {
+    return /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(text);
+}

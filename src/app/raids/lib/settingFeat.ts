@@ -1,6 +1,6 @@
 import { updateRaidData } from "@/app/store/partySlice";
 import { AppDispatch } from "@/app/store/store";
-import { SetStateFn } from "@/utiils/utils";
+import { containsKorean, SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
 import { MemberBox, Raid } from "../model/types";
 import { RaidMember } from "@/app/api/raids/members/route";
@@ -248,6 +248,17 @@ export function handleChangePwd(
     return async () => {
         setLoadingChangePwd(true);
         setShowPwd(false);
+
+        if (containsKorean(changePwd)) {
+            addToast({
+                title: `부적절한 입력값 발생`,
+                description: "비밀번호에는 한글을 포함할 수 없습니다.",
+                color: "danger"
+            });
+            setLoadingChangePwd(false);
+            return;
+        }
+
         const encryptedPwd = encrypt(changePwd, secretKey);
         const res = await fetch(`/api/raids/partys`, {
             method: 'POST',
