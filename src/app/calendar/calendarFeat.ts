@@ -8,6 +8,7 @@ import { ShowWeek, WeekBox } from "./CalendarForm";
 import { DateValue, getLocalTimeZone } from "@internationalized/date";
 import { getWeekContents } from "../checklist/checklistFeat";
 import { decrypt } from "@/utiils/crypto";
+import { RaidWork } from "../raids/model/types";
 
 export type Calendar = {
     name: string,
@@ -108,25 +109,51 @@ export async function loadBosses(setBosses: SetStateFn<Boss[]>) {
 export async function loadWorks(setWorks: SetStateFn<Calendar[]>) {
     const userStr = localStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
-    if (storedUser) {
-        const id = storedUser.id;
-        const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));
-        const snapshot = await getDocs(q);
-        const data = snapshot.docs[0].data();
-        const works: Calendar[] = [];
-        if (data.calendars) {
-            for (const calender of data.calendars) {
-                const item: Calendar = {
-                    name: calender.name,
-                    date: calender.date.toDate(),
-                    raidname: calender.raidname,
-                    memo: calender.memo
-                }
-                works.push(item);
+    if (!storedUser) return;
+    const id = storedUser.id;
+    const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));
+    const snapshot = await getDocs(q);
+    const data = snapshot.docs[0].data();
+    const works: Calendar[] = [];
+    if (data.calendars) {
+        for (const calender of data.calendars) {
+            const item: Calendar = {
+                name: calender.name,
+                date: calender.date.toDate(),
+                raidname: calender.raidname,
+                memo: calender.memo
             }
+            works.push(item);
         }
-        setWorks(works);
     }
+    setWorks(works);
+}
+
+// 본인이 참여한 파티의 정보를 가져오는 함수
+export async function loadWorksByParty(setPartyWorks: SetStateFn<RaidWork[]>) {
+    const userStr = localStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    if (!storedUser) return;
+    const res = await fetch(`/api/raids/calendars?userId=${storedUser.id}`);
+    if (!res.ok) {
+        let message = '요청 중 오류가 발생하였습니다.';
+        try {
+            const data = await res.json();
+            message = data?.error ?? message;
+        } catch {}
+        addToast({
+            title: `요청 오류`,
+            description: message,
+            color: "danger"
+        });
+        return;
+    }
+    const works: RaidWork[] = await res.json();
+    const parsedWroks = works.map(w => ({
+        ...w,
+        date: new Date(w.date)
+    }));
+    setPartyWorks(parsedWroks);
 }
 
 // 주간 일정 데이터 초기화
@@ -346,6 +373,11 @@ export function getCalendarByWeek(weekbox: WeekBox, calendars: Calendar[], guild
         }
     }
     return works;
+}
+
+// 주마다 해당되는 파티 일정의 배열을 반환하는 함수
+export function getCalendarByPartyWorks(weekbox: WeekBox, partyWorks: RaidWork[]): RaidWork[] {
+    return partyWorks.filter(work => isSameDate(weekbox.date, work.date));
 }
 
 // 날짜 출력 변환 함수
@@ -630,4 +662,9 @@ export function getCalendarByDay(date: Date, calendars: Calendar[], guild: Guild
         }
     }
     return works;
+}
+
+// 당일인 파티 일정 배열 반환 함수
+export function getCalendarByPartyDay(date: Date, works: RaidWork[]): RaidWork[] {
+    return works.filter(work => isSameDate(date, work.date));
 }

@@ -1,5 +1,6 @@
+'use client'
 import { useEffect, useState } from "react";
-
+import { DateValue } from "@internationalized/date";
 
 export type SetStateFn<T> = React.Dispatch<React.SetStateAction<T>>;
 
@@ -63,4 +64,39 @@ export function getBackgroundRightByGrade(grade: string): string {
         case '에스더': return "bgc-special-r";
     }
     return "bgc-nothing";
+}
+
+// DateValue 객체를 Date 객체로 변환
+export function dateValueToDate(date: DateValue | null): Date | null {
+    if (!date) return null;
+    return date.toDate("Asia/Seoul"); // 서울 타임존으로 변경
+}
+
+// 공백/문자 방어 함수
+export const normalize = (v: string) => v.trim();
+
+// 클립보드에 특정 문자열을 복사하는 함수 (HTTPS 환경에서만 작동)
+export async function copyToClipboard(text: string) {
+    if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+    } else {
+        copyToClipboardFallback(text);
+    }
+}
+
+function copyToClipboardFallback(text: string) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+}
+
+// 문자열에 한글이 포함되어 있는지 파악하는 함수
+export function containsKorean(text: string): boolean {
+    return /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(text);
 }
