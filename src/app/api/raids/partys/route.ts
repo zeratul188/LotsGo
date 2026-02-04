@@ -1,7 +1,10 @@
 import { LeaveDataBox, MemberBox, Party, Raid } from "@/app/raids/model/types";
 import { firestore } from "@/utiils/firebase";
-import { collection, doc, getDoc, getDocs, limit, query, runTransaction, where } from "firebase/firestore";
+import { arrayRemove, collection, deleteDoc, doc, DocumentReference, getDoc, getDocs, limit, query, runTransaction, where, writeBatch } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
+
+const BATCH_LIMIT = 500;
+const QUERY_LIMIT = 30;
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
@@ -28,7 +31,7 @@ export async function GET(req: NextRequest) {
     }
 }
 
-type ActionType = "changeName" | "changeManager" | "changeLink" | "settingPwd" | "changePwd" | "switchPublic" | "leaveParty";
+type ActionType = "changeName" | "changeManager" | "changeLink" | "settingPwd" | "changePwd" | "switchPublic" | "leaveParty" | "deleteParty";
 type Handler = (body: any) => Promise<NextResponse>;
 
 const handlers: Record<ActionType, Handler> = {
@@ -203,6 +206,33 @@ const handlers: Record<ActionType, Handler> = {
             console.log(e);
             return NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
         }
+    },
+    deleteParty: async (body) => {
+        const raidId = body.raidId;
+        const memberIds: string[] | null = body.memberIds;
+        try {
+            if (!memberIds || !raidId) throw new Error('BODY_ERROR');
+            const memberRefs = await getMemberDocRefsByIds(memberIds);
+            for (let i = 0; i < memberIds.length; i += BATCH_LIMIT) {
+                const chunk = memberRefs.slice(i, i + BATCH_LIMIT);
+                const batch = writeBatch(firestore);
+                chunk.forEach(ref => {
+                    batch.update(ref, { joined: arrayRemove(raidId) });
+                });
+                await batch.commit();
+            }
+            await deleteDoc(doc(firestore, 'raids', raidId));
+            return NextResponse.json({ message: '해당 파티를 해산하였습니다.' }, { status: 200 });
+        } catch (e: any) {
+            if (e.message === "BODY_ERROR" || e.message === 'LOADED_UNDEFINED') {
+                return NextResponse.json({ error: '데이터 불러오는데 문제가 발생하였습니다.' }, { status: 400 });
+            }
+            if (e.message === "RAID_NOT_FOUND") {
+                return NextResponse.json({ error: '해당 레이드의 데이터를 찾을 수 없습니다.' }, { status: 400 });
+            }
+            console.log(e);
+            return NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
+        }
     }
 }
 
@@ -218,4 +248,22 @@ export async function POST(req: NextRequest) {
         console.error(error);
         return NextResponse.json({ error: 'Failed load Database.' }, { status: 500 });
     }
+}
+
+async function getMemberDocRefsByIds(memberIds: string[]) {
+  const refs: DocumentReference[] = [];
+
+  for (let i = 0; i < memberIds.length; i += QUERY_LIMIT) {
+    const slice = memberIds.slice(i, i + QUERY_LIMIT);
+
+    const q = query(
+      collection(firestore, "members"),
+      where("id", "in", slice)
+    );
+
+    const snap = await getDocs(q);
+    snap.forEach(d => refs.push(d.ref));
+  }
+
+  return refs;
 }

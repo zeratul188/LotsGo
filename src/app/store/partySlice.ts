@@ -100,6 +100,14 @@ const partySlice = createSlice({
                 state.joinRaids = state.joinRaids.filter(r => r.id !== action.payload.raidId);
                 state.selectedRaid = null;
             }
+        },
+        deleteRaid(state, action: PayloadAction<string>) {
+            const findIndex = state.raids.findIndex(r => r.id !== action.payload);
+            if (findIndex > -1) {
+                state.raids = state.raids.filter(r => r.id !== action.payload);
+                state.joinRaids = state.joinRaids.filter(r => r.id !== action.payload);
+                state.selectedRaid = null;
+            }
         }
     }
 })
@@ -118,6 +126,7 @@ export const {
     changeJoinRaids,
     addMember,
     changeRaidMembers,
-    leaveRaid
+    leaveRaid,
+    deleteRaid
 } = partySlice.actions;
 export default partySlice.reducer;

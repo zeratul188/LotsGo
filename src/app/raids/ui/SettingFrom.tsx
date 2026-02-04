@@ -3,7 +3,7 @@ import { MemberBox, Raid } from "../model/types"
 import { addToast, Button, Checkbox, cn, Code, Divider, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Switch } from "@heroui/react"
 import { useState } from "react"
 import { useSelector } from "react-redux"
-import { getMemberBoxs, handleChangeLink, handleChangeManager, handleChangeName, handleChangePublicSetting, handleChangePwd, handleChangePwdSetting, handleLeaveRaid, isManagerByUserId } from "../lib/settingFeat"
+import { getMemberBoxs, handleChangeLink, handleChangeManager, handleChangeName, handleChangePublicSetting, handleChangePwd, handleChangePwdSetting, handleDeleteRaid, handleLeaveRaid, isManagerByUserId } from "../lib/settingFeat"
 import { RaidMember } from "@/app/api/raids/members/route"
 import { copyToClipboard, SetStateFn } from "@/utiils/utils"
 import clsx from "clsx"
@@ -34,6 +34,8 @@ export function PartySettingComponent({ raid, members, dispatch }: PartySettingC
     const [isDisablePublic, setDisablePublic] = useState(false);
     // 파티 탈퇴
     const [isLoadingLeave, setLoadingLeave] = useState(false);
+    // 파티 해산
+    const [isLoadingDalete, setLoadingDelete] = useState(false);
 
     const userId = useSelector((state: RootState) => state.party.userId);
 
@@ -51,6 +53,7 @@ export function PartySettingComponent({ raid, members, dispatch }: PartySettingC
     const onChangePwd = handleChangePwd(dispatch, setLoadingChangePwd, setShowPwd, setChangePwd, raid, changePwd);
     const onValueChangePublic = handleChangePublicSetting(dispatch, setDisablePublic, raid);
     const onLeaveRaid = handleLeaveRaid(dispatch, setLoadingLeave, raid, userId);
+    const onDeleteRaid = handleDeleteRaid(dispatch, setLoadingDelete, raid);
 
     return (
         <div className="w-full pt-2">
@@ -226,6 +229,28 @@ export function PartySettingComponent({ raid, members, dispatch }: PartySettingC
                         "text-sm text-red-400 dark:text-red-600 mt-1",
                         isManagerByUserId(raid, userId) ? '' : 'hidden'
                     )}>파티장은 탈퇴하실 수 없습니다.</p>
+                </div>
+            </div>
+            <Divider className="my-4"/>
+            <div className="w-full flex flex-col sm:flex-row gap-3 sm:items-center">
+                <div className="grow">
+                    <h3 className="font-bold text-xl">파티 해산</h3>
+                    <p>현재 참여한 {raid.name}를 해산합니다. 해산 시 참여한 모든 맴버는 자동으로 탈퇴됩니다.</p>
+                </div>
+                <div className="flex flex-col items-end">
+                    <Button
+                        fullWidth
+                        radius="sm"
+                        color="danger"
+                        isDisabled={!isManagerByUserId(raid, userId)}
+                        isLoading={isLoadingDalete}
+                        onPress={onDeleteRaid}>
+                        해산하기
+                    </Button>
+                    <p className={clsx(
+                        "text-sm text-red-400 dark:text-red-600 mt-1",
+                        !isManagerByUserId(raid, userId) ? '' : 'hidden'
+                    )}>파티장만 조작이 가능합니다.</p>
                 </div>
             </div>
             <ChangeManagerModal

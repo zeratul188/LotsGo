@@ -1,4 +1,4 @@
-import { changeKey, leaveRaid, updateRaidData } from "@/app/store/partySlice";
+import { changeKey, deleteRaid, leaveRaid, updateRaidData } from "@/app/store/partySlice";
 import { AppDispatch } from "@/app/store/store";
 import { containsKorean, SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
@@ -353,46 +353,93 @@ export function handleLeaveRaid(
     userId: string | null
 ) {
     return async () => {
-        if (!userId) {
-            addToast({
-                title: `오류 발생!`,
-                description: `처리 중 문제가 발생하였습니다.`,
-                color: "danger"
+        if (confirm("해당 파티를 탈퇴하시겠습니까?\n탈퇴하면 참여했던 모든 레이드는 자동으로 참여 취소됩니다.")) {
+            if (!userId) {
+                addToast({
+                    title: `오류 발생!`,
+                    description: `처리 중 문제가 발생하였습니다.`,
+                    color: "danger"
+                });
+                return;
+            }
+            setLoadingLeave(true);
+            const res = await fetch(`/api/raids/partys`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'leaveParty',
+                    raidId: raid.id,
+                    userId: userId
+                })
             });
-            return;
-        }
-        setLoadingLeave(true);
-        const res = await fetch(`/api/raids/partys`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                type: 'leaveParty',
-                raidId: raid.id,
-                userId: userId
-            })
-        });
-        if (!res.ok) {
-            let message = '요청 중 오류가 발생하였습니다.';
-            try {
-                const data = await res.json();
-                message = data?.error ?? message;
-            } catch {}
+            if (!res.ok) {
+                let message = '요청 중 오류가 발생하였습니다.';
+                try {
+                    const data = await res.json();
+                    message = data?.error ?? message;
+                } catch {}
+                addToast({
+                    title: `요청 오류`,
+                    description: message,
+                    color: "danger"
+                });
+                setLoadingLeave(false);
+                return;
+            }
+            const data: LeaveData = await res.json();
+            dispatch(leaveRaid(data.leaveBox));
             addToast({
-                title: `요청 오류`,
-                description: message,
-                color: "danger"
+                title: `탈퇴 완료`,
+                description: data.message,
+                color: "success"
             });
+            dispatch(changeKey('find'));
             setLoadingLeave(false);
-            return;
         }
-        const data: LeaveData = await res.json();
-        dispatch(leaveRaid(data.leaveBox));
-        addToast({
-            title: `설정 완료`,
-            description: data.message,
-            color: "success"
-        });
-        dispatch(changeKey('find'));
-        setLoadingLeave(false);
+    }
+}
+
+// 파티 해산 이벤트
+export function handleDeleteRaid(
+    dispatch: AppDispatch,
+    setLoadingDelete: SetStateFn<boolean>,
+    raid: Raid
+) {
+    return async () => {
+        if (confirm('해당 파티를 해산하시겠습니까? 한번 해산한 파티는 복구하실 수 없습니다.')) {
+            setLoadingDelete(true);
+            const res = await fetch(`/api/raids/partys`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'deleteParty',
+                    raidId: raid.id,
+                    memberIds: raid.members
+                })
+            });
+            if (!res.ok) {
+                let message = '요청 중 오류가 발생하였습니다.';
+                try {
+                    const data = await res.json();
+                    message = data?.error ?? message;
+                } catch {}
+                addToast({
+                    title: `요청 오류`,
+                    description: message,
+                    color: "danger"
+                });
+                setLoadingDelete(false);
+                return;
+            }
+            dispatch(deleteRaid(raid.id));
+            const data = await res.json();
+            addToast({
+                title: `탈퇴 완료`,
+                description: data.message,
+                color: "success"
+            });
+            dispatch(changeKey('find'));
+            setLoadingDelete(false);
+        }
     }
 }
