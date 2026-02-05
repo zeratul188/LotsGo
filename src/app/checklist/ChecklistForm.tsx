@@ -2995,7 +2995,9 @@ type FilterComponentProps = {
     filterAccount: Selection,
     setFilterAccount: SetStateFn<Selection>,
     isHideCompleteContent: boolean,
-    setHideCompleteContent: SetStateFn<boolean>
+    setHideCompleteContent: SetStateFn<boolean>,
+    isHideDayContent: boolean,
+    setHideDayContent: SetStateFn<boolean>
 }
 export function FilterComponent({ 
     filterContent, 
@@ -3009,7 +3011,9 @@ export function FilterComponent({
     filterAccount,
     setFilterAccount,
     isHideCompleteContent,
-    setHideCompleteContent
+    setHideCompleteContent,
+    isHideDayContent,
+    setHideDayContent
 }: FilterComponentProps) {
 
     return (
@@ -3023,7 +3027,7 @@ export function FilterComponent({
                     radius="sm"
                     size="sm"
                     onSelectionChange={setFilterAccount}
-                    className="w-full sm:w-[300px]">
+                    className="w-full sm:w-[260px]">
                     {getAccounts(checklist).map((account, index) => (
                         <SelectItem key={index}>{account}</SelectItem>
                     ))}
@@ -3035,7 +3039,7 @@ export function FilterComponent({
                     radius="sm"
                     size="sm"
                     onSelectionChange={setFilterContent}
-                    className="w-full sm:w-[300px]">
+                    className="w-full sm:w-[260px]">
                     {getBossesByHaveContent(checklist, bosses).map((boss, index) => (
                         <SelectItem key={index}>{boss}</SelectItem>
                     ))}
@@ -3109,6 +3113,13 @@ export function FilterComponent({
                     }}>
                     필터 해제
                 </Button>
+                <Tooltip showArrow content="설정값을 유지하려면 프로필 설정에서 설정하세요.">
+                    <Switch
+                        isSelected={isHideDayContent}
+                        onValueChange={setHideDayContent}>
+                        일일 콘텐츠 숨기기
+                    </Switch>
+                </Tooltip>
             </div>
         </div>
     )
