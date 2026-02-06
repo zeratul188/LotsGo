@@ -1,4 +1,5 @@
 import { ControlStage } from "@/app/checklist/ChecklistForm"
+import { ChecklistItem } from "@/app/store/checklistSlice"
 
 // 파티 인원
 export type TeamCharacter = {
@@ -87,4 +88,14 @@ export type LeaveDataBox = {
 export type LeaveData = {
     message: string,
     leaveBox: LeaveDataBox
+}
+
+// 남은 콘텐츠 관련 묶음
+export type RemainCharacter = {
+    nickname: string,
+    job: string,
+    level: number,
+    server: string,
+    isGold: boolean,
+    items: ChecklistItem[]
 }

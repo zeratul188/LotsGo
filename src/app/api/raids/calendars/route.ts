@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
         if (snapUser.docs.length === 0) throw new Error('MEMBER_NOT_FOUND');
         const userData = snapUser.docs[0];
         const partyData: string[] = userData.data().joined;
+        if (partyData.length === 0) return NextResponse.json([]);
         const queryRaids = query(collection(firestore, "raids"), where(documentId(), 'in', partyData), limit(5));
         const snapRaid = await getDocs(queryRaids);
         const raids: Raid[] = snapRaid.docs.map(doc => ({

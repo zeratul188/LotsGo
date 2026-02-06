@@ -1,19 +1,24 @@
 import { 
+    Accordion,
+    AccordionItem,
     Avatar, 
-    Card, CardBody, CardHeader, 
+    Card, CardBody, CardFooter, CardHeader, 
     Checkbox, 
     Chip, 
     Divider, 
     Input, 
     Progress, 
-    Tab, Tabs,
+    Select, 
+    SelectItem, 
+    Tab, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tabs,
     Tooltip,
+    User,
 } from "@heroui/react"
-import { Raid } from "../model/types";
-import React, { useEffect, useState } from "react"
-import { RaidMember } from "@/app/api/raids/members/route"
+import { Raid, RemainCharacter } from "../model/types";
+import React, { useEffect, useMemo, useState } from "react"
+import { Checklist, RaidMember } from "@/app/api/raids/members/route"
 import { LoadingComponent } from "@/app/UtilsCompnents"
-import { getAllGoldByMember, getCharacterByMain, getHaveGoldByMember, getRemainContents, loadPartyData, printDifficulty } from "../lib/partyFeat"
+import { getAllGoldByMember, getCharacterByMain, getHaveGoldByMember, getRemainContents, getRemainContentsByCharacter, isCompleteContent, loadPartyData, printDifficulty } from "../lib/partyFeat"
 import { Boss } from "@/app/api/checklist/boss/route"
 import { getImgByJob } from "@/app/character/expeditionFeat"
 import LeaderIcon from "@/Icons/LeaderIcon"
@@ -23,6 +28,8 @@ import { PartyRaidsComponent } from "./RaidsForm"
 import { AppDispatch, RootState } from "@/app/store/store"
 import { useSelector } from "react-redux"
 import { PartySettingComponent } from "./SettingFrom";
+import { ShieldSecurityIcon } from "@/Icons/ShieldSecurityIcon";
+import CheckIcon from "@/Icons/CheckIcon";
 
 // 홈 컴포넌트
 type ChecklistComponentProps = {
@@ -51,6 +58,14 @@ function ChecklistComponent({ members, bosses, party }: ChecklistComponentProps)
         setResults(list);
     }, [members, search]);
 
+    const itemClasses = {
+        base: "py-0 w-full",
+        title: "font-normal text-medium",
+        trigger: "px-1 py-0 rounded-lg h-14 flex items-center cursor-pointer",
+        indicator: "text-medium",
+        content: "text-small px-0",
+    };
+
     return (
         <div className="w-full">
             <div className="w-full flex gap-4 items-center">
@@ -74,67 +89,65 @@ function ChecklistComponent({ members, bosses, party }: ChecklistComponentProps)
                             index !== 0 ? 'mt-6' : ''
                         )}>
                             <CardHeader>
-                                <div className="w-full grid min-[583px]:grid-cols-[320px_1fr] gap-3 mb-4">
-                                    <div className="w-full h-full flex flex-col">
-                                        <div className="w-full flex gap-4 items-center">
-                                            <Avatar size="md" isBordered src={getImgByJob(getCharacterByMain(member.expeditions, member.nickname)?.job ?? '-')}/>
-                                            <div className="grow">
+                                <div className="w-full h-full flex flex-col sm:flex-row gap-2 sm:gap-4 items-center">
+                                    <div className="w-full flex gap-4 items-center">
+                                        <Avatar size="md" isBordered src={getImgByJob(getCharacterByMain(member.expeditions, member.nickname)?.job ?? '-')}/>
+                                        <div className="grow">
+                                            <div className="flex gap-2 items-center">
                                                 <div className="flex gap-2 items-center">
-                                                    <div className="flex gap-2 items-center">
-                                                        <p>{getCharacterByMain(member.expeditions, member.nickname)?.nickname ?? '-'}</p>
-                                                        <p className="fadedtext text-[9pt]">{member.id}</p>
-                                                    </div>
-                                                    <Tooltip showArrow content="파티장">
-                                                        <div className={clsx(
-                                                            "text-yellow-600 dark:text-yellow-400",
-                                                            party.managerId === member.id ? '' : 'hidden'
-                                                        )}><LeaderIcon size={12}/></div>
-                                                    </Tooltip>
+                                                    <p>{getCharacterByMain(member.expeditions, member.nickname)?.nickname ?? '-'}</p>
+                                                    <p className="fadedtext text-[9pt]">{member.id}</p>
                                                 </div>
-                                                <p className="fadedtext text-[10pt]">{getCharacterByMain(member.expeditions, member.nickname)?.job ?? '-'} · Lv.{getCharacterByMain(member.expeditions, member.nickname)?.level.toLocaleString() ?? '0.00'}</p>
+                                                <Tooltip showArrow content="파티장">
+                                                    <div className={clsx(
+                                                        "text-yellow-600 dark:text-yellow-400",
+                                                        party.managerId === member.id ? '' : 'hidden'
+                                                    )}><LeaderIcon size={12}/></div>
+                                                </Tooltip>
                                             </div>
+                                            <p className="fadedtext text-[10pt]">{getCharacterByMain(member.expeditions, member.nickname)?.job ?? '-'} · Lv.{getCharacterByMain(member.expeditions, member.nickname)?.level.toLocaleString() ?? '0.00'}</p>
                                         </div>
-                                        <div className="grow"/>
-                                        <Progress
-                                            showValueLabel
-                                            label={`총 ${getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.max, 0)}개 중 ${getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.max, 0) - getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.remain, 0)}개 완료`}
-                                            size="sm"
-                                            color="secondary"
-                                            maxValue={getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.max, 0)}
-                                            value={getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.max, 0) - getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.remain, 0)}
-                                            className="mt-4"/>
-                                        <Progress
-                                            showValueLabel
-                                            label={(
-                                                <div className="flex items-center">
-                                                    <img 
-                                                        src="/icons/gold.png" 
-                                                        alt="goldicon"
-                                                        className="w-[16px] h-[16px]"/>
-                                                    <span className="ml-1 text-md">{getHaveGoldByMember(bosses, member.checklist).toLocaleString()} / {getAllGoldByMember(bosses, member.checklist).toLocaleString()}</span>
-                                                </div>
-                                            )}
-                                            size="sm"
-                                            color="warning"
-                                            maxValue={getAllGoldByMember(bosses, member.checklist)}
-                                            value={getHaveGoldByMember(bosses, member.checklist)}
-                                            className="mt-4"/>
                                     </div>
-                                    <div className="w-full h-fit grid grid-cols-1 min-[845px]:grid-cols-2 min-[1106px]:grid-cols-3 gap-3 max-h-[150px] min-[845px]:max-h-[140px] overflow-y-auto">
-                                        {getRemainContents(member.checklist, bosses).map((item, idx) => (
-                                            <div key={idx} className={clsx(
-                                                "w-full px-2 py-1 rounded-md border-2 flex gap-1 items-center",
-                                                item.remain === 0 ? "border-green-600 dark:border-green-400 bg-green-100 dark:bg-green-900" : "border-[#aaaaaa] dark:border-[#555555]"
-                                            )}>
-                                                <p className="grow text-[10pt]">{item.name}</p>
-                                                <p>{item.remain} / {item.max}</p>
+                                    <div className="grow"/>
+                                    <Progress
+                                        showValueLabel
+                                        label={`총 ${getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.max, 0)}개 중 ${getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.max, 0) - getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.remain, 0)}개 완료`}
+                                        size="sm"
+                                        color="secondary"
+                                        maxValue={getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.max, 0)}
+                                        value={getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.max, 0) - getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.remain, 0)}
+                                        className="w-full sm:w-[400px]"/>
+                                    <Progress
+                                        showValueLabel
+                                        label={(
+                                            <div className="flex items-center">
+                                                <img 
+                                                    src="/icons/gold.png" 
+                                                    alt="goldicon"
+                                                    className="w-[16px] h-[16px]"/>
+                                                <span className="ml-1 text-md">{getHaveGoldByMember(bosses, member.checklist).toLocaleString()} / {getAllGoldByMember(bosses, member.checklist).toLocaleString()}</span>
                                             </div>
-                                        ))}
-                                    </div>
+                                        )}
+                                        size="sm"
+                                        color="warning"
+                                        maxValue={getAllGoldByMember(bosses, member.checklist)}
+                                        value={getHaveGoldByMember(bosses, member.checklist)}
+                                        className="w-full sm:w-[400px]"/>
                                 </div>
                             </CardHeader>
                             <Divider/>
                             <CardBody>
+                                <Accordion itemClasses={itemClasses}>
+                                    <AccordionItem 
+                                        key={member.id} 
+                                        title="콘텐츠 별 남은 콘텐츠"
+                                        startContent={<ShieldSecurityIcon/>}>
+                                        <RemainContent bosses={bosses} member={member}/>
+                                    </AccordionItem>
+                                </Accordion>
+                            </CardBody>
+                            <Divider/>
+                            <CardFooter>
                                 <div className="max-h-[340px] h-[340px] overflow-y-auto min-w-full overflow-x-auto flex gap-4 pb-2 pt-2 px-1">
                                     {member.checklist.map((item, idx) => (
                                         <Card key={idx} radius="sm" shadow="sm" className="min-w-[340px]">
@@ -275,7 +288,7 @@ function ChecklistComponent({ members, bosses, party }: ChecklistComponentProps)
                                         </Card>
                                     ))}
                                 </div>
-                            </CardBody>
+                            </CardFooter>
                         </Card>
                     </React.Fragment>
                 ))}
@@ -327,4 +340,150 @@ export function PartyComponent({ dispatch, bosses }: PartyComponentProps) {
             <p className="text-xl">해당 파티가 삭제되었거나 파티를 찾는데 오류가 발생하였습니다.</p>
         </div>
     }
+}
+
+// 파티원의 남은 콘텐츠 관련 컴포넌트
+function RemainContent({ member, bosses }: { member: RaidMember, bosses: Boss[] }) {
+    const [content, setContent] = useState<string>('');
+
+    const columns = [
+        {name: "캐릭터", uid: "character"},
+        {name: "골드", uid: "gold"},
+        {name: "관문", uid: "stage"},
+        {name: "완료 여부", uid: "complete"}
+    ]
+
+    const sortedBosses = useMemo(() => {
+        return bosses.sort((a, b) => {
+            const maxA = a.difficulty.reduce((prev, curr) => curr.level > prev.level ? curr : prev).level;
+            const maxB = b.difficulty.reduce((prev, curr) => curr.level > prev.level ? curr : prev).level;
+            return maxB - maxA;
+        });
+    }, [bosses]);
+
+    useEffect(() => {
+        if (bosses.length === 0) return;
+        const sortedBosses = bosses.sort((a, b) => {
+            const maxA = a.difficulty.reduce((prev, curr) => curr.level > prev.level ? curr : prev).level;
+            const maxB = b.difficulty.reduce((prev, curr) => curr.level > prev.level ? curr : prev).level;
+            return maxB - maxA;
+        });
+        setContent(sortedBosses[0].id);
+    }, [bosses]);
+
+    const renderRemainCell = React.useCallback((checklist: RemainCharacter, columnKey: React.Key) => {
+        switch(columnKey) {
+            case "character":
+                return (
+                    <User
+                        avatarProps={{src: getImgByJob(checklist.job)}}
+                        name={checklist.nickname}
+                        description={`Lv.${checklist.level} · ${checklist.job} · @${checklist.server}`}/>
+                )
+            case "gold":
+                return (
+                    <Chip size="sm" radius="sm" color={checklist.isGold ? "warning" : "default"} variant="flat">{checklist.isGold ? '획득 가능' : "획득 불가"}</Chip>
+                )
+            case 'stage':
+                return (
+                    <div className="w-full flex gap-2">
+                        {checklist.items.map((content, index) => (
+                            <Chip 
+                                key={index}
+                                size="sm"
+                                radius="sm"
+                                variant="flat"
+                                startContent={content.isCheck ? <CheckIcon size={12}/> : null}
+                                color={content.isCheck ? 'success' : 'danger'}>
+                                {content.difficulty} {content.stage}관
+                            </Chip>
+                        ))}
+                    </div>
+                )
+            case "complete":
+                return (
+                    <Chip size="sm" radius="sm" color={isCompleteContent(checklist) ? "success" : "default"} variant="flat">{isCompleteContent(checklist) ? '완료' : "미완료"}</Chip>
+                )
+            default:
+                return (<div>nothing</div>)
+        }
+    }, []);
+
+    const contents = getRemainContentsByCharacter(member.checklist, content, bosses);
+
+    return (
+        <div className="w-full">
+            <div className="w-full flex flex-col sm:flex-row gap-3 items-end">
+                <Select
+                    label="콘텐츠 선택"
+                    size="sm"
+                    radius="sm"
+                    selectedKeys={new Set([content])}
+                    onSelectionChange={(keys) => {
+                        const value = Array.from(keys)[0] as string;
+                        setContent(value);
+                    }}
+                    className="w-full sm:w-[300px]">
+                    {sortedBosses.map((boss) => (
+                        <SelectItem key={boss.id}>{boss.name}</SelectItem>
+                    ))}
+                </Select>
+                <div className="grow"/>
+                <div className="w-full sm:w-[260px]">
+                    <div className="w-full flex gap-1 items-center mb-1.5">
+                        <p>총 {contents.length}개 중 {contents.filter(content => isCompleteContent(content)).length}개 완료</p>
+                        <p className="ml-auto fadedtext">({contents.length - contents.filter(content => isCompleteContent(content)).length}개 남음)</p>
+                    </div>
+                    <Progress
+                        size="sm"
+                        color="primary"
+                        maxValue={contents.length}
+                        value={contents.filter(content => isCompleteContent(content)).length}/>
+                </div>
+            </div>
+            <div className="mt-4 w-full overflow-x-auto">
+                <Table removeWrapper className="w-[700px] min-[700px]:w-full">
+                    <TableHeader columns={columns}>
+                        {(column) => (
+                            <TableColumn key={column.uid}>{column.name}</TableColumn>
+                        )}
+                    </TableHeader>
+                    <TableBody items={contents} emptyContent="조건에 맞는 캐릭터가 없습니다.">
+                        {(item) => {
+                            const idx = contents.findIndex(r => r.nickname === item.nickname); // key 기준으로 맞춰줘
+                            const complete = isCompleteContent(item);
+                            const prevComplete = idx > 0 ? isCompleteContent(contents[idx - 1]) : false;
+                            const nextComplete = idx < contents.length - 1 ? isCompleteContent(contents[idx + 1]) : false;
+
+                            // ✅ 덩어리의 위/아래만 라운드
+                            const roundTop = complete && !prevComplete;
+                            const roundBottom = complete && !nextComplete;
+                            return (
+                                <TableRow key={item.nickname} className={clsx(
+                                    isCompleteContent(item) ? 'bg-green-100 dark:bg-green-900/25' : ''
+                                )}>
+                                    {(columnKey) => {
+                                        const isFirst = columnKey === "character";
+                                        const isLast = columnKey === "complete";
+                                        return (
+                                            <TableCell className={clsx(
+                                                // ✅ 배경은 td에
+                                                complete && "bg-green-100 dark:bg-green-900/25",
+
+                                                // ✅ 좌/우 라운드는 첫/마지막 셀에만
+                                                isFirst && roundTop && "rounded-tl-md",
+                                                isLast && roundTop && "rounded-tr-md",
+                                                isFirst && roundBottom && "rounded-bl-md",
+                                                isLast && roundBottom && "rounded-br-md"
+                                            )}>{renderRemainCell(item, columnKey)}</TableCell>
+                                        )
+                                    }}
+                                </TableRow>
+                            )
+                        }}
+                    </TableBody>
+                </Table>
+            </div>
+        </div>
+    )
 }
