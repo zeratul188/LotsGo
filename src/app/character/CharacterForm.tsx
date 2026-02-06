@@ -376,10 +376,6 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
                                 <p className="fadedtext text-sm">원정대 레벨</p>
                                 <p className="text-lg">{profile.ExpeditionLevel}</p>
                             </div>
-                            <div>
-                                <p className="fadedtext text-sm">PvP</p>
-                                <p className="text-lg">{profile.PvpGradeName}</p>
-                            </div>
                             <div className="col-span-1 sm:col-span-2">
                                 <p className="fadedtext text-sm">영지</p>
                                 <p className="text-lg">Lv.{profile.TownLevel} {profile.TownName}</p>
@@ -422,8 +418,6 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
                         <p className="text-sm text-white">{profile.CharacterLevel}</p>
                         <p className="fadedtext text-sm">원정대 레벨</p>
                         <p className="text-sm text-white">{profile.ExpeditionLevel}</p>
-                        <p className="fadedtext text-sm">PvP</p>
-                        <p className="text-sm text-white">{profile.PvpGradeName}</p>
                         <p className="fadedtext text-sm">영지</p>
                         <p className="text-sm text-white">Lv.{profile.TownLevel} {profile.TownName}</p>
                     </div>

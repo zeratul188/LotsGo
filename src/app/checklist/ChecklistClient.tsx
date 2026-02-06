@@ -259,7 +259,9 @@ export default function ChecklistClient() {
                             filterAccount={checklistForm.filterAccount}
                             setFilterAccount={checklistForm.setFilterAccount}
                             isHideCompleteContent={checklistForm.isHideCompleteContent}
-                            setHideCompleteContent={checklistForm.setHideCompleteContent}/>
+                            setHideCompleteContent={checklistForm.setHideCompleteContent}
+                            isHideDayContent={checklistForm.isHideDayContent}
+                            setHideDayContent={checklistForm.setHideDayContent}/>
                     </div>
                     <ChecklistComponent 
                         checklist={checklist} 

@@ -7,7 +7,7 @@ import { firestore } from "@/utiils/firebase";
 import { Character } from "../../signup/signupFeat";
 import type { AppDispatch } from "../../store/store";
 import { changeSelectedRaid, initialMembers } from "../../store/partySlice";
-import { Raid } from "../model/types";
+import { Raid, RemainCharacter } from "../model/types";
 import { getBossBoundCheckGold, getBossBoundGold, getBossCheckedGold, getBossGold } from "@/app/checklist/checklistFeat";
 import { ChecklistItem } from "@/app/store/checklistSlice";
 
@@ -174,4 +174,30 @@ export function getHaveGoldByMember(bosses: Boss[], checklist: Checklist[]): num
         }, 0);
     for (const character of checklist) sum += character.otherGold;
     return sum;
+}
+
+// 특정 보스가 있는 값만 가져오기
+export function getRemainContentsByCharacter(checklist: Checklist[], content: string, bosses: Boss[]): RemainCharacter[] {
+    const contents: RemainCharacter[] = [];
+    const contentName = bosses.find(boss => boss.id === content)?.name ?? 'null';
+    checklist.forEach(item => {
+        item.contents.forEach(content => {
+            if (content.name === contentName) {
+                contents.push({ 
+                    nickname: item.nickname,
+                    items: content.items,
+                    job: item.job,
+                    level: item.level,
+                    server: item.server,
+                    isGold: item.isGold && content.isGold
+                });
+            }
+        });
+    });
+    return contents;
+}
+
+// 숙제 완료한 캐릭터인지 체크 여부
+export function isCompleteContent(item: RemainCharacter): boolean {
+    return item.items.every(item => item.isCheck);
 }
