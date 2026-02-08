@@ -42,6 +42,7 @@ import {
     getAllContentGold, 
     getAllContentOtherGold, 
     getAllCountChecklist, 
+    getAllCountChecklistByGold, 
     getAllCubeCount, 
     getAllGoldCharacter, 
     getAllGolds, 
@@ -56,6 +57,7 @@ import {
     getColumnsByCubeTiers, 
     getCompleteBoundGoldCharacter, 
     getCompleteChecklist, 
+    getCompleteChecklistByGold, 
     getCompleteGoldCharacter, 
     getCompleteSharedGoldCharacter, 
     getCountCube, 
@@ -691,7 +693,7 @@ export function ChecklistStatue({
                             </Popover>
                         </div>
                         <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
-                        <div className="w-full flex items-center">
+                        <div className="w-full">
                             <Progress 
                                 aria-label="all-gold"
                                 size="md"
@@ -702,6 +704,11 @@ export function ChecklistStatue({
                                 value={getCompleteChecklist(checklist)}
                                 maxValue={getAllCountChecklist(checklist)}
                                 className="w-full"/>
+                            <div className="flex items-center fadedtext text-[10pt] mt-1">
+                                <p>골드 받는 숙제는 </p>
+                                <p className="font-bold text-black dark:text-white ml-1 mr-0.5"> {(getAllCountChecklistByGold(checklist) - getCompleteChecklistByGold(checklist)).toLocaleString()}</p>
+                                <p>개 남았습니다.</p>
+                            </div>
                         </div>
                         <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
                         <div className="w-full flex flex-col md960:flex-row gap-2 items-center flex-shrink-0">

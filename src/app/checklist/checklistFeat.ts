@@ -386,9 +386,30 @@ export function getCompleteChecklist(checklist: CheckCharacter[]): number {
     }, 0);
 }
 
+// 골드 받는 숙제 완료한 개수 반환 함수
+export function getCompleteChecklistByGold(checklist: CheckCharacter[]): number {
+    return checklist.filter(c => c.isGold).reduce((total, character) => {
+        const countFromChecklist = character.checklist
+            .filter(item => {
+                if (!item.isGold) return false;
+                for (const checklistItem of item.items) {
+                    if (!checklistItem.isCheck && !checklistItem.isDisable) return false;
+                }
+                return true;
+            })
+            .reduce(sum => sum+1, 0);
+        return total + countFromChecklist;
+    }, 0);
+}
+
 // 숙제 총 개수 반환 함수
 export function getAllCountChecklist(checklist: CheckCharacter[]): number {
     return checklist.reduce((total, character) => total + character.checklist.length, 0);
+}
+
+// 골드 받는 숙제 총 개수 반환 함수
+export function getAllCountChecklistByGold(checklist: CheckCharacter[]): number {
+    return checklist.filter(c => c.isGold).reduce((total, character) => total + character.checklist.filter(c => c.isGold).length, 0);
 }
 
 // 특정 캐릭터 골드 총 획득량 측정 함수
