@@ -3114,11 +3114,24 @@ export function FilterComponent({
                     필터 해제
                 </Button>
                 <Tooltip showArrow content="설정값을 유지하려면 프로필 설정에서 설정하세요.">
-                    <Switch
+                    <Checkbox
                         isSelected={isHideDayContent}
-                        onValueChange={setHideDayContent}>
-                        일일 콘텐츠 숨기기
-                    </Switch>
+                        onValueChange={setHideDayContent}
+                        classNames={{
+                            base: cn(
+                            "inline-flex w-full max-w-full sm:max-w-[320px] bg-content1",
+                            "hover:bg-content2 items-center justify-start",
+                            "cursor-pointer rounded-lg gap-2 px-3 py-1 border-2 border-transparent",
+                            "data-[selected=true]:border-primary",
+                            ),
+                            label: "w-full",
+                        }}
+                        className="ml-auto">
+                        <div className="w-full">
+                            <p>일일 콘텐츠 숨기기</p>
+                            <p className="fadedtext text-[9pt]">일일 콘텐츠를 보이지 않도록 숨깁니다.</p>
+                        </div>
+                    </Checkbox>
                 </Tooltip>
             </div>
         </div>
