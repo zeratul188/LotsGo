@@ -638,9 +638,10 @@ export function getServerList(checklist: CheckCharacter[]): string[] {
 }
 
 // 일일콘텐츠 타입별 문자열 반환 함수
-export function getDayName(type: string): string {
+export function getDayName(type: string, level: number): string {
     switch(type) {
-        case '전선': return '쿠르잔 전선';
+        case '전선': 
+            return level >= 1730 ? '혼돈의 균열' : '쿠르잔 전선';
         case '가디언': return '가디언 토벌';
         case '에포나': return '에포나 의뢰';
         default: return 'unknown';
