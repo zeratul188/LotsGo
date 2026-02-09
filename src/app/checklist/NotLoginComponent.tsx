@@ -357,7 +357,7 @@ function RestCheckButton({ checklist, character, setChecklist, index, type }: Re
                 isSelected={type === '에포나' ? dayValue.value === 3 : dayValue.value === 1}
                 className="p-0 pl-2"
                 onChange={onClickDayCheck}>
-                {getDayName(type)} ({dayValue.value}/{type === '에포나' ? 3 : 1})
+                {getDayName(type, character.level)} ({dayValue.value}/{type === '에포나' ? 3 : 1})
             </Checkbox>
             <div className={clsx(
                 "w-full h-[18px] relative mt-1",
