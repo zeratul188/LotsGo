@@ -1,5 +1,5 @@
 import { SetStateFn } from "@/utiils/utils";
-import { Checklist, RaidMember } from "../../api/raids/members/route";
+import { Checklist, ChecklistContent, RaidMember } from "../../api/raids/members/route";
 import { addToast } from "@heroui/react";
 import { Boss } from "../../api/checklist/boss/route";
 import { collection, getDocs } from "firebase/firestore";
@@ -145,6 +145,18 @@ export function printDifficulty(items: ChecklistItem[]): string {
     return result;
 }
 
+// 체크를 했는지 안했는지 확인 함수
+function isCheckHomework(content: ChecklistContent): boolean {
+    let isChecked = true;
+    if (content.items.length === 0) return false;
+    for (const item of content.items) {
+        if (!item.isCheck && !item.isDisable) {
+            isChecked = false;
+            break;
+        }
+    }
+    return isChecked;
+}
 
 // 해당 맴버의 총 골드량 체크
 export function getAllGoldByMember(bosses: Boss[], checklist: Checklist[]): number {
@@ -159,6 +171,40 @@ export function getAllGoldByMember(bosses: Boss[], checklist: Checklist[]): numb
         }, 0);
     for (const character of checklist) sum += character.otherGold;
     return sum;
+}
+
+// 특정 캐릭터의 거래 가능 골드량 반환 함수
+export function getCompleteSharedGoldByMember(bosses: Boss[], character: Checklist): number {
+    let golds = character.isGold ? character.contents
+        .filter(content => content.isGold)
+        .reduce((total, content) => total + getBossCheckedGold(bosses, content.name, content.items), 0) : 0;
+    golds += character.contents
+        .filter(content => content.busGold !== 0 && content.isGold)
+        .reduce((total, content) => total + (isCheckHomework(content) ? content.busGold ?? 0 : 0), 0);
+    return golds;
+}
+
+// 특정 캐릭터의 귀속 골드량 반환 함수
+export function getCompleteBoundGoldByMember(bosses: Boss[], character: Checklist): number {
+    return character.isGold ? character.contents
+        .filter(content => content.isGold)
+        .reduce((total, content) => total + getBossBoundCheckGold(bosses, content.name, content.items), 0) : 0;
+}
+
+// 특정 캐릭터의 총 골드량 반환 함수
+export function getAllGoldByMemberCharacter(bosses: Boss[], character: Checklist): number {
+    let golds = character.isGold ? character.contents
+        .filter(content => content.isGold)
+        .reduce((total, content) => total + getBossGold(bosses, content.name, content.items) + getBossBoundGold(bosses, content.name, content.items), 0) : 0;
+    golds += character.contents
+        .filter(content => content.busGold !== 0 && content.busGold)
+        .reduce((total, content) => total + (content.busGold ?? 0), 0);
+    return golds;
+}
+
+// 특정 캐릭터의 획득한 골드량 반환 함수
+export function getCompleteGoldByMemberCharacter(bosses: Boss[], character: Checklist): number {
+    return getCompleteSharedGoldByMember(bosses, character) + getCompleteBoundGoldByMember(bosses, character) + character.otherGold;
 }
 
 // 해당 맴버의 완료한 총 골드량 체크

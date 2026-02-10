@@ -24,6 +24,7 @@ export type Checklist = {
 export type ChecklistContent = {
     name: string,
     isGold: boolean,
+    busGold: number,
     items: ChecklistItem[]
 }
 
@@ -63,6 +64,7 @@ export async function GET(req: NextRequest) {
                         contents: item.checklist.map((content: any) => ({
                             name: content.name,
                             isGold: content.isGold,
+                            busGold: content.busGold,
                             items: content.items.map((stage: any) => ({
                                 difficulty: stage.difficulty,
                                 stage: stage.stage,
