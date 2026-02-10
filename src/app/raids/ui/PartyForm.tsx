@@ -3,10 +3,10 @@ import {
     AccordionItem,
     Avatar, 
     Card, CardBody, CardFooter, CardHeader, 
-    Checkbox, 
     Chip, 
     Divider, 
     Input, 
+    Pagination, 
     Progress, 
     Select, 
     SelectItem, 
@@ -15,21 +15,36 @@ import {
     User,
 } from "@heroui/react"
 import { Raid, RemainCharacter } from "../model/types";
-import React, { useEffect, useMemo, useState } from "react"
-import { Checklist, RaidMember } from "@/app/api/raids/members/route"
+import React, { Key, useEffect, useMemo, useRef, useState } from "react"
+import { ChecklistContent, RaidMember } from "@/app/api/raids/members/route"
 import { LoadingComponent } from "@/app/UtilsCompnents"
-import { getAllGoldByMember, getCharacterByMain, getHaveGoldByMember, getRemainContents, getRemainContentsByCharacter, isCompleteContent, loadPartyData, printDifficulty } from "../lib/partyFeat"
+import { 
+    getAllGoldByMember, 
+    getAllGoldByMemberCharacter, 
+    getCharacterByMain, 
+    getCompleteBoundGoldByMember, 
+    getCompleteGoldByMemberCharacter, 
+    getCompleteSharedGoldByMember, 
+    getHaveGoldByMember, 
+    getRemainContents, 
+    getRemainContentsByCharacter, 
+    isCompleteContent, 
+    loadPartyData 
+} from "../lib/partyFeat"
 import { Boss } from "@/app/api/checklist/boss/route"
 import { getImgByJob } from "@/app/character/expeditionFeat"
 import LeaderIcon from "@/Icons/LeaderIcon"
 import clsx from "clsx"
-import { getBackground50ByStage, getBackgroundByStage, getBorderByStage, getBossGoldByContent, getSimpleBossName, getTextColorByDifficulty } from "@/app/checklist/checklistFeat"
+import { getSimpleBossName, getTextColorByDifficulty } from "@/app/checklist/checklistFeat"
 import { PartyRaidsComponent } from "./RaidsForm"
 import { AppDispatch, RootState } from "@/app/store/store"
 import { useSelector } from "react-redux"
 import { PartySettingComponent } from "./SettingFrom";
 import { ShieldSecurityIcon } from "@/Icons/ShieldSecurityIcon";
 import CheckIcon from "@/Icons/CheckIcon";
+import { useMobileQuery } from "@/utiils/utils";
+
+const PAGE_SIZE = 10;
 
 // 홈 컴포넌트
 type ChecklistComponentProps = {
@@ -58,14 +73,6 @@ function ChecklistComponent({ members, bosses, party }: ChecklistComponentProps)
         setResults(list);
     }, [members, search]);
 
-    const itemClasses = {
-        base: "py-0 w-full",
-        title: "font-normal text-medium",
-        trigger: "px-1 py-0 rounded-lg h-14 flex items-center cursor-pointer",
-        indicator: "text-medium",
-        content: "text-small px-0",
-    };
-
     return (
         <div className="w-full">
             <div className="w-full flex gap-4 items-center">
@@ -83,217 +90,250 @@ function ChecklistComponent({ members, bosses, party }: ChecklistComponentProps)
                 </div>
             </div>
             <div className="w-full mt-4 flex flex-col">
-                {results.map((member, index) => (
-                    <React.Fragment key={index}>
-                        <Card radius="sm" shadow="sm" className={clsx(
-                            index !== 0 ? 'mt-6' : ''
-                        )}>
-                            <CardHeader>
-                                <div className="w-full h-full flex flex-col sm:flex-row gap-2 sm:gap-4 items-center">
-                                    <div className="w-full flex gap-4 items-center">
-                                        <Avatar size="md" isBordered src={getImgByJob(getCharacterByMain(member.expeditions, member.nickname)?.job ?? '-')}/>
-                                        <div className="grow">
-                                            <div className="flex gap-2 items-center">
-                                                <div className="flex gap-2 items-center">
-                                                    <p>{getCharacterByMain(member.expeditions, member.nickname)?.nickname ?? '-'}</p>
-                                                    <p className="fadedtext text-[9pt]">{member.id}</p>
-                                                </div>
-                                                <Tooltip showArrow content="파티장">
-                                                    <div className={clsx(
-                                                        "text-yellow-600 dark:text-yellow-400",
-                                                        party.managerId === member.id ? '' : 'hidden'
-                                                    )}><LeaderIcon size={12}/></div>
-                                                </Tooltip>
-                                            </div>
-                                            <p className="fadedtext text-[10pt]">{getCharacterByMain(member.expeditions, member.nickname)?.job ?? '-'} · Lv.{getCharacterByMain(member.expeditions, member.nickname)?.level.toLocaleString() ?? '0.00'}</p>
-                                        </div>
-                                    </div>
-                                    <div className="grow"/>
-                                    <Progress
-                                        showValueLabel
-                                        label={`총 ${getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.max, 0)}개 중 ${getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.max, 0) - getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.remain, 0)}개 완료`}
-                                        size="sm"
-                                        color="secondary"
-                                        maxValue={getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.max, 0)}
-                                        value={getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.max, 0) - getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.remain, 0)}
-                                        className="w-full sm:w-[400px]"/>
-                                    <Progress
-                                        showValueLabel
-                                        label={(
-                                            <div className="flex items-center">
-                                                <img 
-                                                    src="/icons/gold.png" 
-                                                    alt="goldicon"
-                                                    className="w-[16px] h-[16px]"/>
-                                                <span className="ml-1 text-md">{getHaveGoldByMember(bosses, member.checklist).toLocaleString()} / {getAllGoldByMember(bosses, member.checklist).toLocaleString()}</span>
-                                            </div>
-                                        )}
-                                        size="sm"
-                                        color="warning"
-                                        maxValue={getAllGoldByMember(bosses, member.checklist)}
-                                        value={getHaveGoldByMember(bosses, member.checklist)}
-                                        className="w-full sm:w-[400px]"/>
-                                </div>
-                            </CardHeader>
-                            <Divider/>
-                            <CardBody>
-                                <Accordion itemClasses={itemClasses}>
-                                    <AccordionItem 
-                                        key={member.id} 
-                                        title="콘텐츠 별 남은 콘텐츠"
-                                        startContent={<ShieldSecurityIcon/>}>
-                                        <RemainContent bosses={bosses} member={member}/>
-                                    </AccordionItem>
-                                </Accordion>
-                            </CardBody>
-                            <Divider/>
-                            <CardFooter>
-                                <div className="max-h-[340px] h-[340px] overflow-y-auto min-w-full overflow-x-auto flex gap-4 pb-2 pt-2 px-1">
-                                    {member.checklist.map((item, idx) => (
-                                        <Card key={idx} radius="sm" shadow="sm" className="min-w-[340px]">
-                                            <CardHeader>
-                                                <div className="w-full flex gap-4 items-center">
-                                                    <Avatar size="md" isBordered color={item.isGold ? 'warning' : 'default'} src={getImgByJob(item.job)}/>
-                                                    <div className="grow">
-                                                        <div className="flex gap-2 items-center">
-                                                            <p>{item.nickname}</p>
-                                                            {item.isGold ? (
-                                                                <img 
-                                                                    src="/icons/gold.png" 
-                                                                    alt="goldicon"
-                                                                    className="w-[16px] h-[16px]"/>
-                                                            ) : null}
-                                                        </div>
-                                                        <p className="fadedtext text-[10pt]">{item.job} · Lv.{item.level.toLocaleString()}</p>
-                                                    </div>
-                                                </div>
-                                            </CardHeader>
-                                            <Divider/>
-                                            <CardBody>
-                                                <div className="w-full min-h-full overflow-y-auto flex flex-col gap-3 box-border pl-2.5 pt-2.5">
-                                                    {item.contents.map((content, ix) => (
-                                                        <Checkbox 
-                                                            key={ix}
-                                                            size="sm"
-                                                            isReadOnly
-                                                            radius="full"
-                                                            isSelected={content.items.every(item => item.isCheck)}
-                                                            className={clsx(
-                                                                "max-w-full w-full box-border p-1.5 [&_span:nth-of-type(2)]:w-full",
-                                                                ix !== 0 ? 'mt-2.5' : '',
-                                                                content.items.every(item => item.isCheck) ? 'outline-2 outline-blue-400 dark:outline-blue-800 rounded-md bg-blue-400/20 dark:bg-blue-800/20' : ''
-                                                            )}>
-                                                            <div className="w-full flex items-center gap-1">
-                                                                <div>
-                                                                    <div className="flex gap-1 items-center">
-                                                                        <p className={clsx(
-                                                                            content.items.every(item => item.isCheck) ? 'line-through fadedtext' : ''
-                                                                        )}>{getSimpleBossName(bosses, content.name)}</p>
-                                                                        {content.isGold ? <img 
-                                                                            src="/icons/gold.png" 
-                                                                            alt="goldicon"
-                                                                            className="w-[14px] h-[14px]"/> : <></>}
-                                                                    </div>
-                                                                    <p className={clsx(
-                                                                        "fadedtext text-[9pt]",
-                                                                        content.items.every(item => item.isCheck) ? 'line-through' : ''
-                                                                    )}>{printDifficulty(content.items)}</p>
-                                                                </div>
-                                                                <div className="grow"/>
-                                                                <div className="flex items-center z-9">
-                                                                    {content.items.map((diff, ixx) => (
-                                                                        <React.Fragment key={ixx}>
-                                                                            {ixx > 0 && (
-                                                                                <div className={clsx(
-                                                                                    'w-2 h-[2px]',
-                                                                                    getBackgroundByStage(diff.difficulty, false)
-                                                                                )} />
-                                                                            )}
-                                                                            <Tooltip showArrow delay={1000} content={
-                                                                                <div className="w-full min-[251px]:w-[250px]">
-                                                                                    <h1 className="w-full text-center font-bold p-1.5">{content.name}</h1>
-                                                                                    <div className="w-full flex gap-2 items-center mb-1.5">
-                                                                                        <Chip
-                                                                                            radius="sm"
-                                                                                            size="sm"
-                                                                                            color={getTextColorByDifficulty(diff.difficulty)}
-                                                                                            variant="flat">
-                                                                                            {diff.difficulty}
-                                                                                        </Chip>
-                                                                                        <div className="grow"/>
-                                                                                        <Chip
-                                                                                            radius="sm"
-                                                                                            size="sm"
-                                                                                            variant="flat">
-                                                                                            {diff.stage}관문
-                                                                                        </Chip>
-                                                                                    </div>
-                                                                                    <Divider/>
-                                                                                    <div className="w-full mt-1.5 mb-1">
-                                                                                        <div className="w-full flex gap-2 mb-1 items-center">
-                                                                                            <p className="fadedtext">골드</p>
-                                                                                            <div className="grow flex gap-1 items-center justify-end">
-                                                                                                <img 
-                                                                                                    src="/icons/gold.png" 
-                                                                                                    alt="goldicon"
-                                                                                                    className="w-[16px] h-[16px]"/>
-                                                                                                <p>{getBossGoldByContent(bosses, content.name, diff.stage, diff.difficulty).gold.toLocaleString()}</p>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <div className={clsx(
-                                                                                            "w-full gap-2 mb-1 items-center",
-                                                                                            getBossGoldByContent(bosses, content.name, diff.stage, diff.difficulty).boundGold > 0 ? 'flex' : 'hidden'
-                                                                                        )}>
-                                                                                            <p className="fadedtext">귀속 골드</p>
-                                                                                            <div className="grow flex gap-1 items-center justify-end">
-                                                                                                <img 
-                                                                                                    src="/icons/gold.png" 
-                                                                                                    alt="goldicon"
-                                                                                                    className="w-[16px] h-[16px]"/>
-                                                                                                <p>{getBossGoldByContent(bosses, content.name, diff.stage, diff.difficulty).boundGold.toLocaleString()}</p>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <div className={clsx(
-                                                                                            "w-full gap-2 items-center",
-                                                                                            getBossGoldByContent(bosses, content.name, diff.stage, diff.difficulty).bonus > 0 ? 'flex' : 'hidden'
-                                                                                        )}>
-                                                                                            <p className="fadedtext">더보기 골드</p>
-                                                                                            <div className="grow flex gap-1 items-center justify-end">
-                                                                                                <img 
-                                                                                                    src="/icons/gold.png" 
-                                                                                                    alt="goldicon"
-                                                                                                    className="w-[16px] h-[16px]"/>
-                                                                                                <p>{getBossGoldByContent(bosses, content.name, diff.stage, diff.difficulty).bonus.toLocaleString()}</p>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                            }>
-                                                                                <div className={clsx(
-                                                                                    'w-7 h-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none cursor-pointer',
-                                                                                    getBorderByStage(diff.difficulty, false),
-                                                                                    diff.isCheck ? getBackground50ByStage(diff.difficulty, false) : ''
-                                                                                )}>
-                                                                                    {diff.stage}
-                                                                                </div>
-                                                                            </Tooltip>
-                                                                        </React.Fragment>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        </Checkbox>
-                                                    ))}
-                                                </div>
-                                            </CardBody>
-                                        </Card>
-                                    ))}
-                                </div>
-                            </CardFooter>
-                        </Card>
-                    </React.Fragment>
-                ))}
+                {results.map((member, index) => <MemberComponent key={index} index={index} member={member} bosses={bosses} party={party}/>)}
             </div>
         </div>
+    )
+}
+
+// 한 맴버 구성 컴포넌트
+type MemberComponentProps = {
+    index: number,
+    member: RaidMember,
+    bosses: Boss[],
+    party: Raid
+}
+function MemberComponent({ index, member, bosses, party }: MemberComponentProps) {
+    const [page, setPage] = useState(1);
+    const [tabKey, setTabKey] = useState<Key>('homework');
+    const isMobile = useMobileQuery();
+
+    const itemClasses = {
+        base: "py-0 w-full",
+        title: "font-normal text-medium",
+        trigger: "px-1 py-0 rounded-lg h-14 flex items-center cursor-pointer",
+        indicator: "text-medium",
+        content: "text-small px-0",
+    };
+
+    return (
+        <React.Fragment>
+            <Card radius="sm" shadow="sm" className={clsx(
+                index !== 0 ? 'mt-6' : ''
+            )}>
+                <CardHeader>
+                    <div className="w-full h-full flex flex-col sm:flex-row gap-2 sm:gap-4 items-center">
+                        <div className="w-full flex gap-4 items-center">
+                            <Avatar size="md" isBordered src={getImgByJob(getCharacterByMain(member.expeditions, member.nickname)?.job ?? '-')}/>
+                            <div className="grow">
+                                <div className="flex gap-2 items-center">
+                                    <div className="flex gap-2 items-center">
+                                        <p>{getCharacterByMain(member.expeditions, member.nickname)?.nickname ?? '-'}</p>
+                                        <p className="fadedtext text-[9pt]">{member.id}</p>
+                                    </div>
+                                    <Tooltip showArrow content="파티장">
+                                        <div className={clsx(
+                                            "text-yellow-600 dark:text-yellow-400",
+                                            party.managerId === member.id ? '' : 'hidden'
+                                        )}><LeaderIcon size={12}/></div>
+                                    </Tooltip>
+                                </div>
+                                <p className="fadedtext text-[10pt]">{getCharacterByMain(member.expeditions, member.nickname)?.job ?? '-'} · Lv.{getCharacterByMain(member.expeditions, member.nickname)?.level.toLocaleString() ?? '0.00'}</p>
+                            </div>
+                        </div>
+                        <div className="grow"/>
+                        <Progress
+                            showValueLabel
+                            label={`총 ${getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.max, 0)}개 중 ${getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.max, 0) - getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.remain, 0)}개 완료`}
+                            size="sm"
+                            color="secondary"
+                            maxValue={getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.max, 0)}
+                            value={getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.max, 0) - getRemainContents(member.checklist, bosses).reduce((sum, item) => sum + item.remain, 0)}
+                            className="w-full sm:w-[400px]"/>
+                        <Progress
+                            showValueLabel
+                            label={(
+                                <div className="flex items-center">
+                                    <img 
+                                        src="/icons/gold.png" 
+                                        alt="goldicon"
+                                        className="w-[16px] h-[16px]"/>
+                                    <span className="ml-1 text-md">{getHaveGoldByMember(bosses, member.checklist).toLocaleString()} / {getAllGoldByMember(bosses, member.checklist).toLocaleString()}</span>
+                                </div>
+                            )}
+                            size="sm"
+                            color="warning"
+                            maxValue={getAllGoldByMember(bosses, member.checklist)}
+                            value={getHaveGoldByMember(bosses, member.checklist)}
+                            className="w-full sm:w-[400px]"/>
+                    </div>
+                </CardHeader>
+                <Divider/>
+                <CardBody>
+                    <Accordion itemClasses={itemClasses}>
+                        <AccordionItem 
+                            key={member.id} 
+                            title="콘텐츠 별 남은 콘텐츠"
+                            startContent={<ShieldSecurityIcon/>}>
+                            <RemainContent bosses={bosses} member={member}/>
+                        </AccordionItem>
+                    </Accordion>
+                </CardBody>
+                <Divider/>
+                <CardFooter className="p-0">
+                    <div className="w-full">
+                        {member.checklist.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((item, idx) => (
+                            <React.Fragment key={idx}>
+                                <div className="w-full flex flex-col sm:flex-row gap-2 sm:gap-5 px-3 py-2 items-center">
+                                    <div className="min-w-full sm:min-w-[240px] flex gap-3 items-center">
+                                        <Avatar size="sm" isBordered color={item.isGold ? 'warning' : 'default'} src={getImgByJob(item.job)}/>
+                                        <div className="grow">
+                                            <div className="flex gap-1 items-center">
+                                                <p className="text-[10pt]">{item.nickname}</p>
+                                                {item.isGold ? (
+                                                    <img 
+                                                        src="/icons/gold.png" 
+                                                        alt="goldicon"
+                                                        className="w-[12px] h-[12px]"/>
+                                                ) : null}
+                                            </div>
+                                            <p className="fadedtext text-[8pt]">{item.job} · Lv.{item.level.toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                    {tabKey === 'homework' ? (
+                                        <div className="grow w-full flex flex-col sm:flex-row gap-3 sm:overflow-x-auto scrollbar-hide">
+                                            {item.contents.map((content, contentIndex) => <ContentChip key={contentIndex} bosses={bosses} content={content} isMemberGold={item.isGold}/>)}
+                                        </div>
+                                    ) : (
+                                        <div className="w-full min-[860px]:w-fit min-[860px]:ml-auto flex flex-col min-[860px]:flex-row gap-2 min-[860px]:gap-5 items-center">
+                                            <div className="w-full min-[860px]:w-[300px] grid grid-cols-3 gap-3 min-[860px]:gap-5">
+                                                <div>
+                                                    <p className="fadedtext text-[8pt]">거래가능 골드</p>
+                                                    <div className="flex gap-1 items-center">
+                                                        <img src="/icons/gold.png" alt="goldicon" className="w-[16px] h-[16px]"/>
+                                                        <p>{getCompleteSharedGoldByMember(bosses, item).toLocaleString()}</p>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <p className="fadedtext text-[8pt]">귀속 골드</p>
+                                                    <div className="flex gap-1 items-center">
+                                                        <img src="/icons/gold.png" alt="goldicon" className="w-[16px] h-[16px]"/>
+                                                        <p>{getCompleteBoundGoldByMember(bosses, item).toLocaleString()}</p>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <p className="fadedtext text-[8pt]">부수입</p>
+                                                    <div className="flex gap-1 items-center">
+                                                        <img src="/icons/gold.png" alt="goldicon" className="w-[16px] h-[16px]"/>
+                                                        <p>{item.otherGold.toLocaleString()}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <Progress 
+                                                aria-label="all-gold"
+                                                size="sm"
+                                                color="warning"
+                                                label={(
+                                                    <div className="flex items-center">
+                                                        <img 
+                                                            src="/icons/gold.png" 
+                                                            alt="goldicon"
+                                                            className="w-[16px] h-[16px]"/>
+                                                        <span className="ml-1 text-md">{(getCompleteGoldByMemberCharacter(bosses, item)).toLocaleString()} / {(getAllGoldByMemberCharacter(bosses, item)+item.otherGold).toLocaleString()}</span>
+                                                    </div>
+                                                )}
+                                                showValueLabel={getAllGoldByMemberCharacter(bosses, item)+item.otherGold > 0}
+                                                radius="sm"
+                                                value={getCompleteGoldByMemberCharacter(bosses, item)}
+                                                maxValue={getAllGoldByMemberCharacter(bosses, item)+item.otherGold}
+                                                className="w-full min-[860px]:w-[220px]"/>
+                                        </div>
+                                    )}
+                                </div>
+                                {idx < member.checklist.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).length - 1 && <Divider/>}
+                            </React.Fragment>
+                        ))}
+                        <div className="px-3 py-3 w-full mt-2 gap-3 flex flex-col sm:flex-row justify-center sm:justify-start items-end">
+                            <Pagination
+                                showControls
+                                color="primary"
+                                page={page}
+                                onChange={setPage}
+                                total={Math.ceil(member.checklist.length / PAGE_SIZE)}/>
+                            <Tabs 
+                                fullWidth={isMobile} 
+                                radius="sm" 
+                                color="primary"
+                                selectedKey={tabKey.toString()}
+                                onSelectionChange={setTabKey}>
+                                <Tab key="homework" title="숙제"/>
+                                <Tab key="gold" title="골드"/>
+                            </Tabs>
+                            <p className="ml-auto fadedtext text-[10pt] hidden sm:block">좌우 스크롤은 Shift키를 누르며 마우스 휠로 조작하세요.</p>
+                        </div>
+                    </div>
+                </CardFooter>
+            </Card>
+        </React.Fragment>
+    )
+}
+
+// 숙제 현황 콘텐츠 Chip
+type ContentChipProps = {
+    content: ChecklistContent,
+    bosses: Boss[],
+    isMemberGold: boolean
+}
+function ContentChip({ content, bosses, isMemberGold }: ContentChipProps) {
+    const scrollRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+
+        el.scrollLeft = el.scrollWidth;
+    }, [content.items]);
+
+    return (
+        <Chip 
+            size="lg"
+            radius="sm"
+            variant="flat"
+            color={content.items.every(item => item.isCheck) ? "success" : 'danger'}
+            startContent={content.items.every(item => item.isCheck) ? <CheckIcon size={18}/> : null}
+            classNames={{
+                base: "min-w-full sm:min-w-fit",
+                content: "w-full min-w-0"
+            }}
+>
+            <div className="flex gap-1 items-center">
+                <p className={clsx(
+                    "text-sm",
+                    content.items.every(item => item.isCheck) ? 'text-green-600 dark:text-green-400' : ''
+                )}>{getSimpleBossName(bosses, content.name)}</p>
+                {content.isGold && isMemberGold ? <img 
+                    src="/icons/gold.png" 
+                    alt="goldicon"
+                    className="w-[14px] h-[14px]"/> : <></>}
+                <div ref={scrollRef} className="ml-auto w-fit min-w-0 sm:min-w-fit max-w-full overflow-x-auto sm:overflow-x-hidden scrollbar-hide">
+                    <div className="flex flex-nowrap gap-1 w-max justify-end items-center">
+                        {content.items.map((contentItem, itemIndex) => (
+                            <Tooltip key={itemIndex} showArrow content={contentItem.difficulty}>
+                                <Chip
+                                    size="sm"
+                                    radius="sm"
+                                    endContent={contentItem.isCheck ? <CheckIcon size={12} /> : null}
+                                    color={getTextColorByDifficulty(contentItem.difficulty)}
+                                    className={contentItem.isCheck ? "bg-green-300/25 dark:bg-green-800/25" : "bg-white dark:bg-[#171717]"}
+                                    variant="dot">
+                                    {contentItem.stage}관문
+                                </Chip>
+                            </Tooltip>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </Chip>
     )
 }
 

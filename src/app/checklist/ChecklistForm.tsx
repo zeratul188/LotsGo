@@ -42,6 +42,7 @@ import {
     getAllContentGold, 
     getAllContentOtherGold, 
     getAllCountChecklist, 
+    getAllCountChecklistByGold, 
     getAllCubeCount, 
     getAllGoldCharacter, 
     getAllGolds, 
@@ -56,6 +57,7 @@ import {
     getColumnsByCubeTiers, 
     getCompleteBoundGoldCharacter, 
     getCompleteChecklist, 
+    getCompleteChecklistByGold, 
     getCompleteGoldCharacter, 
     getCompleteSharedGoldCharacter, 
     getCountCube, 
@@ -691,7 +693,7 @@ export function ChecklistStatue({
                             </Popover>
                         </div>
                         <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
-                        <div className="w-full flex items-center">
+                        <div className="w-full">
                             <Progress 
                                 aria-label="all-gold"
                                 size="md"
@@ -702,6 +704,11 @@ export function ChecklistStatue({
                                 value={getCompleteChecklist(checklist)}
                                 maxValue={getAllCountChecklist(checklist)}
                                 className="w-full"/>
+                            <div className="flex items-center fadedtext text-[10pt] mt-1">
+                                <p>골드 받는 숙제는 </p>
+                                <p className="font-bold text-black dark:text-white ml-1 mr-0.5"> {(getAllCountChecklistByGold(checklist) - getCompleteChecklistByGold(checklist)).toLocaleString()}</p>
+                                <p>개 남았습니다.</p>
+                            </div>
                         </div>
                         <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
                         <div className="w-full flex flex-col md960:flex-row gap-2 items-center flex-shrink-0">
@@ -1786,14 +1793,17 @@ function RestCheckButton({ checklist, character, type, dispatch }: RestCheckButt
                 isSelected={type === '에포나' ? dayValue.value === 3 : dayValue.value === 1}
                 className="p-0 pl-2"
                 onChange={onClickDayCheck}>
-                {getDayName(type)} ({dayValue.value}/{type === '에포나' ? 3 : 1})
+                {getDayName(type, character.level)} ({dayValue.value}/{type === '에포나' ? 3 : 1})
             </Checkbox>
             <div className={clsx(
-                "w-full h-[18px] relative mt-1",
+                "w-full h-[10px] mt-1",
                 type === '에포나' ? 'hidden' : 'block'
             )}>
-                <span className="w-full text-center text-[#444444] dark:text-[#aaaaaa] text-sm absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">휴식 게이지 {dayValue.restValue}</span>
                 <RestComponent restValue={dayValue.restValue} type={type}/>
+            </div>
+            <div className="w-full flex gap-1 text-[10pt] mt-0.5">
+                <p className="fadedtext">휴식 게이지</p>
+                <p className="ml-auto">{dayValue.restValue}</p>
             </div>
         </div>
     )
@@ -1814,13 +1824,11 @@ function RestComponent({ restValue, type }: RestComponentProps) {
                 <div key={index} className="grow h-full flex">
                     <div className={clsx(
                         "grow border-1 border-r-0 border-gray-300 dark:border-gray-700",
-                        index === 0 ? 'rounded-l-full' : '',
-                        countBlocks >= (2*index + 1) ? 'bg-green-300 dark:bg-green-700' : "bg-[#111111]/15 dark:bg-[#111111]/30"
+                        countBlocks >= (2*index + 1) ? 'bg-green-400 dark:bg-green-600' : "bg-[#111111]/15 dark:bg-[#111111]/30"
                     )}/>
                     <div className={clsx(
                         "grow border-1 border-l-0 border-gray-300 dark:border-gray-700",
-                        index === 4 ? 'rounded-r-full' : '',
-                        countBlocks >= (2*index + 2) ? 'bg-green-300 dark:bg-green-700' : "bg-[#111111]/15 dark:bg-[#111111]/30"
+                        countBlocks >= (2*index + 2) ? 'bg-green-400 dark:bg-green-600' : "bg-[#111111]/15 dark:bg-[#111111]/30"
                     )}/>
                 </div>
             ))}
@@ -1987,7 +1995,7 @@ function RestStatueComponent({ checklist, dispatch, index, onClose }: RestStatue
                 radius="sm"
                 value={dungeon}
                 maxValue={getMaxRestValue('전선')}
-                label={<RestLabel value={dungeon} maxValue={getMaxRestValue('전선')} title="쿠르잔 전선"/>}/>
+                label={<RestLabel value={dungeon} maxValue={getMaxRestValue('전선')} title={getDayName('전선', checklist[index].level)}/>}/>
             <div className="w-full gap-4 flex mt-4">
                 <Button
                     color="danger"
@@ -3114,11 +3122,24 @@ export function FilterComponent({
                     필터 해제
                 </Button>
                 <Tooltip showArrow content="설정값을 유지하려면 프로필 설정에서 설정하세요.">
-                    <Switch
+                    <Checkbox
                         isSelected={isHideDayContent}
-                        onValueChange={setHideDayContent}>
-                        일일 콘텐츠 숨기기
-                    </Switch>
+                        onValueChange={setHideDayContent}
+                        classNames={{
+                            base: cn(
+                            "inline-flex w-full max-w-full sm:max-w-[320px] bg-content1",
+                            "hover:bg-content2 items-center justify-start",
+                            "cursor-pointer rounded-lg gap-2 px-3 py-1 border-2 border-transparent",
+                            "data-[selected=true]:border-primary",
+                            ),
+                            label: "w-full",
+                        }}
+                        className="ml-auto">
+                        <div className="w-full">
+                            <p>일일 콘텐츠 숨기기</p>
+                            <p className="fadedtext text-[9pt]">일일 콘텐츠를 보이지 않도록 숨깁니다.</p>
+                        </div>
+                    </Checkbox>
                 </Tooltip>
             </div>
         </div>
