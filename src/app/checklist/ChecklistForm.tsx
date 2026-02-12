@@ -43,6 +43,7 @@ import {
     getAllContentOtherGold, 
     getAllCountChecklist, 
     getAllCountChecklistByGold, 
+    getAllCountChecklistByStage, 
     getAllCubeCount, 
     getAllGoldCharacter, 
     getAllGolds, 
@@ -58,6 +59,7 @@ import {
     getCompleteBoundGoldCharacter, 
     getCompleteChecklist, 
     getCompleteChecklistByGold, 
+    getCompleteChecklistByStage, 
     getCompleteGoldCharacter, 
     getCompleteSharedGoldCharacter, 
     getCountCube, 
@@ -698,11 +700,16 @@ export function ChecklistStatue({
                                 aria-label="all-gold"
                                 size="md"
                                 color="secondary"
-                                label={`📃 숙제 진행 상황 : ${getCompleteChecklist(checklist)} / ${getAllCountChecklist(checklist)}`}
+                                label={
+                                    <div className="flex gap-1 items-center">
+                                        <p>📃 숙제 진행 상황 : {getCompleteChecklist(checklist)} / {getAllCountChecklist(checklist)}</p>
+                                        <p className="fadedtext text-[9pt]">({getCompleteChecklistByStage(checklist)}/{getAllCountChecklistByStage(checklist)})</p>
+                                    </div>
+                                }
                                 showValueLabel={true}
                                 radius="sm"
-                                value={getCompleteChecklist(checklist)}
-                                maxValue={getAllCountChecklist(checklist)}
+                                value={getCompleteChecklistByStage(checklist)}
+                                maxValue={getAllCountChecklistByStage(checklist)}
                                 className="w-full"/>
                             <div className="flex items-center fadedtext text-[10pt] mt-1">
                                 <p>골드 받는 숙제는 </p>
@@ -712,17 +719,24 @@ export function ChecklistStatue({
                         </div>
                         <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
                         <div className="w-full flex flex-col md960:flex-row gap-2 items-center flex-shrink-0">
-                            <Tooltip showArrow content="생명의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.">
-                                <Progress 
-                                    aria-label="all-gold"
-                                    size="md"
-                                    color="success"
-                                    label={`🍃 생명의 기운 : ${Math.floor(life).toLocaleString()} / ${max.toLocaleString()}`}
-                                    radius="sm"
-                                    value={life}
-                                    maxValue={max}
-                                    className="grow"/>
-                            </Tooltip>
+                            <div className="grow">
+                                <Tooltip showArrow content="생명의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.">
+                                    <Progress 
+                                        aria-label="all-gold"
+                                        size="md"
+                                        color="success"
+                                        label={`🍃 생명의 기운 : ${Math.floor(life).toLocaleString()} / ${max.toLocaleString()}`}
+                                        radius="sm"
+                                        value={life}
+                                        maxValue={max}
+                                        className="w-full"/>
+                                </Tooltip>
+                                <div className="flex items-center fadedtext text-[10pt] mt-1">
+                                    <p>10분마다 생명의 기운 {isBlessing && '접속 시'}</p>
+                                    <p className="font-bold text-green-700 dark:text-green-300 ml-1 mr-0.5"> {isBlessing ? '33' : '30'}</p>
+                                    <p>증가</p>
+                                </div>
+                            </div>
                             <p className="block md960:hidden fadedtext text-[9pt] w-full text-left">생명의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.</p>
                             <div className="w-full md960:w-[max-content] flex shrink-0 min-w-fit flex-row md960:flex-col gap-2 md960:gap-0 items-center">
                                 <Tooltip showArrow content={<div className="w-[240px]">
@@ -1234,12 +1248,29 @@ export function ChecklistComponent({
                                     isHideDayContent ? 'hidden' : "hidden md960:block"
                                 )}/>
                                 <div className="grow-2">
-                                    <Chip 
-                                        color="secondary" 
-                                        size="sm" 
-                                        variant="flat" 
-                                        radius="sm"
-                                        className="min-w-full text-center">주간 콘텐츠</Chip>
+                                    <div className="w-full flex items-center gap-2">
+                                        <div className="grow">
+                                            <Chip 
+                                                color="secondary" 
+                                                size="sm" 
+                                                variant="flat" 
+                                                radius="sm"
+                                                className="min-w-full text-center">주간 콘텐츠</Chip>
+                                        </div>
+                                        <Tooltip showArrow content="더보기 관리 모드">
+                                            <Switch 
+                                                size="sm"
+                                                color="primary"
+                                                isSelected={isBonusMode[character.nickname] ?? false}
+                                                onValueChange={(isSelected) => {
+                                                    setBonusMode(prev => ({...prev, [character.nickname]: isSelected}))
+                                                }}
+                                                thumbIcon={({ isSelected, className }) => <AddIcon className={className}/>}
+                                                className={clsx(
+                                                    isHideBonusMode ? 'hidden' : ''
+                                                )}/>
+                                        </Tooltip>
+                                    </div>
                                     <div className="pl-2.5">
                                         {character.checklist.length === 0 ? (
                                             <div className="w-full h-[140px] flex items-center justify-center">
@@ -1342,26 +1373,18 @@ export function ChecklistComponent({
                                                                             </div>
                                                                             <p className={clsx(
                                                                                 "mt-1 text-[10pt]",
-                                                                                diff.isCheck ? "text-green-600 dark:text-green-400" : "text-red-400 dark:text-red-600"
-                                                                            )}>{diff.isCheck ? '더보기 가능' : "관문 클리어 이후 체크 가능"}</p>
+                                                                                !diff.isDisable ? "hidden" : "text-red-400 dark:text-red-600"
+                                                                            )}>더보기 불가능</p>
                                                                         </div>
                                                                     }>
                                                                         <div className={clsx(
                                                                             'w-7 h-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none',
-                                                                            diff.isDisable || !diff.isCheck ? 'bg-gray-300/30 dark:bg-gray-600/30 fadedtext' : 'cursor-pointer',
+                                                                            diff.isDisable ? 'bg-gray-300/30 dark:bg-gray-600/30 fadedtext' : 'cursor-pointer',
                                                                             diff.isBonus ? 'border-yellow-600 dark:border-yellow-400 bg-yellow-600/50 dark:bg-yellow-400/50 text-white' : 'border-gray-400 dark:border-gray-600'
                                                                         )} onClick={async (e) => {
                                                                             e.preventDefault();
                                                                             e.stopPropagation();
-                                                                            if (!diff.isCheck) {
-                                                                                addToast({
-                                                                                    title: "더보기 불가",
-                                                                                    description: `관문 클리어 이후에만 더보기 체크가 가능합니다.`,
-                                                                                    color: "danger"
-                                                                                });
-                                                                            } else {
-                                                                                await handleWeekBonusCheckStage(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch, diff.stage);
-                                                                            }
+                                                                            await handleWeekBonusCheckStage(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch, diff.stage);
                                                                         }}>
                                                                             {diff.stage}
                                                                         </div>
@@ -1462,11 +1485,12 @@ export function ChecklistComponent({
                                                                 ))}
                                                             </div>
                                                             {!isBonusMode[character.nickname] ? (
-                                                                <div className="flex gap-2">
+                                                                <div className="flex gap-2 mt-1">
                                                                     {item.items.map((diff, ix) => (
-                                                                        <div key={ix} className="w-7 text-yellow-800 dark:text-yellow-400 text-[7pt] text-center">
-                                                                            {diff.isBonus ? '더보기' : ''}
-                                                                        </div>
+                                                                        <div key={ix} className={clsx(
+                                                                            "w-7 h-1 rounded-full",
+                                                                            diff.isBonus ? 'bg-yellow-500' : ''
+                                                                        )}/>
                                                                     ))}
                                                                 </div>
                                                             ) : null}
@@ -1515,19 +1539,6 @@ export function ChecklistComponent({
                         <Divider/>
                         <CardFooter className="pt-0 pb-0">
                             <div className="w-full pt-3">
-                                <Switch
-                                    size="sm"
-                                    color="warning"
-                                    isSelected={isBonusMode[character.nickname] ?? false}
-                                    onValueChange={(isSelected) => {
-                                        setBonusMode(prev => ({...prev, [character.nickname]: isSelected}))
-                                    }}
-                                    className={clsx(
-                                        "mb-2",
-                                        isHideBonusMode ? 'hidden' : ''
-                                    )}>
-                                    더보기 관리 모드
-                                </Switch>
                                 <div className="mb-2 flex gap-2 items-end">
                                     <NumberInput
                                         fullWidth
@@ -1796,7 +1807,7 @@ function RestCheckButton({ checklist, character, type, dispatch }: RestCheckButt
                 {getDayName(type, character.level)} ({dayValue.value}/{type === '에포나' ? 3 : 1})
             </Checkbox>
             <div className={clsx(
-                "w-full h-[10px] mt-1",
+                "w-full h-[8px] mt-1",
                 type === '에포나' ? 'hidden' : 'block'
             )}>
                 <RestComponent restValue={dayValue.restValue} type={type}/>
@@ -3127,10 +3138,10 @@ export function FilterComponent({
                         onValueChange={setHideDayContent}
                         classNames={{
                             base: cn(
-                            "inline-flex w-full max-w-full sm:max-w-[320px] bg-content1",
-                            "hover:bg-content2 items-center justify-start",
-                            "cursor-pointer rounded-lg gap-2 px-3 py-1 border-2 border-transparent",
-                            "data-[selected=true]:border-primary",
+                                "inline-flex w-full max-w-full sm:max-w-[320px] bg-content1",
+                                "hover:bg-content2 items-center justify-start",
+                                "cursor-pointer rounded-lg gap-2 px-3 py-1 border-2 border-transparent",
+                                "data-[selected=true]:border-primary",
                             ),
                             label: "w-full",
                         }}
