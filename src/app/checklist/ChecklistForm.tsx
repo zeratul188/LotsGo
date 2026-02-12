@@ -1348,20 +1348,12 @@ export function ChecklistComponent({
                                                                     }>
                                                                         <div className={clsx(
                                                                             'w-7 h-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none',
-                                                                            diff.isDisable || !diff.isCheck ? 'bg-gray-300/30 dark:bg-gray-600/30 fadedtext' : 'cursor-pointer',
+                                                                            diff.isDisable ? 'bg-gray-300/30 dark:bg-gray-600/30 fadedtext' : 'cursor-pointer',
                                                                             diff.isBonus ? 'border-yellow-600 dark:border-yellow-400 bg-yellow-600/50 dark:bg-yellow-400/50 text-white' : 'border-gray-400 dark:border-gray-600'
                                                                         )} onClick={async (e) => {
                                                                             e.preventDefault();
                                                                             e.stopPropagation();
-                                                                            if (!diff.isCheck) {
-                                                                                addToast({
-                                                                                    title: "더보기 불가",
-                                                                                    description: `관문 클리어 이후에만 더보기 체크가 가능합니다.`,
-                                                                                    color: "danger"
-                                                                                });
-                                                                            } else {
-                                                                                await handleWeekBonusCheckStage(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch, diff.stage);
-                                                                            }
+                                                                            await handleWeekBonusCheckStage(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch, diff.stage);
                                                                         }}>
                                                                             {diff.stage}
                                                                         </div>

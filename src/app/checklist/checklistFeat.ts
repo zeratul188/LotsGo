@@ -862,12 +862,8 @@ export async function handleWeekCheckStage(
             item.isCheck = true;
         } else if (item.stage === stage) {
             item.isCheck = !item.isCheck;
-            if (!item.isCheck && item.isBonus) {
-                item.isBonus = false;
-            }
         } else {
             item.isCheck = false;
-            item.isBonus = false;
         }
     }
     dispatch(checkWeek({
@@ -917,10 +913,10 @@ export async function useOnClickWeekCheck(
     const prevChecklist = structuredClone(updatedChecklist);
     const isNothingChecked = updatedChecklist.items.some(item => !item.isCheck && !item.isDisable);
     for (const item of updatedChecklist.items) {
-        if (isNothingChecked && !item.isDisable) item.isCheck = true;
-        else {
+        if (isNothingChecked && !item.isDisable) {
+            item.isCheck = true;
+        } else {
             item.isCheck = false;
-            item.isBonus = false;
         }
     }
     dispatch(checkWeek({
