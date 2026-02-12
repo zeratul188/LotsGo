@@ -43,6 +43,7 @@ import {
     getAllContentOtherGold, 
     getAllCountChecklist, 
     getAllCountChecklistByGold, 
+    getAllCountChecklistByStage, 
     getAllCubeCount, 
     getAllGoldCharacter, 
     getAllGolds, 
@@ -58,6 +59,7 @@ import {
     getCompleteBoundGoldCharacter, 
     getCompleteChecklist, 
     getCompleteChecklistByGold, 
+    getCompleteChecklistByStage, 
     getCompleteGoldCharacter, 
     getCompleteSharedGoldCharacter, 
     getCountCube, 
@@ -698,11 +700,16 @@ export function ChecklistStatue({
                                 aria-label="all-gold"
                                 size="md"
                                 color="secondary"
-                                label={`📃 숙제 진행 상황 : ${getCompleteChecklist(checklist)} / ${getAllCountChecklist(checklist)}`}
+                                label={
+                                    <div className="flex gap-1 items-center">
+                                        <p>📃 숙제 진행 상황 : {getCompleteChecklist(checklist)} / {getAllCountChecklist(checklist)}</p>
+                                        <p className="fadedtext text-[9pt]">({getCompleteChecklistByStage(checklist)}/{getAllCountChecklistByStage(checklist)})</p>
+                                    </div>
+                                }
                                 showValueLabel={true}
                                 radius="sm"
-                                value={getCompleteChecklist(checklist)}
-                                maxValue={getAllCountChecklist(checklist)}
+                                value={getCompleteChecklistByStage(checklist)}
+                                maxValue={getAllCountChecklistByStage(checklist)}
                                 className="w-full"/>
                             <div className="flex items-center fadedtext text-[10pt] mt-1">
                                 <p>골드 받는 숙제는 </p>
@@ -1800,7 +1807,7 @@ function RestCheckButton({ checklist, character, type, dispatch }: RestCheckButt
                 {getDayName(type, character.level)} ({dayValue.value}/{type === '에포나' ? 3 : 1})
             </Checkbox>
             <div className={clsx(
-                "w-full h-[10px] mt-1",
+                "w-full h-[8px] mt-1",
                 type === '에포나' ? 'hidden' : 'block'
             )}>
                 <RestComponent restValue={dayValue.restValue} type={type}/>

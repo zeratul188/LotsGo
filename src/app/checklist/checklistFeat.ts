@@ -369,6 +369,21 @@ export async function getCubes(): Promise<Cube[]> {
     return cubes;
 }
 
+// 숙제 완료한 관문 수 반환 함수
+export function getCompleteChecklistByStage(checklist: CheckCharacter[]): number {
+    return checklist.reduce((total, character) => {
+        const countFromChecklist = character.checklist
+            .filter(item => item.items.some(item => item.isCheck && !item.isDisable))
+            .reduce((sum, item) => sum + item.items.filter(i => i.isCheck).length, 0);
+        return total + countFromChecklist;
+    }, 0)
+}
+
+// 숙제 총 관문 개수 반환 함수
+export function getAllCountChecklistByStage(checklist: CheckCharacter[]): number {
+    return checklist.reduce((total, character) => total + character.checklist.reduce((sum, item) => sum + item.items.filter(i => !i.isDisable).length, 0), 0);
+}
+
 // 숙제 완료한 캐릭 수 반환 함수
 export function getCompleteChecklist(checklist: CheckCharacter[]): number {
     return checklist.reduce((total, character) => {
