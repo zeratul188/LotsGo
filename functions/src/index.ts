@@ -212,7 +212,6 @@ export const resetWeekChecklist = onRequest({
                         }
                         return {
                           ...it,
-                          isBonus: false,
                           isCheck: false,
                           isDisable: isDisable
                         }
@@ -372,4 +371,4 @@ export const removeCacheCalendarData = onRequest({
 })
 
 // firebase functions:secrets:set LOSTARK_API_KEY
-// firebase deploy --only functions:updateRelicsBook
+// firebase deploy --only functions:resetWeekChecklist
