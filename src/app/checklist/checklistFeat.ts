@@ -369,6 +369,21 @@ export async function getCubes(): Promise<Cube[]> {
     return cubes;
 }
 
+// 숙제 완료한 관문 수 반환 함수
+export function getCompleteChecklistByStage(checklist: CheckCharacter[]): number {
+    return checklist.reduce((total, character) => {
+        const countFromChecklist = character.checklist
+            .filter(item => item.items.some(item => item.isCheck && !item.isDisable))
+            .reduce((sum, item) => sum + item.items.filter(i => i.isCheck).length, 0);
+        return total + countFromChecklist;
+    }, 0)
+}
+
+// 숙제 총 관문 개수 반환 함수
+export function getAllCountChecklistByStage(checklist: CheckCharacter[]): number {
+    return checklist.reduce((total, character) => total + character.checklist.reduce((sum, item) => sum + item.items.filter(i => !i.isDisable).length, 0), 0);
+}
+
 // 숙제 완료한 캐릭 수 반환 함수
 export function getCompleteChecklist(checklist: CheckCharacter[]): number {
     return checklist.reduce((total, character) => {
@@ -862,12 +877,8 @@ export async function handleWeekCheckStage(
             item.isCheck = true;
         } else if (item.stage === stage) {
             item.isCheck = !item.isCheck;
-            if (!item.isCheck && item.isBonus) {
-                item.isBonus = false;
-            }
         } else {
             item.isCheck = false;
-            item.isBonus = false;
         }
     }
     dispatch(checkWeek({
@@ -917,10 +928,10 @@ export async function useOnClickWeekCheck(
     const prevChecklist = structuredClone(updatedChecklist);
     const isNothingChecked = updatedChecklist.items.some(item => !item.isCheck && !item.isDisable);
     for (const item of updatedChecklist.items) {
-        if (isNothingChecked && !item.isDisable) item.isCheck = true;
-        else {
+        if (isNothingChecked && !item.isDisable) {
+            item.isCheck = true;
+        } else {
             item.isCheck = false;
-            item.isBonus = false;
         }
     }
     dispatch(checkWeek({
@@ -2447,7 +2458,6 @@ export async function handleResetChecklist(
                             }
                             return {
                                 ...it,
-                                isBonus: false,
                                 isCheck: false,
                                 isDisable: isDisable
                             }
