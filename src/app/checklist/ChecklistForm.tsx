@@ -712,17 +712,24 @@ export function ChecklistStatue({
                         </div>
                         <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
                         <div className="w-full flex flex-col md960:flex-row gap-2 items-center flex-shrink-0">
-                            <Tooltip showArrow content="생명의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.">
-                                <Progress 
-                                    aria-label="all-gold"
-                                    size="md"
-                                    color="success"
-                                    label={`🍃 생명의 기운 : ${Math.floor(life).toLocaleString()} / ${max.toLocaleString()}`}
-                                    radius="sm"
-                                    value={life}
-                                    maxValue={max}
-                                    className="grow"/>
-                            </Tooltip>
+                            <div className="grow">
+                                <Tooltip showArrow content="생명의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.">
+                                    <Progress 
+                                        aria-label="all-gold"
+                                        size="md"
+                                        color="success"
+                                        label={`🍃 생명의 기운 : ${Math.floor(life).toLocaleString()} / ${max.toLocaleString()}`}
+                                        radius="sm"
+                                        value={life}
+                                        maxValue={max}
+                                        className="w-full"/>
+                                </Tooltip>
+                                <div className="flex items-center fadedtext text-[10pt] mt-1">
+                                    <p>10분마다 생명의 기운 {isBlessing && '접속 시'}</p>
+                                    <p className="font-bold text-green-700 dark:text-green-300 ml-1 mr-0.5"> {isBlessing ? '33' : '30'}</p>
+                                    <p>증가</p>
+                                </div>
+                            </div>
                             <p className="block md960:hidden fadedtext text-[9pt] w-full text-left">생명의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.</p>
                             <div className="w-full md960:w-[max-content] flex shrink-0 min-w-fit flex-row md960:flex-col gap-2 md960:gap-0 items-center">
                                 <Tooltip showArrow content={<div className="w-[240px]">
@@ -1471,11 +1478,12 @@ export function ChecklistComponent({
                                                                 ))}
                                                             </div>
                                                             {!isBonusMode[character.nickname] ? (
-                                                                <div className="flex gap-2">
+                                                                <div className="flex gap-2 mt-1">
                                                                     {item.items.map((diff, ix) => (
-                                                                        <div key={ix} className="w-7 text-yellow-800 dark:text-yellow-400 text-[7pt] text-center">
-                                                                            {diff.isBonus ? '더보기' : ''}
-                                                                        </div>
+                                                                        <div key={ix} className={clsx(
+                                                                            "w-7 h-1 rounded-full",
+                                                                            diff.isBonus ? 'bg-yellow-500' : ''
+                                                                        )}/>
                                                                     ))}
                                                                 </div>
                                                             ) : null}
