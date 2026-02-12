@@ -1234,12 +1234,29 @@ export function ChecklistComponent({
                                     isHideDayContent ? 'hidden' : "hidden md960:block"
                                 )}/>
                                 <div className="grow-2">
-                                    <Chip 
-                                        color="secondary" 
-                                        size="sm" 
-                                        variant="flat" 
-                                        radius="sm"
-                                        className="min-w-full text-center">주간 콘텐츠</Chip>
+                                    <div className="w-full flex items-center gap-2">
+                                        <div className="grow">
+                                            <Chip 
+                                                color="secondary" 
+                                                size="sm" 
+                                                variant="flat" 
+                                                radius="sm"
+                                                className="min-w-full text-center">주간 콘텐츠</Chip>
+                                        </div>
+                                        <Tooltip showArrow content="더보기 관리 모드">
+                                            <Switch 
+                                                size="sm"
+                                                color="primary"
+                                                isSelected={isBonusMode[character.nickname] ?? false}
+                                                onValueChange={(isSelected) => {
+                                                    setBonusMode(prev => ({...prev, [character.nickname]: isSelected}))
+                                                }}
+                                                thumbIcon={({ isSelected, className }) => <AddIcon className={className}/>}
+                                                className={clsx(
+                                                    isHideBonusMode ? 'hidden' : ''
+                                                )}/>
+                                        </Tooltip>
+                                    </div>
                                     <div className="pl-2.5">
                                         {character.checklist.length === 0 ? (
                                             <div className="w-full h-[140px] flex items-center justify-center">
@@ -1342,8 +1359,8 @@ export function ChecklistComponent({
                                                                             </div>
                                                                             <p className={clsx(
                                                                                 "mt-1 text-[10pt]",
-                                                                                diff.isCheck ? "text-green-600 dark:text-green-400" : "text-red-400 dark:text-red-600"
-                                                                            )}>{diff.isCheck ? '더보기 가능' : "관문 클리어 이후 체크 가능"}</p>
+                                                                                !diff.isDisable ? "hidden" : "text-red-400 dark:text-red-600"
+                                                                            )}>더보기 불가능</p>
                                                                         </div>
                                                                     }>
                                                                         <div className={clsx(
@@ -1507,19 +1524,6 @@ export function ChecklistComponent({
                         <Divider/>
                         <CardFooter className="pt-0 pb-0">
                             <div className="w-full pt-3">
-                                <Switch
-                                    size="sm"
-                                    color="warning"
-                                    isSelected={isBonusMode[character.nickname] ?? false}
-                                    onValueChange={(isSelected) => {
-                                        setBonusMode(prev => ({...prev, [character.nickname]: isSelected}))
-                                    }}
-                                    className={clsx(
-                                        "mb-2",
-                                        isHideBonusMode ? 'hidden' : ''
-                                    )}>
-                                    더보기 관리 모드
-                                </Switch>
                                 <div className="mb-2 flex gap-2 items-end">
                                     <NumberInput
                                         fullWidth
@@ -3119,10 +3123,10 @@ export function FilterComponent({
                         onValueChange={setHideDayContent}
                         classNames={{
                             base: cn(
-                            "inline-flex w-full max-w-full sm:max-w-[320px] bg-content1",
-                            "hover:bg-content2 items-center justify-start",
-                            "cursor-pointer rounded-lg gap-2 px-3 py-1 border-2 border-transparent",
-                            "data-[selected=true]:border-primary",
+                                "inline-flex w-full max-w-full sm:max-w-[320px] bg-content1",
+                                "hover:bg-content2 items-center justify-start",
+                                "cursor-pointer rounded-lg gap-2 px-3 py-1 border-2 border-transparent",
+                                "data-[selected=true]:border-primary",
                             ),
                             label: "w-full",
                         }}
