@@ -2443,7 +2443,6 @@ export async function handleResetChecklist(
                             }
                             return {
                                 ...it,
-                                isBonus: false,
                                 isCheck: false,
                                 isDisable: isDisable
                             }
