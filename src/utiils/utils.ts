@@ -100,3 +100,14 @@ function copyToClipboardFallback(text: string) {
 export function containsKorean(text: string): boolean {
     return /[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(text);
 }
+
+// JWT Token 유효기간 확인
+export function isJwtExpired(token: string): boolean {
+    try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expMs = payload.exp * 1000;
+        return Date.now() >= expMs;
+    } catch {
+        return true;
+    }
+}

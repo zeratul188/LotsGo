@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.NEXT_PUBLIC_LOSTARK_JWT_SECRET!;
+const JWT_SECRET = process.env.LOSTARK_JWT_SECRET!;
 
 export async function GET(req: NextRequest) {
     try {
@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ message: '토큰이 존재하지 않습니다.' }, { status: 401 });
         }
 
+        console.log(JWT_SECRET);
         const token = authHeader.split(' ')[1];
         const decoded = jwt.verify(token, JWT_SECRET);
 
@@ -19,6 +20,7 @@ export async function GET(req: NextRequest) {
             result: decoded
         });
     } catch(err: any) {
+        console.error(err);
         if (err.name === 'TokenExpiredError') {
             return NextResponse.json({ message: '토큰이 만료되었습니다.' }, { status: 401 });
         }
