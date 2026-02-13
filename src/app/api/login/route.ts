@@ -83,7 +83,7 @@ export async function POST(req: NextRequest) {
         }
 
         const isAdministrator = result.isAdministrator;
-        const token = jwt.sign({ result }, process.env.LOSTARK_JWT_SECRET!, { expiresIn: '20s' });
+        const token = jwt.sign({ result }, process.env.LOSTARK_JWT_SECRET!, { expiresIn: '7d' });
         return NextResponse.json({ token, userData, expedition, isAdministrator });
     } catch(error) {
         console.error(error);
