@@ -9,6 +9,8 @@ import CryptoComponent from "./CryptoForm";
 import DonateComponent from "./DonateForm";
 import BadgeComponent from "./BadgeForm";
 import { isAdministratorByToken } from "./administratorFeat";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../store/store";
 
 type TabMenu = {
     key: string,
@@ -20,6 +22,9 @@ export default function AdministratorClient() {
     const [isAdministrator, setAdministrator] = useState(false);
     const isMobile = useMobileQuery();
     const router = useRouter();
+    const dispatch = useDispatch<AppDispatch>();
+    const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
+    
     const menus: Array<TabMenu> = [
         {
             key: 'checklist',
@@ -50,7 +55,7 @@ export default function AdministratorClient() {
 
     useEffect(() => {
         const run = async () => {
-            const isAdmin = await isAdministratorByToken();
+            const isAdmin = await isAdministratorByToken(dispatch, router);
             if (!isAdmin) {
                 addToast({
                     title: "권한 없음",
@@ -61,8 +66,8 @@ export default function AdministratorClient() {
             }
             setAdministrator(isAdmin);
         }
-        run();
-    }, []);
+        if (isCheckedToken) run();
+    }, [isCheckedToken]);
 
     if (!isAdministrator) {
         return (
