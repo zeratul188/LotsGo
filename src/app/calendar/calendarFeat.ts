@@ -25,7 +25,7 @@ const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_S
 
 // 로그인된 캐릭터의 길드명 반환 함수
 export async function getGuildName(): Promise<string> {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
     if (storedUser) {
@@ -107,7 +107,7 @@ export async function loadBosses(setBosses: SetStateFn<Boss[]>) {
 
 // 본인 일지 가져오는 함수
 export async function loadWorks(setWorks: SetStateFn<Calendar[]>) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     if (!storedUser) return;
     const id = storedUser.id;
@@ -131,7 +131,7 @@ export async function loadWorks(setWorks: SetStateFn<Calendar[]>) {
 
 // 본인이 참여한 파티의 정보를 가져오는 함수
 export async function loadWorksByParty(setPartyWorks: SetStateFn<RaidWork[]>) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     if (!storedUser) return;
     const res = await fetch(`/api/raids/calendars?userId=${storedUser.id}`);
@@ -254,7 +254,7 @@ export async function handleSubmitCalendar(
     }
 
     setLoadingButton(true);
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser.id;
 
@@ -433,7 +433,7 @@ export async function handleEditMemo(
             }
         }
     } else {
-        const userStr = localStorage.getItem('user');
+        const userStr = sessionStorage.getItem('user');
         const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
         const id = storedUser.id;
         const calendars: Calendar[] = works.map(item => ({...item}));
@@ -508,7 +508,7 @@ export async function removeAutoCalendarsByWorks(
             calendars.push(calendar);
         }
     }
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser.id;
     const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));
@@ -565,7 +565,7 @@ export async function handleRemoveCalendar(
             }
         } 
     } else {
-        const userStr = localStorage.getItem('user');
+        const userStr = sessionStorage.getItem('user');
         const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
         const id = storedUser.id;
         const calendars: Calendar[] = works.map(item => ({...item}));

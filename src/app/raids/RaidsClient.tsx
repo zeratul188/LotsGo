@@ -33,7 +33,7 @@ export default function RaidsClient() {
     const router = useRouter();
 
     useEffect(() => {
-        const userStr = localStorage.getItem('user');
+        const userStr = sessionStorage.getItem('user');
         const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
         let userId = null;
         if (storedUser) {

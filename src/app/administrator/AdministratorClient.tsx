@@ -20,7 +20,6 @@ type TabMenu = {
 export default function AdministratorClient() {
     const isMobile = useMobileQuery();
     const router = useRouter();
-    const isAdministrator = useSelector((state: RootState) => state.login.isAdministrator);
     const menus: Array<TabMenu> = [
         {
             key: 'checklist',
@@ -50,7 +49,7 @@ export default function AdministratorClient() {
     ]
 
     useEffect(() => {
-        if (!isAdministrator) {
+        if (false) { // 관리자 확인 기능 추가할 것!
             addToast({
                 title: "권한 없음",
                 description: `관리자 권한이 없습니다.`,

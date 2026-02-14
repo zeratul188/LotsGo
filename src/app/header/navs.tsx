@@ -52,22 +52,10 @@ const menuItems = [
         icon: <RaidIcon size={24}/>
     }
 ];
-// 헤더 메뉴 - 로그인한 상태
-const loginedMenuItems: Array<{item: string, link: string}> = [
-    {
-        item: "내 정보 수정",
-        link: '#'
-    },
-    {
-        item: "설정",
-        link: '#'
-    }
-];
 
 // 메뉴 카테고리 목록 요소 (모바일 전용)
 export function NavMenu() {
     const id = useSelector((state: RootState) => state.login.user.id);
-    const isAdministrator = useSelector((state: RootState) => state.login.isAdministrator);
     const nickname = useSelector((state: RootState) => state.login.user.character);
     const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
     const mainCharacter: Character | undefined = expedition.find(character => character.nickname === nickname);
@@ -75,23 +63,7 @@ export function NavMenu() {
     const router = useRouter();
     return (
         <NavbarMenu>
-            {isAdministrator ? (
-                <div className="w-full flex flex-row gap-2 items-center">
-                    <Button
-                        radius="sm"
-                        color="secondary"
-                        className="grow"
-                        onPress={() => router.push('/administrator')}>
-                        관리자 페이지 이동
-                    </Button>
-                    <Button
-                        radius="sm"
-                        color="danger"
-                        onPress={onClickLogout}>
-                        로그아웃
-                    </Button>
-                </div>
-            ) : id !== '' ? mainCharacter ? (
+            {id !== '' ? mainCharacter ? (
                 (
                     <div className="w-full flex gap-4 items-center mt-1">
                         <Avatar isBordered size="md" src={getImgByJob(mainCharacter.job)}/>
@@ -246,11 +218,12 @@ export function NavToggle({ isMenuOpen }: NavToggleProps) {
 // 로그인 버튼 혹은 프로필 버튼 요소
 function ProfileButton() {
     const onActionProfile = useOnActionProfile();
+    const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
     const id = useSelector((state: RootState) => state.login.user.id);
-    const isAdministrator = useSelector((state: RootState) => state.login.isAdministrator);
     const nickname = useSelector((state: RootState) => state.login.user.character);
     const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
     const mainCharacter: Character | undefined = expedition.find(character => character.nickname === nickname);
+    if (!isCheckedToken) return null;
     if (id === '') {
         return (
             <Button
@@ -266,8 +239,8 @@ function ProfileButton() {
         return (
             <Dropdown>
                 <DropdownTrigger>
-                    {isAdministrator || !mainCharacter ? (
-                        <Button variant="light">{isAdministrator ? '관리자' : id}</Button>
+                    {!mainCharacter ? (
+                        <Button variant="light">{id}</Button>
                     ) : (
                         <div className="flex gap-2 items-center cursor-pointer" role="button" tabIndex={0}>
                             <Avatar isBordered size="md" src={getImgByJob(mainCharacter.job)}/>
@@ -279,13 +252,7 @@ function ProfileButton() {
                     )}
                 </DropdownTrigger>
                 <DropdownMenu aria-label="logined-profile" onAction={onActionProfile}>
-                    {isAdministrator ? (
-                        <DropdownItem key="administrator" color="secondary">관리자 페이지 이동</DropdownItem>
-                    ) : (
-                        <>
-                            <DropdownItem key="setting">설정</DropdownItem>
-                        </>
-                    )}
+                    <DropdownItem key="setting">설정</DropdownItem>
                     <DropdownItem key="logout" color="danger" className="text-danger">로그아웃</DropdownItem>
                 </DropdownMenu>
             </Dropdown>

@@ -17,17 +17,6 @@ export default function CalendarClient() {
         }
         const auth = getAuth();
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            const isAdministrator = localStorage.getItem('isAdministrator');
-            if (isAdministrator === 'true') {
-                addToast({
-                    title: "관리자 이용 불가",
-                    description: "관리자 계정은 해당 기능을 이용하실 수 없습니다.",
-                    color: "danger"
-                });
-                router.push('/');
-                return;
-            }
-            
             if (user) {
                 user.getIdToken().then(() => {
                     const loadData = async () => {

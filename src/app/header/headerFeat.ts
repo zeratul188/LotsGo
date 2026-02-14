@@ -13,15 +13,26 @@ export function useOnActionProfile() {
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
 
-    return (key: Key) => {
+    return async (key: Key) => {
         switch(key) {
             case "setting":
                 router.push('/setting');
                 break;
             case "logout":
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-                localStorage.removeItem('isAdministrator');
+                const logoutRes = await fetch("/api/auth/logout", {
+                    method: "POST",
+                    credentials: "include",
+                });
+                if (!logoutRes.ok) {
+                    addToast({
+                        title: "처리 오류",
+                        description: `로그아웃하는데 문제가 발생하였습니다.`,
+                        color: "danger"
+                    });
+                    return;
+                }
+                sessionStorage.removeItem('token');
+                sessionStorage.removeItem('user');
                 localStorage.removeItem('userSettings');
                 Cookies.remove('userApiKey', {
                     path: '/',
@@ -44,10 +55,21 @@ export function useOnActionProfile() {
 
 export function useLogout() {
     const dispatch = useDispatch<AppDispatch>();
-    return () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        localStorage.removeItem('isAdministrator');
+    return async () => {
+        const logoutRes = await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "include",
+        });
+        if (!logoutRes.ok) {
+            addToast({
+                title: "처리 오류",
+                description: `로그아웃하는데 문제가 발생하였습니다.`,
+                color: "danger"
+            });
+            return;
+        }
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
         dispatch(logout());
         signOut(auth);
         addToast({

@@ -51,15 +51,6 @@ export default function SettingClient() {
             });
             router.push('/login');
         }
-        const isAdministrator = localStorage.getItem('isAdministrator');
-        if (isAdministrator === 'true') {
-            addToast({
-                title: "관리자 이용 불가",
-                description: "관리자 계정은 해당 기능을 이용하실 수 없습니다.",
-                color: "danger"
-            });
-            router.push('/');
-        }
     }, []);
 
     return (

@@ -15,7 +15,7 @@ export async function handleInsertKey(
     setApiKey: SetStateFn<string>
 ) {
     setLoadingButton(true);
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser.id;
 
@@ -42,7 +42,7 @@ export async function handleInsertKey(
             return;
         }
         dispatch(editApiKey(encryptApiKey));
-        const localUser = localStorage.getItem('user');
+        const localUser = sessionStorage.getItem('user');
         const loginData = localUser ? JSON.parse(localUser) : null;
         if (loginData) {
             const loginUser: LoginUser = {
@@ -51,7 +51,7 @@ export async function handleInsertKey(
                 expedition: loginData.expedition,
                 apiKey: encryptApiKey
             }
-            localStorage.setItem('user', JSON.stringify(loginUser));
+            sessionStorage.setItem('user', JSON.stringify(loginUser));
             Cookies.set('userApiKey', encryptApiKey, {
                 path: '/',
                 secure: true,
@@ -81,7 +81,7 @@ export async function handleRemoveKey(
     setShowKey: SetStateFn<boolean>
 ) {
     setLoadingButton(true);
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser.id;
 
@@ -102,7 +102,7 @@ export async function handleRemoveKey(
         return;
     }
     dispatch(editApiKey(null));
-    const localUser = localStorage.getItem('user');
+    const localUser = sessionStorage.getItem('user');
     const loginData = localUser ? JSON.parse(localUser) : null;
     if (loginData) {
         const loginUser: LoginUser = {
@@ -111,7 +111,7 @@ export async function handleRemoveKey(
             expedition: loginData.expedition,
             apiKey: null
         }
-        localStorage.setItem('user', JSON.stringify(loginUser));
+        sessionStorage.setItem('user', JSON.stringify(loginUser));
     }
     addToast({
         title: "제거 완료",
