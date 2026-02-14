@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
+import { doc, getDoc } from 'firebase/firestore';
+import { firestore } from '@/utiils/firebase';
 
-const JWT_SECRET = process.env.NEXT_PUBLIC_LOSTARK_JWT_SECRET!;
+const JWT_SECRET = process.env.LOSTARK_JWT_SECRET!;
 
 export async function GET(req: NextRequest) {
     try {
@@ -12,14 +14,19 @@ export async function GET(req: NextRequest) {
         }
 
         const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, JWT_SECRET);
+        const decoded = jwt.verify(token, JWT_SECRET) as any;
+
+        const sessionRef = doc(firestore, 'sessions', decoded.sessionId);
+        const sessionSnapshot = await getDoc(sessionRef);
+
+        if (!sessionSnapshot.exists() || sessionSnapshot.data().revoked) throw new Error("TOEKN_IS_EXPIRED");
 
         return NextResponse.json({
             message: '인증된 사용자입니다.',
             result: decoded
         });
     } catch(err: any) {
-        if (err.name === 'TokenExpiredError') {
+        if (err.message === 'TOEKN_IS_EXPIRED') {
             return NextResponse.json({ message: '토큰이 만료되었습니다.' }, { status: 401 });
         }
         return NextResponse.json({ message: '토큰을 검증할 수 없습니다.' }, { status: 401 });

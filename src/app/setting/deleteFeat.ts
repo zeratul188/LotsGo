@@ -12,7 +12,7 @@ export function useDeleteUser(
     setInvalid: SetStateFn<boolean>,
     dispatch: AppDispatch
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser.id;
     return async () => {
@@ -42,9 +42,8 @@ export function useDeleteUser(
                                         description: `회원 탈퇴에 성공하였습니다.`,
                                         color: "success"
                                     });
-                                    localStorage.removeItem('token');
-                                    localStorage.removeItem('user');
-                                    localStorage.removeItem('isAdministrator');
+                                    sessionStorage.removeItem('token');
+                                    sessionStorage.removeItem('user');
                                     dispatch(logout());
                                     location.href = '/';
                                 })

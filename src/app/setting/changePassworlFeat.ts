@@ -29,7 +29,7 @@ export function useChangePassword(
     setNewPassword: SetStateFn<string>,
     setConfirmPassword: SetStateFn<string>
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser.id;
     return async () => {

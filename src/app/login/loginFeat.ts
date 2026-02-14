@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import type { SetStateFn } from "@/utiils/utils";
 import type { User } from "./LoginForm";
 import { addToast } from "@heroui/react";
-import { logined, LoginUser, switchAdministrator } from "../store/loginSlice";
+import { logined, LoginUser } from "../store/loginSlice";
 import type { AppDispatch } from "../store/store";
 import { useDispatch } from "react-redux";
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
@@ -71,11 +71,12 @@ export async function login(
     // 아이디 없음 또는 비밀번호 일치하지 않을 경우
     if (!res.ok) {
         try {
-            const msg = data.message;
-            if (msg === '아이디가 존재하지 않습니다.') {
+            const type = data.type;
+            const msg = data.error;
+            if (type === 'id') {
                 setIdDuplicated(true);
                 setPasswordNotMatch(false);
-            } else if (msg === '비밀번호가 일치하지 않습니다.') {
+            } else if (type === 'password') {
                 setIdDuplicated(false);
                 setPasswordNotMatch(true);
             }
@@ -89,28 +90,20 @@ export async function login(
     }
 
     // 로그인 성공 시
-    let resultEmail = '';
-    if (data.isAdministrator) {
-        resultEmail = `${user.id.trim()}@whitetusk.com`;
-    } else {
-        resultEmail = decrypt(data.userData.email, secretKey);
-        console.log(resultEmail);
-    }
+    const decryptedEmail = decrypt(data.userData.email, secretKey);
 
-    await signInWithEmailAndPassword(auth, resultEmail, user.password.trim())
+    await signInWithEmailAndPassword(auth, decryptedEmail, user.password.trim())
         .then(() => {
             onAuthStateChanged(auth, async (userState) => {
                 if (userState) {
-                    if (!data.isAdministrator) {
-                        if (data.userData.password === 'null') {
-                            const q = query(collection(firestore, 'members'), where("id", "==", user.id), limit(1));
-                            const snapshot = await getDocs(q);
-                            const docRef = snapshot.docs[0].ref;
-                            const hashedPassword = await hashValue(user.password);
-                            await updateDoc(docRef, {
-                                password: hashedPassword
-                            });
-                        }
+                    if (data.userData.password === 'null') {
+                        const q = query(collection(firestore, 'members'), where("id", "==", user.id), limit(1));
+                        const snapshot = await getDocs(q);
+                        const docRef = snapshot.docs[0].ref;
+                        const hashedPassword = await hashValue(user.password);
+                        await updateDoc(docRef, {
+                            password: hashedPassword
+                        });
                     }
                     const loginUser: LoginUser = {
                         id: user.id,
@@ -119,10 +112,8 @@ export async function login(
                         apiKey: data.userData ? data.userData.apiKey ? data.userData.apiKey : null : null
                     }
                     dispatch(logined(loginUser));
-                    dispatch(switchAdministrator(data.isAdministrator));
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(loginUser));
-                    localStorage.setItem('isAdministrator', data.isAdministrator);
+                    sessionStorage.setItem('token', data.accessToken);
+                    sessionStorage.setItem('user', JSON.stringify(loginUser));
                     Cookies.set('userApiKey', loginUser.apiKey ?? '', {
                         path: '/',
                         secure: true,
@@ -134,7 +125,7 @@ export async function login(
 
                     addToast({
                         title: "로그인 성공",
-                        description: `로그인에 성공하였습니다. 7일 후에 자동으로 로그아웃됩니다.`,
+                        description: `로그인에 성공하였습니다. 30일 후에 자동으로 로그아웃됩니다.`,
                         color: "success"
                     });
                     router.push('/');
@@ -173,7 +164,7 @@ export async function login(
                     description: `인증된 사용자 데이터가 없어 재인증을 진행합니다.`,
                     color: "warning"
                 });
-                createUserWithEmailAndPassword(auth, resultEmail, user.password.trim())
+                createUserWithEmailAndPassword(auth, decryptedEmail, user.password.trim())
                     .then(async (userCredential) => {
                         const uid = userCredential.user.uid;
                         const q = query(collection(firestore, 'members'), where("id", "==", user.id));
