@@ -68,14 +68,6 @@ export function NavMenu() {
     useEffect(() => {
         const run = async () => {
             const isAdmin = await isAdministratorByToken(dispatch, router);
-            if (!isAdmin) {
-                addToast({
-                    title: "권한 없음",
-                    description: `관리자 권한이 없습니다.`,
-                    color: "danger"
-                });
-                router.push('/');
-            }
             setAdministrator(isAdmin);
         }
         run();
@@ -266,14 +258,6 @@ function ProfileButton() {
     useEffect(() => {
         const run = async () => {
             const isAdmin = await isAdministratorByToken(dispatch, router);
-            if (!isAdmin) {
-                addToast({
-                    title: "권한 없음",
-                    description: `관리자 권한이 없습니다.`,
-                    color: "danger"
-                });
-                router.push('/');
-            }
             setAdministrator(isAdmin);
         }
         run();
