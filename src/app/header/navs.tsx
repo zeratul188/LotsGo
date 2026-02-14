@@ -58,10 +58,12 @@ export function NavMenu() {
     const nickname = useSelector((state: RootState) => state.login.user.character);
     const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
     const mainCharacter: Character | undefined = expedition.find(character => character.nickname === nickname);
+    const [isAdministrator, setAdministrator] = useState(false);
+    const isLogined = useSelector((state: RootState) => state.login.isLogined);
     const onClickLogout = useLogout();
     return (
         <NavbarMenu>
-            {id !== '' ? mainCharacter ? (
+            {isLogined ? mainCharacter ? (
                 (
                     <div className="w-full flex gap-4 items-center mt-1">
                         <Avatar isBordered size="md" src={getImgByJob(mainCharacter.job)}/>
@@ -112,9 +114,22 @@ export function NavMenu() {
                     </Button>
                 </NavbarMenuItem>
             ))}
-            {id !== '' ? (
+            {isLogined ? (
                 <>
                     <Divider className="mt-2 mb-2"/>
+                    <NavbarMenuItem 
+                        key="administrator">
+                        <Button
+                            fullWidth
+                            as={Link}
+                            radius="sm"
+                            href="/administrator"
+                            variant="light"
+                            startContent={<SettingIcon/>}
+                            className="justify-start text-md">
+                            관리자 페이지
+                        </Button>
+                    </NavbarMenuItem>
                     <NavbarMenuItem 
                         key="setting">
                         <Button
@@ -230,7 +245,7 @@ function ProfileButton() {
     }, [isLogined]);
 
     if (!isCheckedToken) return null;
-    if (id === '') {
+    if (!isLogined) {
         return (
             <Button
                 as={Link}
