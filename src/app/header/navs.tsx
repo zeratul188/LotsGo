@@ -225,7 +225,8 @@ function ProfileButton() {
     const [isAdministrator, setAdministrator] = useState(false);
 
     useEffect(() => {
-        checkedAdministrator(setAdministrator);
+        const runCheckedAdministrator = async () => checkedAdministrator(setAdministrator);
+        runCheckedAdministrator();
     }, [isLogined]);
 
     if (!isCheckedToken) return null;
