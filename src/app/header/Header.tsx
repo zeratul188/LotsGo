@@ -15,10 +15,10 @@ export default function Header() {
                 <NavToggle isMenuOpen={isMenuOpen}/>
             </NavbarContent>
             <NavbarContent justify={isMobile ? 'center' : 'start'}>
-                <div className="shrink-0 min-w-fit mr-3">
+                <div className="shrink-0 min-w-fit">
                     <NavBrand/>
                 </div>
-                <div className="hidden sm:flex shrink-0 gap-7 rounded-lg bg-[#eeeeee] dark:bg-[#242424] px-5 py-3">
+                <div className="hidden sm:flex shrink-0 gap-7 rounded-lg bg-[#f3f3f3] dark:bg-[#242424] px-5 py-2">
                     <NavContents/>
                 </div>
             </NavbarContent>

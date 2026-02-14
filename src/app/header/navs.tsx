@@ -23,7 +23,8 @@ import AddonIcon from "@/Icons/AddonIcon";
 import RaidIcon from "@/Icons/RaidIcon";
 import { useEffect, useState } from "react";
 import { isAdministratorByToken } from "../administrator/administratorFeat";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import clsx from "clsx";
 
 // 헤더 메뉴
 const menuItems = [
@@ -198,33 +199,43 @@ export function NavBrand() {
 
 // 헤더 카테고리 메뉴 요소
 export function NavContents() {
+    const pathname = usePathname();
+
+    const navs = [
+        { href: "/checklist", label: "숙제" },
+        { href: "/calendar", label: "일정" },
+        { href: "/character", label: "전투정보실" },
+        { href: "/addons", label: "도구" },
+        { href: "/raids", label: "파티" },
+    ];
+
     return (
         <>
-            <NavbarItem>
-                <Link color="foreground" href="/checklist">
-                    숙제
-                </Link>
-            </NavbarItem>
-            <NavbarItem>
-                <Link color="foreground" href="/calendar">
-                    일정
-                </Link>
-            </NavbarItem>
-            <NavbarItem>
-                <Link color="foreground" href="/character">
-                    전투정보실
-                </Link>
-            </NavbarItem>
-            <NavbarItem>
-                <Link color="foreground" href="/addons">
-                    도구
-                </Link>
-            </NavbarItem>
-            <NavbarItem>
-                <Link color="foreground" href="/raids">
-                    파티
-                </Link>
-            </NavbarItem>
+            {navs.map((nav) => {
+                const isActive = pathname === nav.href;
+
+                return (
+                    <NavbarItem key={nav.href}>
+                        <Link
+                            href={nav.href}
+                            color="foreground"
+                            className={clsx(
+                                "relative px-1 py-1 font-medium transition-colors",
+                                isActive
+                                    ? "text-black dark:text-white font-semibold"
+                                    : "text-default-500 hover:text-black hover:dark:text-white"
+                            )}>
+                            {nav.label}
+                            <span
+                                className={clsx(
+                                    "absolute left-0 -bottom-0 h-[2px] w-full origin-left scale-x-0 bg-black/50 dark:bg-white/50 transition-transform duration-300",
+                                    isActive && "scale-x-100"
+                                )}
+                            />
+                        </Link>
+                    </NavbarItem>
+                )
+            })}
         </>
     )
 }
