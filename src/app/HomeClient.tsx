@@ -10,6 +10,8 @@ import dynamic from "next/dynamic";
 import { Island, IslandData, LostarkEvent, Notice } from "./home/calendarFeat";
 import dayjs from "dayjs";
 import Script from "next/script";
+import { useSelector } from "react-redux";
+import { RootState } from "./store/store";
 
 const BoxAd = dynamic(() => import('./ad/BoxAd'), { ssr: false });
 const TwoLineAd = dynamic(() => import('./ad/TwoLineAd'), { ssr: false });
@@ -28,41 +30,14 @@ export default function HomeClient({ gate, boss, islands, islandTime, islandData
     const isMobile = useMobileQuery();
     const [isLoaded, setLoaded] = useState(false);
     const [isShowAd, setShowAd] = useState(false);
-    const [authChecked, setAuthChecked] = useState(false);
-    const [isAuthed, setIsAuthed] = useState(false);
-
-    useEffect(() => {
-        const userStr = sessionStorage.getItem('user');
-        const token = sessionStorage.getItem('token');
-
-        if (!userStr || !token || isJwtExpired(token)) {
-            sessionStorage.removeItem("user");
-            sessionStorage.removeItem("token");
-            setIsAuthed(false);
-            setAuthChecked(true);
-            return;
-        }
-
-        try {
-            const user = JSON.parse(userStr);
-            if (!user?.id) throw new Error('NO_ID');
-            setIsAuthed(true);
-        } catch {
-            sessionStorage.removeItem("user");
-            sessionStorage.removeItem("token");
-            setIsAuthed(false);
-        } finally {
-            setAuthChecked(true);
-        }
-    }, []);
-
-    if (!authChecked) return null;
+    const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
+    const isLogined = useSelector((state: RootState) => state.login.isLogined);
     return (
         <div className="w-full min-h-[calc(100vh-65px)]">
             <div className="p-5 w-full max-w-[1280px] mx-auto pb-20">
             <UpdateComponent/>
-            {authChecked ? (
-                isAuthed ? (
+            {isCheckedToken ? (
+                isLogined ? (
                     <>
                         <ChecklistComponent/>
                         <TodoComponent/>

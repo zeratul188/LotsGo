@@ -14,7 +14,8 @@ export type LoginUser = {
 }
 type LoginState = {
     user: LoginUser,
-    isCheckedToken: boolean
+    isCheckedToken: boolean,
+    isLogined: boolean
 }
 
 const initialState: LoginState = {
@@ -24,7 +25,8 @@ const initialState: LoginState = {
         character: '',
         apiKey: null
     },
-    isCheckedToken: false
+    isCheckedToken: false,
+    isLogined: false
 }
 
 const loginSlice = createSlice({
@@ -36,14 +38,16 @@ const loginSlice = createSlice({
         },
         logined(state, action: PayloadAction<LoginUser>) {
             state.user.id = action.payload.id;
-            state.user.expedition = action.payload.expedition
-            state.user.character = action.payload.character
-            state.user.apiKey = action.payload.apiKey ? action.payload.apiKey : null
+            state.user.expedition = action.payload.expedition;
+            state.user.character = action.payload.character;
+            state.user.apiKey = action.payload.apiKey ? action.payload.apiKey : null;
+            state.isLogined = true;
         },
         logout(state) {
             state.user.id = '';
             state.user.expedition = [];
             state.user.character = '';
+            state.isLogined = false;
         },
         changeChracter(state, action: PayloadAction<string>) {
             state.user.character = action.payload;

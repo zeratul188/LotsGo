@@ -16,7 +16,8 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
     useEffect(() => {
       const checkToken = async () => {
             const token = sessionStorage.getItem('token');
-            if (token) {
+            const storedUser = sessionStorage.getItem('user');
+            if (token && storedUser) {
                 const res = await fetch('/api/protected', {
                     headers: {
                         authorization: `Bearer ${token}`
@@ -24,6 +25,7 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
                 });
                 if (res.status !== 401) {
                     dispatch(setCheckToken(true));
+                    dispatch(logined(JSON.parse(storedUser)));
                     return;
                 }
             }
@@ -76,10 +78,6 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
             dispatch(setCheckToken(true));
         }
         dispatch(setCheckToken(false));
-        const storedUser = sessionStorage.getItem('user');
-        if (storedUser) {
-            dispatch(logined(JSON.parse(storedUser)));
-        }
         checkToken();
     }, []);
 
