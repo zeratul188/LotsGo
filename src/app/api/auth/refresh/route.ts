@@ -45,8 +45,9 @@ export async function POST(req: NextRequest) {
             nickname: "",
             apiKey: null
         }
+        const isAdministrator: boolean = targetDoc.data().isAdministrator ?? false;
 
-        const accessToken = signAccessToken({ id: session.userId, sessionId: sessionDoc.id });
+        const accessToken = signAccessToken({ id: session.userId, sessionId: sessionDoc.id, isAdministrator: isAdministrator });
         await updateDoc(sessionDoc.ref, { lastUsedAt: new Date() });
         return NextResponse.json({ accessToken, userData });
     } catch(e: any) {

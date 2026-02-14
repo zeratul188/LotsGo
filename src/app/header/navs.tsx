@@ -1,4 +1,4 @@
-import { Image, NavbarItem, Link, NavbarMenuToggle, Tooltip, NavbarMenu, NavbarMenuItem, Button, Divider, Avatar } from "@heroui/react";
+import { Image, NavbarItem, Link, NavbarMenuToggle, Tooltip, NavbarMenu, NavbarMenuItem, Button, Divider, Avatar, addToast } from "@heroui/react";
 import { 
     useSwitch, 
     VisuallyHidden, 
@@ -12,17 +12,16 @@ import { useTheme } from "next-themes";
 import { MoonIcon, SunIcon } from "@/Icons/themeicons";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
-import { useLogout, useOnActionProfile } from "./headerFeat";
+import { checkedAdministrator, useLogout, useOnActionProfile } from "./headerFeat";
 import { Character } from "../store/loginSlice";
 import { getImgByJob } from "../character/expeditionFeat";
 import HomeworkIcon from "@/Icons/HomeworkIcon";
 import { SettingIcon } from "../icons/SettingIcon";
 import CalIcon from "@/Icons/CalIcon";
 import CharacterIcon from "@/Icons/CharacterIcon";
-import { useRouter } from "next/navigation";
 import AddonIcon from "@/Icons/AddonIcon";
-import GuideBookIcon from "@/Icons/GuidIcon";
 import RaidIcon from "@/Icons/RaidIcon";
+import { useEffect, useState } from "react";
 
 // 헤더 메뉴
 const menuItems = [
@@ -60,7 +59,6 @@ export function NavMenu() {
     const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
     const mainCharacter: Character | undefined = expedition.find(character => character.nickname === nickname);
     const onClickLogout = useLogout();
-    const router = useRouter();
     return (
         <NavbarMenu>
             {id !== '' ? mainCharacter ? (
@@ -219,10 +217,17 @@ export function NavToggle({ isMenuOpen }: NavToggleProps) {
 function ProfileButton() {
     const onActionProfile = useOnActionProfile();
     const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
+    const isLogined = useSelector((state: RootState) => state.login.isLogined);
     const id = useSelector((state: RootState) => state.login.user.id);
     const nickname = useSelector((state: RootState) => state.login.user.character);
     const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
     const mainCharacter: Character | undefined = expedition.find(character => character.nickname === nickname);
+    const [isAdministrator, setAdministrator] = useState(false);
+
+    useEffect(() => {
+        checkedAdministrator(setAdministrator);
+    }, [isLogined]);
+
     if (!isCheckedToken) return null;
     if (id === '') {
         return (
@@ -253,6 +258,7 @@ function ProfileButton() {
                 </DropdownTrigger>
                 <DropdownMenu aria-label="logined-profile" onAction={onActionProfile}>
                     <DropdownItem key="setting">설정</DropdownItem>
+                    {isAdministrator ? <DropdownItem key="administrator" color="secondary">관리자 페이지</DropdownItem> : null}
                     <DropdownItem key="logout" color="danger" className="text-danger">로그아웃</DropdownItem>
                 </DropdownMenu>
             </Dropdown>

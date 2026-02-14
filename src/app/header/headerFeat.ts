@@ -6,8 +6,10 @@ import { logout } from "../store/loginSlice";
 import { signOut } from "firebase/auth";
 import { auth } from "@/utiils/firebase";
 import Cookies from 'js-cookie';
+import { SetStateFn } from "@/utiils/utils";
 
 type Key = string | number;
+const JWT_SECRET = process.env.LOSTARK_JWT_SECRET!;
 
 export function useOnActionProfile() {
     const router = useRouter();
@@ -17,6 +19,9 @@ export function useOnActionProfile() {
         switch(key) {
             case "setting":
                 router.push('/setting');
+                break;
+            case 'administrator':
+                router.push("/administrator");
                 break;
             case "logout":
                 const logoutRes = await fetch("/api/auth/logout", {
@@ -78,5 +83,31 @@ export function useLogout() {
             color: "success"
         });
         location.href = '/';
+    }
+}
+
+// token에서 관리자 권한 확인하기
+export async function checkedAdministrator(setAdministrator: SetStateFn<boolean>) {
+    try {
+        const token = sessionStorage.getItem('token');
+        if (token) {
+            const res = await fetch(`/api/auth/checkadministrator?token=${token}`);
+            const data = await res.json();
+            if (!res.ok) {
+                addToast({
+                    title: "토큰 오류",
+                    description: data.error,
+                    color: "danger"
+                });
+                return;
+            }
+            setAdministrator(data.isAdministrator);
+        }
+    } catch {
+        addToast({
+            title: "확인 오류",
+            description: `회원의 데이터를 처리하는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
     }
 }

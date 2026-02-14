@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import jwt from 'jsonwebtoken';
-import { database, firestore } from "@/utiils/firebase";
-import { ref, get } from "firebase/database";
+import { firestore } from "@/utiils/firebase";
 import { isMatchValue } from "@/utiils/bcrypt";
 import type { Character } from "@/app/store/loginSlice";
-import { addDoc, collection, doc, getDocs, limit, query, updateDoc, where } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, limit, query, where } from "firebase/firestore";
 import { generateRefreshToken, hashToken, signAccessToken } from "@/lib/auth";
 
 export type User = {
@@ -48,12 +46,11 @@ export async function POST(req: NextRequest) {
 
         const expedition: Array<Character> = !memberSnapshot.empty ? userData.expeditions : [];
 
-        const accessToken = signAccessToken({ id: userData.id });
         const refreshToken = generateRefreshToken();
         const refreshHash = hashToken(refreshToken);
         const now = new Date();
 
-        await addDoc(collection(firestore, 'sessions'), {
+        const session = await addDoc(collection(firestore, 'sessions'), {
             userId: userData.id,
             refreshTokenHash: refreshHash,
             createdAt: now,
@@ -62,6 +59,8 @@ export async function POST(req: NextRequest) {
             revoked: false
         });
 
+        const isAdministrator: boolean = targetDoc.data().isAdministrator ?? false;
+        const accessToken = signAccessToken({ id: userData.id, sessionId: session.id, isAdministrator: isAdministrator });
         const res = NextResponse.json({ accessToken, userData, expedition });
 
         res.cookies.set({
