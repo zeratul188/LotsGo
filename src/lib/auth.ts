@@ -6,7 +6,7 @@ const JWT_SECRET = process.env.LOSTARK_JWT_SECRET!;
 
 export function signAccessToken(payload: any) {
     return jwt.sign(payload, JWT_SECRET, {
-        expiresIn: '30m',
+        expiresIn: '30s',
         algorithm: 'HS256'
     });
 }

@@ -10,9 +10,9 @@ import {
 } from "@heroui/react";
 import { useTheme } from "next-themes";
 import { MoonIcon, SunIcon } from "@/Icons/themeicons";
-import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
-import { checkedAdministrator, useLogout, useOnActionProfile } from "./headerFeat";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../store/store";
+import { useLogout, useOnActionProfile } from "./headerFeat";
 import { Character } from "../store/loginSlice";
 import { getImgByJob } from "../character/expeditionFeat";
 import HomeworkIcon from "@/Icons/HomeworkIcon";
@@ -22,6 +22,8 @@ import CharacterIcon from "@/Icons/CharacterIcon";
 import AddonIcon from "@/Icons/AddonIcon";
 import RaidIcon from "@/Icons/RaidIcon";
 import { useEffect, useState } from "react";
+import { isAdministratorByToken } from "../administrator/administratorFeat";
+import { useRouter } from "next/navigation";
 
 // 헤더 메뉴
 const menuItems = [
@@ -54,13 +56,31 @@ const menuItems = [
 
 // 메뉴 카테고리 목록 요소 (모바일 전용)
 export function NavMenu() {
-    const id = useSelector((state: RootState) => state.login.user.id);
+    const dispatch = useDispatch<AppDispatch>();
+    const router = useRouter();
     const nickname = useSelector((state: RootState) => state.login.user.character);
     const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
     const mainCharacter: Character | undefined = expedition.find(character => character.nickname === nickname);
     const [isAdministrator, setAdministrator] = useState(false);
     const isLogined = useSelector((state: RootState) => state.login.isLogined);
     const onClickLogout = useLogout();
+
+    useEffect(() => {
+        const run = async () => {
+            const isAdmin = await isAdministratorByToken(dispatch, router);
+            if (!isAdmin) {
+                addToast({
+                    title: "권한 없음",
+                    description: `관리자 권한이 없습니다.`,
+                    color: "danger"
+                });
+                router.push('/');
+            }
+            setAdministrator(isAdmin);
+        }
+        run();
+    }, [isLogined]);
+
     return (
         <NavbarMenu>
             {isLogined ? mainCharacter ? (
@@ -117,19 +137,21 @@ export function NavMenu() {
             {isLogined ? (
                 <>
                     <Divider className="mt-2 mb-2"/>
-                    <NavbarMenuItem 
-                        key="administrator">
-                        <Button
-                            fullWidth
-                            as={Link}
-                            radius="sm"
-                            href="/administrator"
-                            variant="light"
-                            startContent={<SettingIcon/>}
-                            className="justify-start text-md">
-                            관리자 페이지
-                        </Button>
-                    </NavbarMenuItem>
+                    {isAdministrator ? (
+                        <NavbarMenuItem 
+                            key="administrator">
+                            <Button
+                                fullWidth
+                                as={Link}
+                                radius="sm"
+                                href="/administrator"
+                                variant="light"
+                                startContent={<SettingIcon/>}
+                                className="justify-start text-md">
+                                관리자 페이지
+                            </Button>
+                        </NavbarMenuItem>
+                    ) : null}
                     <NavbarMenuItem 
                         key="setting">
                         <Button
@@ -154,27 +176,27 @@ export function NavBrand() {
     return (
         <>
             <a href="/" className="block sm:hidden">
-                <Image 
+                <img 
                     src="/icon(L).png" 
                     width={40} 
-                    className="w-10 dark:hidden"
+                    className="block dark:hidden"
                     alt="타이틀 이미지 (라이트 버전)"/>
-                <Image 
+                <img 
                     src="/icon(D).png" 
                     width={40} 
                     alt="타이틀 이미지 (어두운 버전)"
                     className="hidden dark:block"/>
             </a>
             <a href="/" className="hidden sm:block">
-                <Image 
+                <img 
                     src="/title(L).png" 
-                    width={200} 
+                    width={180} 
                     alt="타이틀 이미지 (라이트 버전)"
                     className="dark:hidden"
                     onClick={() => location.href = '/'}/>
-                <Image 
+                <img 
                     src="/title(D).png" 
-                    width={200} 
+                    width={180} 
                     alt="타이틀 이미지 (어두운 버전)"
                     className="hidden dark:block"/>
             </a>
@@ -230,6 +252,8 @@ export function NavToggle({ isMenuOpen }: NavToggleProps) {
 
 // 로그인 버튼 혹은 프로필 버튼 요소
 function ProfileButton() {
+    const dispatch = useDispatch<AppDispatch>();
+    const router = useRouter();
     const onActionProfile = useOnActionProfile();
     const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
     const isLogined = useSelector((state: RootState) => state.login.isLogined);
@@ -240,8 +264,19 @@ function ProfileButton() {
     const [isAdministrator, setAdministrator] = useState(false);
 
     useEffect(() => {
-        const runCheckedAdministrator = async () => checkedAdministrator(setAdministrator);
-        runCheckedAdministrator();
+        const run = async () => {
+            const isAdmin = await isAdministratorByToken(dispatch, router);
+            if (!isAdmin) {
+                addToast({
+                    title: "권한 없음",
+                    description: `관리자 권한이 없습니다.`,
+                    color: "danger"
+                });
+                router.push('/');
+            }
+            setAdministrator(isAdmin);
+        }
+        run();
     }, [isLogined]);
 
     if (!isCheckedToken) return null;
