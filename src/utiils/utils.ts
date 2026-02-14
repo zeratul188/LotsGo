@@ -21,6 +21,23 @@ export function useMobileQuery(): boolean {
     return matches;
 }
 
+// 모바일 화면인지 확인하는 함수
+export function useBigSizeQuery(): boolean {
+    const query = `(max-width: 1921px)`;
+    const [matches, setMatches] = useState(false);
+
+    useEffect(() => {
+        const media = window.matchMedia(query);
+        setMatches(media.matches);
+
+        const handler = () => setMatches(media.matches);
+        media.addEventListener('change', handler);
+        return () => media.removeEventListener('change', handler);
+    });
+
+    return matches;
+}
+
 // 등급 별 색깔 확인 함수
 export function getColorTextByGrade(grade: string): string {
     switch(grade) {

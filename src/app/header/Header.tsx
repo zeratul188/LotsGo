@@ -1,21 +1,26 @@
 'use client'
-import { Navbar, NavbarBrand, NavbarContent } from "@heroui/react";
+import { Navbar, NavbarContent } from "@heroui/react";
 import { NavBrand, NavContents, NavToggle, ProfileContent, NavMenu } from "./navs";
 import { useState } from "react";
+import { useMobileQuery, useBigSizeQuery } from "@/utiils/utils";
 
 export default function Header() {
     const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
+    const isMobile = useMobileQuery();
+    const isLargeSize = useBigSizeQuery();
 
     return (
-        <Navbar isBordered onMenuOpenChange={setMenuOpen}>
+        <Navbar maxWidth={isLargeSize ? "full" : "2xl"} isBordered onMenuOpenChange={setMenuOpen}>
             <NavbarContent className="flex sm:hidden">
                 <NavToggle isMenuOpen={isMenuOpen}/>
             </NavbarContent>
-            <NavbarBrand className="absolute sm:static left-1/2 sm:left-0 -translate-x-1/2 sm:-translate-x-1">
-                <NavBrand/>
-            </NavbarBrand>
-            <NavbarContent className="hidden sm:flex gap-10" justify="center">
-                <NavContents/>
+            <NavbarContent justify={isMobile ? 'center' : 'start'}>
+                <div className="shrink-0 min-w-fit">
+                    <NavBrand/>
+                </div>
+                <div className="hidden sm:flex shrink-0 gap-7 rounded-lg bg-[#f3f3f3] dark:bg-[#242424] px-5 py-2">
+                    <NavContents/>
+                </div>
             </NavbarContent>
             <NavbarContent className="gap-5" justify="end">
                 <ProfileContent/>
