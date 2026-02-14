@@ -11,7 +11,7 @@ export default function LoginClient() {
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
+        const storedUser = sessionStorage.getItem('user');
         if (storedUser) {
             addToast({
                 title: "로그인 되어있음",

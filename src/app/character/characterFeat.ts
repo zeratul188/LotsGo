@@ -43,7 +43,7 @@ export function useClickUpdate(
     combat: number
 ) {
     return async () => {
-        const userStr = localStorage.getItem('user');
+        const userStr = sessionStorage.getItem('user');
         const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
         const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
         
@@ -254,7 +254,7 @@ export async function loadProfile(
             isPassed = true;
         }
     }
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
 

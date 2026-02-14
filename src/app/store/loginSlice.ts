@@ -14,7 +14,8 @@ export type LoginUser = {
 }
 type LoginState = {
     user: LoginUser,
-    isAdministrator: boolean
+    isCheckedToken: boolean,
+    isLogined: boolean
 }
 
 const initialState: LoginState = {
@@ -24,27 +25,29 @@ const initialState: LoginState = {
         character: '',
         apiKey: null
     },
-    isAdministrator: false
+    isCheckedToken: false,
+    isLogined: false
 }
 
 const loginSlice = createSlice({
     name: 'login',
     initialState,
     reducers: {
+        setCheckToken(state, action: PayloadAction<boolean>) {
+            state.isCheckedToken = action.payload;
+        },
         logined(state, action: PayloadAction<LoginUser>) {
             state.user.id = action.payload.id;
-            state.user.expedition = action.payload.expedition
-            state.user.character = action.payload.character
-            state.user.apiKey = action.payload.apiKey ? action.payload.apiKey : null
-        },
-        switchAdministrator(state, action: PayloadAction<boolean>) {
-            state.isAdministrator = action.payload;
+            state.user.expedition = action.payload.expedition;
+            state.user.character = action.payload.character;
+            state.user.apiKey = action.payload.apiKey ? action.payload.apiKey : null;
+            state.isLogined = true;
         },
         logout(state) {
             state.user.id = '';
             state.user.expedition = [];
-            state.isAdministrator = false;
             state.user.character = '';
+            state.isLogined = false;
         },
         changeChracter(state, action: PayloadAction<string>) {
             state.user.character = action.payload;
@@ -58,5 +61,5 @@ const loginSlice = createSlice({
     }
 })
 
-export const { logined, switchAdministrator, logout, changeChracter, saveExpedition, editApiKey } = loginSlice.actions
+export const { setCheckToken, logined, logout, changeChracter, saveExpedition, editApiKey } = loginSlice.actions
 export default loginSlice.reducer

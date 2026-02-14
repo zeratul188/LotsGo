@@ -8,8 +8,10 @@ import ChecklistComponent from "./home/ChecklistForm";
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import { Island, IslandData, LostarkEvent, Notice } from "./home/calendarFeat";
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import Script from "next/script";
+import { useSelector } from "react-redux";
+import { RootState } from "./store/store";
 
 const BoxAd = dynamic(() => import('./ad/BoxAd'), { ssr: false });
 const TwoLineAd = dynamic(() => import('./ad/TwoLineAd'), { ssr: false });
@@ -28,13 +30,20 @@ export default function HomeClient({ gate, boss, islands, islandTime, islandData
     const isMobile = useMobileQuery();
     const [isLoaded, setLoaded] = useState(false);
     const [isShowAd, setShowAd] = useState(false);
+    const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
+    const isLogined = useSelector((state: RootState) => state.login.isLogined);
     return (
         <div className="w-full min-h-[calc(100vh-65px)]">
             <div className="p-5 w-full max-w-[1280px] mx-auto pb-20">
             <UpdateComponent/>
-            <ChecklistComponent/>
-            <TodoComponent/>
-            <NotLoginComponent/>
+            {isCheckedToken ? (
+                isLogined ? (
+                    <>
+                        <ChecklistComponent/>
+                        <TodoComponent/>
+                    </>
+                ) : <NotLoginComponent/>
+            ) : null}
             <CalendarComponent
                 gate={gate}
                 boss={boss}

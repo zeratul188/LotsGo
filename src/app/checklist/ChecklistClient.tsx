@@ -112,15 +112,6 @@ export default function ChecklistClient() {
         if (checkLogin()) {
             checklistForm.setLogined(true);
         }
-        const isAdministrator = localStorage.getItem('isAdministrator');
-        if (isAdministrator === 'true') {
-            addToast({
-                title: "관리자 이용 불가",
-                description: "관리자 계정은 해당 기능을 이용하실 수 없습니다.",
-                color: "danger"
-            });
-            router.push('/');
-        }
         const loadSettings = async () => {
             const settingLocal = localStorage.getItem('userSettings');
             if (settingLocal) {
@@ -130,7 +121,7 @@ export default function ChecklistClient() {
                 checklistForm.setHideBonusMode(settings.isHideBonusMode);
                 return;
             }
-            const userStr = localStorage.getItem('user');
+            const userStr = sessionStorage.getItem('user');
             const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
             if (storedUser) {
                 const id = storedUser.id;

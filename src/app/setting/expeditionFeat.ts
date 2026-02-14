@@ -51,7 +51,7 @@ export async function handleSelectCharacter(
         }
     }
     expedition[index].isCharacter = true;
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser.id;
     const res = await fetch(`/api/auth/data`, {
@@ -83,7 +83,7 @@ export async function handleSelectCharacter(
         }
         newExpeditions.push(newChracter);
     }
-    const localData = localStorage.getItem('user');
+    const localData = sessionStorage.getItem('user');
     if (localData) {
         const localUser = JSON.parse(localData);
          const loginUser: LoginUser = {
@@ -92,7 +92,7 @@ export async function handleSelectCharacter(
             character: expedition[index].nickname,
             apiKey: localUser.apiKey ? localUser.apiKey : null
         }
-        localStorage.setItem('user', JSON.stringify(loginUser));
+        sessionStorage.setItem('user', JSON.stringify(loginUser));
     }
     addToast({
         title: "변경 완료",
@@ -109,7 +109,7 @@ export function useClickUpdate(
     setExpedition: SetStateFn<ExpeditionCharacter[]>,
     dispatch: AppDispatch
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
     
@@ -158,7 +158,7 @@ export function useClickUpdate(
                     newNickname = nickname;
                 }
 
-                const userStr = localStorage.getItem('user');
+                const userStr = sessionStorage.getItem('user');
                 const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
                 const id = storedUser.id;
                 const res = await fetch(`/api/auth/data`, {
@@ -192,7 +192,7 @@ export function useClickUpdate(
                     setExpedition(newSettingExpeditions);
                     const defaultCharacter: Character | undefined = newSettingExpeditions.find(character => character.isCharacter);
                     const defaultNickname = defaultCharacter ? defaultCharacter.nickname : 'null';
-                    const localData = localStorage.getItem('user');
+                    const localData = sessionStorage.getItem('user');
                     if (localData) {
                         const localUser = JSON.parse(localData);
                         const loginUser: LoginUser = {
@@ -201,7 +201,7 @@ export function useClickUpdate(
                             character: defaultNickname,
                             apiKey: localUser.apiKey ? localUser.apiKey : null
                         }
-                        localStorage.setItem('user', JSON.stringify(loginUser));
+                        sessionStorage.setItem('user', JSON.stringify(loginUser));
                     }
                     addToast({
                         title: "갱신 완료",

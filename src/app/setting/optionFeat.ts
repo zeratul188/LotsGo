@@ -12,7 +12,7 @@ export async function loadSettings(setSettings: SetStateFn<Settings | null>) {
         setSettings(settings);
         return;
     }
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     if (storedUser) {
         const id = storedUser.id;
@@ -35,7 +35,7 @@ export async function handleHideDayContent(
     settings: Settings | null, 
     setSettings: SetStateFn<Settings | null>
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     if (storedUser && settings) {
         const id = storedUser.id;
@@ -66,7 +66,7 @@ export async function handleHideBonusMode(
     settings: Settings | null, 
     setSettings: SetStateFn<Settings | null>
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     if (storedUser && settings) {
         const id = storedUser.id;

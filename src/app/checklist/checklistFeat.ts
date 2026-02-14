@@ -37,7 +37,7 @@ export function getIndexByNickname(checklist: CheckCharacter[], nickname: string
 
 // 로그인 여부 확인 함수
 export function checkLogin(): boolean {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     if (!storedUser) {
         return false;
@@ -56,7 +56,7 @@ export async function loadChecklist(
     setMax: SetStateFn<number>,
     setBiweekly: SetStateFn<number>
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
 
@@ -238,7 +238,7 @@ export function useClickLife(
     setMax: SetStateFn<number>,
     setNewMax: SetStateFn<number>
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     return async () => {
@@ -268,7 +268,7 @@ export function useClickLife(
 
 // 베아트리스의 축복 조정
 export function useChangeBlessing(life: number, max: number, setBlessing: SetStateFn<boolean>) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     return async (isSelected: boolean) => {
@@ -730,7 +730,7 @@ export function useOnClickDayCheck(
 ) {
     const max = type === '에포나' ? 3 : 1;
     const onceRest = getMaxRestValue(type)/5;
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     return async () => {
@@ -815,7 +815,7 @@ export async function handleWeekBonusCheckStage(
     dispatch: AppDispatch,
     stage: number
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const updatedChecklist = structuredClone(checklist[characterIndex].checklist[checklistIndex]);
@@ -867,7 +867,7 @@ export async function handleWeekCheckStage(
     isDisable: boolean
 ) {
     if (isDisable) return;
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const updatedChecklist = structuredClone(checklist[characterIndex].checklist[checklistIndex]);
@@ -921,7 +921,7 @@ export async function useOnClickWeekCheck(
     dispatch: AppDispatch
 ) {
     console.log('checklist');
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const updatedChecklist = structuredClone(checklist[characterIndex].checklist[checklistIndex]);
@@ -973,7 +973,7 @@ export async function handleDayListCheck(
     listIndex: number,
     dispatch: AppDispatch
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const updatedList = {...checklist[characterIndex].daylist[listIndex]};
@@ -1018,7 +1018,7 @@ export async function handleWeekListCheck(
     listIndex: number,
     dispatch: AppDispatch
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const updatedList = {...checklist[characterIndex].weeklist[listIndex]};
@@ -1065,7 +1065,7 @@ export function useOnClickAddDayList(
     setLoadingAdd: SetStateFn<boolean>,
     setInputValue: SetStateFn<string>
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const prevList = checklist[characterIndex].daylist;
@@ -1113,7 +1113,7 @@ export function useOnClickAddWeekList(
     setLoadingAdd: SetStateFn<boolean>,
     setInputValue: SetStateFn<string>
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const prevList = checklist[characterIndex].weeklist;
@@ -1164,7 +1164,7 @@ export function useOnClickSaveRestValue(
     boss: number,
     onClose: () => void
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const prevDay = {...checklist[characterIndex].day};
@@ -1223,7 +1223,7 @@ export async function handleRemoveWeekList(
     listIndex: number,
     dispatch: AppDispatch
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const prevList = checklist[characterIndex].weeklist;
@@ -1263,7 +1263,7 @@ export async function handleRemoveDayList(
     listIndex: number,
     dispatch: AppDispatch,
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const prevList = checklist[characterIndex].daylist;
@@ -1305,7 +1305,7 @@ export async function handleCheckGolds(
     isSelected: boolean,
     bosses: Boss[]
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     let updatedChecklist = {
@@ -1372,7 +1372,7 @@ export async function useOnClickRemoveItem(
     checklistIndex: number,
     dispatch: AppDispatch
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const prevChecklist = checklist[characterIndex].checklist;
@@ -1415,7 +1415,7 @@ export async function useOnClickAddItem(
     setLoadingAdd: SetStateFn<boolean>,
     bosses: Boss[]
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const prevChecklist = checklist[characterIndex].checklist;
@@ -1606,7 +1606,7 @@ export async function handleControlCube(
     isAdd: boolean,
     count: number
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const cubelist = checklist[characterIndex].cubelist.map(item => ({ ...item }));
@@ -1660,7 +1660,7 @@ export async function handleCheckGold(
     isGold: boolean,
     dispatch: AppDispatch
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const prevIsGold = checklist[characterIndex].isGold;
@@ -1699,7 +1699,7 @@ export async function handleRemoveCharacter(
     characterIndex: number,
     dispatch: AppDispatch
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const removedCharacterName = checklist[characterIndex].nickname;
@@ -1740,7 +1740,7 @@ export function useClickUpdatedCharacters(
     setLoading: SetStateFn<boolean>,
     setDisableUpdate: SetStateFn<boolean>
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
@@ -1817,7 +1817,7 @@ export function useClickLoadCharacters(
     setResult: SetStateFn<SearchCharacter[]>,
     setLoadingSearch: SetStateFn<boolean>
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
     return async () => {
@@ -1920,7 +1920,7 @@ export async function handleAddCharacter(
     bosses: Boss[],
     selected: string
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const newChecklist = checklist.map(item => ({ ...item }));
@@ -2012,7 +2012,7 @@ export async function handleCalculateOtherGold(
     otherGold: number,
     dispatch: AppDispatch
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const prevOtherGold = checklist[characterIndex].otherGold;
@@ -2086,7 +2086,7 @@ export async function handleApplyPositions(
     dispatch: AppDispatch
 ) {
     setLoading(true);
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const inputRes = await fetch(`/api/checklist/list`, {
@@ -2258,7 +2258,7 @@ export async function handleResetCube(
     characterIndex: number,
     dispatch: AppDispatch
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     dispatch(resetCube(characterIndex));
@@ -2398,7 +2398,7 @@ export async function handleResetChecklist(
 ) {
     if (confirm('정말로 수동으로 초기화를 하시겠습니까? 한번 초기화한 작업은 되돌릴 수 없습니다.')) {
         setLoadingReset(true);
-        const userStr = localStorage.getItem('user');
+        const userStr = sessionStorage.getItem('user');
         const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
         const id = storedUser ? storedUser.id : '';
         const prevChecklist = checklist.map(item => ({ ...item }));
@@ -2628,7 +2628,7 @@ export async function handleSelectAccount(
     setLoadingButton: SetStateFn<boolean>,
     checklist: CheckCharacter[]
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     if (storedUser) {
         setLoadingButton(true);
@@ -2856,7 +2856,7 @@ export async function handleEditBusGold(
     dispatch: AppDispatch,
     value: number
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
     const updatedChecklist = structuredClone(checklist[characterIndex].checklist[checklistIndex]);

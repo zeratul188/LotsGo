@@ -22,7 +22,7 @@ export type ChecklistDataDifficulty = {
 
 // 로그인 여부 확인 함수
 export function isLogin(): boolean {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     if (!storedUser) {
         return false;
@@ -36,7 +36,7 @@ export async function loadChecklist(
     setLoading: SetStateFn<boolean>,
     bosses: Boss[]
 ) {
-    const userStr = localStorage.getItem('user');
+    const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser.id;
 
