@@ -1,6 +1,6 @@
 import { hashToken } from "@/lib/auth";
 import { firestore } from "@/utiils/firebase";
-import { collection, deleteDoc, getDocs, limit, query, updateDoc, where } from "firebase/firestore";
+import { collection, getDocs, limit, query, updateDoc, where } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -11,7 +11,8 @@ export async function POST(req: NextRequest) {
             const sessionQuery = query(collection(firestore, 'sessions'), where('refreshTokenHash', '==', refreshHash), limit(1));
             const sessionSnapshot = await getDocs(sessionQuery);
             if (sessionSnapshot.empty) throw new Error('TOKEN_NOT_FOUND');
-            await deleteDoc(sessionSnapshot.docs[0].ref);
+            const sessionRef = sessionSnapshot.docs[0].ref;
+            await updateDoc(sessionRef, { revoked: true });
         }
 
         const res = NextResponse.json({ message: 'logout'});

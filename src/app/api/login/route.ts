@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { firestore } from "@/utiils/firebase";
 import { isMatchValue } from "@/utiils/bcrypt";
 import type { Character } from "@/app/store/loginSlice";
-import { addDoc, collection, doc, getDocs, limit, query, where } from "firebase/firestore";
+import { addDoc, collection, getDocs, limit, query, Timestamp, where } from "firebase/firestore";
 import { generateRefreshToken, hashToken, signAccessToken } from "@/lib/auth";
 
 export type User = {
@@ -50,13 +50,20 @@ export async function POST(req: NextRequest) {
         const refreshHash = hashToken(refreshToken);
         const now = new Date();
 
+        const nowTimestamp = Timestamp.now();
+        const deleteAfter = Timestamp.fromMillis(nowTimestamp.toMillis() + 45 * 24 * 60 * 60 * 1000);
+
+        const ipAddress = getClientIp(req);
+
         const session = await addDoc(collection(firestore, 'sessions'), {
             userId: userData.id,
             refreshTokenHash: refreshHash,
             createdAt: now,
             lastUsedAt: now,
             expiresAt: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
-            revoked: false
+            revoked: false,
+            ipAddress,
+            deleteAfter
         });
 
         const isAdministrator: boolean = targetDoc.data().isAdministrator ?? false;
@@ -83,4 +90,23 @@ export async function POST(req: NextRequest) {
         }
         return NextResponse.json({ type: 'null', error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
     }
+}
+
+export function getClientIp(req: NextRequest) {
+    const xff = req.headers.get("x-forwarded-for");
+    let ip = (xff ? xff.split(",")[0].trim() : null) ||
+        req.headers.get("x-real-ip")?.trim() ||
+        req.headers.get("cf-connecting-ip")?.trim() ||
+        "unknown";
+
+    // localhost IPv6
+    if (ip === "::1") return "127.0.0.1";
+
+    // IPv4-mapped IPv6 (::ffff:123.123.123.123) → IPv4만 뽑기
+    if (ip.startsWith("::ffff:")) ip = ip.replace("::ffff:", "");
+
+    // 혹시 포트가 붙는 케이스(드물지만) "1.2.3.4:12345" → "1.2.3.4"
+    ip = ip.replace(/:\d+$/, "");
+
+    return ip;
 }
