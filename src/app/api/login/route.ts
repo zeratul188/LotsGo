@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { firestore } from "@/utiils/firebase";
 import { isMatchValue } from "@/utiils/bcrypt";
 import type { Character } from "@/app/store/loginSlice";
-import { addDoc, collection, doc, getDocs, limit, query, where } from "firebase/firestore";
+import { addDoc, collection, getDocs, limit, query, Timestamp, where } from "firebase/firestore";
 import { generateRefreshToken, hashToken, signAccessToken } from "@/lib/auth";
+import { getClientIp } from "./loginFeat";
 
 export type User = {
     id: string,
@@ -50,13 +51,20 @@ export async function POST(req: NextRequest) {
         const refreshHash = hashToken(refreshToken);
         const now = new Date();
 
+        const nowTimestamp = Timestamp.now();
+        const deleteAfter = Timestamp.fromMillis(nowTimestamp.toMillis() + 45 * 24 * 60 * 60 * 1000);
+
+        const ipAddress = getClientIp(req);
+
         const session = await addDoc(collection(firestore, 'sessions'), {
             userId: userData.id,
             refreshTokenHash: refreshHash,
             createdAt: now,
             lastUsedAt: now,
             expiresAt: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
-            revoked: false
+            revoked: false,
+            ipAddress,
+            deleteAfter
         });
 
         const isAdministrator: boolean = targetDoc.data().isAdministrator ?? false;
