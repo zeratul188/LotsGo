@@ -284,7 +284,7 @@ type ContentChipProps = {
     bosses: Boss[],
     isMemberGold: boolean
 }
-function ContentChip({ content, bosses, isMemberGold }: ContentChipProps) {
+export function ContentChip({ content, bosses, isMemberGold }: ContentChipProps) {
     const scrollRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
