@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ type: 'logout', error: '토큰을 찾을 수 없습니다.' }, { status: 400 });
         }
         if (e.message === "EXPIRED_TOKEN") {
-            return NextResponse.json({ type: 'logout', error: '토큰이 만료되었습니다.' }, { status: 400 });
+            return NextResponse.json({ type: 'logout', error: '로그인 시간이 만료되었습니다. 다시 로그인해주세요.' }, { status: 400 });
         }
         if (e.message === "MEMBER_IS_EMPTY") {
             return NextResponse.json({ type: 'null', error: '회원을 찾을 수 없습니다.' }, { status: 400 });
