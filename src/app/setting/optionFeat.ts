@@ -92,3 +92,32 @@ export async function handleHideBonusMode(
         }
     }
 }
+
+// 모든 기기 로그아웃 이벤트 함수
+export function useAllLogout(setLoadingAllLogout: SetStateFn<boolean>) {
+    return async () => {
+        if (confirm('모든 기기에서 로그아웃을 하시겠습니까?')) {
+            setLoadingAllLogout(true);
+            const res = await fetch("/api/auth/alllogout", {
+                method: "POST",
+                credentials: "include",
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                addToast({
+                    title: "처리 오류",
+                    description: data.error,
+                    color: "danger"
+                });
+                setLoadingAllLogout(false);
+                return;
+            }
+            addToast({
+                title: "로그아웃 완료",
+                description: `총 ${data.revokedCount}개의 기기가 로그아웃되었습니다.`,
+                color: "success"
+            });
+            setLoadingAllLogout(false);
+        }
+    }
+}

@@ -75,7 +75,8 @@ export function ExpeditionsComponent() {
                 <Table 
                     fullWidth
                     aria-label="table-expeditions" 
-                    removeWrapper className={clsx(
+                    removeWrapper 
+                    className={clsx(
                         isMobile ? 'w-[750px]' : ''
                     )}>
                     <TableHeader>
