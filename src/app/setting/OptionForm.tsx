@@ -1,11 +1,14 @@
 import { Button, Divider, Switch } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { Settings } from "../api/setting/route";
-import { handleHideBonusMode, handleHideDayContent, loadSettings } from "./optionFeat";
+import { handleHideBonusMode, handleHideDayContent, loadSettings, useAllLogout } from "./optionFeat";
 import { LoadingComponent } from "../UtilsCompnents";
 
 export default function OptionComponent() {
     const [settings, setSettings] = useState<Settings | null>(null);
+    const [isLoadingAllLogout, setLoadingAllLogout] = useState(false);
+
+    const onClickAllLogout = useAllLogout(setLoadingAllLogout);
 
     useEffect(() => {
         const loadData  = async () => {
@@ -51,7 +54,9 @@ export default function OptionComponent() {
                 </div>
                 <Button
                     radius="sm"
-                    color="danger">
+                    color="danger"
+                    isLoading={isLoadingAllLogout}
+                    onPress={onClickAllLogout}>
                     모두 로그아웃
                 </Button>
             </div>
