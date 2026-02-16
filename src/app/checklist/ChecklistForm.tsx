@@ -719,7 +719,7 @@ export function ChecklistStatue({
                         </div>
                         <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
                         <div className="w-full flex flex-col md960:flex-row gap-2 items-center flex-shrink-0">
-                            <div className="grow">
+                            <div className="w-full sm:w-fit grow">
                                 <Tooltip showArrow content="생명의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.">
                                     <Progress 
                                         aria-label="all-gold"

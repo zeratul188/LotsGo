@@ -1,4 +1,4 @@
-import { Divider, Switch } from "@heroui/react";
+import { Button, Divider, Switch } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { Settings } from "../api/setting/route";
 import { handleHideBonusMode, handleHideDayContent, loadSettings } from "./optionFeat";
@@ -41,6 +41,19 @@ export default function OptionComponent() {
                     size="lg"
                     isSelected={settings ? settings.isHideBonusMode : false}
                     onValueChange={async (isSelected) => await handleHideBonusMode(settings, setSettings)}/>
+            </div>
+            <h1 className="text-3xl mt-4">보안</h1>
+            <Divider className="mt-2 mb-2"/>
+            <div className="flex gap-2 items-center py-2">
+                <div className="grow">
+                    <h3 className="text-xl">모든 기기 로그아웃</h3>
+                    <p className="fadedtext text-sm">현재 기기를 제외한 모든 기기에서 강제로 로그아웃을 합니다.</p>
+                </div>
+                <Button
+                    radius="sm"
+                    color="danger">
+                    모두 로그아웃
+                </Button>
             </div>
         </div>
     )
