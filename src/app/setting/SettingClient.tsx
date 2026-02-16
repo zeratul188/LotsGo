@@ -9,6 +9,7 @@ import ChangePasswordComponent from "./ChangePasswordForm";
 import DeleteComponent from "./DeleteForm";
 import APIComponent from "./ApiForm";
 import OptionComponent from "./OptionForm";
+import HistoryComponent from "./HistoryForm";
 
 const tabs = [
     {
@@ -25,6 +26,11 @@ const tabs = [
         key: 'apikey',
         title: '로스트아크 API 키',
         component: <APIComponent/>
+    },
+    {
+        key: 'history',
+        title: '로그인 기록',
+        component: <HistoryComponent/>
     },
     {
         key: 'change-password',
