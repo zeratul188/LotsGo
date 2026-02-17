@@ -21,7 +21,6 @@ export async function loadHistorys(setHistorys: SetStateFn<History[]>, setLoaded
         setLoaded(true);
         return;
     }
-    console.log(typeof data.historys[0].createdAt);
     const historys: History[] = data.historys.map((history: any) => ({
         ...history,
         createdAt: history.createdAt ? new Date(history.createdAt.seconds * 1000) : null,
