@@ -115,29 +115,71 @@ export default function ChecklistComponent() {
                         <Divider orientation={isMobile ? 'horizontal' : 'vertical'}/>
                         <div className="grow w-full flex flex-col gap-3">
                             <Progress
-                                showValueLabel={true}
+                                showValueLabel={getHaveGolds(checklistForm.bosses, checklistForm.checklist) > 0}
                                 radius="sm"
                                 size="sm"
                                 color="success"
-                                label={`거래 가능 골드 : ${getAllContentGold(checklistForm.bosses, checklistForm.checklist).toLocaleString()}`}
+                                label={
+                                    <div className="flex gap-1 items-center">
+                                        <Chip 
+                                            size="sm" 
+                                            color="success" 
+                                            variant="flat" 
+                                            radius="sm"
+                                            className="mr-1">거래 가능 골드</Chip>
+                                        <img
+                                            src="/icons/gold.png" 
+                                            alt="goldicon"
+                                            className="w-[14px] h-[14px]"/>
+                                        <p>{getAllContentGold(checklistForm.bosses, checklistForm.checklist).toLocaleString()}</p>
+                                    </div>
+                                }
                                 value={getAllContentGold(checklistForm.bosses, checklistForm.checklist)}
                                 maxValue={getHaveGolds(checklistForm.bosses, checklistForm.checklist)}
                                 className="w-full"/>
                             <Progress
-                                showValueLabel={true}
+                                showValueLabel={getHaveGolds(checklistForm.bosses, checklistForm.checklist) > 0}
                                 radius="sm"
                                 size="sm"
                                 color="warning"
-                                label={`귀속 골드 : ${getAllBoundGold(checklistForm.bosses, checklistForm.checklist).toLocaleString()}`}
+                                label={
+                                    <div className="flex gap-1 items-center">
+                                        <Chip 
+                                            size="sm" 
+                                            color="warning" 
+                                            variant="flat" 
+                                            radius="sm"
+                                            className="mr-1">귀속 골드</Chip>
+                                        <img
+                                            src="/icons/gold.png" 
+                                            alt="goldicon"
+                                            className="w-[14px] h-[14px]"/>
+                                        <p>{getAllBoundGold(checklistForm.bosses, checklistForm.checklist).toLocaleString()}</p>
+                                    </div>
+                                }
                                 value={getAllBoundGold(checklistForm.bosses, checklistForm.checklist)}
                                 maxValue={getHaveGolds(checklistForm.bosses, checklistForm.checklist)}
                                 className="w-full"/>
                             <Progress
-                                showValueLabel={true}
+                                showValueLabel={getHaveGolds(checklistForm.bosses, checklistForm.checklist) > 0}
                                 radius="sm"
                                 size="sm"
                                 color="secondary"
-                                label={`부수입 : ${getAllContentOtherGold(checklistForm.bosses, checklistForm.checklist).toLocaleString()}`}
+                                label={
+                                    <div className="flex gap-1 items-center">
+                                        <Chip 
+                                            size="sm" 
+                                            color="secondary" 
+                                            variant="flat" 
+                                            radius="sm"
+                                            className="mr-1">부수입</Chip>
+                                        <img
+                                            src="/icons/gold.png" 
+                                            alt="goldicon"
+                                            className="w-[14px] h-[14px]"/>
+                                        <p>{getAllContentOtherGold(checklistForm.bosses, checklistForm.checklist).toLocaleString()}</p>
+                                    </div>
+                                }
                                 value={getAllContentOtherGold(checklistForm.bosses, checklistForm.checklist)}
                                 maxValue={getHaveGolds(checklistForm.bosses, checklistForm.checklist)}
                                 className="w-full"/>
@@ -167,7 +209,7 @@ export default function ChecklistComponent() {
                                                 {bucket.startLevel} ~ {bucket.endLevel !== 9999 && bucket.endLevel}
                                             </Chip>
                                             <div className="ml-auto flex gap-1">
-                                                {list.map((character, index) => (
+                                                {list.slice(0, 10).map((character, index) => (
                                                     <Tooltip 
                                                         key={index} 
                                                         content={

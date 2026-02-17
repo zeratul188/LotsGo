@@ -146,7 +146,7 @@ export function PartySettingComponent({ raid, members, dispatch }: PartySettingC
                     <div className="flex gap-3 mt-1">
                         <Switch
                             size="sm"
-                            isDisabled={!raid.isPwd}
+                            isDisabled={!raid.isPwd || !isManagerByUserId(raid, userId)}
                             isSelected={isShowPwd}
                             onValueChange={setShowPwd}>
                             표시
