@@ -18,7 +18,7 @@ export default function Header() {
                 <div className="shrink-0 min-w-fit">
                     <NavBrand/>
                 </div>
-                <div className="hidden sm:flex shrink-0 gap-7 rounded-lg bg-[#f3f3f3] dark:bg-[#242424] px-5 py-2">
+                <div className="hidden sm:flex shrink-0 gap-7 rounded-lg bg-[#cccccc]/25 dark:bg-[#4a4a4a]/25 px-5 py-2">
                     <NavContents/>
                 </div>
             </NavbarContent>
