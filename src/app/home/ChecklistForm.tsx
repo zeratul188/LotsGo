@@ -209,7 +209,7 @@ export default function ChecklistComponent() {
                                                 {bucket.startLevel} ~ {bucket.endLevel !== 9999 && bucket.endLevel}
                                             </Chip>
                                             <div className="ml-auto flex gap-1">
-                                                {list.map((character, index) => (
+                                                {list.slice(0, 10).map((character, index) => (
                                                     <Tooltip 
                                                         key={index} 
                                                         content={
