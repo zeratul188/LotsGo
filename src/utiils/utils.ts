@@ -23,7 +23,7 @@ export function useMobileQuery(): boolean {
 
 // 모바일 화면인지 확인하는 함수
 export function useBigSizeQuery(): boolean {
-    const query = `(max-width: 1921px)`;
+    const query = `(max-width: 2561px)`;
     const [matches, setMatches] = useState(false);
 
     useEffect(() => {

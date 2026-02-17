@@ -3,6 +3,8 @@ import { LoginUser } from "../store/loginSlice";
 import { addToast } from "@heroui/react";
 import { CheckCharacter } from "../store/checklistSlice";
 import { Boss } from "../api/checklist/boss/route";
+import data from "@/data/home/data.json";
+import { ContentLevels } from "./model/types";
 
 export type ChecklistData = {
     nickname: string,
@@ -75,4 +77,32 @@ export function getLevelByContent(bosses: Boss[], contentName: string, difficult
         }
     }
     return 0;
+}
+
+// 레벨 별 숙제 현황 관련 묶음 반환 함수 (4개까지만 추가)
+export function groupByLevel10(characters: CheckCharacter[]): Map<ContentLevels, CheckCharacter[]> {
+    const map = new Map<ContentLevels, CheckCharacter[]>();
+    const contentLevels = data.contentLevels;
+    let undoLevel = 9999;
+    contentLevels.map(level => {
+        const list = characters.filter(character => character.level < undoLevel && character.level >= level);
+        const levels: ContentLevels = { startLevel: level, endLevel: undoLevel };
+        if (list.length > 0 && map.size < 4) map.set(levels, list);
+        undoLevel = level;
+    });
+    return map;
+}
+
+// 레벨 별 숙제 현황에서 가장 높은 레벨 반환 함수
+export function getHighestBucket(
+  grouped: Map<ContentLevels, CheckCharacter[]>
+): number {
+    if (grouped.size === 0) return 0;
+    const levelList = Array.from(grouped.keys()).map(e => e.startLevel);
+    return Math.max(...levelList);
+}
+
+// 해당 캐릭터가 숙제를 완료했는지 확인하는 함수
+export function isCompleteHomeworkByCharacter(character: CheckCharacter): boolean {
+    return character.checklist.every(checkItem => checkItem.items.every(item => item.isDisable || item.isCheck));
 }
