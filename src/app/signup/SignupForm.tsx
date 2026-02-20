@@ -202,6 +202,7 @@ export function InputsComponent({
                 fullWidth
                 isLoading={isLoading}
                 color="primary"
+                radius="sm"
                 size="lg"
                 className="mt-10 mb-15">회원가입</Button>
         </div>

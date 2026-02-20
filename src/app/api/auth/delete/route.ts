@@ -21,11 +21,24 @@ export async function POST(req: NextRequest) {
                 )
             );
         }
+
+        const sessionQuery = query(collection(firestore, 'sessions'), where('userId', '==', id));
+        const sessionSnapshot = await getDocs(sessionQuery);
+        if (!sessionSnapshot.empty) {
+            await Promise.all(sessionSnapshot.docs.map(snapshot => deleteDoc(snapshot.ref)));
+        }
         
         const targetDoc = snapshot.docs[0];
         const docRef = doc(firestore, "members", targetDoc.id);
         await deleteDoc(docRef);
-        return NextResponse.json({ message: '데이터 처리가 정상적으로 처리되었습니다.' }, { status: 200 });
+        
+        const response = NextResponse.json({ message: '데이터 처리가 정상적으로 처리되었습니다.' }, { status: 200 });
+        response.cookies.set({
+            name: "refreshToken",
+            value: "",
+            maxAge: 0
+        });
+        return response;
     } catch(e: any) {
         if (e.message === "ID_NOT_FOUND") {
             return NextResponse.json({ error: '해당 ID를 가진 회원정보를 찾을 수 없습니다.' }, { status: 400 });
