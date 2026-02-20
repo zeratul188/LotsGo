@@ -51,28 +51,22 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
                         method: "POST",
                         credentials: "include",
                     });
-                    if (!logoutRes.ok) {
+                    if (logoutRes.ok) {
+                        sessionStorage.removeItem('token');
+                        sessionStorage.removeItem('user');
+                        localStorage.removeItem('userSettings');
+                        Cookies.remove('userApiKey', {
+                            path: '/',
+                        });
+                        dispatch(logout());
+                        await signOut(auth);
                         addToast({
-                            title: "처리 오류",
-                            description: `로그아웃하는데 문제가 발생하였습니다.`,
+                            title: "유효 기간 만료",
+                            description: `아이디의 유효 기간이 만료되었거나 강제 로그아웃되었습니다. 다시 로그인해주시기 바랍니다.`,
                             color: "danger"
                         });
-                        return;
+                        router.push('/');
                     }
-                    sessionStorage.removeItem('token');
-                    sessionStorage.removeItem('user');
-                    localStorage.removeItem('userSettings');
-                    Cookies.remove('userApiKey', {
-                        path: '/',
-                    });
-                    dispatch(logout());
-                    await signOut(auth);
-                    addToast({
-                        title: "유효 기간 만료",
-                        description: `아이디의 유효 기간이 만료되었거나 강제 로그아웃되었습니다. 다시 로그인해주시기 바랍니다.`,
-                        color: "danger"
-                    });
-                    router.push('/');
                 }
             }
             dispatch(setCheckToken(true));
