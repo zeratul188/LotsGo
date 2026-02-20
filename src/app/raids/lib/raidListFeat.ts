@@ -173,9 +173,10 @@ export async function handleJoinParty(
                     })
                 });
                 if (!res.ok) {
+                    const data = await res.json();
                     addToast({
-                        title: `데이터 수정 오류`,
-                        description: `데이터를 수정하는데 문제가 발생하였습니다.`,
+                        title: `참여 불가`,
+                        description: data.error,
                         color: "danger"
                      });
                     setLoadingJoin(false);
@@ -244,9 +245,10 @@ export async function handleJoinParty(
                 })
             });
             if (!res.ok) {
+                const data = await res.json();
                 addToast({
-                    title: `데이터 수정 오류`,
-                    description: `데이터를 수정하는데 문제가 발생하였습니다.`,
+                    title: `참여 불가`,
+                    description: data.error,
                     color: "danger"
                 });
                 setLoadingJoin(false);
@@ -324,9 +326,10 @@ export async function joinPublicParty(
         })
     });
     if (!res.ok) {
+        const data = await res.json();
         addToast({
-            title: `데이터 수정 오류`,
-            description: `데이터를 수정하는데 문제가 발생하였습니다.`,
+            title: `참여 불가`,
+            description: data.error,
             color: "danger"
         });
         setLoadingJoin(prev => ({...prev, [raid.id]: false}));

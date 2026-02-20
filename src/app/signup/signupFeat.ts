@@ -89,6 +89,19 @@ export function useOnClickDuplicateCheck(
     }
 
     return async () => {
+        if (!/^[a-zA-Z0-9]{4,20}$/.test(member.id)) {
+            setDuplicationChecked({
+                isDuplicateChecked: false,
+                isChecking: false,
+                isError: false
+            });
+            addToast({
+                title: "입력 불가",
+                description: '아이디는 영어, 숫자로만 입력이 가능합니다.',
+                color: "danger"
+            });
+            return;
+        }
         setDuplicationChecked(prev => ({
             ...prev,
             isChecking: true,
