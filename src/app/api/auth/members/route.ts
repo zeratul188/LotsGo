@@ -1,6 +1,6 @@
 import { Character } from "@/app/store/loginSlice";
 import { firestore } from "@/utiils/firebase";
-import { collection, deleteDoc, doc, getDocs, limit, query, where } from "firebase/firestore";
+import { arrayRemove, collection, deleteDoc, doc, getDocs, limit, query, updateDoc, where } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
 import admin from "firebase-admin";
 import { decrypt } from "@/utiils/crypto";
@@ -55,8 +55,22 @@ export async function POST(req: NextRequest) {
         const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));
         const snapshot = await getDocs(q);
 
-        if (snapshot.empty) {
-            return NextResponse.json({ error: 'Not found a member with a specific ID.' }, { status: 300 });
+        if (snapshot.empty) throw new Error("ID_NOT_FOUND");
+        
+        const raidQuery = query(collection(firestore, 'raids'), where('members', 'array-contains', id));
+        const raidSnapshot = await getDocs(raidQuery);
+        if (!raidSnapshot.empty) {
+            await Promise.all(
+                raidSnapshot.docs.map((docSnap) =>
+                    updateDoc(docSnap.ref, { members: arrayRemove(id) })
+                )
+            );
+        }
+
+        const sessionQuery = query(collection(firestore, 'sessions'), where('userId', '==', id));
+        const sessionSnapshot = await getDocs(sessionQuery);
+        if (!sessionSnapshot.empty) {
+            await Promise.all(sessionSnapshot.docs.map(snapshot => deleteDoc(snapshot.ref)));
         }
 
         const targetDoc = snapshot.docs[0];
@@ -65,7 +79,10 @@ export async function POST(req: NextRequest) {
         await deleteDoc(docRef);
         if (uid) await admin.auth().deleteUser(uid);
         return NextResponse.json({ message: '데이터 삭제가 정상적으로 처리되었습니다.' }, { status: 200 });
-    } catch(error) {
+    } catch(e: any) {
+        if (e.message === "ID_NOT_FOUND") {
+            return NextResponse.json({ error: '해당 ID를 가진 회원정보를 찾을 수 없습니다.' }, { status: 400 });
+        }
         return NextResponse.json({ error: '데이터를 처리하는데 오류가 발생하였습니다.' }, { status: 500 });
     }
 }
