@@ -1,8 +1,10 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Member } from "../api/auth/members/route"
 import { LoadingComponent } from "../UtilsCompnents";
-import { handleRemoveMember, loadData } from "./membersFeat";
-import { Button, Input, Pagination, Popover, PopoverContent, PopoverTrigger, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react";
+import { getActivityRange, handleClickIp, handleRemoveMember, isLocked, loadData, loadHistorys } from "./membersFeat";
+import { Button, Chip, Input, Modal, ModalBody, ModalContent, ModalHeader, Pagination, Popover, PopoverContent, PopoverTrigger, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react";
+import { formatDate, SetStateFn, useMobileQuery } from "@/utiils/utils";
+import { History } from "../setting/model/types";
 
 export default function MembersComponent() {
     const [members, setMembers] = useState<Member[]>([]);
@@ -11,6 +13,8 @@ export default function MembersComponent() {
     const [isLoadingButton, setLoadingButton] = useState(false);
     const [search, setSearch] = useState('');
     const [result, setResult] = useState<Member[]>([]);
+    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+    const [isOpenSessionModal, setOpenSessionModal] = useState(false);
     const rowsPerPage = 20;
 
     const items = useMemo(() => {
@@ -93,7 +97,7 @@ export default function MembersComponent() {
                             <TableColumn>ID</TableColumn>
                             <TableColumn>대표 캐릭터 명</TableColumn>
                             <TableColumn>이메일</TableColumn>
-                            <TableColumn>마지막 로그인 날짜</TableColumn>
+                            <TableColumn>로그인 기록</TableColumn>
                             <TableColumn>원정대</TableColumn>
                             <TableColumn>관리</TableColumn>
                         </TableHeader>
@@ -103,7 +107,18 @@ export default function MembersComponent() {
                                     <TableCell>{member.id}</TableCell>
                                     <TableCell>{member.character}</TableCell>
                                     <TableCell>{member.email}</TableCell>
-                                    <TableCell>{member.loginDate ? member.loginDate.toLocaleString() : '-'}</TableCell>
+                                    <TableCell>
+                                        <Button
+                                            size="sm"
+                                            color="primary"
+                                            radius="sm"
+                                            onPress={() => {
+                                                setSelectedUserId(member.id);
+                                                setOpenSessionModal(true);
+                                            }}>
+                                            기록보기
+                                        </Button>
+                                    </TableCell>
                                     <TableCell>
                                         <Popover showArrow>
                                             <PopoverTrigger>
@@ -160,6 +175,155 @@ export default function MembersComponent() {
                     </Table>
                 </div>
             </div>
+            <HistoryModal
+                selectedUserId={selectedUserId}
+                setSelectedUserId={setSelectedUserId}
+                isOpenSessionModal={isOpenSessionModal}
+                setOpenSessionModal={setOpenSessionModal}/>
         </div>
+    )
+}
+
+// 로그인 기록 Modal
+type HistoryModalProps = {
+    selectedUserId: string | null,
+    setSelectedUserId: SetStateFn<string | null>,
+    isOpenSessionModal: boolean,
+    setOpenSessionModal: SetStateFn<boolean>
+}
+function HistoryModal({ selectedUserId, setSelectedUserId, isOpenSessionModal, setOpenSessionModal }: HistoryModalProps) {
+    const [historys, setHistorys] = useState<History[]>([]);
+    const [isLoaded, setLoaded] = useState(false);
+
+    useEffect(() => {
+        const run = async () => {
+            if (selectedUserId) {
+                await loadHistorys(selectedUserId, setHistorys, setLoaded);
+            }
+        }
+        run();
+    }, [selectedUserId]);
+
+    if (!selectedUserId) return null;
+    return (
+        <Modal
+            radius="sm"
+            size="3xl"
+            isDismissable={false}
+            scrollBehavior="inside"
+            isOpen={isOpenSessionModal}
+            onOpenChange={(isOpen) => setOpenSessionModal(isOpen)}
+            onClose={() => {
+                setSelectedUserId(null);
+                setHistorys([]);
+                setLoaded(false);
+            }}>
+            <ModalContent>
+                {(onClose) => (
+                    <>
+                        <ModalHeader>{selectedUserId}님의 로그인 기록</ModalHeader>
+                        <ModalBody>
+                            {isLoaded ? (
+                                <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide">
+                                    <div className="w-[750px] min-[751px]:w-full">
+                                        <SessionTable historys={historys}/>
+                                    </div>
+                                </div>
+                            ) : <LoadingComponent heightStyle={'h-[500px]'}/>}
+                        </ModalBody>
+                    </>
+                )}
+            </ModalContent>
+        </Modal>
+    )
+}
+
+function SessionTable({ historys }: { historys: History[] }) {
+    const [page, setPage] = useState(1);
+    const isMobile = useMobileQuery();
+    const MAX_SIZE = isMobile ? 10 : 20;
+
+    const [revealedIps, setRevealedIps] = useState<Map<string, string>>(new Map());
+    const [lockedIds, setLockedIds] = useState<Set<string>>(new Set());
+    const timersRef = useRef<Map<string, number>>(new Map());
+    
+    useEffect(() => {
+        return () => {
+            timersRef.current.forEach((timer) => window.clearTimeout(timer));
+            timersRef.current.clear();
+        };
+    }, []);
+
+    return (
+        <Table
+            fullWidth
+            removeWrapper
+            bottomContent={
+                <div className="flex w-full justify-center">
+                    <Pagination
+                        isCompact
+                        showControls
+                        showShadow
+                        color="primary"
+                        page={page}
+                        total={Math.ceil(historys.length / MAX_SIZE)}
+                        onChange={(page) => setPage(page)}/>
+                </div>
+            }>
+            <TableHeader>
+                <TableColumn>IP 주소</TableColumn>
+                <TableColumn>생성 일자</TableColumn>
+                <TableColumn>만료 일자</TableColumn>
+                <TableColumn>머자먹 로그인</TableColumn>
+                <TableColumn>만료 여부</TableColumn>
+                <TableColumn>관리</TableColumn>
+            </TableHeader>
+            <TableBody emptyContent="로그인 기록이 없습니다.">
+                {historys.slice((page-1) * MAX_SIZE, page * MAX_SIZE).map((history) => {
+                    const revealed = revealedIps.get(history.id) ?? null;
+                    const locked = isLocked(history.id, lockedIds);
+                    const onClickIp = handleClickIp(history.id, lockedIds, timersRef, setLockedIds, setRevealedIps);
+                    return (
+                        <TableRow key={history.id}>
+                            <TableCell>
+                                <button
+                                    type="button"
+                                    disabled={locked}
+                                    className={[
+                                        "text-left w-full",
+                                        !locked && history.ipAddress !== '-' ? "cursor-pointer hover:underline" : "cursor-default opacity-70",
+                                    ].join(" ")}
+                                    onClick={onClickIp}>
+                                    {revealed ?? history.ipAddress}
+                                </button>
+                            </TableCell>
+                            <TableCell>{history.createdAt ? formatDate(history.createdAt) : '-'}</TableCell>
+                            <TableCell>{history.createdAt ? formatDate(history.createdAt) : '-'}</TableCell>
+                            <TableCell>
+                                <Chip
+                                    radius="sm"
+                                    size="sm"
+                                    variant="flat"
+                                    color={getActivityRange(history.lastUsedAt).level}>
+                                    {getActivityRange(history.lastUsedAt).label}
+                                </Chip>
+                            </TableCell>
+                            <TableCell>
+                                <Chip
+                                    radius="sm"
+                                    size="sm"
+                                    variant="flat"
+                                    color={history.revoked ? 'danger' : 'success'}>
+                                    {history.revoked ? '만료됨' : '유효'}
+                                </Chip>
+                            </TableCell>
+                            <TableCell>
+                                <Button size="sm" radius="sm" color="danger" isDisabled={history.revoked}>만료</Button>
+                            </TableCell>
+                        </TableRow>
+                    )
+                })}
+            </TableBody>
+        </Table>
     )
 }
