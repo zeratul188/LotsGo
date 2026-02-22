@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Member } from "../api/auth/members/route"
 import { LoadingComponent } from "../UtilsCompnents";
-import { getActivityRange, handleClickIp, handleRemoveMember, isLocked, loadData, loadHistorys } from "./membersFeat";
+import { getActivityRange, handleClickIp, handleRemoveMember, handleRevorkHistory, isLocked, loadData, loadHistorys } from "./membersFeat";
 import { Button, Chip, Input, Modal, ModalBody, ModalContent, ModalHeader, Pagination, Popover, PopoverContent, PopoverTrigger, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react";
 import { formatDate, SetStateFn, useMobileQuery } from "@/utiils/utils";
 import { History } from "../setting/model/types";
@@ -226,7 +226,7 @@ function HistoryModal({ selectedUserId, setSelectedUserId, isOpenSessionModal, s
                             {isLoaded ? (
                                 <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide">
                                     <div className="w-[750px] min-[751px]:w-full">
-                                        <SessionTable historys={historys}/>
+                                        <SessionTable historys={historys} setHistorys={setHistorys}/>
                                     </div>
                                 </div>
                             ) : <LoadingComponent heightStyle={'h-[500px]'}/>}
@@ -238,16 +238,21 @@ function HistoryModal({ selectedUserId, setSelectedUserId, isOpenSessionModal, s
     )
 }
 
-function SessionTable({ historys }: { historys: History[] }) {
+function SessionTable({ historys, setHistorys }: { historys: History[], setHistorys: SetStateFn<History[]> }) {
     const [page, setPage] = useState(1);
     const isMobile = useMobileQuery();
     const MAX_SIZE = isMobile ? 10 : 20;
 
     const [revealedIps, setRevealedIps] = useState<Map<string, string>>(new Map());
     const [lockedIds, setLockedIds] = useState<Set<string>>(new Set());
+    const [loadings, setLoadings] = useState<Map<string, boolean>>(new Map());
     const timersRef = useRef<Map<string, number>>(new Map());
     
     useEffect(() => {
+        const newMap = new Map();
+        historys.forEach(history => newMap.set(history.id, false));
+        setLoadings(newMap);
+
         return () => {
             timersRef.current.forEach((timer) => window.clearTimeout(timer));
             timersRef.current.clear();
@@ -283,6 +288,7 @@ function SessionTable({ historys }: { historys: History[] }) {
                     const revealed = revealedIps.get(history.id) ?? null;
                     const locked = isLocked(history.id, lockedIds);
                     const onClickIp = handleClickIp(history.id, lockedIds, timersRef, setLockedIds, setRevealedIps);
+                    const onClickRevorkHistory = handleRevorkHistory(history.id, setHistorys, setLoadings);
                     return (
                         <TableRow key={history.id}>
                             <TableCell>
@@ -298,7 +304,7 @@ function SessionTable({ historys }: { historys: History[] }) {
                                 </button>
                             </TableCell>
                             <TableCell>{history.createdAt ? formatDate(history.createdAt) : '-'}</TableCell>
-                            <TableCell>{history.createdAt ? formatDate(history.createdAt) : '-'}</TableCell>
+                            <TableCell>{history.expiresAt ? formatDate(history.expiresAt) : '-'}</TableCell>
                             <TableCell>
                                 <Chip
                                     radius="sm"
@@ -318,7 +324,15 @@ function SessionTable({ historys }: { historys: History[] }) {
                                 </Chip>
                             </TableCell>
                             <TableCell>
-                                <Button size="sm" radius="sm" color="danger" isDisabled={history.revoked}>만료</Button>
+                                <Button 
+                                    size="sm" 
+                                    radius="sm" 
+                                    color="danger" 
+                                    isLoading={loadings.get(history.id)}
+                                    isDisabled={history.revoked}
+                                    onPress={onClickRevorkHistory}>
+                                    만료
+                                </Button>
                             </TableCell>
                         </TableRow>
                     )

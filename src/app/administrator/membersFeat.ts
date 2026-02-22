@@ -94,7 +94,11 @@ export async function loadHistorys(
         expiresAt: history.expiresAt ? new Date(history.expiresAt.seconds * 1000) : null,
         lastUsedAt: history.lastUsedAt ? new Date(history.lastUsedAt.seconds * 1000) : null,
         revokedAt: history.revokedAt ? new Date(history.revokedAt.seconds * 1000) : null
-    }));
+    })).sort((a: History, b: History) => {
+        const timeA = a.lastUsedAt ? a.lastUsedAt.getTime() : 0;
+        const timeB = b.lastUsedAt ? b.lastUsedAt.getTime() : 0;
+        return timeB - timeA;
+    });
     setHistorys(historys);
     setLoaded(true);
 }
@@ -116,20 +120,20 @@ export function getActivityRange(lastUsedAt?: Date | null): {
 
     const diffDay = now.diff(seen, "day");
 
+    if (diffDay < 3) {
+        return { label: "3일 이내", level: "success" };
+    }
     if (diffDay < 7) {
-        return { label: "일주일 이내", level: "success" };
+        return { label: "일주일 이내", level: "warning" };
     }
     if (diffDay < 30) {
-        return { label: "한달 이내", level: "warning" };
+        return { label: "한달 이내", level: "danger" };
     }
-    if (diffDay < 90) {
-        return { label: "3개월 이내", level: "warning" };
-    }
-    if (diffDay < 365) {
-        return { label: "1년 이내", level: "danger" };
+    if (diffDay < 45) {
+        return { label: "한달 이후", level: "danger" };
     }
 
-    return { label: "1년 이상", level: "danger" };
+    return { label: "오래된 기록", level: "danger" };
 }
 
 export function revealFor10Seconds(
@@ -216,5 +220,50 @@ export function handleClickIp(
                 return next;
             });
         }
+    }
+}
+
+// 특정 로그인 기록을 만료 처리 이벤트 함수
+export function handleRevorkHistory(
+    sessionId: string, 
+    setHistorys: SetStateFn<History[]>,
+    setLoadings: SetStateFn<Map<string, boolean>>
+) {
+    return async () => {
+        setLoadings(prev => {
+            const newMap = new Map(prev);
+            newMap.set(sessionId, true);
+            return newMap;
+        });
+        const res = await fetch("/api/administrator/loadip", {
+            method: "POST",
+            credentials: "include",
+            body: JSON.stringify({
+                sessionId: sessionId
+            })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            addToast({
+                title: "입력 불가",
+                description: data.error,
+                color: "danger"
+            });
+            return;
+        }
+        setHistorys(prev => prev.map(history => history.id === sessionId ? 
+            { ...history, revoked: data.revoked, revokedAt: new Date(data.revokedAtSeconds * 1000) }
+            : history
+        ));
+        setLoadings(prev => {
+            const newMap = new Map(prev);
+            newMap.set(sessionId, false);
+            return newMap;
+        });
+        addToast({
+            title: "처리 완료",
+            description: "해당 기록을 만료 처리하였습니다.",
+            color: "success"
+        });
     }
 }
