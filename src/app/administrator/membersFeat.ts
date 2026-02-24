@@ -8,8 +8,14 @@ import timezone from "dayjs/plugin/timezone";
 import { RefObject } from "react";
 
 // 맴버들 데이터 가져오기
-export async function loadData(setMembers: SetStateFn<Member[]>, setLoading: SetStateFn<boolean>) {
-    const res = await fetch('/api/auth/members');
+export async function loadData(
+    setMembers: SetStateFn<Member[]>, 
+    setLoading: SetStateFn<boolean>,
+    setMemberLength: SetStateFn<number>,
+    setFilterLength: SetStateFn<number>,
+    setHasMore: SetStateFn<boolean>
+) {
+    const res = await fetch('/api/auth/members?filter=id');
     if (!res.ok) {
         addToast({
             title: "로드 오류",
@@ -18,17 +24,85 @@ export async function loadData(setMembers: SetStateFn<Member[]>, setLoading: Set
         });
         return;
     }
-    const items = await res.json();
-    const members: Member[] = [];
-    for (const item of items) {
-        const member: Member = {
-            ...item,
-            loginDate: item.loginDate ? new Date(item.loginDate.seconds * 1000 + item.loginDate.nanoseconds / 1_000_000) : '-'
+    const data = await res.json();
+    setMembers(data.members);
+    setMemberLength(data.memberCount);
+    setFilterLength(data.filterCount);
+    setHasMore(data.hasMore);
+    setLoading(false);
+}
+
+// 다음 데이터 가져오기
+export function handleMoreData(
+    members: Member[],
+    searchValue: string,
+    selectedFilter: string,
+    setLoadingMore: SetStateFn<boolean>,
+    setHasMore: SetStateFn<boolean>,
+    setMembers: SetStateFn<Member[]>
+) {
+    return async () => {
+        setLoadingMore(true);
+        const lastMember = members.at(-1);
+        if (!lastMember) return;
+        const params = new URLSearchParams();
+        params.append("searchValue", searchValue);
+        params.append("filter", selectedFilter);
+        params.append("id", lastMember.id);
+        if (selectedFilter === "character") {
+            params.append("character", lastMember.character);
         }
-        members.push(member);
+        const res = await fetch(`/api/auth/members?${params.toString()}`);
+        const data = await res.json();
+        if (!res.ok) {
+            addToast({
+                title: "로드 오류",
+                description: data.error,
+                color: "danger"
+            });
+            return;
+        }
+        const appendMembers: Member[] = data.members;
+        setMembers(prev => {
+            const merged = [...prev, ...appendMembers];
+            const unique = Array.from(
+                new Map(merged.map(member => [member.id, member])).values()
+            );
+            return unique;
+        });
+        setHasMore(data.hasMore);
+        setLoadingMore(false);
     }
-    members.sort((a, b) => a.character.localeCompare(b.character, 'ko-KR'));
+}
+
+// 검색 이벤트 함수
+export async function handleSearchData(
+    searchValue: string,
+    selectedFilter: string,
+    setHasMore: SetStateFn<boolean>,
+    setMembers: SetStateFn<Member[]>,
+    setLoading: SetStateFn<boolean>,
+    setFilterLength: SetStateFn<number>
+) {
+    setLoading(true);
+    setHasMore(false);
+    const params = new URLSearchParams();
+    params.append("searchValue", searchValue);
+    params.append("filter", selectedFilter);
+    const res = await fetch(`/api/auth/members?${params.toString()}`);
+    const data = await res.json();
+    if (!res.ok) {
+        addToast({
+            title: "로드 오류",
+            description: data.error,
+            color: "danger"
+        });
+        return;
+    }
+    const members: Member[] = data.members;
     setMembers(members);
+    setHasMore(data.hasMore);
+    setFilterLength(data.filterCount);
     setLoading(false);
 }
 

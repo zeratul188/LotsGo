@@ -1,43 +1,32 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Member } from "../api/auth/members/route"
 import { LoadingComponent } from "../UtilsCompnents";
-import { getActivityRange, handleClickIp, handleRemoveMember, handleRevorkHistory, isLocked, loadData, loadHistorys } from "./membersFeat";
-import { Button, Chip, Input, Modal, ModalBody, ModalContent, ModalHeader, Pagination, Popover, PopoverContent, PopoverTrigger, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react";
+import { getActivityRange, handleClickIp, handleMoreData, handleRemoveMember, handleRevorkHistory, handleSearchData, isLocked, loadData, loadHistorys } from "./membersFeat";
+import { Button, Chip, Input, Modal, ModalBody, ModalContent, ModalHeader, Pagination, Popover, PopoverContent, PopoverTrigger, Radio, RadioGroup, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react";
 import { formatDate, SetStateFn, useMobileQuery } from "@/utiils/utils";
 import { History } from "../setting/model/types";
 
 export default function MembersComponent() {
+    const [memberLength, setMemberLength] = useState(0);
+    const [filterLength, setFilterLength] = useState(0);
     const [members, setMembers] = useState<Member[]>([]);
     const [isLoading, setLoading] = useState(true);
-    const [page, setPage] = useState(1);
     const [isLoadingButton, setLoadingButton] = useState(false);
     const [search, setSearch] = useState('');
-    const [result, setResult] = useState<Member[]>([]);
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
     const [isOpenSessionModal, setOpenSessionModal] = useState(false);
-    const rowsPerPage = 20;
+    const [selectedFilter, setSelectedFilter] = useState('id');
+    const [hasMore, setHasMore] = useState(false);
+    const [isLoadingMore, setLoadingMore] = useState(false);
 
-    const items = useMemo(() => {
-        const start = (page - 1) * rowsPerPage;
-        const end = start + rowsPerPage;
-        return result.slice(start, end);
-    }, [page, result]);
+    const onClickMore = handleMoreData(members, search, selectedFilter, setLoadingMore, setHasMore, setMembers);
 
     useEffect(() => {
         const loadFuns = async () => {
-            await loadData(setMembers, setLoading);
+            await loadData(setMembers, setLoading, setMemberLength, setFilterLength, setHasMore);
         }
         loadFuns();
     }, []);
-
-    useEffect(() => {
-        const searchedMembers = members.filter(member => member.id.includes(search) || member.character.includes(search) || member.email.includes(search));
-        setResult(searchedMembers);
-    }, [members]);
-
-    if (isLoading) {
-        return <LoadingComponent heightStyle={'h-[calc(100vh-105px)]'}/>;
-    }
 
     return (
         <div className="w-full">
@@ -46,134 +35,142 @@ export default function MembersComponent() {
                     <div className="grow flex gap-3">
                         <div>
                             <p className="fadedtext text-[10pt]">가입한 맴버 수</p>
-                            <p className="font-bold text-xl">{members.length}</p>
+                            <p className="font-bold text-xl">{memberLength}</p>
                         </div>
                         <div>
                             <p className="fadedtext text-[10pt]">검색 결과 개수</p>
-                            <p className="font-bold text-xl">{result.length}</p>
+                            <p className="font-bold text-xl">{filterLength}</p>
                         </div>
                     </div>
+                    <RadioGroup size="sm" value={selectedFilter} onValueChange={setSelectedFilter}>
+                        <Radio value="id">ID</Radio>
+                        <Radio value="character">캐릭터 명</Radio>
+                    </RadioGroup>
                     <Input
                         placeholder="검색 내용을 입력하세요."
                         radius="sm"
                         value={search}
                         onValueChange={setSearch}
-                        onKeyDown={(e) => {
+                        onKeyDown={async (e) => {
                             if (e.key === 'Enter') {
-                                const searchedMembers = members.filter(member => member.id.includes(search) || member.character.includes(search) || member.email.includes(search) || member.expeditions.some(character => character.nickname === search));
-                                setResult(searchedMembers);
+                                await handleSearchData(search, selectedFilter, setHasMore, setMembers, setLoading, setFilterLength);
                             }
                         }}
                         className="w-full sm:w-[240px]"/>
                     <Button
                         radius="sm"
                         color="primary"
-                        onPress={() => {
-                            const searchedMembers = members.filter(member => member.id.includes(search) || member.character.includes(search) || member.email.includes(search) || member.expeditions.some(character => character.nickname === search));
-                            setResult(searchedMembers);
-                        }}>
+                        onPress={async () => await handleSearchData(search, selectedFilter, setHasMore, setMembers, setLoading, setFilterLength)}>
                         검색
                     </Button>
                 </div>
             </div>
             <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide">
-                <div className="w-[700px] sm:w-full">
-                    <Table
-                        fullWidth 
-                        removeWrapper
-                        bottomContent={
-                            <div className="flex w-full justify-center">
-                                <Pagination
-                                    isCompact
-                                    showControls
-                                    showShadow
-                                    color="primary"
-                                    page={page}
-                                    total={Math.ceil(result.length / rowsPerPage)}
-                                    onChange={(page) => setPage(page)}/>
-                            </div>
-                        }>
-                        <TableHeader>
-                            <TableColumn>ID</TableColumn>
-                            <TableColumn>대표 캐릭터 명</TableColumn>
-                            <TableColumn>이메일</TableColumn>
-                            <TableColumn>로그인 기록</TableColumn>
-                            <TableColumn>원정대</TableColumn>
-                            <TableColumn>관리</TableColumn>
-                        </TableHeader>
-                        <TableBody items={items} emptyContent="검색 결과가 없거나 데이터가 존재하지 않습니다.">
-                            {(member) => (
-                                <TableRow key={member.docID}>
-                                    <TableCell>{member.id}</TableCell>
-                                    <TableCell>{member.character}</TableCell>
-                                    <TableCell>{member.email}</TableCell>
-                                    <TableCell>
-                                        <Button
-                                            size="sm"
-                                            color="primary"
-                                            radius="sm"
-                                            onPress={() => {
-                                                setSelectedUserId(member.id);
-                                                setOpenSessionModal(true);
-                                            }}>
-                                            기록보기
-                                        </Button>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Popover showArrow>
-                                            <PopoverTrigger>
-                                                <Button
-                                                    size="sm"
-                                                    color="secondary"
-                                                    radius="sm">
-                                                    원정대 ({member.expeditions.length})
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent>
-                                                <div className="max-w-[calc(100vw-60px)] min-[441px]:w-[440px] pt-2 max-h-[500px] overflow-y-auto">
-                                                    <Table
-                                                        fullWidth
-                                                        removeWrapper>
-                                                        <TableHeader>
-                                                            <TableColumn>캐릭터명</TableColumn>
-                                                            <TableColumn>캐릭터 레벨</TableColumn>
-                                                            <TableColumn>클래스</TableColumn>
-                                                            <TableColumn>서버</TableColumn>
-                                                        </TableHeader>
-                                                        <TableBody>
-                                                            {member.expeditions.map((character, idx) => (
-                                                                <TableRow key={idx}>
-                                                                    <TableCell>{character.nickname}</TableCell>
-                                                                    <TableCell>{character.level}</TableCell>
-                                                                    <TableCell>{character.job}</TableCell>
-                                                                    <TableCell>{character.server}</TableCell>
-                                                                </TableRow>
-                                                            ))}
-                                                        </TableBody>
-                                                    </Table>
-                                                </div>
-                                            </PopoverContent>
-                                        </Popover>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Button
-                                            size="sm"
-                                            radius="sm"
-                                            color="danger"
-                                            isLoading={isLoadingButton}
-                                            onPress={async () => {
-                                                if (confirm('데이터를 삭제하면 복구하실 수 없습니다. 마지막 로그인이로부터 1년 이상인 맴버이거나 삭제 요청이나 삭제 대상이 되는 경우가 아니면 삭제하시지 말아주세요.\n데이터를 정말 삭제하시겠습니까?')) {
-                                                    await handleRemoveMember(member.uid, member.id, members, setMembers, setLoadingButton);
-                                                }
-                                            }}>
-                                            삭제
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </div>
+                {isLoading ? <LoadingComponent heightStyle={'h-[calc(100vh-105px)]'}/> : (
+                    <div className="w-[700px] sm:w-full">
+                        <Table
+                            fullWidth 
+                            isHeaderSticky
+                            removeWrapper
+                            bottomContent={
+                                hasMore ? (
+                                <div className="flex w-full justify-center">
+                                    <Button 
+                                        isLoading={isLoadingMore} 
+                                        radius="sm"
+                                        variant="flat" 
+                                        onPress={onClickMore}>                                        
+                                        더 표시하기
+                                    </Button>
+                                </div>
+                                ) : null
+                            }
+                            classNames={{
+                                base: "max-h-[calc(100vh-175px)] overflow-scroll scrollbar-hide",
+                                table: "max-h-[calc(100vh-275px)]",
+                            }}>
+                            <TableHeader>
+                                <TableColumn>ID</TableColumn>
+                                <TableColumn>대표 캐릭터 명</TableColumn>
+                                <TableColumn>이메일</TableColumn>
+                                <TableColumn>로그인 기록</TableColumn>
+                                <TableColumn>원정대</TableColumn>
+                                <TableColumn>관리</TableColumn>
+                            </TableHeader>
+                            <TableBody items={members} emptyContent="검색 결과가 없거나 데이터가 존재하지 않습니다.">
+                                {(member) => (
+                                    <TableRow key={member.docID}>
+                                        <TableCell>{member.id}</TableCell>
+                                        <TableCell>{member.character}</TableCell>
+                                        <TableCell>{member.email}</TableCell>
+                                        <TableCell>
+                                            <Button
+                                                size="sm"
+                                                color="primary"
+                                                radius="sm"
+                                                onPress={() => {
+                                                    setSelectedUserId(member.id);
+                                                    setOpenSessionModal(true);
+                                                }}>
+                                                기록보기
+                                            </Button>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Popover showArrow>
+                                                <PopoverTrigger>
+                                                    <Button
+                                                        size="sm"
+                                                        color="secondary"
+                                                        radius="sm">
+                                                        원정대 ({member.expeditions.length})
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent>
+                                                    <div className="max-w-[calc(100vw-60px)] min-[441px]:w-[440px] pt-2 max-h-[500px] overflow-y-auto">
+                                                        <Table
+                                                            fullWidth
+                                                            removeWrapper>
+                                                            <TableHeader>
+                                                                <TableColumn>캐릭터명</TableColumn>
+                                                                <TableColumn>캐릭터 레벨</TableColumn>
+                                                                <TableColumn>클래스</TableColumn>
+                                                                <TableColumn>서버</TableColumn>
+                                                            </TableHeader>
+                                                            <TableBody>
+                                                                {member.expeditions.map((character, idx) => (
+                                                                    <TableRow key={idx}>
+                                                                        <TableCell>{character.nickname}</TableCell>
+                                                                        <TableCell>{character.level}</TableCell>
+                                                                        <TableCell>{character.job}</TableCell>
+                                                                        <TableCell>{character.server}</TableCell>
+                                                                    </TableRow>
+                                                                ))}
+                                                            </TableBody>
+                                                        </Table>
+                                                    </div>
+                                                </PopoverContent>
+                                            </Popover>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Button
+                                                size="sm"
+                                                radius="sm"
+                                                color="danger"
+                                                isLoading={isLoadingButton}
+                                                onPress={async () => {
+                                                    if (confirm('데이터를 삭제하면 복구하실 수 없습니다. 마지막 로그인이로부터 1년 이상인 맴버이거나 삭제 요청이나 삭제 대상이 되는 경우가 아니면 삭제하시지 말아주세요.\n데이터를 정말 삭제하시겠습니까?')) {
+                                                        await handleRemoveMember(member.uid, member.id, members, setMembers, setLoadingButton);
+                                                    }
+                                                }}>
+                                                삭제
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
             </div>
             <HistoryModal
                 selectedUserId={selectedUserId}
