@@ -206,7 +206,7 @@ export default function ChecklistComponent() {
                                                 size="sm"
                                                 variant="flat"
                                                 radius="sm">
-                                                {bucket.startLevel} ~ {bucket.endLevel !== 9999 && bucket.endLevel}
+                                                {bucket.startLevel} ~ {bucket.endLevel !== 9999 && bucket.endLevel-1}
                                             </Chip>
                                             <div className="ml-auto flex gap-1">
                                                 {list.slice(0, 10).map((character, index) => (
