@@ -1,12 +1,5 @@
 import { SetStateFn } from "@/utiils/utils"
-
-export type Avatar = {
-    type: string,
-    name: string,
-    icon: string,
-    grade: string,
-    isInner: boolean
-}
+import { Avatar } from "../model/types";
 
 // 아바타 데이터 가져오기
 export function loadAvatars(datas: any[] | null, setAvatars: SetStateFn<Avatar[]>) {

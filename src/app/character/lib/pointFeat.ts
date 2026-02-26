@@ -1,19 +1,7 @@
 import { SetStateFn } from "@/utiils/utils"
+import { Collect, CollectEquipment, CollectItem, Hobby } from "../model/types";
 
 // 수집품 데이터 불러오기
-export type CollectItem = {
-    name: string,
-    point: number,
-    maxPoint: number
-}
-export type Collect = {
-    type: string,
-    icon: string,
-    bgIcon: string,
-    point: number,
-    maxPoint: number,
-    items: CollectItem[]
-}
 export function loadCollects(datas: any[] | null, setCollects: SetStateFn<Collect[]>) {
     const collects: Collect[] = [];
     if (datas) {
@@ -62,11 +50,6 @@ export function getCompleteMaxPoint(collect: Collect): number {
 }
 
 // 성향 데이터 불러오기
-export type Hobby = {
-    type: string,
-    point: number,
-    maxPoint: number
-}
 export function loadHobbys(data: any | null, setHobbys: SetStateFn<Hobby[]>) {
     const hobbys: Hobby[] = [];
     if (data) {
@@ -99,12 +82,6 @@ export function getProgressData(collects: Collect[]): number {
 }
 
 // 나침판, 부적 데이터 가져오기
-export type CollectEquipment = {
-    type: string,
-    icon: string,
-    grade: string,
-    descriptions: string[]
-}
 export function loadItems(datas: any[] | null, setCollectEquipments: SetStateFn<CollectEquipment[]>) {
     const collectItems: CollectEquipment[] = [];
     if (datas) {

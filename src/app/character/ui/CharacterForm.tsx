@@ -17,26 +17,14 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { Character } from "../../store/loginSlice";
-import { 
-    Accessory, 
+import {  
     applyAccessories, 
     applyArmData, 
-    applyColorElixir, 
     applyEquipment, 
     applyOrbData, 
     applyStoneData, 
-    ArkpassiveItem, 
-    ArkpassivePoint, 
-    Arm, 
-    CardData, 
-    CardSet, 
     CharacterFile, 
     CharacterInfo, 
-    Engraving, 
-    Equipment, 
-    Gem, 
-    getAllElixir, 
-    getAllPower, 
     getBackgroundColorByStat, 
     getCardByIndex, 
     getCardGems, 
@@ -71,24 +59,21 @@ import {
     loadEngraving, 
     loadGems, 
     loadStats, 
-    Orb, 
     printEngravingLevel, 
     Stat, 
-    Stone 
 } from "../lib/characterFeat";
-import PowerIcon from "@/Icons/PowerIcon";
-import { printAllElixirInTooltip, printBonusInTooltip, printCountInTooltip, printElixirInTooltip, printHighUpgradeInTooltip, printInfoInTooltip, printPowerInTooltip } from "../lib/equipmentPrints";
+import { printBonusInTooltip, printCountInTooltip, printHighUpgradeInTooltip, printInfoInTooltip } from "../lib/equipmentPrints";
 import clsx from "clsx";
 import { printDefaultInTooltip, printListInTooltip, printPointInTooltip, printUseInTooltip } from "../lib/accessoryPrints";
 import { printArmPointInTooltip, printArmUseInTooltip, printBooleanInTooltip, printEffectInTooltip } from "../lib/armPrints";
 import { printBonusStoneInTooltip, printDefaultStoneInTooltip, printStoneUseInTooltip } from "../lib/stonePrints";
-import PotionIcon from "@/Icons/PosionIcon";
 import { getImgByJob } from "../lib/expeditionFeat";
 import { CharacterHistory } from "../lib/history";
-import './effects.css';
+import '../css/effects.css';
 import VegaIcon from "@/Icons/VegaIcon";
 import AttackIcon from "@/Icons/AttackIcon";
 import SupportorIcon from "@/Icons/SupportorIcon";
+import { Accessory, ArkpassiveItem, ArkpassivePoint, Arm, CardData, CardSet, Engraving, Equipment, Gem, Orb, Stone } from "../model/types";
 
 // state 관리
 export function useCharacterForm() {
@@ -600,20 +585,8 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                             <p>+{equip.highUpgrade}</p>
                                                         </Chip>
                                                     </Tooltip> : <></>}
-                                                    {equip.power > 0 ? <Chip size="sm" radius="sm" variant="flat" startContent={<div className="w-[16px] h-[16px]"><PowerIcon/></div>}>
-                                                        {equip.power}
-                                                    </Chip> : <></>}
                                                 </div>
                                             </div>
-                                            {equip.elixirs ? <div className="w-[110px] sm:w-[140px] flex flex-col gap-1 h-full items-start">
-                                                {equip.elixirs.map((elixir, index) => (
-                                                    <Tooltip key={index} showArrow content={<p className="max-w-[280px] whitespace-pre-line">{elixir.tooltip}</p>}>
-                                                        <Chip size="sm" variant="flat" radius="sm" color={applyColorElixir(elixir.level)}>
-                                                            Lv.{elixir.level} {elixir.name}
-                                                        </Chip>
-                                                    </Tooltip>
-                                                ))}
-                                            </div> : <></>}
                                         </div>
                                     </PopoverTrigger>
                                     <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
@@ -660,81 +633,6 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                                     <p className="whitespace-pre-line">{printBonusInTooltip(parsedEquipment)?.content}</p>
                                                 </div>
                                             ) : <></>}
-                                            {equip.power > 0 && printPowerInTooltip(parsedEquipment) ? (<div className="mt-2">
-                                                <div className="flex gap-1">
-                                                    <div className="w-4 h-4"><PowerIcon/></div>
-                                                    <p className="font-bold text-[#bb662d] dark:text-[#ee9d67]">{printPowerInTooltip(parsedEquipment)?.topStr}</p>
-                                                </div>
-                                                <p>{printPowerInTooltip(parsedEquipment)?.stat}</p>
-                                                <div className="mt-1">
-                                                    <div className="inline">
-                                                        <p className={clsx(
-                                                            equip.power >= 5 ? '' : 'text-[#bbbbbb] dark:text-[#444444]'
-                                                        )}>
-                                                            <span className="w-[14px] h-[14px] inline-block mr-1"><PowerIcon/></span>
-                                                            {printPowerInTooltip(parsedEquipment)?.line1}
-                                                        </p>
-                                                    </div>
-                                                    <div className="inline">
-                                                        <p className={clsx(
-                                                            equip.power >= 10 ? '' : 'text-[#bbbbbb] dark:text-[#444444]'
-                                                        )}>
-                                                            <span className="w-[14px] h-[14px] inline-block mr-1"><PowerIcon/></span>
-                                                            {printPowerInTooltip(parsedEquipment)?.line2}
-                                                        </p>
-                                                    </div>
-                                                    <div className="inline">
-                                                        <p className={clsx(
-                                                            equip.power >= 15 ? '' : 'text-[#bbbbbb] dark:text-[#444444]'
-                                                        )}>
-                                                            <span className="w-[14px] h-[14px] inline-block mr-1"><PowerIcon/></span>
-                                                            {printPowerInTooltip(parsedEquipment)?.line3}
-                                                        </p>
-                                                    </div>
-                                                    <div className="inline">
-                                                        <p className={clsx(
-                                                            equip.power >= 20 ? '' : 'text-[#bbbbbb] dark:text-[#444444]'
-                                                        )}>
-                                                            <span className="w-[14px] h-[14px] inline-block mr-1"><PowerIcon/></span>
-                                                            {printPowerInTooltip(parsedEquipment)?.line4}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>) : <></>}
-                                            {printElixirInTooltip(parsedEquipment) ? (
-                                                <div className="mt-2">
-                                                    <p className="font-bold">{printElixirInTooltip(parsedEquipment)?.topStr.replaceAll('[엘릭서]', '[엘릭서] ')}</p>
-                                                    <ul className="list-disc pl-3">
-                                                        <li className="whitespace-pre-line">
-                                                            {printElixirInTooltip(parsedEquipment)?.line1.split(/\r?\n/).map((line, i) => (
-                                                                <p key={i} className={i === 0 ? '' : 'fadedtext'}>{line}</p>
-                                                            ))}
-                                                        </li>
-                                                        <li className="whitespace-pre-line">
-                                                            {printElixirInTooltip(parsedEquipment)?.line2.split(/\r?\n/).map((line, i) => (
-                                                                <p key={i} className={i === 0 ? '' : 'fadedtext'}>{line}</p>
-                                                            ))}
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            ) : <></>}
-                                            {printAllElixirInTooltip(parsedEquipment) ? (
-                                                <div className="mt-2">
-                                                    <p className="font-bold">{printAllElixirInTooltip(parsedEquipment)?.topStr.replaceAll('연성 추가 효과', '연성 추가 효과 - ')}</p>
-                                                    <ul className="list-disc pl-3">
-                                                        <li className="whitespace-pre-line">
-                                                            {printAllElixirInTooltip(parsedEquipment)?.line1.split(/\r?\n/).map((line, i) => (
-                                                                <p key={i} className={i === 0 ? '' : 'fadedtext'}>{line}</p>
-                                                            ))}
-                                                        </li>
-                                                        <li className="whitespace-pre-line">
-                                                            {printAllElixirInTooltip(parsedEquipment)?.line2.split(/\r?\n/).map((line, i) => (
-                                                                <p key={i} className={i === 0 ? '' : 'fadedtext'}>{line}</p>
-                                                            ))}
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            ) : <></>}
                                             {printCountInTooltip(parsedEquipment) ? (
                                                 <p className="mt-2">{printCountInTooltip(parsedEquipment)?.replaceAll('|', '')}</p>
                                             ) : <></>}
@@ -743,71 +641,6 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                 </Popover>
                             )
                         })}
-                        <div className="grid grid-cols-[1fr_2fr] sm:grid-cols-2 gap-2 mt-4">
-                            {getAllPower(equipments) > 0 ? (
-                                <Card radius="sm" className="grow">
-                                    <CardBody className="pl-2 pr-2 pt-1 pb-1">
-                                        <div className="w-full flex gap-3 items-center">
-                                            <div className="w-8 h-8"><PowerIcon/></div>
-                                            <div>
-                                                <p className="fadedtext text-[9pt]">초월 총합</p>
-                                                <p className="text-lg font-bold">{getAllPower(equipments)}</p>
-                                            </div>
-                                        </div>
-                                    </CardBody>
-                                </Card>
-                            ) : <></>}
-                            {getAllElixir(equipments) > 0 ? (
-                                <Card radius="sm" className="grow">
-                                    <CardBody className="pl-2 pr-2 pt-1 pb-1">
-                                        <div className="w-full flex gap-3 items-center">
-                                            <div className="w-8 h-8"><PotionIcon/></div>
-                                            <div className="grow">
-                                                <p className="fadedtext text-[9pt]">엘릭서 총합</p>
-                                                <p className="text-lg font-bold">Lv.{getAllElixir(equipments)}</p>
-                                            </div>
-                                            <Popover showArrow disableAnimation>
-                                                <PopoverTrigger>
-                                                    <Button size="sm" variant="flat">자세히 보기</Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
-                                                    <div className="w-[320px] p-2">
-                                                        <p className="text-lg">엘릭서 정보</p>
-                                                        <Divider className="mt-1 mb-2"/>
-                                                        {equipments.filter(equipment => equipment.elixirs ? equipment.elixirs.length > 0 : false).map((equipment, index) => (
-                                                            <div key={index} className="mb-2 grid grid-cols-[max-content_1fr_1fr] gap-3 items-center">
-                                                                <Chip size="sm" variant="flat" radius="sm">{equipment.type}</Chip>
-                                                                {equipment.elixirs?.map((elixir, idx) => (
-                                                                    <p key={idx}>Lv.{elixir.level} {elixir.name}</p>
-                                                                ))}
-                                                            </div>
-                                                        ))}
-                                                        <Divider className="mt-1 mb-2"/>
-                                                        {printAllElixirInTooltip(JSON.parse(getObjectByArmorType(equipment, "투구").Tooltip)) ? (
-                                                            <div className="mt-2">
-                                                                <p className="font-bold text-[#fe6e0e]">{printAllElixirInTooltip(JSON.parse(getObjectByArmorType(equipment, "투구").Tooltip))?.topStr.replaceAll('연성 추가 효과', '연성 추가 효과 - ')}</p>
-                                                                <ul className="list-disc pl-4">
-                                                                    <li className="whitespace-pre-line">
-                                                                        {printAllElixirInTooltip(JSON.parse(getObjectByArmorType(equipment, "투구").Tooltip))?.line1.split(/\r?\n/).map((line, i) => (
-                                                                            <p key={i} className={i === 0 ? '' : 'fadedtext'}>{line}</p>
-                                                                        ))}
-                                                                    </li>
-                                                                    <li className="whitespace-pre-line">
-                                                                        {printAllElixirInTooltip(JSON.parse(getObjectByArmorType(equipment, "투구").Tooltip))?.line2.split(/\r?\n/).map((line, i) => (
-                                                                            <p key={i} className={i === 0 ? '' : 'fadedtext'}>{line}</p>
-                                                                        ))}
-                                                                    </li>
-                                                                </ul>
-                                                            </div>
-                                                        ) : <></>}
-                                                    </div>
-                                                </PopoverContent>
-                                            </Popover>
-                                        </div>
-                                    </CardBody>
-                                </Card>
-                            ) : <></>}
-                        </div>
                     </div>
                     <Divider orientation={isMobile ? 'horizontal' : 'vertical'}/>
                     <div>
@@ -840,7 +673,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                             </div>
                                             {equip.items.length > 0 ? (
                                                 <div className="w-[130px] flex flex-col gap-[1px] h-full items-start">
-                                                    {equip.items.map((item, idx) => (
+                                                    {equip.items.map((item: any, idx: number) => (
                                                         <div key={idx} className="flex gap-1 text-[9pt] items-center">
                                                             <img
                                                                 src={getSrcByGrade(getSmallGradeByAccessory(equip.type, item).grade)}

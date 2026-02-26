@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { CharacterFile } from "../lib/characterFeat"
-import { Avatar, loadAvatars, loadImage } from "../lib/avatarFeat";
+import { loadAvatars, loadImage } from "../lib/avatarFeat";
 import { Card, CardBody, CardHeader, Divider } from "@heroui/react";
 import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils";
+import { Avatar } from "../model/types";
 
 // 아바타 컴포넌트
 type AvatarComponentProps = {

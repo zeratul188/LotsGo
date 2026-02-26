@@ -6,6 +6,7 @@ import { CharacterHistory, saveHistory, updateHistory } from "./history";
 import { Badge } from "../../api/administrator/badge/route";
 import { LoginUser } from "../../store/loginSlice";
 import { decrypt } from "@/utiils/crypto";
+import { Accessory, ArkpassiveItem, ArkpassivePoint, Arm, CardData, CardDetailSet, CardSet, Engraving, Equipment, Gem, Orb, Stone, StoneEffect } from "../model/types";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
@@ -442,64 +443,6 @@ function findPowerInTooltip(tooltip: any): number {
     return -1;
 }
 
-// "엘릭서"이 들어간 객체 가져오기
-function findElixirInTooltip(tooltip: any): Elixir[] | null {
-    let parsed: TooltipBoject;
-    const elixirs: Elixir[] = [];
-    try {
-        parsed = JSON.parse(tooltip);
-    } catch (err) {
-        console.error("Tooltip JSON 파싱 오류:", err);
-        return null;
-    }
-
-    for (const key in parsed) {
-        const element = parsed[key];
-        const value = element?.value;
-
-        const topStr = value?.Element_000?.topStr;
-        if (typeof topStr === "string" && topStr.includes("엘릭서")) {
-            const content = value?.Element_000?.contentStr;
-            if (content && typeof content === 'object') {
-                for (const subKey in content) {
-                    const str = content[subKey]?.contentStr;
-                    if (typeof str === 'string') {
-                        const tip = str.split('<br>')[1].replaceAll('<BR>', '\r\n');
-                        const newStr = str.split('<br>')[0];
-                        let text = getParsedText(newStr);
-                        text = text.split('<br>')[0];
-                        text = text.split(']')[1];
-                        const name = text.split('Lv.')[0];
-                        const level = Number(text.split('Lv.')[1]);
-                        elixirs.push({
-                            name: name,
-                            level: level,
-                            tooltip: tip
-                        });
-                    }
-                }
-                return elixirs.length > 0 ? elixirs : null;
-            }
-        }
-    }
-    return null;
-}
-
-export type Elixir = {
-    name: string,
-    level: number,
-    tooltip: string
-}
-export type Equipment = {
-    icon: string, // 장비 이미지
-    type: string, // 장비 종류 (무기, 방어구)
-    name: string, // 장비 이름 (강화 수치 포함)
-    grade: string, // 장비 등급
-    quality: number, // 장비 품질
-    highUpgrade: number, // 장비 상급 재련
-    power: number, // 장비 초월 등급
-    elixirs: Elixir[] | null // 장비 엘릭서
-}
 
 // 장비 데이터 불러오기
 export function applyEquipment(data: any, setEquipments: SetStateFn<Equipment[]>) {
@@ -508,8 +451,6 @@ export function applyEquipment(data: any, setEquipments: SetStateFn<Equipment[]>
     for (const type of attackType) {
         const obj = getObjectByArmorType(data, type);
         const parsedTooltip = JSON.parse(obj.Tooltip);
-
-        const elixirs: Elixir[] | null = findElixirInTooltip(obj.Tooltip);
         
         const newEquipment: Equipment = {
             icon: obj.Icon,
@@ -517,23 +458,11 @@ export function applyEquipment(data: any, setEquipments: SetStateFn<Equipment[]>
             name: obj.Name,
             grade: obj.Grade,
             quality: Number(parsedTooltip.Element_001.value.qualityValue),
-            highUpgrade: findHighUpgradeInTooltip(obj.Tooltip),
-            power: findPowerInTooltip(obj.Tooltip),
-            elixirs: elixirs
+            highUpgrade: findHighUpgradeInTooltip(obj.Tooltip)
         }
         newEquipments.push(newEquipment);
     }
     setEquipments(newEquipments);
-}
-
-// 엘릭서 레벨에 따른 색상 변경
-type ColorType = "default" | "primary" | "secondary" | "success" | "warning" | "danger" | undefined;
-export function applyColorElixir(value: number): ColorType {
-    if (value === 5) return 'success';
-    if (value >= 3) return 'primary';
-    if (value >= 2) return 'warning';
-    if (value >= 1) return 'danger';
-    return 'default';
 }
 
 // 악세에서 연마 효과 가져오기기
@@ -586,16 +515,7 @@ function findPointInTooltip(tooltip: any): number {
     return -1;
 }
 
-export type Accessory = {
-    icon: string, // 악세 이미지
-    name: string, // 악세 이름
-    type: string, // 악세 종류
-    grade: string, // 악세 등급
-    quality: number, // 악세 품질
-    items: string[], // 악세 연마
-    point: number, // 깨달음 포인트
-    tooltip: string // Tooltip
-}
+
 
 // 장비 종류에 따른 값 반환 함수
 export function getListByArmorType(list: any[], type: string): any[] {
@@ -757,14 +677,6 @@ export function getTextColorByGrade(grade: string): string {
 }
 
 // 팔찌 데이터 가져오기
-export type Arm = {
-    icon: string,
-    type: string,
-    name: string,
-    grade: string,
-    point: number,
-    tooltip: any
-}
 export function applyArmData(data: any, setArm: SetStateFn<Arm | null>) {
     const objs = getListByArmorType(data, '팔찌');
     if (objs.length > 0) {
@@ -783,12 +695,6 @@ export function applyArmData(data: any, setArm: SetStateFn<Arm | null>) {
 }
 
 // 보주 가져오기
-export type Orb = {
-    icon: string,
-    type: string,
-    name: string,
-    grade: string
-}
 export function applyOrbData(data: any, setOrb: SetStateFn<Orb | null>) {
     const objs = getListByArmorType(data, '보주');
     if (objs.length > 0) {
@@ -804,18 +710,6 @@ export function applyOrbData(data: any, setOrb: SetStateFn<Orb | null>) {
 }
 
 // 어빌리티 스톤 가져오기
-export type StoneEffect = {
-    name: string,
-    level: number
-}
-export type Stone = {
-    icon: string,
-    type: string,
-    name: string,
-    grade: string,
-    tooltip: any,
-    effects: StoneEffect[]
-}
 export function applyStoneData(data: any, setArm: SetStateFn<Stone | null>) {
     const objs = getListByArmorType(data, '어빌리티 스톤');
     if (objs.length > 0) {
@@ -866,38 +760,7 @@ export function getStoneEffectInTooltip(parsed: any): StoneEffect[] {
     return [];
 }
 
-// 전체 초월 수 가져오기
-export function getAllPower(equipments: Equipment[]): number {
-    let sum = 0;
-    for (const eqiupment of equipments) {
-        sum += eqiupment.power;
-    }
-    return sum;
-}
-
-// 전체 엘릭서 총합 가져오기
-export function getAllElixir(equipments: Equipment[]): number {
-    let sum = 0;
-    for (const equipment of equipments) {
-        if (equipment.elixirs) {
-            for (const elixir of equipment.elixirs) {
-                sum += elixir.level;
-            }
-        }
-    }
-    return sum;
-}
-
 // 보석 데이터 가져오기
-export type Gem = {
-    slot: number,
-    name: string,
-    icon: string,
-    level: number,
-    grade: string,
-    skillStr: string,
-    attack: number
-}
 export function loadGems(datas: any[], setGems: SetStateFn<Gem[]>, setAttack: SetStateFn<number>) {
     let gems: Gem[] = [];
     let attactSum = 0;
@@ -994,25 +857,6 @@ export function getCountDekGems(gems: Gem[]): number {
 }
 
 // 카드 데이터 가져오기
-export type CardData = {
-    slot: number,
-    name: string,
-    icon: string,
-    count: number,
-    total: number,
-    grade: string
-}
-export type CardDetailSet = {
-    name: string,
-    description: string,
-    isEnable: boolean,
-    enableCount: number
-}
-export type CardSet = {
-    name: string,
-    slots: number[],
-    items: CardDetailSet[]
-}
 export function loadCards(data: any, setCards: SetStateFn<CardData[]>, setCardSet: SetStateFn<CardSet[]>) {
     const cards: CardData[] = [];
     const sets: CardSet[] = [];
@@ -1191,13 +1035,6 @@ export function getWidthByStat(stat: Stat[], index: number): number {
 }
 
 // 각인 데이터 가져오기
-export type Engraving = {
-    name: string,
-    description: string,
-    grade: string,
-    level: number,
-    stoneLevel : number
-}
 export function loadEngraving(datas: any[] | null, setEngravings: SetStateFn<Engraving[]>) {
     const engravings: Engraving[] = [];
     if (datas) {
@@ -1216,19 +1053,6 @@ export function loadEngraving(datas: any[] | null, setEngravings: SetStateFn<Eng
 }
 
 //아크패시브 데이터 가져오기
-export type ArkpassivePoint = {
-    type: string,
-    point: number,
-    max: number,
-    description: string
-}
-export type ArkpassiveItem = {
-    tier: number,
-    name: string,
-    level: number,
-    icon: string,
-    description: string | null
-}
 export function loadArkpassive(
     data: any | null, 
     setPoints: SetStateFn<ArkpassivePoint[]>,

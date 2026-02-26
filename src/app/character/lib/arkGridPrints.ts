@@ -1,29 +1,6 @@
 import { SetStateFn } from "@/utiils/utils"
 import { getParsedText } from "./characterFeat"
-
-export type Core = {
-    index: number,
-    icon: string,
-    name: string,
-    point: number,
-    grade: string,
-    gems: ArkGridGem[]
-}
-
-export type ArkGridGem = {
-    index: number,
-    icon: string,
-    isActive: boolean,
-    grade: string,
-    name: string,
-    options: string[]
-}
-
-export type ArkGridOption = {
-    name: string,
-    level: number,
-    description: string
-}
+import { ArkGridGem, ArkGridOption, Core } from "../model/types";
 
 // 아크 그리드 데이터 불러오기
 export function loadArkGrid(

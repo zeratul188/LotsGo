@@ -1,5 +1,6 @@
 import { SetStateFn } from "@/utiils/utils"
-import { Gem, getParsedText } from "./characterFeat"
+import { getParsedText } from "./characterFeat"
+import { Gem, Rune, Skill, Tripod } from "../model/types";
 
 // 스킬 포인트 가져오기
 export function loadSkillPoint(
@@ -15,32 +16,6 @@ export function loadSkillPoint(
     }
 }
 
-export type Skill = {
-    name: string,
-    icon: string,
-    level: number,
-    type: string,
-    isCounter: boolean, // 카운터 여부
-    power: string, // 무력 수치
-    destroy: number, // 파괴 수치
-    tripods: Tripod[],
-    rune: Rune | null,
-    attackGem: Gem | null,
-    timeGem: Gem | null
-}
-export type Tripod = {
-    tier: number,
-    slot: number,
-    name: string,
-    icon: string,
-    level: number
-}
-export type Rune = {
-    name: string,
-    icon: string,
-    grade: string,
-    description: string
-}
 // 스킬 데이터 가져오기기
 export function loadSkills(
     datas: any[] | null,

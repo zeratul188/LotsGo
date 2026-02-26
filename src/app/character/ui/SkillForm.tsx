@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react"
-import { CharacterFile, Gem } from "../lib/characterFeat"
-import { AvgSkillPowers, getAllDestory, getTextAttack, getTextTime, loadSkillPoint, loadSkills, Skill } from "../lib/skillFeat"
+import { CharacterFile } from "../lib/characterFeat"
+import { AvgSkillPowers, getAllDestory, getTextAttack, getTextTime, loadSkillPoint, loadSkills } from "../lib/skillFeat"
 import { Card, CardBody, CardHeader, Chip, Divider, Popover, PopoverContent, PopoverTrigger, Progress } from "@heroui/react"
 import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils"
 import clsx from "clsx"
+import { Gem, Skill } from "../model/types"
 
 // 스킬 컴포넌트
 type SkillComponentProps = {

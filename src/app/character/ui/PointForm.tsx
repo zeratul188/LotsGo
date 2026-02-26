@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react"
 import { CharacterFile } from "../lib/characterFeat"
-import { Collect, CollectEquipment, getColorByProgress, getCompleteMaxPoint, getCompletePoint, getProgressData, Hobby, loadCollects, loadHobbys, loadItems } from "../lib/pointFeat"
+import { getColorByProgress, getCompleteMaxPoint, getCompletePoint, getProgressData, loadCollects, loadHobbys, loadItems } from "../lib/pointFeat"
 import { Card, CardBody, CardFooter, CardHeader, Divider, Popover, PopoverContent, PopoverTrigger, Progress, Switch } from "@heroui/react"
 import CheckIcon from "@/Icons/CheckIcon"
 import clsx from "clsx"
 import { getBackgroundByGrade, getColorTextByGrade, useMobileQuery } from "@/utiils/utils"
 import { getTextAttack } from "../lib/skillFeat"
+import { Collect, CollectEquipment, Hobby } from "../model/types"
 
 // 수집품 컴포넌트
 type PointComponentProps = {
