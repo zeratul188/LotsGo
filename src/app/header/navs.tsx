@@ -14,7 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { useLogout, useOnActionProfile } from "./headerFeat";
 import { Character } from "../store/loginSlice";
-import { getImgByJob } from "../character/expeditionFeat";
+import { getImgByJob } from "../character/lib/expeditionFeat";
 import HomeworkIcon from "@/Icons/HomeworkIcon";
 import { SettingIcon } from "../icons/SettingIcon";
 import CalIcon from "@/Icons/CalIcon";

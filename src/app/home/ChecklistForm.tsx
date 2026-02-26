@@ -25,7 +25,7 @@ import {
     Tooltip
 } from "@heroui/react";
 import React from "react";
-import { getImgByJob } from "../character/expeditionFeat";
+import { getImgByJob } from "../character/lib/expeditionFeat";
 import { ContentChip } from "../raids/ui/PartyForm";
 import { useMobileQuery } from "@/utiils/utils";
 import CutCircularProgress from "../components/ui/CutCircularProgress";

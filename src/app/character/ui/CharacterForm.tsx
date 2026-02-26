@@ -15,8 +15,8 @@ import {
 } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
-import { Character } from "../store/loginSlice";
+import { RootState } from "../../store/store";
+import { Character } from "../../store/loginSlice";
 import { 
     Accessory, 
     applyAccessories, 
@@ -75,16 +75,16 @@ import {
     printEngravingLevel, 
     Stat, 
     Stone 
-} from "./characterFeat";
+} from "../lib/characterFeat";
 import PowerIcon from "@/Icons/PowerIcon";
-import { printAllElixirInTooltip, printBonusInTooltip, printCountInTooltip, printElixirInTooltip, printHighUpgradeInTooltip, printInfoInTooltip, printPowerInTooltip } from "./equipmentPrints";
+import { printAllElixirInTooltip, printBonusInTooltip, printCountInTooltip, printElixirInTooltip, printHighUpgradeInTooltip, printInfoInTooltip, printPowerInTooltip } from "../lib/equipmentPrints";
 import clsx from "clsx";
-import { printDefaultInTooltip, printListInTooltip, printPointInTooltip, printUseInTooltip } from "./accessoryPrints";
-import { printArmPointInTooltip, printArmUseInTooltip, printBooleanInTooltip, printEffectInTooltip } from "./armPrints";
-import { printBonusStoneInTooltip, printDefaultStoneInTooltip, printStoneUseInTooltip } from "./stonePrints";
+import { printDefaultInTooltip, printListInTooltip, printPointInTooltip, printUseInTooltip } from "../lib/accessoryPrints";
+import { printArmPointInTooltip, printArmUseInTooltip, printBooleanInTooltip, printEffectInTooltip } from "../lib/armPrints";
+import { printBonusStoneInTooltip, printDefaultStoneInTooltip, printStoneUseInTooltip } from "../lib/stonePrints";
 import PotionIcon from "@/Icons/PosionIcon";
-import { getImgByJob } from "./expeditionFeat";
-import { CharacterHistory } from "./history";
+import { getImgByJob } from "../lib/expeditionFeat";
+import { CharacterHistory } from "../lib/history";
 import './effects.css';
 import VegaIcon from "@/Icons/VegaIcon";
 import AttackIcon from "@/Icons/AttackIcon";

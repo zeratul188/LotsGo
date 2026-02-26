@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import { CharacterFile } from "./characterFeat"
-import { ArkGridOption, Core, getColorByType, getCore, getGem, getOtherOptions, getPoint, getPower, loadArkGrid } from "./arkGridPrints"
+import { CharacterFile } from "../lib/characterFeat"
+import { ArkGridOption, Core, getColorByType, getCore, getGem, getOtherOptions, getPoint, getPower, loadArkGrid } from "../lib/arkGridPrints"
 import { Card, CardBody, CardHeader, Chip, Divider, Tooltip } from "@heroui/react"
 import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils"
 

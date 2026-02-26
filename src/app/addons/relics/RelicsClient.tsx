@@ -5,7 +5,7 @@ import { Button, Card, CardBody, Chip, Divider, Modal, ModalBody, ModalContent, 
 import clsx from "clsx";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useMobileQuery } from "@/utiils/utils";
-import { getEngravingSrcByName } from "../../character/characterFeat";
+import { getEngravingSrcByName } from "../../character/lib/characterFeat";
 import LineAd from "@/app/ad/LineAd";
 import BoxAd from "@/app/ad/BoxAd";
 

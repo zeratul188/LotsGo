@@ -1,20 +1,20 @@
 'use client'
 import { useEffect, useState } from "react";
 import { LoadingComponent } from "../UtilsCompnents";
-import { AbilityComponent, ExpeditionComponent, HistoryComponent, InfomationComponent, NotFoundComponent, ProfileComponent, SearchComponent, useCharacterForm } from "./CharacterForm"
+import { AbilityComponent, ExpeditionComponent, HistoryComponent, InfomationComponent, NotFoundComponent, ProfileComponent, SearchComponent, useCharacterForm } from "./ui/CharacterForm"
 import { useSearchParams } from "next/navigation";
 import { Button, Divider, Input, Tab, Tabs, Tooltip } from "@heroui/react";
-import { handleSearch, loadProfile, useClickUpdate } from "./characterFeat";
+import { handleSearch, loadProfile, useClickUpdate } from "./lib/characterFeat";
 import { useMobileQuery } from "@/utiils/utils";
-import { SkillComponent } from "./SkillForm";
-import { PointComponent } from "./PointForm";
-import { AvatarComponent } from "./AvatarForm";
-import { ExpeditionsComponent } from "./ExpeditionForm";
+import { SkillComponent } from "./ui/SkillForm";
+import { PointComponent } from "./ui/PointForm";
+import { AvatarComponent } from "./ui/AvatarForm";
+import { ExpeditionsComponent } from "./ui/ExpeditionForm";
 import LineAd from "../ad/LineAd";
 import BoxAd from "../ad/BoxAd";
 import Script from "next/script";
 import FixedLineAd from "../ad/FixedLineAd";
-import { ArkGridComponent } from "./ArkGridForm";
+import { ArkGridComponent } from "./ui/ArkGridForm";
 
 export default function CharacterClient() {
     const characterForm = useCharacterForm();

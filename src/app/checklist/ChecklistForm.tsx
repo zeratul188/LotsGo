@@ -138,7 +138,7 @@ import {
   Droppable,
   Draggable
 } from '@hello-pangea/dnd';
-import { getImgByJob } from "../character/expeditionFeat";
+import { getImgByJob } from "../character/lib/expeditionFeat";
 import { ChecklistData } from "../home/checklistFeat";
 import CheckIcon from "@/Icons/CheckIcon";
 import CharacterIcon from "@/Icons/CharacterIcon";

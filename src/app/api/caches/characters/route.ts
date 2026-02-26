@@ -1,4 +1,4 @@
-import { CharacterFile, CharacterInfo } from "@/app/character/characterFeat";
+import { CharacterFile, CharacterInfo } from "@/app/character/lib/characterFeat";
 import redis from "@/lib/redis";
 import { NextRequest, NextResponse } from "next/server";
 

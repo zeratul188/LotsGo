@@ -31,7 +31,7 @@ import data from "@/data/characters/data.json";
 import { useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store/store";
 import { getCharacterInfoById, getMaxLengthByContent, handleCancelInvolvedParty, handleJoinRaid, handleRefreshPartys, JoinRaidPayload } from "../lib/raidListFeat";
-import { getImgByJob } from "@/app/character/expeditionFeat";
+import { getImgByJob } from "@/app/character/lib/expeditionFeat";
 import LeaderIcon from "@/Icons/LeaderIcon";
 import { ListTurnBackIcon } from "@/Icons/ListTurnBackIcon";
 import { DndContext, DragEndEvent, useDraggable, useDroppable } from "@dnd-kit/core";

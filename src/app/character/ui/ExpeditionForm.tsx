@@ -1,6 +1,6 @@
 import clsx from "clsx";
-import { CharacterInfo } from "./characterFeat"
-import { getBgColorByLevels, getBorderColorByLevel, getCountByLevel, getImgByJob, getServerNames, handleSelectCharacter } from "./expeditionFeat"
+import { CharacterInfo } from "../lib/characterFeat"
+import { getBgColorByLevels, getBorderColorByLevel, getCountByLevel, getImgByJob, getServerNames, handleSelectCharacter } from "../lib/expeditionFeat"
 import data from "@/data/characters/data.json";
 import { Avatar, Card, CardBody, Chip, Divider } from "@heroui/react";
 

@@ -1,4 +1,4 @@
-import { getParsedText } from "./characterFeat";
+import { getParsedText } from "../lib/characterFeat";
 
 // 악세 기본 효과 가져오기
 export function printDefaultInTooltip(parsed: any): string {

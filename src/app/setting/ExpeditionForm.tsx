@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import clsx from "clsx";
 import { useMobileQuery } from "@/utiils/utils";
-import { getImgByJob } from "../character/expeditionFeat";
+import { getImgByJob } from "../character/lib/expeditionFeat";
 
 export function ExpeditionsComponent() {
     const [expedition, setExpedition] = useState<ExpeditionCharacter[]>([]);

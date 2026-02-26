@@ -1,4 +1,4 @@
-import { CharacterFile, CharacterInfo } from "@/app/character/characterFeat";
+import { CharacterFile, CharacterInfo } from "@/app/character/lib/characterFeat";
 import { firestore } from "@/utiils/firebase";
 import { addDoc, collection, doc, getDocs, limit, query, updateDoc, where } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";

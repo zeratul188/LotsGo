@@ -3,8 +3,8 @@ import { addToast } from "@heroui/react";
 import { load } from 'cheerio'
 import data from "@/data/characters/data.json";
 import { CharacterHistory, saveHistory, updateHistory } from "./history";
-import { Badge } from "../api/administrator/badge/route";
-import { LoginUser } from "../store/loginSlice";
+import { Badge } from "../../api/administrator/badge/route";
+import { LoginUser } from "../../store/loginSlice";
 import { decrypt } from "@/utiils/crypto";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
