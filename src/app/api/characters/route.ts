@@ -1,30 +1,48 @@
-import { CharacterFile, CharacterInfo } from "@/app/character/characterFeat";
 import { firestore } from "@/utiils/firebase";
-import { addDoc, collection, doc, getDocs, limit, query, updateDoc, where } from "firebase/firestore";
+import { addDoc, collection, collectionGroup, doc, getDoc, getDocs, limit, query, serverTimestamp, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const nickname = searchParams.get('nickname');
+    const encodeNickname = encodeURIComponent(nickname || '');
 
     try {
-        const q = query(collection(firestore, 'characters'), where('nickname', '==', nickname), limit(1));
-        const snapshot = await getDocs(q);
-
-        if (snapshot.empty) {
-            return NextResponse.json({ error: 'Not found a member with a specific Nickname.' }, { status: 401 });
+        const indexQuery = query(
+            collection(firestore, 'expeditionIndexs'),
+            where('nickname', '==', nickname),
+            limit(1)
+        );
+        const indexSnapshot = await getDocs(indexQuery);
+        if (indexSnapshot.empty) throw new Error("CHAARACTER_NOT_FOUND");
+        const indexData = indexSnapshot.docs[0].data();
+        const expeditionId = indexData.expeditionId;
+        const expeditionRef = doc(firestore, 'expeditions', expeditionId);
+        const characterRef = doc(expeditionRef, 'expeditionCharacters', encodeNickname);
+        if (!expeditionRef) throw new Error("CHAARACTER_NOT_FOUND");
+        const expeditionSnapshot = await getDoc(expeditionRef);
+        if (!expeditionSnapshot.exists()) throw new Error("CHAARACTER_NOT_FOUND");
+        const characterDoc = await getDoc(characterRef);
+        const expeditionData = expeditionSnapshot.data();
+        if (!characterDoc.exists()) {
+            return NextResponse.json({ 
+                titles: expeditionData.titles ?? [], 
+                expeditions: expeditionData.expeditions ?? []
+            });
         }
+        const { date, ...character } = characterDoc.data();
 
-        const targetDoc = snapshot.docs[0];
-        const data = targetDoc.data();
-
-        const file: CharacterFile = data.file;
-        const date: Date = data.date;
-        const expeditions: CharacterInfo[] = data.expeditions;
-        const combatPower = data.combatPower ?? 0;
-        return NextResponse.json({ file, date, expeditions, combatPower });
-    } catch(error) {
-        console.error(error);
+        return NextResponse.json({ 
+            date,
+            character, 
+            titles: expeditionData.titles ?? [], 
+            expeditions: expeditionData.expeditions ?? []
+        });
+    } catch(e: any) {
+        if (e.message === "CHAARACTER_NOT_FOUND") {
+            return NextResponse.json({ error: '캐릭터를 찾을 수 없습니다.' }, { status: 401 });
+        }
+        console.log(e);
         return NextResponse.json({ error: 'Failed load Database.' }, { status: 500 });
     }
 }
@@ -32,46 +50,103 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     const body = await req.json();
     const nickname = body.nickname;
-    const file: CharacterFile = body.file;
-    const expeditions: CharacterInfo[] = body.expeditions;
-    const today = new Date();
-    const combatPower: number = Number(body.combatPower);
+    const characterInfo = body.characterInfo;
+    const expeditions = body.expeditions;
+    const titles = body.titles;
+    const encodeNickname = encodeURIComponent(nickname);
 
     try {
-        const q = query(collection(firestore, 'characters'), where('nickname', '==', nickname), limit(1));
-        const snapshot = await getDocs(q);
-
-        if (snapshot.empty) {
-            const data = {
-                nickname: nickname,
-                date: today,
-                expeditions: expeditions,
-                file: file,
-                combatPower: combatPower
-            }
-            await addDoc(collection(firestore, 'characters'), data);
-            return NextResponse.json({ error: '데이터를 추가하는데 정상적으로 처리되었습니다.' });
+        const indexQuery = query(
+            collection(firestore, 'expeditionIndexs'),
+            where('nickname', '==', nickname),
+            limit(1)
+        );
+        const indexSnapshot = await getDocs(indexQuery);
+        if (!indexSnapshot.empty) {
+            const indexData = indexSnapshot.docs[0].data();
+            const expeditionId = indexData.expeditionId;
+            const expeditionRef = doc(firestore, 'expeditions', expeditionId);
+            await setDoc(expeditionRef, { titles, expeditions });
+            const characterRef = doc(firestore, 'expeditions', expeditionId, 'expeditionCharacters', encodeNickname);
+            await syncExpeditionIndexs(expeditionId, expeditions);
+            await setDoc(characterRef, {
+                ...characterInfo,
+                date: serverTimestamp()
+            });
+            return NextResponse.json({ message: '데이터 저장에 성공하였습니다.' });
         }
 
-        const targetDoc = snapshot.docs[0];
-        const docRef = doc(firestore, 'characters', targetDoc.id);
+        const batch = writeBatch(firestore);
 
-        const nowCombatPower: number = targetDoc.data().combatPower ?? 0;
-        let maxCombatPower: number = nowCombatPower;
-
-        if (nowCombatPower < combatPower) {
-            maxCombatPower = combatPower;
-        }
-
-        await updateDoc(docRef, {
-            date: today,
-            expeditions: expeditions,
-            file: file,
-            combatPower: maxCombatPower
+        const expeditionRef = doc(collection(firestore, 'expeditions'));
+        batch.set(expeditionRef, { titles, expeditions });
+        const characterRef = doc(expeditionRef, 'expeditionCharacters', encodeNickname);
+        batch.set(characterRef, {
+            ...characterInfo,
+            date: serverTimestamp()
         });
-        return NextResponse.json({ message: '데이터 저장이 정상적으로 처리되었습니다.' }, { status: 200 });
+        const expeditionId = expeditionRef.id;
+
+        expeditions.forEach((character: any) => {
+            const indexRef = doc(collection(firestore, 'expeditionIndexs'));
+            batch.set(indexRef, {
+                expeditionId, 
+                nickname: character.nickname
+            });
+        });
+        await batch.commit();
+
+        return NextResponse.json({ message: '데이터 저장에 성공하였습니다.' });
     } catch(error) {
         console.error(error);
         return NextResponse.json({ error: 'Failed load Database.' }, { status: 500 });
     }
+}
+
+type IndexData = {
+    nickname: string,
+    id: string
+}
+
+// index 데이터 최신화
+async function syncExpeditionIndexs(expeditionId: string, expeditions: any[]) {
+    const expeditionSet = new Set<string>(expeditions.map(character => character.nickname));
+
+    const indexQuery = query(
+        collection(firestore, 'expeditionIndexs'),
+        where('expeditionId', '==', expeditionId)
+    );
+    const indexSnapshot = await getDocs(indexQuery);
+    const indexSet = new Set<IndexData>();
+    indexSnapshot.docs.forEach(doc => {
+        const data = doc.data();
+        indexSet.add({
+            nickname: data.nickname,
+            id: doc.id
+        });
+    });
+    const indexNicknameSet = new Set([...indexSet].map(data => data.nickname));
+    const toAdd: string[] = [...expeditionSet].filter(nickname => !indexNicknameSet.has(nickname));
+    const toRemove: IndexData[] = [...indexSet].filter(data => !expeditionSet.has(data.nickname));
+
+    const batch = writeBatch(firestore);
+
+    for (const nickname of toAdd) {
+        const indexRef = doc(collection(firestore, 'expeditionIndexs'));
+        batch.set(indexRef, { expeditionId, nickname }, { merge: false });
+    }
+
+    for (const data of toRemove) {
+        const characterQuery = query(
+            collectionGroup(firestore, 'expeditionCharacters'),
+            where('nickname', '==', data.nickname)
+        );
+        const characterSnapshot = await getDocs(characterQuery);
+        if (!characterSnapshot.empty) {
+            characterSnapshot.docs.forEach(snapshot => { batch.delete(snapshot.ref) });
+        }
+        const indexRef = doc(firestore, "expeditionIndexs", data.id);
+        batch.delete(indexRef);
+    }
+    await batch.commit();
 }

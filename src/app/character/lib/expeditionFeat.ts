@@ -1,6 +1,6 @@
-import { CharacterInfo } from "./characterFeat";
 import data from "@/data/characters/data.json";
 import jobs from '@/data/classimgs/data.json';
+import { ExpeditionCharacterInfo } from "../model/types";
 
 // 캐릭터 검색 함수
 export function handleSelectCharacter(nickname: string) {
@@ -13,7 +13,7 @@ export function handleSelectCharacter(nickname: string) {
 }
 
 // 서버 종류 가져오기
-export function getServerNames(expeditions: CharacterInfo[]) {
+export function getServerNames(expeditions: ExpeditionCharacterInfo[]) {
     const servers: string[] = [];
     for (const character of expeditions) {
         if (!servers.includes(character.server)) {
@@ -34,7 +34,7 @@ export function getBgColorByLevels(level: number): string {
 }
 
 // 해당 레벨 이상 캐릭터 수 반환 함수
-export function getCountByLevel(level: number, undoLevel: number, expeditions: CharacterInfo[]) {
+export function getCountByLevel(level: number, undoLevel: number, expeditions: ExpeditionCharacterInfo[]) {
     let sum = 0;
     for (const character of expeditions) {
         if (character.level >= level && character.level < undoLevel) {

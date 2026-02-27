@@ -32,7 +32,7 @@ import {
     loadPartyData 
 } from "../lib/partyFeat"
 import { Boss } from "@/app/api/checklist/boss/route"
-import { getImgByJob } from "@/app/character/expeditionFeat"
+import { getImgByJob } from "@/app/character/lib/expeditionFeat"
 import LeaderIcon from "@/Icons/LeaderIcon"
 import clsx from "clsx"
 import { getSimpleBossName, getTextColorByDifficulty } from "@/app/checklist/checklistFeat"
