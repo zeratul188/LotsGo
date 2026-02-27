@@ -1,32 +1,19 @@
-import { useEffect, useState } from "react"
-import { CharacterFile } from "./characterFeat"
-import { Collect, CollectEquipment, getColorByProgress, getCompleteMaxPoint, getCompletePoint, getProgressData, Hobby, loadCollects, loadHobbys, loadItems } from "./pointFeat"
+import { useState } from "react"
+import { getColorByProgress, getCompleteMaxPoint, getCompletePoint, getProgressData } from "../lib/pointFeat"
 import { Card, CardBody, CardFooter, CardHeader, Divider, Popover, PopoverContent, PopoverTrigger, Progress, Switch } from "@heroui/react"
 import CheckIcon from "@/Icons/CheckIcon"
 import clsx from "clsx"
 import { getBackgroundByGrade, getColorTextByGrade, useMobileQuery } from "@/utiils/utils"
-import { getTextAttack } from "./skillFeat"
+import { getTextAttack } from "../lib/skillFeat"
+import { CharacterInfo, Collect } from "../model/types"
 
 // 수집품 컴포넌트
-type PointComponentProps = {
-    file: CharacterFile
-}
-export function PointComponent({ file }: PointComponentProps) {
-    const [collects, setCollects] = useState<Collect[]>([]);
-    const [hobbys, setHobbys] = useState<Hobby[]>([]);
-    const [collectEquipments, setCollectEquipments] = useState<CollectEquipment[]>([]);
+export function PointComponent({ info }: { info: CharacterInfo }) {
+    const collects = info.collection.collects;
+    const hobbys = info.collection.hobbys;
+    const collectEquipments = info.collection.collectEquipments;
     const [isSelected, setSelected] = useState(false);
     const isMobile = useMobileQuery();
-
-    useEffect(() => {
-        loadCollects(file.collects, setCollects);
-    }, [file.collects]);
-    useEffect(() => {
-        loadHobbys(file.profile, setHobbys);
-    }, [file.profile]);
-    useEffect(() => {
-        loadItems(file.equipment, setCollectEquipments);
-    }, [file.equipment]);
 
     return (
         <div className="w-full">

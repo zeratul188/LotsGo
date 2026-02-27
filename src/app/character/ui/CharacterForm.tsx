@@ -15,33 +15,14 @@ import {
 } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
-import { Character } from "../store/loginSlice";
-import { 
-    Accessory, 
-    applyAccessories, 
-    applyArmData, 
-    applyColorElixir, 
-    applyEquipment, 
-    applyOrbData, 
-    applyStoneData, 
-    ArkpassiveItem, 
-    ArkpassivePoint, 
-    Arm, 
-    CardData, 
-    CardSet, 
+import { RootState } from "../../store/store";
+import { Character } from "../../store/loginSlice";
+import {  
     CharacterFile, 
-    CharacterInfo, 
-    Engraving, 
-    Equipment, 
-    Gem, 
-    getAllElixir, 
-    getAllPower, 
     getBackgroundColorByStat, 
     getCardByIndex, 
     getCardGems, 
     getCardSetNames, 
-    getCharacterType, 
     getColorByQuality, 
     getColorByType, 
     getColorProgressArkpassive, 
@@ -63,71 +44,49 @@ import {
     getSumStat, 
     getTextByGrade, 
     getTextColorByGrade, 
+    getTitleData, 
     getUrlGemInImage, 
     getWidthByStat, 
     handleSearch, 
-    loadArkpassive, 
-    loadCards, 
-    loadEngraving, 
-    loadGems, 
-    loadStats, 
-    Orb, 
-    printEngravingLevel, 
-    Stat, 
-    Stone 
-} from "./characterFeat";
-import PowerIcon from "@/Icons/PowerIcon";
-import { printAllElixirInTooltip, printBonusInTooltip, printCountInTooltip, printElixirInTooltip, printHighUpgradeInTooltip, printInfoInTooltip, printPowerInTooltip } from "./equipmentPrints";
+    printEngravingLevel
+} from "../lib/characterFeat";
+import { printBonusInTooltip, printCountInTooltip, printHighUpgradeInTooltip, printInfoInTooltip } from "../lib/equipmentPrints";
 import clsx from "clsx";
-import { printDefaultInTooltip, printListInTooltip, printPointInTooltip, printUseInTooltip } from "./accessoryPrints";
-import { printArmPointInTooltip, printArmUseInTooltip, printBooleanInTooltip, printEffectInTooltip } from "./armPrints";
-import { printBonusStoneInTooltip, printDefaultStoneInTooltip, printStoneUseInTooltip } from "./stonePrints";
-import PotionIcon from "@/Icons/PosionIcon";
-import { getImgByJob } from "./expeditionFeat";
-import { CharacterHistory } from "./history";
-import './effects.css';
+import { printDefaultInTooltip, printListInTooltip, printPointInTooltip, printUseInTooltip } from "../lib/accessoryPrints";
+import { printArmPointInTooltip, printArmUseInTooltip, printBooleanInTooltip, printEffectInTooltip } from "../lib/armPrints";
+import { printBonusStoneInTooltip, printDefaultStoneInTooltip, printStoneUseInTooltip } from "../lib/stonePrints";
+import { getImgByJob } from "../lib/expeditionFeat";
+import { CharacterHistory } from "../lib/history";
+import '../css/effects.css';
 import VegaIcon from "@/Icons/VegaIcon";
 import AttackIcon from "@/Icons/AttackIcon";
 import SupportorIcon from "@/Icons/SupportorIcon";
+import { CharacterInfo, ExpeditionCharacterInfo } from "../model/types";
 
 // state 관리
 export function useCharacterForm() {
     const [isLoading, setLoading] = useState(false);
     const [isSearched, setSearched] = useState(false);
     const [nickname, setNickname] = useState('');
-    const [file, setFile] = useState<CharacterFile>({
-        profile: null,
-        equipment: null,
-        gem: null,
-        cards: null,
-        stats: null,
-        engraving: null,
-        arkpassive: null,
-        skills: null,
-        collects: null,
-        avatars: null,
-        arkGrid: null
-    });
+    const [characterInfo, setCharacterInfo] = useState<CharacterInfo | null>(null);
+    const [titles, setTitles] = useState<string[]>([]);
     const [isNothing, setNothing] = useState(false);
-    const [gems, setGems] = useState<Gem[]>([]);
     const [isDisable, setDisable] = useState(false);
     const [isLoadingUpdate, setLoadingUpdate] = useState(false);
-    const [expeditions, setExpeditions] = useState<CharacterInfo[]>([]);
+    const [expeditions, setExpeditions] = useState<ExpeditionCharacterInfo[]>([]);
     const [isBadge, setBadge] = useState(false);
-    const [combat, setCombat] = useState(0);
 
     return {
         isLoading, setLoading,
         isSearched, setSearched,
+        characterInfo, setCharacterInfo,
+        titles, setTitles,
         nickname, setNickname,
-        file, setFile,
         isNothing, setNothing,
-        gems, setGems,
         isDisable, setDisable,
         isLoadingUpdate, setLoadingUpdate,
         expeditions, setExpeditions,
-        isBadge, setBadge,
-        combat, setCombat
+        isBadge, setBadge
     }
 }
 
@@ -327,32 +286,27 @@ export function ExpeditionComponent({ setSearched, setLoading, setNickname }: Se
 const upperClass = ['도화가', '기상술사', '환수사'];
 
 // 캐릭터 프로파일
-type ProfileComponentProps = {
-    file: CharacterFile
-}
 type NewProfileComponentProps = {
-    file: CharacterFile,
+    info: CharacterInfo,
     isBadge: boolean
 }
-export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
-    const profile = file.profile;
-    const arkpassiveTitle = file.arkpassive.Title;
+export function ProfileComponent({ info, isBadge }: NewProfileComponentProps) {
     const isMobile = useMobileQuery();
     return (
         <div className="w-full h-[max-content] sm:h-[300px] border-b-1 border-[#dddddd] dark:border-[#333333] bg-[#F6F6F6] dark:bg-[#111111]">
-            <div className="w-full max-w-[1280px] mx-auto flex flex-col-reverse sm:flex-row relative">
+            <div className="w-full h-full max-w-[1280px] mx-auto flex flex-col-reverse sm:flex-row relative">
                 <div className="p-5 h-full hidden sm:flex flex-col">
                     <div className="flex gap-2">
-                        <Chip color="secondary" variant="solid" radius="sm">{profile.ServerName}</Chip>
-                        <Chip color="warning" variant="solid" radius="sm">{profile.CharacterClassName}</Chip>
-                        <Chip color="primary" variant="solid" radius="sm" className={clsx(arkpassiveTitle ? 'flex' : 'hidden')}>{arkpassiveTitle}</Chip>
+                        <Chip color="secondary" variant="solid" radius="sm">{info.profile.server}</Chip>
+                        <Chip color="warning" variant="solid" radius="sm">{info.profile.className}</Chip>
+                        <Chip color="primary" variant="solid" radius="sm" className={clsx(info.profile.arkpassiveTitle ? 'flex' : 'hidden')}>{info.profile.arkpassiveTitle}</Chip>
                     </div>
-                    <p className="fadedtext mt-4">{profile.Title ? getParsedText(profile.Title) : '-'}{profile.GuildName ?` · ${profile.GuildName} 길드` : ''}</p>
+                    <p className="fadedtext mt-4">{info.profile.title ? getParsedText(info.profile.title) : '-'}{info.profile.guildName !== '-' ?` · ${info.profile.guildName} 길드` : ''}</p>
                     {isBadge ? (
                         <div className="flex gap-2 items-center">
                             <div className="tag-container">
                                 <div className="flex">
-                                    <span className="battletag">{profile.CharacterName}</span>
+                                    <span className="battletag">{info.nickname}</span>
                                     <div className="empty-box"></div>
                                 </div>
                                 <span className="tail-wrapper">
@@ -361,32 +315,44 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
                             </div>
                             <Tooltip showArrow content="후원자 뱃지"><div className="w-12 h-12"><VegaIcon/></div></Tooltip>
                         </div>
-                    ) : <p className="text-2xl font-bold">{profile.CharacterName}</p>}
+                    ) : <p className="text-2xl font-bold">{info.nickname}</p>}
+                    <div className="flex items-center gap-2 mt-2">
+                        <p className="fadedtext text-sm">영지</p>
+                        <p className="text-md">Lv.{info.profile.townLevel} {info.profile.townName}</p>
+                    </div>
                     <div className="grow flex flex-col sm:flex-row items-end gap-2 mt-4">
-                        <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            <div>
-                                <p className="fadedtext text-sm">아이템 레벨</p>
-                                <p className="text-lg">{profile.ItemAvgLevel}</p>
-                            </div>
-                            <div>
-                                <p className="fadedtext text-sm">전투 레벨</p>
-                                <p className="text-lg">{profile.CharacterLevel}</p>
-                            </div>
-                            <div>
-                                <p className="fadedtext text-sm">원정대 레벨</p>
-                                <p className="text-lg">{profile.ExpeditionLevel}</p>
-                            </div>
-                            <div className="col-span-1 sm:col-span-2">
-                                <p className="fadedtext text-sm">영지</p>
-                                <p className="text-lg">Lv.{profile.TownLevel} {profile.TownName}</p>
-                            </div>
+                        <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-8">
+                            <Card isBlurred radius="sm" shadow="sm">
+                                <CardBody>
+                                    <div>
+                                        <p className="fadedtext text-[9pt]">아이템 레벨</p>
+                                        <p className="text-2xl font-bold">{info.profile.itemLevel.toLocaleString()}</p>
+                                    </div>
+                                </CardBody>
+                            </Card>
+                            <Card isBlurred radius="sm" shadow="sm">
+                                <CardBody>
+                                    <div>
+                                        <p className="fadedtext text-[9pt]">전투 레벨</p>
+                                        <p className="text-2xl font-bold">{info.profile.characterLevel.toLocaleString()}</p>
+                                    </div>
+                                </CardBody>
+                            </Card>
+                            <Card isBlurred radius="sm" shadow="sm">
+                                <CardBody>
+                                    <div>
+                                        <p className="fadedtext text-[9pt]">원정대 레벨</p>
+                                        <p className="text-2xl font-bold">{info.profile.expeditionLevel.toLocaleString()}</p>
+                                    </div>
+                                </CardBody>
+                            </Card>
                         </div>
                     </div>
                 </div>
                 <div className="flex sm:hidden p-5 flex-col z-1 h-[300px] bg-gradient-to-r from-[#15181d] via-[#15181d]/25 to-transparent">
                     <div className="flex gap-2">
-                        <Chip color="secondary" variant="solid" radius="sm">{profile.ServerName}</Chip>
-                        <Chip color="warning" variant="solid" radius="sm">{profile.CharacterClassName}</Chip>
+                        <Chip color="secondary" variant="solid" radius="sm">{info.profile.server}</Chip>
+                        <Chip color="warning" variant="solid" radius="sm">{info.profile.className}</Chip>
                     </div>
                     <Chip 
                         color="primary" 
@@ -394,14 +360,14 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
                         radius="sm" 
                         className={clsx(
                             'mt-2',
-                            arkpassiveTitle ? 'flex' : 'hidden')
-                        }>{arkpassiveTitle}</Chip>
-                    <p className="text-[#dddddd] text-sm mt-4">{profile.Title ? getParsedText(profile.Title) : '-'}{profile.GuildName ?` · ${profile.GuildName} 길드` : ''}</p>
+                            info.profile.arkpassiveTitle ? 'flex' : 'hidden')
+                        }>{info.profile.arkpassiveTitle}</Chip>
+                    <p className="text-[#dddddd] text-sm mt-4">{getParsedText(info.profile.title)}{info.profile.guildName === '-' ?` · ${info.profile.guildName} 길드` : ''}</p>
                     {isBadge ? (
                         <div className="flex gap-2 items-center">
                             <div className="tag-container-mobile mt-2">
                                 <div className="flex">
-                                    <span className="battletag">{profile.CharacterName}</span>
+                                    <span className="battletag">{info.nickname}</span>
                                     <div className="empty-box-mobile"></div>
                                 </div>
                                 <span className="tail-wrapper">
@@ -410,27 +376,27 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
                             </div>
                             <Tooltip showArrow content="후원자 뱃지"><div className="w-12 h-12 text-white"><VegaIcon/></div></Tooltip>
                         </div>
-                    ) : <p className="text-xl font-bold text-white">{profile.CharacterName}</p>}
+                    ) : <p className="text-xl font-bold text-white">{info.nickname}</p>}
                     <div className="grow grid grid-cols-[75px_1fr] mt-5">
                         <p className="fadedtext text-sm">아이템 레벨</p>
-                        <p className="text-sm text-white">{profile.ItemAvgLevel}</p>
+                        <p className="text-sm text-white">{info.profile.itemLevel.toLocaleString()}</p>
                         <p className="fadedtext text-sm">전투 레벨</p>
-                        <p className="text-sm text-white">{profile.CharacterLevel}</p>
+                        <p className="text-sm text-white">{info.profile.characterLevel.toLocaleString()}</p>
                         <p className="fadedtext text-sm">원정대 레벨</p>
-                        <p className="text-sm text-white">{profile.ExpeditionLevel}</p>
+                        <p className="text-sm text-white">{info.profile.expeditionLevel.toLocaleString()}</p>
                         <p className="fadedtext text-sm">영지</p>
-                        <p className="text-sm text-white">Lv.{profile.TownLevel} {profile.TownName}</p>
+                        <p className="text-sm text-white">Lv.{info.profile.townLevel} {info.profile.townName}</p>
                     </div>
                 </div>
                 <div className="grow hidden sm:block"/>
                 <div className="absolute sm:static top-0 left-0 z-0 bg-[#15181d] sm:bg-transparent w-[100vw] sm:w-[440px] h-full sm:h-[300px] overflow-hidden sm:[mask-image:linear-gradient(to_right,transparent,black,black,black)] lg1280:[mask-image:linear-gradient(to_right,transparent,black,black,transparent)]">
                     <img
-                        src={file.profile.CharacterImage}
+                        src={info.profile.characterImageUrl}
                         alt="character-image"
                         className={clsx(
                             "w-[100vw] h-[500px] object-cover scale-130 origin-top",
                             isMobile ? "translate-x-[20%]" : "",
-                            upperClass.includes(profile.CharacterClassName) ? "translate-y-[-28%]" : "translate-y-[-13%]"
+                            upperClass.includes(info.profile.className) ? "translate-y-[-28%]" : "translate-y-[-13%]"
                         )}/>
                 </div>
             </div>
@@ -439,49 +405,53 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
 }
 
 // 능력치 컴포넌트
-type AbilityComponentProps = {
-    file: CharacterFile,
-    gems: Gem[],
-    setGems: SetStateFn<Gem[]>,
-    combat: number
-}
-export function AbilityComponent({ file, gems, setGems, combat }: AbilityComponentProps) {
+export function AbilityComponent({ info, titles }: { info: CharacterInfo, titles: string[] }) {
     return (
         <div className="w-full grid grid-cols-1 md960:grid-cols-[5fr_2fr] gap-8">
             <div className="w-full">
                 <div className="block sm:hidden">
-                    <CombatPowerComponent file={file} combat={combat}/>
+                    <CombatPowerComponent info={info}/>
                 </div>
-                <EquipmentComponent file={file}/>
-                <GemComponent file={file} gems={gems} setGems={setGems} combat={combat}/>
-                <CardComponent file={file}/>
+                <EquipmentComponent info={info}/>
+                <GemComponent info={info}/>
+                <ArkpassiveComponent info={info}/>
+                <CardComponent info={info}/>
             </div>
             <div className="w-full">
                 <div className="hidden sm:block">
-                    <CombatPowerComponent file={file} combat={combat}/>
+                    <CombatPowerComponent info={info}/>
                 </div>
-                <StatComponent file={file}/>
-                <EngravingComponent file={file}/>
-                <ArkpassiveComponent file={file}/>
+                <StatComponent info={info}/>
+                <EngravingComponent info={info}/>
+                <TitleComponent titles={titles}/>
             </div>
         </div>
     )
 }
 
-// 전투력 표시 요소
-type CombatPowerComponentProps = {
-    file: CharacterFile,
-    combat: number
+// 희귀칭호 목록
+function TitleComponent({titles}: { titles: string[] }) {
+    return (
+        <Card fullWidth radius="sm" className="mt-8">
+            <CardHeader>보유 칭호</CardHeader>
+            <Divider/>
+            <CardBody>
+                {titles.map((title, index) => (
+                    <div key={index} className="mb-2">
+                        <p className={clsx(
+                            'font-bold text-sm',
+                            getColorTextByGrade(getTitleData(title)?.grade ?? 'default')
+                        )}>{title}</p>
+                        <p className="fadedtext text-[9pt]">{getTitleData(title)?.condition ?? '-'}</p>
+                    </div>
+                ))}
+            </CardBody>
+        </Card>
+    )
 }
-function CombatPowerComponent({ file, combat }: CombatPowerComponentProps) {
-    const profile = file.profile;
-    const arkpassive = file.arkpassive;
-    const [type, setType] = useState('attack');
 
-    useEffect(() => {
-        setType(getCharacterType(arkpassive));
-    }, [file]);
-
+// 전투력 표시 요소
+function CombatPowerComponent({ info }: { info: CharacterInfo }) {
     return (
         <Card fullWidth radius="sm" className="mb-8">
             <CardHeader>
@@ -492,53 +462,53 @@ function CombatPowerComponent({ file, combat }: CombatPowerComponentProps) {
                     startContent={(
                         <div>
                             <div className={clsx(
-                                type === 'supportor' ? 'hidden' : 'block'
+                                info.profile.characterType === 'supportor' ? 'hidden' : 'block'
                             )}><AttackIcon size={14}/></div>
                             <div className={clsx(
-                                type === 'supportor' ? 'block' : 'hidden'
+                                info.profile.characterType === 'supportor' ? 'block' : 'hidden'
                             )}><SupportorIcon size={14}/></div>
                         </div>
                     )}
                     variant="flat"
                     size="sm"
                     className="pl-2"
-                    color={type === 'supportor' ? "success" : "danger"}>
-                    {type === 'supportor' ? '서포터' : '딜러'}
+                    color={info.profile.characterType === 'supportor' ? "success" : "danger"}>
+                    {info.profile.characterType === 'supportor' ? '서포터' : '딜러'}
                 </Chip>
             </CardHeader>
             <Divider/>
             <CardBody>
                 <div className={clsx(
                     "w-full h-[60px] relative flex flex-col items-center justify-center",
-                    type === 'supportor' ? "bg-radial from-[#65d87e] dark:from-[#2b6b39] via-transparent to-transparent" : "bg-radial from-[#ce8888] dark:from-[#a50e0e] via-transparent to-transparent"
+                    info.profile.characterType === 'supportor' ? "bg-radial from-[#65d87e] dark:from-[#2b6b39] via-transparent to-transparent" : "bg-radial from-[#ce8888] dark:from-[#a50e0e] via-transparent to-transparent"
                 )}>
                     <p className={clsx(
                         "text-4xl font-bold",
-                        type === 'supportor' ? "text-[#065c1d] dark:text-[#87e09e]" : "text-[#750d0d] dark:text-[#e49e9e]"
-                    )}>{profile.CombatPower ?? '전투력 없음'}</p>
+                        info.profile.characterType === 'supportor' ? "text-[#065c1d] dark:text-[#87e09e]" : "text-[#750d0d] dark:text-[#e49e9e]"
+                    )}>{info.profile.combatPower ?? '전투력 없음'}</p>
                 </div>
                 <Divider className="mt-2 mb-2"/>
                 <div className="w-full flex gap-1 mt-2">
                     <p className="grow fadedtext">최고 전투력</p>
-                    <p>{combat.toLocaleString()}</p>
+                    <p>{info.profile.maxCombatPower.toLocaleString()}</p>
                 </div>
                 <div className="w-full flex gap-1 mt-2">
                     <p className="grow fadedtext">명예 포인트</p>
-                    <p>{profile.HonorPoint.toLocaleString()}</p>
+                    <p>{info.profile.honorPoint.toLocaleString()}</p>
                 </div>
                 <Progress
                     size="sm"
-                    color={getProgressColorByHonor(profile.HonorPoint)}
-                    value={getProgressValueByHonor(profile.HonorPoint)}
-                    maxValue={getProgressMaxByHonor(profile.HonorPoint)}
+                    color={getProgressColorByHonor(info.profile.honorPoint)}
+                    value={getProgressValueByHonor(info.profile.honorPoint)}
+                    maxValue={getProgressMaxByHonor(info.profile.honorPoint)}
                     className="w-full mt-2"/>
-                <p className="fadedtext text-[8pt] mt-2">다음 명예 등급까지 <span className="text-black dark:text-white font-bold text-[9pt]">{getRemainHonor(profile.HonorPoint)}</span> p 남음.</p>
+                <p className="fadedtext text-[8pt] mt-2">다음 명예 등급까지 <span className="text-black dark:text-white font-bold text-[9pt]">{getRemainHonor(info.profile.honorPoint)}</span> p 남음.</p>
                 <Divider className="mt-2 mb-2"/>
                 <p className="fadedtext mb-2">휘장</p>
                 <div className="w-full grid grid-cols-4 gap-2">
-                    {profile.Decorations.Emblems ? (profile.Decorations.Emblems as string[]).map((emblem, idx) => (
+                    {info.profile.emblems.map((emblem, idx) => (
                         <img key={idx} src={emblem} alt={`emblem-${idx}`} className="w-[50px] h-[50px]"/>
-                    )) : null}
+                    ))}
                 </div>
             </CardBody>
         </Card>
@@ -546,272 +516,112 @@ function CombatPowerComponent({ file, combat }: CombatPowerComponentProps) {
 }
 
 // 장비 컴포넌트 - 능력치 컴포넌트 요소
-export function EquipmentComponent({ file }: ProfileComponentProps) {
-    const [equipments, setEquipments] = useState<Equipment[]>([]);
-    const [accessories, setAccessories] = useState<Accessory[]>([]);
-    const [arm, setArm] = useState<Arm | null>(null);
-    const [stone, setStone] = useState<Stone | null>(null);
-    const [orb, setOrb] = useState<Orb | null>(null);
-    const equipment = file.equipment;
+export function EquipmentComponent({ info }: { info: CharacterInfo }) {
     const isMobile = useMobileQuery();
-
-    useEffect(() => {
-        applyEquipment(equipment, setEquipments);
-        applyAccessories(equipment, setAccessories);
-        applyArmData(equipment, setArm);
-        applyStoneData(equipment, setStone);
-        applyOrbData(equipment, setOrb);
-    }, []);
+    const arm = info.equipment.arm;
+    const stone = info.equipment.stone;
+    const orb = info.equipment.orb;
 
     return (
-        <Card fullWidth radius="sm">
-            <CardHeader>장비</CardHeader>
-            <Divider/>
-            <CardBody>
-                <div className="w-full grid grid-cols-1 sm:grid-cols-[3fr_1px_2fr] gap-2">
-                    <div>
-                        {equipments.map((equip, index) => {
-                            let parsedEquipment;
-                            try {
-                                parsedEquipment = JSON.parse(getObjectByArmorType(equipment, equip.type).Tooltip)
-                            } catch (err) {
-                                console.error("Tooltip JSON 파싱 오류:", err);
-                                return null;
-                            }
-                            return (
-                                <Popover key={index} showArrow disableAnimation>
-                                    <PopoverTrigger>
-                                        <div className="flex gap-2 mb-4 items-center cursor-pointer">
-                                            <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(equip.grade)}`}>
+        <div className="w-full grid sm:grid-cols-2 gap-8">
+            <Card fullWidth radius="sm">
+                <CardHeader>장비</CardHeader>
+                <Divider/>
+                <CardBody>
+                    {info.equipment.equipments.map((equip, index) => {
+                        let parsedEquipment;
+                        try {
+                            parsedEquipment = JSON.parse(getObjectByArmorType(info.equipment.equipments, equip.type).tooltip)
+                        } catch (err) {
+                            console.error("Tooltip JSON 파싱 오류:", err);
+                            return null;
+                        }
+                        return (
+                            <Popover key={index} showArrow disableAnimation>
+                                <PopoverTrigger>
+                                    <div className="flex gap-2 mb-4 items-center cursor-pointer">
+                                        <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(equip.grade)}`}>
+                                            <img
+                                                src={equip.icon}
+                                                alt="equip-icon"
+                                                className="w-10 h-10"/>
+                                        </div>
+                                        <div className="grow truncate">
+                                            <div className="flex gap-1 items-center">
+                                                <p className="fadedtext text-[10pt] whitespace-nowrap w-[max-content]">{equip.type}</p>
+                                                <p className={`${getColorTextByGrade(equip.grade)} grow`}>{equip.name}</p>
+                                            </div>
+                                            <div className="flex gap-2 items-center">
+                                                {equip.quality >= 0 ? <Chip size="sm" radius="sm" className={`${getColorByQuality(equip.quality)} text-white`}>{equip.quality}</Chip> : <></>}
+                                                {equip.highUpgrade > 0 ? <Tooltip showArrow content={`상급 재련 +${equip.highUpgrade}`}>
+                                                    <Chip size="sm" radius="sm" variant="flat">
+                                                        <p>+{equip.highUpgrade}</p>
+                                                    </Chip>
+                                                </Tooltip> : <></>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </PopoverTrigger>
+                                <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
+                                    <div className="w-[300px] p-3 max-h-[600px] overflow-y-auto scrollbar-hide">
+                                        <h3 className={`w-full text-center text-lg font-bold ${getColorTextByGrade(equip.grade)}`}>{equip.name}</h3>
+                                        <div className="w-full flex gap-2 mt-3">
+                                            <div className={`w-[55px] h-[55px] p-[5px] aspect-square rounded-md ${getBackgroundByGrade(equip.grade)}`}>
                                                 <img
                                                     src={equip.icon}
-                                                    alt="equip-icon"
-                                                    className="w-10 h-10"/>
+                                                    alt="w-[45px] h-[45px] detail-equip-icon"/>
                                             </div>
-                                            <div className="grow truncate">
-                                                <div className="flex gap-1 items-center">
-                                                    <p className="fadedtext text-[10pt] whitespace-nowrap w-[max-content]">{equip.type}</p>
-                                                    <p className={`${getColorTextByGrade(equip.grade)} grow`}>{equip.name}</p>
-                                                </div>
-                                                <div className="flex gap-2 items-center">
-                                                    {equip.quality >= 0 ? <Chip size="sm" radius="sm" className={`${getColorByQuality(equip.quality)} text-white`}>{equip.quality}</Chip> : <></>}
-                                                    {equip.highUpgrade > 0 ? <Tooltip showArrow content={`상급 재련 +${equip.highUpgrade}`}>
-                                                        <Chip size="sm" radius="sm" variant="flat">
-                                                            <p>+{equip.highUpgrade}</p>
-                                                        </Chip>
-                                                    </Tooltip> : <></>}
-                                                    {equip.power > 0 ? <Chip size="sm" radius="sm" variant="flat" startContent={<div className="w-[16px] h-[16px]"><PowerIcon/></div>}>
-                                                        {equip.power}
-                                                    </Chip> : <></>}
-                                                </div>
-                                            </div>
-                                            {equip.elixirs ? <div className="w-[110px] sm:w-[140px] flex flex-col gap-1 h-full items-start">
-                                                {equip.elixirs.map((elixir, index) => (
-                                                    <Tooltip key={index} showArrow content={<p className="max-w-[280px] whitespace-pre-line">{elixir.tooltip}</p>}>
-                                                        <Chip size="sm" variant="flat" radius="sm" color={applyColorElixir(elixir.level)}>
-                                                            Lv.{elixir.level} {elixir.name}
-                                                        </Chip>
-                                                    </Tooltip>
-                                                ))}
-                                            </div> : <></>}
-                                        </div>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
-                                        <div className="w-[300px] p-3 max-h-[600px] overflow-y-auto scrollbar-hide">
-                                            <h3 className={`w-full text-center text-lg font-bold ${getColorTextByGrade(equip.grade)}`}>{equip.name}</h3>
-                                            <div className="w-full flex gap-2 mt-3">
-                                                <div className={`w-[55px] h-[55px] p-[5px] aspect-square rounded-md ${getBackgroundByGrade(equip.grade)}`}>
-                                                    <img
-                                                        src={equip.icon}
-                                                        alt="w-[45px] h-[45px] detail-equip-icon"/>
-                                                </div>
-                                                <div className="grow">
-                                                    <div className="flex gap-2">
-                                                        <p className={`grow ${getColorTextByGrade(equip.grade)}`}>{getParsedText(parsedEquipment.Element_001.value.leftStr0)}</p>
-                                                        <p className="fadedtext grow text-right">Lv.{getParsedText(parsedEquipment.Element_001.value.leftStr2).replaceAll('아이템 레벨 ', '')}</p>
-                                                    </div>
-                                                    <Progress
-                                                        value={equip.quality}
-                                                        maxValue={100}
-                                                        size="sm"
-                                                        color="primary"
-                                                        label={`${getParsedText(parsedEquipment.Element_001.value.leftStr1)} : ${equip.quality}`}
-                                                        className="w-full fadedtext"/>
-                                                </div>
-                                            </div>
-                                            <div className="w-full flex gap-2 fadedtext mt-2">
-                                                <p className="grow">{getParsedText(parsedEquipment.Element_002.value)}</p>
-                                                <p className="grow text-right">{getParsedText(parsedEquipment.Element_003.value)}</p>
-                                            </div>
-                                            {equip.highUpgrade > 0 ? (<div className="mt-2">
-                                                {printHighUpgradeInTooltip(parsedEquipment).split(/\r?\n/).map((line, i) => (
-                                                    <p key={i} className={i === 0 ? 'font-bold' : 'text-[9pt]'}>{line}</p>
-                                                ))}
-                                            </div>) : <></>}
-                                            {printInfoInTooltip(parsedEquipment) ? (
-                                                <div className="mt-2">
-                                                    <p className="fadedtext">{printInfoInTooltip(parsedEquipment)?.title}</p>
-                                                    <p className="whitespace-pre-line">{printInfoInTooltip(parsedEquipment)?.content}</p>
-                                                </div>
-                                            ) : <></>}
-                                            {printBonusInTooltip(parsedEquipment) ? (
-                                                <div className="mt-2">
-                                                    <p className="fadedtext">{printBonusInTooltip(parsedEquipment)?.title}</p>
-                                                    <p className="whitespace-pre-line">{printBonusInTooltip(parsedEquipment)?.content}</p>
-                                                </div>
-                                            ) : <></>}
-                                            {equip.power > 0 && printPowerInTooltip(parsedEquipment) ? (<div className="mt-2">
-                                                <div className="flex gap-1">
-                                                    <div className="w-4 h-4"><PowerIcon/></div>
-                                                    <p className="font-bold text-[#bb662d] dark:text-[#ee9d67]">{printPowerInTooltip(parsedEquipment)?.topStr}</p>
-                                                </div>
-                                                <p>{printPowerInTooltip(parsedEquipment)?.stat}</p>
-                                                <div className="mt-1">
-                                                    <div className="inline">
-                                                        <p className={clsx(
-                                                            equip.power >= 5 ? '' : 'text-[#bbbbbb] dark:text-[#444444]'
-                                                        )}>
-                                                            <span className="w-[14px] h-[14px] inline-block mr-1"><PowerIcon/></span>
-                                                            {printPowerInTooltip(parsedEquipment)?.line1}
-                                                        </p>
-                                                    </div>
-                                                    <div className="inline">
-                                                        <p className={clsx(
-                                                            equip.power >= 10 ? '' : 'text-[#bbbbbb] dark:text-[#444444]'
-                                                        )}>
-                                                            <span className="w-[14px] h-[14px] inline-block mr-1"><PowerIcon/></span>
-                                                            {printPowerInTooltip(parsedEquipment)?.line2}
-                                                        </p>
-                                                    </div>
-                                                    <div className="inline">
-                                                        <p className={clsx(
-                                                            equip.power >= 15 ? '' : 'text-[#bbbbbb] dark:text-[#444444]'
-                                                        )}>
-                                                            <span className="w-[14px] h-[14px] inline-block mr-1"><PowerIcon/></span>
-                                                            {printPowerInTooltip(parsedEquipment)?.line3}
-                                                        </p>
-                                                    </div>
-                                                    <div className="inline">
-                                                        <p className={clsx(
-                                                            equip.power >= 20 ? '' : 'text-[#bbbbbb] dark:text-[#444444]'
-                                                        )}>
-                                                            <span className="w-[14px] h-[14px] inline-block mr-1"><PowerIcon/></span>
-                                                            {printPowerInTooltip(parsedEquipment)?.line4}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>) : <></>}
-                                            {printElixirInTooltip(parsedEquipment) ? (
-                                                <div className="mt-2">
-                                                    <p className="font-bold">{printElixirInTooltip(parsedEquipment)?.topStr.replaceAll('[엘릭서]', '[엘릭서] ')}</p>
-                                                    <ul className="list-disc pl-3">
-                                                        <li className="whitespace-pre-line">
-                                                            {printElixirInTooltip(parsedEquipment)?.line1.split(/\r?\n/).map((line, i) => (
-                                                                <p key={i} className={i === 0 ? '' : 'fadedtext'}>{line}</p>
-                                                            ))}
-                                                        </li>
-                                                        <li className="whitespace-pre-line">
-                                                            {printElixirInTooltip(parsedEquipment)?.line2.split(/\r?\n/).map((line, i) => (
-                                                                <p key={i} className={i === 0 ? '' : 'fadedtext'}>{line}</p>
-                                                            ))}
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            ) : <></>}
-                                            {printAllElixirInTooltip(parsedEquipment) ? (
-                                                <div className="mt-2">
-                                                    <p className="font-bold">{printAllElixirInTooltip(parsedEquipment)?.topStr.replaceAll('연성 추가 효과', '연성 추가 효과 - ')}</p>
-                                                    <ul className="list-disc pl-3">
-                                                        <li className="whitespace-pre-line">
-                                                            {printAllElixirInTooltip(parsedEquipment)?.line1.split(/\r?\n/).map((line, i) => (
-                                                                <p key={i} className={i === 0 ? '' : 'fadedtext'}>{line}</p>
-                                                            ))}
-                                                        </li>
-                                                        <li className="whitespace-pre-line">
-                                                            {printAllElixirInTooltip(parsedEquipment)?.line2.split(/\r?\n/).map((line, i) => (
-                                                                <p key={i} className={i === 0 ? '' : 'fadedtext'}>{line}</p>
-                                                            ))}
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            ) : <></>}
-                                            {printCountInTooltip(parsedEquipment) ? (
-                                                <p className="mt-2">{printCountInTooltip(parsedEquipment)?.replaceAll('|', '')}</p>
-                                            ) : <></>}
-                                        </div>
-                                    </PopoverContent>
-                                </Popover>
-                            )
-                        })}
-                        <div className="grid grid-cols-[1fr_2fr] sm:grid-cols-2 gap-2 mt-4">
-                            {getAllPower(equipments) > 0 ? (
-                                <Card radius="sm" className="grow">
-                                    <CardBody className="pl-2 pr-2 pt-1 pb-1">
-                                        <div className="w-full flex gap-3 items-center">
-                                            <div className="w-8 h-8"><PowerIcon/></div>
-                                            <div>
-                                                <p className="fadedtext text-[9pt]">초월 총합</p>
-                                                <p className="text-lg font-bold">{getAllPower(equipments)}</p>
-                                            </div>
-                                        </div>
-                                    </CardBody>
-                                </Card>
-                            ) : <></>}
-                            {getAllElixir(equipments) > 0 ? (
-                                <Card radius="sm" className="grow">
-                                    <CardBody className="pl-2 pr-2 pt-1 pb-1">
-                                        <div className="w-full flex gap-3 items-center">
-                                            <div className="w-8 h-8"><PotionIcon/></div>
                                             <div className="grow">
-                                                <p className="fadedtext text-[9pt]">엘릭서 총합</p>
-                                                <p className="text-lg font-bold">Lv.{getAllElixir(equipments)}</p>
+                                                <div className="flex gap-2">
+                                                    <p className={`grow ${getColorTextByGrade(equip.grade)}`}>{getParsedText(parsedEquipment.Element_001.value.leftStr0)}</p>
+                                                    <p className="fadedtext grow text-right">Lv.{getParsedText(parsedEquipment.Element_001.value.leftStr2).replaceAll('아이템 레벨 ', '')}</p>
+                                                </div>
+                                                <Progress
+                                                    value={equip.quality}
+                                                    maxValue={100}
+                                                    size="sm"
+                                                    color="primary"
+                                                    label={`${getParsedText(parsedEquipment.Element_001.value.leftStr1)} : ${equip.quality}`}
+                                                    className="w-full fadedtext"/>
                                             </div>
-                                            <Popover showArrow disableAnimation>
-                                                <PopoverTrigger>
-                                                    <Button size="sm" variant="flat">자세히 보기</Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
-                                                    <div className="w-[320px] p-2">
-                                                        <p className="text-lg">엘릭서 정보</p>
-                                                        <Divider className="mt-1 mb-2"/>
-                                                        {equipments.filter(equipment => equipment.elixirs ? equipment.elixirs.length > 0 : false).map((equipment, index) => (
-                                                            <div key={index} className="mb-2 grid grid-cols-[max-content_1fr_1fr] gap-3 items-center">
-                                                                <Chip size="sm" variant="flat" radius="sm">{equipment.type}</Chip>
-                                                                {equipment.elixirs?.map((elixir, idx) => (
-                                                                    <p key={idx}>Lv.{elixir.level} {elixir.name}</p>
-                                                                ))}
-                                                            </div>
-                                                        ))}
-                                                        <Divider className="mt-1 mb-2"/>
-                                                        {printAllElixirInTooltip(JSON.parse(getObjectByArmorType(equipment, "투구").Tooltip)) ? (
-                                                            <div className="mt-2">
-                                                                <p className="font-bold text-[#fe6e0e]">{printAllElixirInTooltip(JSON.parse(getObjectByArmorType(equipment, "투구").Tooltip))?.topStr.replaceAll('연성 추가 효과', '연성 추가 효과 - ')}</p>
-                                                                <ul className="list-disc pl-4">
-                                                                    <li className="whitespace-pre-line">
-                                                                        {printAllElixirInTooltip(JSON.parse(getObjectByArmorType(equipment, "투구").Tooltip))?.line1.split(/\r?\n/).map((line, i) => (
-                                                                            <p key={i} className={i === 0 ? '' : 'fadedtext'}>{line}</p>
-                                                                        ))}
-                                                                    </li>
-                                                                    <li className="whitespace-pre-line">
-                                                                        {printAllElixirInTooltip(JSON.parse(getObjectByArmorType(equipment, "투구").Tooltip))?.line2.split(/\r?\n/).map((line, i) => (
-                                                                            <p key={i} className={i === 0 ? '' : 'fadedtext'}>{line}</p>
-                                                                        ))}
-                                                                    </li>
-                                                                </ul>
-                                                            </div>
-                                                        ) : <></>}
-                                                    </div>
-                                                </PopoverContent>
-                                            </Popover>
                                         </div>
-                                    </CardBody>
-                                </Card>
-                            ) : <></>}
-                        </div>
-                    </div>
-                    <Divider orientation={isMobile ? 'horizontal' : 'vertical'}/>
+                                        <div className="w-full flex gap-2 fadedtext mt-2">
+                                            <p className="grow">{getParsedText(parsedEquipment.Element_002.value)}</p>
+                                            <p className="grow text-right">{getParsedText(parsedEquipment.Element_003.value)}</p>
+                                        </div>
+                                        {equip.highUpgrade > 0 ? (<div className="mt-2">
+                                            {printHighUpgradeInTooltip(parsedEquipment).split(/\r?\n/).map((line, i) => (
+                                                <p key={i} className={i === 0 ? 'font-bold' : 'text-[9pt]'}>{line}</p>
+                                            ))}
+                                        </div>) : <></>}
+                                        {printInfoInTooltip(parsedEquipment) ? (
+                                            <div className="mt-2">
+                                                <p className="fadedtext">{printInfoInTooltip(parsedEquipment)?.title}</p>
+                                                <p className="whitespace-pre-line">{printInfoInTooltip(parsedEquipment)?.content}</p>
+                                            </div>
+                                        ) : <></>}
+                                        {printBonusInTooltip(parsedEquipment) ? (
+                                            <div className="mt-2">
+                                                <p className="fadedtext">{printBonusInTooltip(parsedEquipment)?.title}</p>
+                                                <p className="whitespace-pre-line">{printBonusInTooltip(parsedEquipment)?.content}</p>
+                                            </div>
+                                        ) : <></>}
+                                        {printCountInTooltip(parsedEquipment) ? (
+                                            <p className="mt-2">{printCountInTooltip(parsedEquipment)?.replaceAll('|', '')}</p>
+                                        ) : <></>}
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                        )
+                    })}
+                </CardBody>
+            </Card>
+            <Card fullWidth radius="sm">
+                <CardHeader>악세</CardHeader>
+                <Divider/>
+                <CardBody>
                     <div>
-                        {accessories.map((equip, index) => {
+                        {info.equipment.accessories.map((equip, index) => {
                             let parsedEquipment;
                             try {
                                 parsedEquipment = JSON.parse(equip.tooltip);
@@ -840,7 +650,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                                             </div>
                                             {equip.items.length > 0 ? (
                                                 <div className="w-[130px] flex flex-col gap-[1px] h-full items-start">
-                                                    {equip.items.map((item, idx) => (
+                                                    {equip.items.map((item: any, idx: number) => (
                                                         <div key={idx} className="flex gap-1 text-[9pt] items-center">
                                                             <img
                                                                 src={getSrcByGrade(getSmallGradeByAccessory(equip.type, item).grade)}
@@ -1084,21 +894,22 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                             </div>
                         ) : null}
                     </div>
-                </div>
-            </CardBody>
-        </Card>
+                </CardBody>
+            </Card>
+        </div>
     )
 }
 
 // 보석 컴포넌트
-function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
+function GemComponent({ info }: { info: CharacterInfo }) {
     const [attack, setAttack] = useState(0);
+    const gems = info.gems;
 
     useEffect(() => {
-        if (file.gem) {
-            loadGems(file.gem, setGems, setAttack);
-        }
-    }, [file.gem]);
+        let sum = 0;
+        info.gems.forEach(gem => sum += gem.attack);
+        setAttack(sum);
+    }, [info]);
 
     return (
         <Card radius="sm" className="mt-8">
@@ -1248,13 +1059,9 @@ function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
 }
 
 // 카드 컴포넌트
-function CardComponent({ file }: ProfileComponentProps) {
-    const [cards, setCards] = useState<CardData[]>([]);
-    const [cardSet, setCardSet] = useState<CardSet[]>([]);
-
-    useEffect(() => {
-        loadCards(file.cards, setCards, setCardSet);
-    }, [file.cards]);
+function CardComponent({ info }: { info: CharacterInfo }) {
+    const cards = info.card.cards;
+    const cardSet = info.card.sets;
 
     return (
         <Card radius="sm" className="mt-8">
@@ -1335,13 +1142,9 @@ function CardComponent({ file }: ProfileComponentProps) {
 }
 
 // 스택 컴포넌트
-function StatComponent({ file }: ProfileComponentProps) {
-    const [stat, setStat] = useState<Stat[]>([]);
+function StatComponent({ info }: { info: CharacterInfo }) {
+    const stat = info.stats;
     const isMobile = useMobileQuery();
-
-    useEffect(() => {
-        loadStats(file.stats, setStat);
-    }, [file.stats]);
 
     return (
         <Card radius="sm">
@@ -1354,7 +1157,7 @@ function StatComponent({ file }: ProfileComponentProps) {
                         placement={isMobile ? 'top' : 'left'}
                         content={<div className="w-[340px] p-2">
                             <ul className="list-disc pl-4">
-                                {getStatByType(stat, '공격력') ? getStatByType(stat, '공격력')?.tooltip.map((line, idx) => (
+                                {getStatByType(stat, '공격력') ? getStatByType(stat, '공격력')?.tooltip.map((line: string, idx: number) => (
                                     <li key={idx}>{line}</li>
                                 )) : <></>}
                             </ul>
@@ -1423,13 +1226,9 @@ function StatComponent({ file }: ProfileComponentProps) {
 }
 
 // 각인 컴포넌트
-function EngravingComponent({ file }: ProfileComponentProps) {
-    const [engravings, setEngravings] = useState<Engraving[]>([]);
+function EngravingComponent({ info }: { info: CharacterInfo }) {
+    const engravings = info.engravings;
     const isMobile = useMobileQuery();
-
-    useEffect(() => {
-        loadEngraving(file.engraving, setEngravings);
-    }, [file.profile])
 
     return (
         <Card radius="sm" className="mt-8">
@@ -1483,16 +1282,12 @@ function EngravingComponent({ file }: ProfileComponentProps) {
 }
 
 // 아크패시브 컴포넌트
-function ArkpassiveComponent({ file }: ProfileComponentProps) {
-    const [points, setPoints] = useState<ArkpassivePoint[]>([]);
-    const [evolution, setEvolution] = useState<ArkpassiveItem[]>([]);
-    const [enlightenment, setEnlightenment] = useState<ArkpassiveItem[]>([]);
-    const [jump, setJump] = useState<ArkpassiveItem[]>([]);
+function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
+    const points = info.arkpassive.points;
+    const evolution = info.arkpassive.evolution;
+    const enlightenment = info.arkpassive.enlightenment;
+    const jump = info.arkpassive.jump;
     const isMobile = useMobileQuery();
-
-    useEffect(() => {
-        loadArkpassive(file.arkpassive, setPoints, setEvolution, setEnlightenment, setJump);
-    }, [file.arkpassive]);
 
     return (
         <Card radius="sm" className="mt-8">
@@ -1501,109 +1296,121 @@ function ArkpassiveComponent({ file }: ProfileComponentProps) {
             <CardBody>
                 <div className="w-full grid grid-cols-3 gap-2 mb-2">
                     {points.map((point, index) => (
-                        <div key={index} className="flex flex-col items-center">
-                            <p className="fadedtext text-sm">{point.type}</p>
-                            <p className={`${getColorByType(point.type)} text-2xl font-bold`}>{point.point}</p>
-                            <Chip size="sm" variant="flat" className="mt-1">{point.description ? point.description : '미개방'}</Chip>
-                            <Progress
-                                size="sm"
-                                color={getColorProgressArkpassive(point.type)}
-                                value={point.point}
-                                maxValue={point.max}
-                                className="w-[70px] mt-2"/>
+                        <div key={index} className="w-full flex flex-col sm:flex-row sm:gap-4 items-center justify-center">
+                            <div className="flex flex-col items-center">
+                                <p className="fadedtext text-sm">{point.type}</p>
+                                <p className={`${getColorByType(point.type)} text-2xl font-bold`}>{point.point}</p>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <Chip size="sm" variant="flat" className="mt-1">{point.description ? point.description : '미개방'}</Chip>
+                                <Progress
+                                    size="sm"
+                                    color={getColorProgressArkpassive(point.type)}
+                                    value={point.point}
+                                    maxValue={point.max}
+                                    className="w-[70px] mt-2"/>
+                            </div>
                         </div>
                     ))}
                 </div>
-                <Chip
-                    color="warning"
-                    size="md"
-                    radius="sm"
-                    variant="flat"
-                    className={clsx(
-                        "min-w-full text-center mt-4 mb-4",
-                        evolution.length > 0 ? 'flex' : 'hidden'
-                    )}>
-                    진화
-                </Chip>
-                {evolution.map((item, index) => (
-                    <Tooltip 
-                        key={index} 
-                        placement={isMobile ? 'bottom' : 'left'} 
-                        showArrow 
-                        content={<div className="p-2">
-                            <p className="max-w-[320px]">{item.description}</p>
-                        </div>}>
-                        <div className="flex gap-2 mb-2 items-center">
-                            <img
-                                src={item.icon}
-                                alt="arkpassvie-icon"
-                                className="w-6 h-6 rounded-md"/>
-                            <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
-                            <p className="text-sm">Lv.{item.level}</p>
-                            <p className="grow text-sm">{item.name}</p>
-                        </div>
-                    </Tooltip>
-                ))}
-                <Chip
-                    color="primary"
-                    size="md"
-                    radius="sm"
-                    variant="flat"
-                    className={clsx(
-                        "min-w-full text-center mt-2 mb-4",
-                        enlightenment.length > 0 ? 'flex' : 'hidden'
-                    )}>
-                    깨달음
-                </Chip>
-                {enlightenment.map((item, index) => (
-                    <Tooltip 
-                        key={index} 
-                        placement={isMobile ? 'bottom' : 'left'} 
-                        showArrow 
-                        content={<div className="p-2">
-                            <p className="max-w-[320px]">{item.description}</p>
-                        </div>}>
-                        <div className="flex gap-2 mb-2 items-center">
-                            <img
-                                src={item.icon}
-                                alt="arkpassvie-icon"
-                                className="w-6 h-6 rounded-md"/>
-                            <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
-                            <p className="text-sm">Lv.{item.level}</p>
-                            <p className="grow text-sm">{item.name}</p>
-                        </div>
-                    </Tooltip>
-                ))}
-                <Chip
-                    color="success"
-                    size="md"
-                    radius="sm"
-                    variant="flat"
-                    className={clsx(
-                        "min-w-full text-center mt-2 mb-4",
-                        jump.length > 0 ? 'flex' : 'hidden'
-                    )}>
-                    도약
-                </Chip>
-                {jump.map((item, index) => (
-                    <Tooltip 
-                        key={index} 
-                        placement={isMobile ? 'bottom' : 'left'} 
-                        showArrow 
-                        content={<div className="p-2">
-                            <p className="max-w-[320px]">{item.description}</p>
-                        </div>}>
-                        <div className="flex gap-2 mb-2 items-center">
-                            <img
-                                src={item.icon}
-                                alt="arkpassvie-icon"
-                                className="w-6 h-6 rounded-md"/>
-                            <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
-                            <p className="text-sm">Lv.{item.level}</p>
-                            <p className="grow text-sm">{item.name}</p>
-                        </div>
-                    </Tooltip>
-                ))}
+                <div className="w-full grid sm:grid-cols-3 gap-4 mt-1">
+                    <div>
+                        <Chip
+                            color="warning"
+                            size="md"
+                            radius="sm"
+                            variant="flat"
+                            className={clsx(
+                                "min-w-full text-center mb-4",
+                                evolution.length > 0 ? 'flex' : 'hidden'
+                            )}>
+                            진화
+                        </Chip>
+                        {evolution.map((item, index) => (
+                            <Tooltip 
+                                key={index} 
+                                placement={isMobile ? 'bottom' : 'left'} 
+                                showArrow 
+                                content={<div className="p-2">
+                                    <p className="max-w-[320px]">{item.description}</p>
+                                </div>}>
+                                <div className="flex gap-2 mb-2 items-center">
+                                    <img
+                                        src={item.icon}
+                                        alt="arkpassvie-icon"
+                                        className="w-6 h-6 rounded-md"/>
+                                    <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
+                                    <p className="text-sm">Lv.{item.level}</p>
+                                    <p className="grow text-sm">{item.name}</p>
+                                </div>
+                            </Tooltip>
+                        ))}
+                    </div>
+                    <div>
+                        <Chip
+                            color="primary"
+                            size="md"
+                            radius="sm"
+                            variant="flat"
+                            className={clsx(
+                                "min-w-full text-center mb-4",
+                                enlightenment.length > 0 ? 'flex' : 'hidden'
+                            )}>
+                            깨달음
+                        </Chip>
+                        {enlightenment.map((item, index) => (
+                            <Tooltip 
+                                key={index} 
+                                placement={isMobile ? 'bottom' : 'left'} 
+                                showArrow 
+                                content={<div className="p-2">
+                                    <p className="max-w-[320px]">{item.description}</p>
+                                </div>}>
+                                <div className="flex gap-2 mb-2 items-center">
+                                    <img
+                                        src={item.icon}
+                                        alt="arkpassvie-icon"
+                                        className="w-6 h-6 rounded-md"/>
+                                    <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
+                                    <p className="text-sm">Lv.{item.level}</p>
+                                    <p className="grow text-sm">{item.name}</p>
+                                </div>
+                            </Tooltip>
+                        ))}
+                    </div>
+                    <div>
+                        <Chip
+                            color="success"
+                            size="md"
+                            radius="sm"
+                            variant="flat"
+                            className={clsx(
+                                "min-w-full text-center mb-4",
+                                jump.length > 0 ? 'flex' : 'hidden'
+                            )}>
+                            도약
+                        </Chip>
+                        {jump.map((item, index) => (
+                            <Tooltip 
+                                key={index} 
+                                placement={isMobile ? 'bottom' : 'left'} 
+                                showArrow 
+                                content={<div className="p-2">
+                                    <p className="max-w-[320px]">{item.description}</p>
+                                </div>}>
+                                <div className="flex gap-2 mb-2 items-center">
+                                    <img
+                                        src={item.icon}
+                                        alt="arkpassvie-icon"
+                                        className="w-6 h-6 rounded-md"/>
+                                    <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
+                                    <p className="text-sm">Lv.{item.level}</p>
+                                    <p className="grow text-sm">{item.name}</p>
+                                </div>
+                            </Tooltip>
+                        ))}
+                    </div>
+                </div>
             </CardBody>
         </Card>
     )

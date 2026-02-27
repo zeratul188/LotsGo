@@ -25,7 +25,7 @@ import { DayValue, getAllBoundGold, getAllContentGold, getAllContentOtherGold, g
 import { CubeDetailComponent, CubeStatueComponent, RemainChecklistComponent, SelectServer } from "./ChecklistForm";
 import clsx from "clsx";
 import { Cube } from "../api/checklist/cube/route";
-import { getImgByJob } from "../character/expeditionFeat";
+import { getImgByJob } from "../character/lib/expeditionFeat";
 import { SettingIcon } from "../icons/SettingIcon";
 import DeleteIcon from "../icons/DeleteIcon";
 import { handleControlCube, handleSetOtherGold, handleWeekContent, handleWeekStage, useOnClickCheckGold, useOnClickDayCheck } from "./testFet";

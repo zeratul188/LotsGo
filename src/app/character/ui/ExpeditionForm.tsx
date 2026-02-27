@@ -1,11 +1,13 @@
 import clsx from "clsx";
-import { CharacterInfo } from "./characterFeat"
-import { getBgColorByLevels, getBorderColorByLevel, getCountByLevel, getImgByJob, getServerNames, handleSelectCharacter } from "./expeditionFeat"
+import { getBgColorByLevels, getBorderColorByLevel, getCountByLevel, getImgByJob, getServerNames, handleSelectCharacter } from "../lib/expeditionFeat"
 import data from "@/data/characters/data.json";
 import { Avatar, Card, CardBody, Chip, Divider } from "@heroui/react";
+import { ExpeditionCharacterInfo } from "../model/types";
+import SupportorIcon from "@/Icons/SupportorIcon";
+import AttackIcon from "@/Icons/AttackIcon";
 
 type ExpeditionComponentProps = {
-    expeditions: CharacterInfo[]
+    expeditions: ExpeditionCharacterInfo[]
 }
 export function ExpeditionsComponent({ expeditions }: ExpeditionComponentProps) {
     return (
@@ -34,9 +36,21 @@ export function ExpeditionsComponent({ expeditions }: ExpeditionComponentProps) 
                                 <CardBody>
                                     <div className="w-full flex gap-4 items-center">
                                         <Avatar isBordered size="md" src={getImgByJob(character.job)} className="border-[#ff968a]"/>
-                                        <div>
+                                        <div className="w-full">
                                             <p className="truncate overflow-hidden whitespace-nowrap">{character.nickname}</p>
-                                            <p className="fadedtext truncate overflow-hidden whitespace-nowrap text-[10pt]">Lv.{character.level} · {character.job}</p>
+                                            <div className="w-full flex gap-1 items-center">
+                                                <p className="fadedtext truncate overflow-hidden whitespace-nowrap text-[10pt]">Lv.{character.level} · {character.job}</p>
+                                                <div className={clsx(
+                                                    "flex items-center ml-auto",
+                                                    character.combatPower > 0 ? '' : 'hidden'
+                                                )}>
+                                                    {character.type === 'supportor' ? <SupportorIcon size={14}/> : <AttackIcon size={12}/>}
+                                                    <p className={clsx(
+                                                        "text-[10pt] font-bold",
+                                                        character.type === 'supportor' ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300 ml-0.5'
+                                                    )}>{character.combatPower}</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </CardBody>
