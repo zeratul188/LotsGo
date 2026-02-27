@@ -18,22 +18,29 @@ export type CharacterInfo = {
 export type EquipInfo = {
     equipments: Equipment[],
     accessories: Accessory[],
-    arm: Arm,
-    stone: Stone,
-    orb: Orb
+    arm: Arm | null,
+    stone: Stone | null,
+    orb: Orb | null
 }
 
 // 캐릭터 Profile 정보
 export type Profile = {
     server: string,
     className: string,
+    title: string,
+    guildName: string,
+    characterImageUrl: string,
     arkpassiveTitle: string,
+    itemLevel: number,
     characterLevel: number,
     expeditionLevel: number,
     townLevel: number,
     townName: string,
     combatPower: number,
-    characterType: string
+    characterType: string,
+    honorPoint: number,
+    maxCombatPower: number, // 최고 전투력
+    emblems: string[]
 }
 
 // 장비 정보
@@ -43,7 +50,8 @@ export type Equipment = {
     name: string, // 장비 이름 (강화 수치 포함)
     grade: string, // 장비 등급
     quality: number, // 장비 품질
-    highUpgrade: number // 장비 상급 재련
+    highUpgrade: number, // 장비 상급 재련
+    tooltip: string
 }
 
 // 악세
@@ -166,7 +174,8 @@ export type ArkpassiveItem = {
 // 스킬
 export type SkillInfo = {
     skills: Skill[],
-    skillPoint: number
+    skillPoint: number,
+    maxPoint: number
 }
 export type Skill = {
     name: string,
@@ -198,7 +207,7 @@ export type Rune = {
 // 아크그리드
 export type ArkGridInfo = {
     cores: Core[],
-    options: ArkGridOption
+    options: ArkGridOption[]
 }
 export type Core = {
     index: number,
@@ -260,4 +269,20 @@ export type Avatar = {
     icon: string,
     grade: string,
     isInner: boolean
+}
+
+// 원정대 캐릭터 정보
+export type ExpeditionCharacterInfo = {
+    nickname: string,
+    job: string,
+    server: string,
+    level: number,
+    combatPower: number,
+    type: string
+}
+
+// 보석 정보
+export type GemInfo = {
+    skillStr: string,
+    attack: number
 }

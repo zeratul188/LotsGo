@@ -1,22 +1,10 @@
-import { useEffect, useState } from "react";
-import { CharacterFile } from "../lib/characterFeat"
-import { loadAvatars, loadImage } from "../lib/avatarFeat";
 import { Card, CardBody, CardHeader, Divider } from "@heroui/react";
 import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils";
-import { Avatar } from "../model/types";
+import { CharacterInfo } from "../model/types";
 
 // 아바타 컴포넌트
-type AvatarComponentProps = {
-    file: CharacterFile
-}
-export function AvatarComponent({ file }: AvatarComponentProps) {
-    const [characterImage, setCharacterImage] = useState<string | null>(null);
-    const [avatars, setAvatars] = useState<Avatar[]>([]);
-
-    useEffect(() => {
-        loadAvatars(file.avatars, setAvatars);
-        loadImage(file.profile, setCharacterImage);
-    }, [file.avatars]);
+export function AvatarComponent({ info }: { info: CharacterInfo }) {
+    const avatars = info.avatars;
 
     return (
         <div className="w-full">
@@ -26,10 +14,10 @@ export function AvatarComponent({ file }: AvatarComponentProps) {
                 <CardBody className="p-0">
                     <div className="w-full flex flex-col md960:flex-row">
                         <div className="grow h-[max-content] md960:h-[800px] flex justify-center items-center bg-[#15181d] relative overflow-hidden">
-                            {characterImage ? (
+                            {info.profile.characterImageUrl !== '-' ? (
                                 <img 
                                     alt="character-img"
-                                    src={characterImage}
+                                    src={info.profile.characterImageUrl}
                                     className="w-auto h-full object-contain"/>
                             ) : <></>}
                             

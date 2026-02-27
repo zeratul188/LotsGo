@@ -6,7 +6,8 @@ import { CharacterHistory, saveHistory, updateHistory } from "./history";
 import { Badge } from "../../api/administrator/badge/route";
 import { LoginUser } from "../../store/loginSlice";
 import { decrypt } from "@/utiils/crypto";
-import { Accessory, ArkpassiveItem, ArkpassivePoint, Arm, CardData, CardDetailSet, CardSet, Engraving, Equipment, Gem, Orb, Stone, StoneEffect } from "../model/types";
+import { CardData, CardSet, CharacterInfo, Equipment, ExpeditionCharacterInfo, Gem, Stat, StoneEffect } from "../model/types";
+import { getCharacterInfoByFile, toNumber } from "./characterInfo";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
@@ -24,34 +25,28 @@ export type CharacterFile = {
     arkGrid: any | null
 }
 
-export type CharacterInfo = {
-    nickname: string,
-    job: string,
-    server: string,
-    level: number
-}
-
 // 캐릭터 갱신 이벤트 함수
-export function useClickUpdate(
-    nickname: string | null,
+export type UpdateUI = {
     setDisable: SetStateFn<boolean>,
     setLoadingUpdate: SetStateFn<boolean>,
-    file: CharacterFile,
-    setFile: SetStateFn<CharacterFile>,
-    setExpeditions: SetStateFn<CharacterInfo[]>,
-    setGems: SetStateFn<Gem[]>,
-    setCombat: SetStateFn<number>,
-    combat: number
-) {
+    setExpeditions: SetStateFn<ExpeditionCharacterInfo[]>,
+    setCharacterInfo: SetStateFn<CharacterInfo | null>,
+    setTitles: SetStateFn<string[]>
+}
+export type UpdatePayload = {
+    nickname: string | null,
+    expeditions: ExpeditionCharacterInfo[],
+    titles: string[]
+}
+export function useClickUpdate(ui: UpdateUI, payload: UpdatePayload) {
     return async () => {
         const userStr = sessionStorage.getItem('user');
         const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
         const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
         
-        if (nickname) {
-            setLoadingUpdate(true);
-            setGems([]);
-            const lostarkRes = await fetch(`/api/lostark?value=${nickname}&code=5&key=${decryptedApiKey}`);
+        if (payload.nickname) {
+            ui.setLoadingUpdate(true);
+            const lostarkRes = await fetch(`/api/lostark?value=${payload.nickname}&code=5&key=${decryptedApiKey}`);
             if (!lostarkRes.ok) {
                 addToast({
                     title: "불러오기 오류",
@@ -60,9 +55,8 @@ export function useClickUpdate(
                 });
             } else {
                 const data = await lostarkRes.json();
-                const newFile = structuredClone(file);
                 if (data) {
-                    const expeditionRes = await fetch(`/api/lostark?value=${nickname}&code=0&key=${decryptedApiKey}`);
+                    const expeditionRes = await fetch(`/api/lostark?value=${payload.nickname}&code=0&key=${decryptedApiKey}`);
                     if (!lostarkRes.ok) {
                         addToast({
                             title: "불러오기 오류",
@@ -71,67 +65,74 @@ export function useClickUpdate(
                         });
                     } else {
                         const expeditionData = await expeditionRes.json();
-                        let newExpeditions: CharacterInfo[] = [];
+                        let newExpeditions: ExpeditionCharacterInfo[] = [];
                         for (const item of expeditionData) {
-                            const newCharacterInfo: CharacterInfo = {
+                            const newCharacterInfo: ExpeditionCharacterInfo = {
                                 nickname: item.CharacterName,
                                 job: item.CharacterClassName,
                                 server: item.ServerName,
-                                level: Number(item.ItemAvgLevel.replaceAll(',', ''))
+                                level: Number(item.ItemAvgLevel.replaceAll(',', '')),
+                                combatPower: 0,
+                                type: 'attack'
                             }
                             newExpeditions.push(newCharacterInfo);
                         }
                         newExpeditions = newExpeditions.sort((a, b) => b.level - a.level);
-                        newFile.profile = data.ArmoryProfile;
-                        newFile.equipment = data.ArmoryEquipment;
-                        newFile.gem = data.ArmoryGem.Gems;
-                        newFile.cards = data.ArmoryCard;
-                        newFile.stats = data.ArmoryProfile.Stats;
-                        newFile.engraving = data.ArmoryEngraving ? data.ArmoryEngraving.ArkPassiveEffects : null;
-                        newFile.arkpassive = data.ArkPassive;
-                        newFile.skills = data.ArmorySkills;
-                        newFile.collects = data.Collectibles;
-                        newFile.avatars = data.ArmoryAvatars;
-                        newFile.arkGrid = data.ArkGrid;
-                        
-                        const newCombatPower = Number(newFile.profile.CombatPower.replaceAll(',', ''));
-                        await fetch('/api/caches/characters', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                nickname: nickname,
-                                file: newFile,
-                                expeditions: newExpeditions,
-                                combatPower: combat < newCombatPower ? newCombatPower : combat
-                            })
+                        const file: CharacterFile = {
+                            profile: data.ArmoryProfile,
+                            equipment: data.ArmoryEquipment,
+                            gem: data.ArmoryGem.Gems,
+                            cards: data.ArmoryCard,
+                            stats: data.ArmoryProfile.Stats,
+                            engraving: data.ArmoryEngraving ? data.ArmoryEngraving.ArkPassiveEffects : null,
+                            arkpassive: data.ArkPassive,
+                            skills: data.ArmorySkills,
+                            collects: data.Collectibles,
+                            avatars: data.ArmoryAvatars,
+                            arkGrid: data.ArkGrid
+                        }
+                        const combatPower = toNumber(file.profile.CombatPower);
+                        const characterType = getCharacterType(file.arkpassive);
+                        const title = getParsedText(file.profile.Title);
+                        const cloneTitles = structuredClone(payload.titles);
+                        if (isRareTitle(title) && !payload.titles.includes(title)) {
+                            cloneTitles.push(title);
+                        }
+                        payload.expeditions.forEach(character => {
+                            const findIndex = newExpeditions.findIndex(char => char.nickname === character.nickname);
+                            if (findIndex > -1) {
+                                newExpeditions[findIndex] = newExpeditions[findIndex].nickname === payload.nickname ? {
+                                    ...character,
+                                    combatPower: combatPower,
+                                    type: characterType
+                                } : character;
+                            }
                         });
-
+                        
+                        const info = getCharacterInfoByFile(file, combatPower);
                         const inputRes = await fetch('/api/characters', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                nickname: nickname,
-                                file: newFile,
+                                nickname: payload.nickname,
+                                characterInfo: info,
                                 expeditions: newExpeditions,
-                                combatPower: newFile.profile.CombatPower.replaceAll(',', '')
+                                titles: cloneTitles
                             })
                         });
                         if (inputRes.ok) {
                             const today = new Date();
                             const history: CharacterHistory = {
-                                nickname: nickname,
-                                job: newFile.profile.CharacterClassName,
-                                level: Number(newFile.profile.ItemAvgLevel.replaceAll(',', '')),
-                                server: newFile.profile.ServerName,
+                                nickname: payload.nickname,
+                                job: info.profile.className,
+                                level: info.profile.itemLevel,
+                                server: info.profile.server,
                                 date: today
                             }
-                            const nowCombat: number = Number(newFile.profile.CombatPower?.replaceAll(',', '') || 0);
-                            if (nowCombat > combat) {
-                                setCombat(nowCombat);
-                            }
                             updateHistory(history);
-                            setFile(newFile);
-                            setExpeditions(newExpeditions);
+                            ui.setExpeditions(newExpeditions);
+                            ui.setTitles(cloneTitles);
+                            ui.setCharacterInfo(info);
                             addToast({
                                 title: "갱신 완료",
                                 description: `캐릭터 정보를 갱신하였습니다.`,
@@ -141,13 +142,13 @@ export function useClickUpdate(
                     }
                 }
             }
-            const cooldownMS = 2 * 60 * 1000;
+            const cooldownMS = 1 * 60 * 1000;
             const cooldownEnd = Date.now() + cooldownMS;
             localStorage.setItem("refreshCooldownTime", cooldownEnd.toString());
-            setDisable(true);
-            setLoadingUpdate(false);
+            ui.setDisable(true);
+            ui.setLoadingUpdate(false);
             setTimeout(() => {
-                setDisable(false);
+                ui.setDisable(false);
             }, cooldownMS);
         }
     }
@@ -170,91 +171,70 @@ export function handleSearch(
 }
 
 // 캐릭터 데이터 로스트아크 API로부터 받아오는 함수
-export async function loadProfile(
-    nickname: string,
+export type LoadProfileUI = {
     setSearched: SetStateFn<boolean>,
     setLoading: SetStateFn<boolean>,
     setNickname: SetStateFn<string>,
-    file: CharacterFile,
-    setFile: SetStateFn<CharacterFile>,
     setNothing: SetStateFn<boolean>,
-    setExpeditions: SetStateFn<CharacterInfo[]>,
+    setExpeditions: SetStateFn<ExpeditionCharacterInfo[]>,
     setBadge: SetStateFn<boolean>,
-    setCombat: SetStateFn<number>,
-    combat: number
+    setCharacterInfo: SetStateFn<CharacterInfo | null>,
+    setTitles: SetStateFn<string[]>
+}
+export async function loadProfile(
+    nickname: string,
+    ui: LoadProfileUI
 ) {
     const badgeRes = await fetch('/api/administrator/badge');
     if (badgeRes.ok) {
         const badges: Badge[] = await badgeRes.json();
         const findIndex = badges.findIndex(badge => badge.nickname === nickname);
         if (findIndex !== -1) {
-            setBadge(true);
+            ui.setBadge(true);
         } else {
-            setBadge(false);
+            ui.setBadge(false);
         }
-    }
-
-    const cacheRes = await fetch(`/api/caches/characters?nickname=${nickname}`);
-    if (cacheRes.ok) {
-        const data = await cacheRes.json();
-        const today = new Date();
-        const history: CharacterHistory = {
-            nickname: nickname,
-            job: data.file.profile.CharacterClassName,
-            level: Number(data.file.profile.ItemAvgLevel.replaceAll(',', '')),
-            server: data.file.profile.ServerName,
-            date: today
-        }
-        saveHistory(history);
-        setExpeditions(data.expeditions);
-        setFile(data.file);
-        setLoading(false);
-        setNothing(false);
-        setCombat(Number(data.combatPower));
-        return;
     }
 
     const res = await fetch(`/api/characters?nickname=${nickname}`);
-    let isPassed = false, savedCombat = 0;
+    let isPassed = false;
+    let titles: string[] = [];
+    let loadedExpeditions: ExpeditionCharacterInfo[] = [];
 
     if (res.ok) {
         const data = await res.json();
-        const basedDate = new Date(data.date.seconds * 1000 + data.date.nanoseconds / 1_000_000);
-        const threeDaysInMs = 7 * 24 * 60 * 60 * 1000;
-        const now = new Date();
-        const hasPassed3Days = (now.getTime() - basedDate.getTime()) >= threeDaysInMs;
+        titles = data.titles;
+        loadedExpeditions = data.expeditions;
+        if (data.date && data.character) {
+            const basedDate = new Date(data.date.seconds * 1000 + data.date.nanoseconds / 1_000_000);
+            const threeDaysInMs = 3 * 24 * 60 * 60 * 1000;
+            const now = new Date();
+            const hasPassed3Days = (now.getTime() - basedDate.getTime()) >= threeDaysInMs;
 
-        if (!hasPassed3Days) {
-            const today = new Date();
-            const history: CharacterHistory = {
-                nickname: nickname,
-                job: data.file.profile.CharacterClassName,
-                level: Number(data.file.profile.ItemAvgLevel.replaceAll(',', '')),
-                server: data.file.profile.ServerName,
-                date: today
-            }
-            saveHistory(history);
-            setExpeditions(data.expeditions);
-            setFile(data.file);
-            setLoading(false);
-            setNothing(false);
-            setCombat(Number(data.combatPower));
-            await fetch('/api/caches/characters', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+            if (!hasPassed3Days) {
+                const today = new Date();
+                const history: CharacterHistory = {
                     nickname: nickname,
-                    file: data.file,
-                    expeditions: data.expeditions,
-                    combatPower: data.combatPower
-                })
-            });
-            return;
+                    job: data.character.profile.className,
+                    level: data.character.profile.itemLevel,
+                    server: data.character.profile.server,
+                    date: today
+                }
+                ui.setCharacterInfo(data.character);
+                ui.setTitles(data.titles);
+                saveHistory(history);
+                ui.setExpeditions(loadedExpeditions);
+                ui.setLoading(false);
+                ui.setNothing(false);
+                return;
+            } else {
+                isPassed = true;
+            }
         } else {
-            savedCombat = Number(data.combatPower);
             isPassed = true;
         }
     }
+
     const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
@@ -267,13 +247,12 @@ export async function loadProfile(
                 description: `입력한 캐릭터가 존재하지 않거나 로스트아크 점검 시간 등의 이유로 데이터를 불러오지 못했습니다.`,
                 color: "danger"
             });
-            setNickname('');
-            setSearched(false);
-            setLoading(false);
+            ui.setNickname('');
+            ui.setSearched(false);
+            ui.setLoading(false);
             return;
         }
         const data = await lostarkRes.json();
-        const newFile = structuredClone(file);
         if (data) {
             const expeditionRes = await fetch(`/api/lostark?value=${nickname}&code=0&key=${decryptedApiKey}`);
             if (!lostarkRes.ok) {
@@ -282,80 +261,86 @@ export async function loadProfile(
                     description: `입력한 캐릭터가 존재하지 않거나 로스트아크 점검 시간 등의 이유로 데이터를 불러오지 못했습니다.`,
                     color: "danger"
                 });
-                setNickname('');
-                setSearched(false);
-                setLoading(false);
+                ui.setNickname('');
+                ui.setSearched(false);
+                ui.setLoading(false);
                 return;
             }
             const expeditionData = await expeditionRes.json();
-            let newExpeditions: CharacterInfo[] = [];
+            let newExpeditions: ExpeditionCharacterInfo[] = [];
             for (const item of expeditionData) {
-                const newCharacterInfo: CharacterInfo = {
+                const newCharacterInfo: ExpeditionCharacterInfo = {
                     nickname: item.CharacterName,
                     job: item.CharacterClassName,
                     server: item.ServerName,
-                    level: Number(item.ItemAvgLevel.replaceAll(',', ''))
+                    level: Number(item.ItemAvgLevel.replaceAll(',', '')),
+                    combatPower: 0,
+                    type: 'attack'
                 }
                 newExpeditions.push(newCharacterInfo);
             }
             newExpeditions = newExpeditions.sort((a, b) => b.level - a.level);
-            newFile.profile = data.ArmoryProfile;
-            newFile.equipment = data.ArmoryEquipment;
-            newFile.gem = data.ArmoryGem.Gems;
-            newFile.cards = data.ArmoryCard;
-            newFile.stats = data.ArmoryProfile.Stats;
-            newFile.engraving = data.ArmoryEngraving ? data.ArmoryEngraving.ArkPassiveEffects : null;
-            newFile.arkpassive = data.ArkPassive;
-            newFile.skills = data.ArmorySkills;
-            newFile.collects = data.Collectibles;
-            newFile.avatars = data.ArmoryAvatars;
-            newFile.arkGrid = data.ArkGrid;
-            setFile(newFile);
-            setNothing(false);
-            setExpeditions(newExpeditions);
-            setLoading(false);
-            await fetch('/api/caches/characters', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    nickname: nickname,
-                    file: newFile,
-                    expeditions: newExpeditions,
-                    combatPower: newFile.profile.CombatPower.replaceAll(',', '')
-                })
+            const file: CharacterFile = {
+                profile: data.ArmoryProfile,
+                equipment: data.ArmoryEquipment,
+                gem: data.ArmoryGem.Gems,
+                cards: data.ArmoryCard,
+                stats: data.ArmoryProfile.Stats,
+                engraving: data.ArmoryEngraving ? data.ArmoryEngraving.ArkPassiveEffects : null,
+                arkpassive: data.ArkPassive,
+                skills: data.ArmorySkills,
+                collects: data.Collectibles,
+                avatars: data.ArmoryAvatars,
+                arkGrid: data.ArkGrid
+            }
+            ui.setNothing(false);
+            ui.setLoading(false);
+            const combatPower = toNumber(file.profile.CombatPower);
+            const characterType = getCharacterType(file.arkpassive);
+            const title = getParsedText(file.profile.Title);
+            if (isRareTitle(title) && !titles.includes(title)) {
+                titles.push(title);
+            }
+            loadedExpeditions.forEach(character => {
+                const findIndex = newExpeditions.findIndex(char => char.nickname === character.nickname);
+                if (findIndex > -1) {
+                    newExpeditions[findIndex] = newExpeditions[findIndex].nickname === nickname ? {
+                        ...character,
+                        combatPower: combatPower,
+                        type: characterType
+                    } : character;
+                }
             });
+            ui.setTitles(titles);
+            ui.setExpeditions(newExpeditions);
+            const info = getCharacterInfoByFile(file, combatPower);
+            ui.setCharacterInfo(info);
             const inputRes = await fetch('/api/characters', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     nickname: nickname,
-                    file: newFile,
+                    characterInfo: info,
                     expeditions: newExpeditions,
-                    combatPower: newFile.profile.CombatPower.replaceAll(',', '')
+                    titles: titles
                 })
             });
             if (inputRes.ok) {
                 const today = new Date();
                 const history: CharacterHistory = {
                     nickname: nickname,
-                    job: newFile.profile.CharacterClassName,
-                    level: Number(newFile.profile.ItemAvgLevel.replaceAll(',', '')),
-                    server: newFile.profile.ServerName,
+                    job: info.profile.className,
+                    level: info.profile.itemLevel,
+                    server: info.profile.server,
                     date: today
-                }
-                const nowCombat: number = Number(newFile.profile.CombatPower?.replaceAll(',', '') || 0);
-                if (savedCombat > nowCombat) {
-                    setCombat(savedCombat);
-                } else {
-                    setCombat(nowCombat);
                 }
                 saveHistory(history);
                 return;
             }
         }
     }
-    setLoading(false);
-    setNothing(true);
+    ui.setLoading(false);
+    ui.setNothing(true);
     addToast({
         title: "불러오기 오류",
         description: `입력한 캐릭터가 존재하지 않거나 로스트아크 점검 시간 등의 이유로 데이터를 불러오지 못했습니다.`,
@@ -363,9 +348,14 @@ export async function loadProfile(
     });
 }
 
+// 해당 칭호가 희귀칭호인지 아닌지 파악하는 함수
+function isRareTitle(title: string): boolean {
+    return data.titles.includes(title);
+}
+
 // 장비 종류에 따른 값 반환 함수
-export function getObjectByArmorType(list: any[], type: string): any {
-    const obj = list.find((item) => item.Type === type);
+export function getObjectByArmorType(list: Equipment[], type: string): any {
+    const obj = list.find((item) => item.type === type);
     return obj;
 }
 
@@ -388,165 +378,12 @@ export function getColorByQuality(quality: number) {
     return 'bg-[#6f6f6f]';
 }
 
-type TooltipBoject = Record<string, any>;
-
-// "상급 재련"이 들어간 객체 가져오기
-function findHighUpgradeInTooltip(tooltip: any): number {
-    let parsed: TooltipBoject;
-    try {
-        parsed = JSON.parse(tooltip);
-    } catch (err) {
-        console.error("Tooltip JSON 파싱 오류:", err);
-        return -1;
-    }
-
-    for (const key in parsed) {
-        const element = parsed[key];
-        const value = element?.value;
-
-        if (typeof value === 'string' && value.includes('상급')) {
-            let text = getParsedText(value.split('<img')[0].replaceAll('[상급 재련] ', '').replaceAll('단계', ''));
-            text = text.replaceAll('[상급 재련] ', '');
-            return isNumeric(text) ? Number(text) : -1;
-        }
-    }
-
-    return -1;
-}
-
-// 숫자인지 아닌지 여부 파악 함수
-function isNumeric(value: any): boolean {
-  return !isNaN(parseFloat(value)) && isFinite(value);
-}
-
-// "초월"이 들어간 객체 가져오기
-function findPowerInTooltip(tooltip: any): number {
-    let parsed: TooltipBoject;
-    try {
-        parsed = JSON.parse(tooltip);
-    } catch (err) {
-        console.error("Tooltip JSON 파싱 오류:", err);
-        return -1;
-    }
-
-    for (const key in parsed) {
-        const element = parsed[key];
-        const value = element?.value;
-
-        const topStr = value?.Element_000?.topStr;
-        if (typeof topStr === "string" && topStr.includes("초월")) {
-            let text = getParsedText(topStr);
-            text = text.replaceAll('슬롯 효과[초월] ', '').split('단계 ')[1];
-            return isNumeric(text) ? Number(text) : -1;
-        }
-    }
-    return -1;
-}
-
-
-// 장비 데이터 불러오기
-export function applyEquipment(data: any, setEquipments: SetStateFn<Equipment[]>) {
-    const attackType = ['무기', '투구', '어깨', '상의', '하의', '장갑'];
-    const newEquipments: Equipment[] = [];
-    for (const type of attackType) {
-        const obj = getObjectByArmorType(data, type);
-        const parsedTooltip = JSON.parse(obj.Tooltip);
-        
-        const newEquipment: Equipment = {
-            icon: obj.Icon,
-            type: type,
-            name: obj.Name,
-            grade: obj.Grade,
-            quality: Number(parsedTooltip.Element_001.value.qualityValue),
-            highUpgrade: findHighUpgradeInTooltip(obj.Tooltip)
-        }
-        newEquipments.push(newEquipment);
-    }
-    setEquipments(newEquipments);
-}
-
-// 악세에서 연마 효과 가져오기기
-function findItemInTooltip(tooltip: any): string[] {
-    let parsed: TooltipBoject;
-    let items: string[] = [];
-    try {
-        parsed = JSON.parse(tooltip);
-    } catch (err) {
-        console.error("Tooltip JSON 파싱 오류:", err);
-        return [];
-    }
-
-    for (const key in parsed) {
-        const element = parsed[key];
-        const value = element?.value;
-
-        const element000 = value?.Element_000;
-        const element001 = value?.Element_001;
-        if (typeof element000 === "string" && typeof element001 === "string" && element000.includes("연마 효과")) {
-            const text = getParsedText(element001.replaceAll('<br>', '|').replaceAll('<BR>', '|'));
-            items = text.split('|');
-            return items;
-        }
-    }
-    return [];
-}
-
-// 악세에서 깨달음 가져오기
-function findPointInTooltip(tooltip: any): number {
-    let parsed: TooltipBoject;
-    try {
-        parsed = JSON.parse(tooltip);
-    } catch (err) {
-        console.error("Tooltip JSON 파싱 오류:", err);
-        return -1;
-    }
-
-    for (const key in parsed) {
-        const element = parsed[key];
-        const value = element?.value;
-
-        const element000 = value?.Element_000;
-        const element001 = value?.Element_001;
-        if (typeof element000 === "string" && typeof element001 === "string" && element000.includes("아크 패시브 포인트 효과")) {
-            const text = getParsedText(element001);
-            return Number(text.split('+')[1])
-        }
-    }
-    return -1;
-}
-
-
-
 // 장비 종류에 따른 값 반환 함수
 export function getListByArmorType(list: any[], type: string): any[] {
     const obj = list.filter((item) => item.Type === type);
     return obj;
 }
 
-// 악세 데이터 불러오기
-export function applyAccessories(data: any, setAccessories: SetStateFn<Accessory[]>) {
-    const accessoryType = ['목걸이', '귀걸이', '반지'];
-    const newAccessories: Accessory[] = [];
-    for (const type of accessoryType) {
-        const objs = getListByArmorType(data, type);
-        for (const obj of objs) {
-            const parsedTooltip = JSON.parse(obj.Tooltip);
-
-            const newAccessory: Accessory = {
-                icon: obj.Icon,
-                name: obj.Name,
-                type: type,
-                grade: obj.Grade,
-                quality: Number(parsedTooltip.Element_001.value.qualityValue),
-                items: findItemInTooltip(obj.Tooltip),
-                point: findPointInTooltip(obj.Tooltip),
-                tooltip: obj.Tooltip
-            }
-            newAccessories.push(newAccessory);
-        }
-    }
-    setAccessories(newAccessories);
-}
 
 // 악세 등급 표시
 export type ItemGrade = {
@@ -676,57 +513,6 @@ export function getTextColorByGrade(grade: string): string {
     return 'fadedtext';
 }
 
-// 팔찌 데이터 가져오기
-export function applyArmData(data: any, setArm: SetStateFn<Arm | null>) {
-    const objs = getListByArmorType(data, '팔찌');
-    if (objs.length > 0) {
-        const obj = objs[0];
-        const parsedTooltip = JSON.parse(obj.Tooltip);
-        const newArm: Arm = {
-            icon: obj.Icon,
-            type: '팔찌',
-            name: obj.Name,
-            grade: obj.Grade,
-            point: findPointInTooltip(obj.Tooltip),
-            tooltip: parsedTooltip
-        }
-        setArm(newArm);
-    }
-}
-
-// 보주 가져오기
-export function applyOrbData(data: any, setOrb: SetStateFn<Orb | null>) {
-    const objs = getListByArmorType(data, '보주');
-    if (objs.length > 0) {
-        const obj = objs[0];
-        const newOrb: Orb = {
-            icon: obj.Icon,
-            type: '보주',
-            name: obj.Name,
-            grade: obj.Grade
-        }
-        setOrb(newOrb);
-    }
-}
-
-// 어빌리티 스톤 가져오기
-export function applyStoneData(data: any, setArm: SetStateFn<Stone | null>) {
-    const objs = getListByArmorType(data, '어빌리티 스톤');
-    if (objs.length > 0) {
-        const obj = objs[0];
-        const parsedTooltip = JSON.parse(obj.Tooltip);
-        const newStone: Stone = {
-            icon: obj.Icon,
-            type: '어빌리티 스톤',
-            name: obj.Name,
-            grade: obj.Grade,
-            tooltip: parsedTooltip,
-            effects: getStoneEffectInTooltip(parsedTooltip)
-        }
-        setArm(newStone);
-    }
-}
-
 //스톤 각인 가져오기
 export function getStoneEffectInTooltip(parsed: any): StoneEffect[] {
     for (const key in parsed) {
@@ -758,60 +544,6 @@ export function getStoneEffectInTooltip(parsed: any): StoneEffect[] {
         }
     }
     return [];
-}
-
-// 보석 데이터 가져오기
-export function loadGems(datas: any[], setGems: SetStateFn<Gem[]>, setAttack: SetStateFn<number>) {
-    let gems: Gem[] = [];
-    let attactSum = 0;
-    if (datas) {
-        for (const data of datas) {
-            const parsedTooltip = JSON.parse(data.Tooltip);
-            const gemInfo: GemInfo | null = findGemInfoInTooltip(parsedTooltip);
-            const newGem: Gem = {
-                slot: Number(data.Slot),
-                name: getParsedText(data.Name),
-                icon: data.Icon,
-                level: Number(data.Level),
-                grade: data.Grade,
-                skillStr: gemInfo ? gemInfo.skillStr : '',
-                attack: gemInfo ? gemInfo.attack : 0
-            }
-            gems.push(newGem);
-            attactSum += gemInfo ? gemInfo.attack : 0;
-        }
-    }
-    gems = gems.sort((a, b) => b.level - a.level);
-    setGems(gems);
-    setAttack(attactSum);
-}
-
-// 스킬 또는 기본 공격력 가져오기
-type GemInfo = {
-    skillStr: string,
-    attack: number
-}
-function findGemInfoInTooltip(parsed: any): GemInfo | null {
-    for (const key in parsed) {
-        const element = parsed[key];
-        const value = element?.value;
-
-        const element000 = value?.Element_000;
-        const element001 = value?.Element_001;
-        if (typeof element000 === 'string' && typeof element001 === 'string' && element000.includes('효과')) {
-            const text = getParsedText(element001.replaceAll('<BR>', '\r\n'));
-            const skillStr = text.split(/\r?\n/)[0];
-            let attack = 0;
-            if (text.includes('기본 공격력')) {
-                attack = Number(text.split('기본 공격력 ')[1].replaceAll(' 증가', '').replaceAll('%', ''));
-            }
-            return {
-                skillStr: skillStr,
-                attack: attack
-            }
-        }
-    }
-    return null;
 }
 
 // index 기반으로 정해진 slot의 보석 가져오기
@@ -854,58 +586,6 @@ export function getCountDekGems(gems: Gem[]): number {
         }
     }
     return count;
-}
-
-// 카드 데이터 가져오기
-export function loadCards(data: any, setCards: SetStateFn<CardData[]>, setCardSet: SetStateFn<CardSet[]>) {
-    const cards: CardData[] = [];
-    const sets: CardSet[] = [];
-    if (data) {
-        const datas = data.Cards;
-        for (const item of datas) {
-            const newCard: CardData = {
-                slot: Number(item.Slot),
-                name: item.Name,
-                icon: item.Icon,
-                count: Number(item.AwakeCount),
-                total: Number(item.AwakeTotal),
-                grade: item.Grade
-            }   
-            cards.push(newCard);
-        }
-        const setDatas = data.Effects;
-        for (const cardSet of setDatas) {
-            const items: CardDetailSet[] = [];
-            const cardCount = cardSet.CardSlots.length;
-            for (const item of cardSet.Items) {
-                let enableCount = 0, cardAllCount = 0;
-                const cardText = item.Name;
-                if (cardText.includes('각성합계')) {
-                    const match = cardText.match(/(\d+)각성합계/);
-                    enableCount = match ? parseInt(match[1], 10) : 0;
-                }
-                if (cardText.includes('세트')) {
-                    const match = cardText.match(/(\d+)세트/);
-                    cardAllCount = match ? parseInt(match[1], 10) : 0;
-                }
-                const newItem: CardDetailSet = {
-                    name: item.Name,
-                    description: item.Description,
-                    isEnable: cardCount >= cardAllCount,
-                    enableCount: enableCount
-                }
-                items.push(newItem);
-            }
-            const newSet: CardSet = {
-                name: items[0].name.replace(/\s*\d+세트.*$/, ""),
-                slots: cardSet.CardSlots,
-                items: items
-            }
-            sets.push(newSet);
-        }
-        setCards(cards);
-        setCardSet(sets);
-    }
 }
 
 // 카드 이미지 안 각성 보석 이미지 반환 함수
@@ -966,31 +646,6 @@ export function getCardGems(sets: CardSet, cards: CardData[]): number {
     return cardSumGems;
 }
 
-// 스택 데이터 가져오기
-export type Stat = {
-    type: string,
-    value: number,
-    tooltip: string[]
-}
-export function loadStats(datas: any[] | null, setStat:SetStateFn<Stat[]>) {
-    const stat: Stat[] = [];
-    if (datas) {
-        for (const data of datas) {
-            const tooltips: string[] = [];
-            for (const tip of data.Tooltip) {
-                tooltips.push(getParsedText(tip));
-            }
-            const newStat: Stat = {
-                type: data.Type,
-                value: Number(data.Value),
-                tooltip: tooltips
-            }
-            stat.push(newStat);
-        }
-    }
-    setStat(stat);
-}
-
 // 총 스택 반환 함수 - 공격력, 최생 제외
 export function getSumStat(stat: Stat[]): number {
     let sum = 0;
@@ -1032,91 +687,6 @@ export function getWidthByStat(stat: Stat[], index: number): number {
         sum -= stat[i].value;
     }
     return sum;
-}
-
-// 각인 데이터 가져오기
-export function loadEngraving(datas: any[] | null, setEngravings: SetStateFn<Engraving[]>) {
-    const engravings: Engraving[] = [];
-    if (datas) {
-        for (const data of datas) {
-            const newEngraving: Engraving = {
-                name: data.Name,
-                description: getParsedText(data.Description),
-                grade: data.Grade,
-                level: Number(data.Level),
-                stoneLevel: Number(data.AbilityStoneLevel ? data.AbilityStoneLevel : 0)
-            }
-            engravings.push(newEngraving);
-        }
-    }
-    setEngravings(engravings);
-}
-
-//아크패시브 데이터 가져오기
-export function loadArkpassive(
-    data: any | null, 
-    setPoints: SetStateFn<ArkpassivePoint[]>,
-    setEvolution: SetStateFn<ArkpassiveItem[]>,
-    setEnlightenment: SetStateFn<ArkpassiveItem[]>,
-    setJump: SetStateFn<ArkpassiveItem[]>
-) {
-    const points: ArkpassivePoint[] = [];
-    const evolution: ArkpassiveItem[] = [];
-    const enlightenment: ArkpassiveItem[] = [];
-    const jump: ArkpassiveItem[] = [];
-    if (data) {
-        const dataPoints = data.Points;
-        for (const point of dataPoints) {
-            const newPoint: ArkpassivePoint = {
-                type: point.Name,
-                point: Number(point.Value),
-                max: maxPoint(point.Name),
-                description: point.Description
-            }
-            points.push(newPoint);
-        }
-        const dataEffects = data.Effects;
-        for (const effect of dataEffects) {
-            const parsedTooltip = JSON.parse(effect.ToolTip);
-            const tip = getParsedText(parsedTooltip.Element_002?.value).replaceAll('|', '');
-            const description = getParsedText(effect.Description);
-            const tier = description.split('티어 ')[0].replaceAll(effect.Name, '');
-            const name = description.split('티어 ')[1].split(' Lv.')[0];
-            const level = description.split(' Lv.')[1];
-            const newItem: ArkpassiveItem = {
-                tier: Number(tier),
-                name: name,
-                level: Number(level),
-                icon: effect.Icon,
-                description: tip
-            }
-            switch(effect.Name) {
-                case '진화':
-                    evolution.push(newItem);
-                    break;
-                case '깨달음':
-                    enlightenment.push(newItem);
-                    break;
-                case '도약':
-                    jump.push(newItem);
-                    break;
-            }
-        }
-    }
-    setPoints(points);
-    setEvolution(evolution);
-    setEnlightenment(enlightenment);
-    setJump(jump);
-}
-
-// 아크패시브 별 최대값 가져오기
-function maxPoint(type: string): number {
-    switch(type) {
-        case '진화': return data.arkpassivePoints.evolution;
-        case '깨달음': return data.arkpassivePoints.enlightenment;
-        case '도약': return data.arkpassivePoints.jump;
-    }
-    return 0;
 }
 
 // 아크패시브 별 프로그레스 색상 가져오기

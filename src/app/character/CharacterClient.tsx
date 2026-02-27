@@ -4,7 +4,7 @@ import { LoadingComponent } from "../UtilsCompnents";
 import { AbilityComponent, ExpeditionComponent, HistoryComponent, InfomationComponent, NotFoundComponent, ProfileComponent, SearchComponent, useCharacterForm } from "./ui/CharacterForm"
 import { useSearchParams } from "next/navigation";
 import { Button, Divider, Input, Tab, Tabs, Tooltip } from "@heroui/react";
-import { handleSearch, loadProfile, useClickUpdate } from "./lib/characterFeat";
+import { handleSearch, loadProfile, LoadProfileUI, UpdatePayload, UpdateUI, useClickUpdate } from "./lib/characterFeat";
 import { useMobileQuery } from "@/utiils/utils";
 import { SkillComponent } from "./ui/SkillForm";
 import { PointComponent } from "./ui/PointForm";
@@ -21,7 +21,7 @@ export default function CharacterClient() {
     const searchParams = useSearchParams();
     const nickname = searchParams.get('nickname');
     const isMobile = useMobileQuery();
-    const onClickUpdate = useClickUpdate(nickname, characterForm.setDisable, characterForm.setLoadingUpdate, characterForm.file, characterForm.setFile, characterForm.setExpeditions, characterForm.setGems, characterForm.setCombat, characterForm.combat);
+    //const onClickUpdate = useClickUpdate(nickname, characterForm.setDisable, characterForm.setLoadingUpdate, characterForm.file, characterForm.setFile, characterForm.setExpeditions, characterForm.setGems, characterForm.setCombat, characterForm.combat);
     
     useEffect(() => {
         if (nickname) {
@@ -44,48 +44,26 @@ export default function CharacterClient() {
         }
     }, []);
 
+    const loadProfileUI: LoadProfileUI = {
+        setSearched: characterForm.setSearched,
+        setLoading: characterForm.setLoading,
+        setNickname: characterForm.setNickname,
+        setNothing: characterForm.setNothing,
+        setExpeditions: characterForm.setExpeditions,
+        setBadge: characterForm.setBadge,
+        setCharacterInfo: characterForm.setCharacterInfo,
+        setTitles: characterForm.setTitles
+    }
+
     useEffect(() => {
         if (characterForm.nickname !== '') {
             document.title = `${characterForm.nickname}님의 전투정보실`
-            const loadData = async () => await loadProfile(characterForm.nickname, characterForm.setSearched, characterForm.setLoading, characterForm.setNickname, characterForm.file, characterForm.setFile, characterForm.setNothing, characterForm.setExpeditions, characterForm.setBadge, characterForm.setCombat, characterForm.combat);
+            const loadData = async () => await loadProfile(characterForm.nickname, loadProfileUI);
             loadData();
         } else {
             document.title = `전투정보실 · 로츠고 Lot's Go`
         }
     }, [characterForm.nickname]);
-
-    const tabs = [
-        {
-            id: 'ability',
-            label: '능력치',
-            component: <AbilityComponent file={characterForm.file} gems={characterForm.gems} setGems={characterForm.setGems} combat={characterForm.combat}/>
-        },
-        {
-            id: 'skill',
-            label: '스킬',
-            component: <SkillComponent file={characterForm.file} gems={characterForm.gems}/>
-        },
-        {
-            id: 'arkgrid',
-            label: '아크그리드',
-            component: <ArkGridComponent file={characterForm.file}/>
-        },
-        {
-            id: 'story',
-            label: '수집형 포인트',
-            component: <PointComponent file={characterForm.file}/>
-        },
-        {
-            id: 'cody',
-            label: '아바타',
-            component: <AvatarComponent file={characterForm.file}/>
-        },
-        {
-            id: 'expedition',
-            label: '원정대',
-            component: <ExpeditionsComponent expeditions={characterForm.expeditions}/>
-        }
-    ]
     const [inputSearch, setInputSearch] = useState('');
 
     if (!characterForm.isSearched) {
@@ -123,10 +101,61 @@ export default function CharacterClient() {
             setNickname={characterForm.setNickname}/>
     }
 
+    if (!characterForm.characterInfo) {
+        return <LoadingComponent heightStyle="min-h-[calc(100vh-65px)]"/>
+    }
+
+    const tabs = [
+        {
+            id: 'ability',
+            label: '능력치',
+            component: <AbilityComponent info={characterForm.characterInfo}/>
+        },
+        {
+            id: 'skill',
+            label: '스킬',
+            component: <SkillComponent info={characterForm.characterInfo}/>
+        },
+        {
+            id: 'arkgrid',
+            label: '아크그리드',
+            component: <ArkGridComponent info={characterForm.characterInfo}/>
+        },
+        {
+            id: 'story',
+            label: '수집형 포인트',
+            component: <PointComponent info={characterForm.characterInfo}/>
+        },
+        {
+            id: 'cody',
+            label: '아바타',
+            component: <AvatarComponent info={characterForm.characterInfo}/>
+        },
+        {
+            id: 'expedition',
+            label: '원정대',
+            component: <ExpeditionsComponent expeditions={characterForm.expeditions}/>
+        }
+    ]
+
+    const updateUI: UpdateUI = {
+        setDisable: characterForm.setDisable,
+        setCharacterInfo: characterForm.setCharacterInfo,
+        setExpeditions: characterForm.setExpeditions,
+        setLoadingUpdate: characterForm.setLoadingUpdate,
+        setTitles: characterForm.setTitles
+    }
+    const updatePayload: UpdatePayload = {
+        nickname: characterForm.nickname,
+        expeditions: characterForm.expeditions,
+        titles: characterForm.titles
+    }
+    const onClickUpdate = useClickUpdate(updateUI, updatePayload);
+
     return (
         <>
             <div className="w-full">
-                <ProfileComponent file={characterForm.file} isBadge={characterForm.isBadge}/>
+                <ProfileComponent info={characterForm.characterInfo} isBadge={characterForm.isBadge}/>
                 {!characterForm.isLoading ? isMobile ? (
                     <div className="w-full flex justify-center px-4 overflow-hidden mt-4">
                         <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px]">
@@ -151,7 +180,6 @@ export default function CharacterClient() {
                             className="w-full md960:w-[220px]"
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
-                                    characterForm.setGems([]);
                                     handleSearch(inputSearch, characterForm.setSearched, characterForm.setLoading, characterForm.setNickname);
                                     const params = new URLSearchParams(window.location.search);
                                     params.set("nickname", inputSearch);
@@ -184,7 +212,7 @@ export default function CharacterClient() {
                             </Tab>
                         )}
                     </Tabs>
-                    {!characterForm.isLoading && !characterForm.isNothing && characterForm.file.profile ? isMobile ? (
+                    {!characterForm.isLoading && !characterForm.isNothing ? isMobile ? (
                         <div className="w-full flex justify-center px-4">
                             <div className="w-full max-w-[360px] min-h-[100px] mt-4">
                                 <BoxAd isLoaded={!characterForm.isLoading}/>

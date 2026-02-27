@@ -18,18 +18,11 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { Character } from "../../store/loginSlice";
 import {  
-    applyAccessories, 
-    applyArmData, 
-    applyEquipment, 
-    applyOrbData, 
-    applyStoneData, 
     CharacterFile, 
-    CharacterInfo, 
     getBackgroundColorByStat, 
     getCardByIndex, 
     getCardGems, 
     getCardSetNames, 
-    getCharacterType, 
     getColorByQuality, 
     getColorByType, 
     getColorProgressArkpassive, 
@@ -54,13 +47,7 @@ import {
     getUrlGemInImage, 
     getWidthByStat, 
     handleSearch, 
-    loadArkpassive, 
-    loadCards, 
-    loadEngraving, 
-    loadGems, 
-    loadStats, 
-    printEngravingLevel, 
-    Stat, 
+    printEngravingLevel
 } from "../lib/characterFeat";
 import { printBonusInTooltip, printCountInTooltip, printHighUpgradeInTooltip, printInfoInTooltip } from "../lib/equipmentPrints";
 import clsx from "clsx";
@@ -73,46 +60,32 @@ import '../css/effects.css';
 import VegaIcon from "@/Icons/VegaIcon";
 import AttackIcon from "@/Icons/AttackIcon";
 import SupportorIcon from "@/Icons/SupportorIcon";
-import { Accessory, ArkpassiveItem, ArkpassivePoint, Arm, CardData, CardSet, Engraving, Equipment, Gem, Orb, Stone } from "../model/types";
+import { CharacterInfo, ExpeditionCharacterInfo } from "../model/types";
 
 // state 관리
 export function useCharacterForm() {
     const [isLoading, setLoading] = useState(false);
     const [isSearched, setSearched] = useState(false);
     const [nickname, setNickname] = useState('');
-    const [file, setFile] = useState<CharacterFile>({
-        profile: null,
-        equipment: null,
-        gem: null,
-        cards: null,
-        stats: null,
-        engraving: null,
-        arkpassive: null,
-        skills: null,
-        collects: null,
-        avatars: null,
-        arkGrid: null
-    });
+    const [characterInfo, setCharacterInfo] = useState<CharacterInfo | null>(null);
+    const [titles, setTitles] = useState<string[]>([]);
     const [isNothing, setNothing] = useState(false);
-    const [gems, setGems] = useState<Gem[]>([]);
     const [isDisable, setDisable] = useState(false);
     const [isLoadingUpdate, setLoadingUpdate] = useState(false);
-    const [expeditions, setExpeditions] = useState<CharacterInfo[]>([]);
+    const [expeditions, setExpeditions] = useState<ExpeditionCharacterInfo[]>([]);
     const [isBadge, setBadge] = useState(false);
-    const [combat, setCombat] = useState(0);
 
     return {
         isLoading, setLoading,
         isSearched, setSearched,
+        characterInfo, setCharacterInfo,
+        titles, setTitles,
         nickname, setNickname,
-        file, setFile,
         isNothing, setNothing,
-        gems, setGems,
         isDisable, setDisable,
         isLoadingUpdate, setLoadingUpdate,
         expeditions, setExpeditions,
-        isBadge, setBadge,
-        combat, setCombat
+        isBadge, setBadge
     }
 }
 
@@ -316,28 +289,26 @@ type ProfileComponentProps = {
     file: CharacterFile
 }
 type NewProfileComponentProps = {
-    file: CharacterFile,
+    info: CharacterInfo,
     isBadge: boolean
 }
-export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
-    const profile = file.profile;
-    const arkpassiveTitle = file.arkpassive.Title;
+export function ProfileComponent({ info, isBadge }: NewProfileComponentProps) {
     const isMobile = useMobileQuery();
     return (
         <div className="w-full h-[max-content] sm:h-[300px] border-b-1 border-[#dddddd] dark:border-[#333333] bg-[#F6F6F6] dark:bg-[#111111]">
             <div className="w-full max-w-[1280px] mx-auto flex flex-col-reverse sm:flex-row relative">
                 <div className="p-5 h-full hidden sm:flex flex-col">
                     <div className="flex gap-2">
-                        <Chip color="secondary" variant="solid" radius="sm">{profile.ServerName}</Chip>
-                        <Chip color="warning" variant="solid" radius="sm">{profile.CharacterClassName}</Chip>
-                        <Chip color="primary" variant="solid" radius="sm" className={clsx(arkpassiveTitle ? 'flex' : 'hidden')}>{arkpassiveTitle}</Chip>
+                        <Chip color="secondary" variant="solid" radius="sm">{info.profile.server}</Chip>
+                        <Chip color="warning" variant="solid" radius="sm">{info.profile.className}</Chip>
+                        <Chip color="primary" variant="solid" radius="sm" className={clsx(info.profile.arkpassiveTitle ? 'flex' : 'hidden')}>{info.profile.arkpassiveTitle}</Chip>
                     </div>
-                    <p className="fadedtext mt-4">{profile.Title ? getParsedText(profile.Title) : '-'}{profile.GuildName ?` · ${profile.GuildName} 길드` : ''}</p>
+                    <p className="fadedtext mt-4">{info.profile.title ? getParsedText(info.profile.title) : '-'}{info.profile.guildName === '-' ?` · ${info.profile.guildName} 길드` : ''}</p>
                     {isBadge ? (
                         <div className="flex gap-2 items-center">
                             <div className="tag-container">
                                 <div className="flex">
-                                    <span className="battletag">{profile.CharacterName}</span>
+                                    <span className="battletag">{info.nickname}</span>
                                     <div className="empty-box"></div>
                                 </div>
                                 <span className="tail-wrapper">
@@ -346,32 +317,32 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
                             </div>
                             <Tooltip showArrow content="후원자 뱃지"><div className="w-12 h-12"><VegaIcon/></div></Tooltip>
                         </div>
-                    ) : <p className="text-2xl font-bold">{profile.CharacterName}</p>}
+                    ) : <p className="text-2xl font-bold">{info.nickname}</p>}
                     <div className="grow flex flex-col sm:flex-row items-end gap-2 mt-4">
                         <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-3">
                             <div>
                                 <p className="fadedtext text-sm">아이템 레벨</p>
-                                <p className="text-lg">{profile.ItemAvgLevel}</p>
+                                <p className="text-lg">{info.profile.itemLevel.toLocaleString()}</p>
                             </div>
                             <div>
                                 <p className="fadedtext text-sm">전투 레벨</p>
-                                <p className="text-lg">{profile.CharacterLevel}</p>
+                                <p className="text-lg">{info.profile.characterLevel.toLocaleString()}</p>
                             </div>
                             <div>
                                 <p className="fadedtext text-sm">원정대 레벨</p>
-                                <p className="text-lg">{profile.ExpeditionLevel}</p>
+                                <p className="text-lg">{info.profile.expeditionLevel.toLocaleString()}</p>
                             </div>
                             <div className="col-span-1 sm:col-span-2">
                                 <p className="fadedtext text-sm">영지</p>
-                                <p className="text-lg">Lv.{profile.TownLevel} {profile.TownName}</p>
+                                <p className="text-lg">Lv.{info.profile.townLevel} {info.profile.townName}</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div className="flex sm:hidden p-5 flex-col z-1 h-[300px] bg-gradient-to-r from-[#15181d] via-[#15181d]/25 to-transparent">
                     <div className="flex gap-2">
-                        <Chip color="secondary" variant="solid" radius="sm">{profile.ServerName}</Chip>
-                        <Chip color="warning" variant="solid" radius="sm">{profile.CharacterClassName}</Chip>
+                        <Chip color="secondary" variant="solid" radius="sm">{info.profile.server}</Chip>
+                        <Chip color="warning" variant="solid" radius="sm">{info.profile.className}</Chip>
                     </div>
                     <Chip 
                         color="primary" 
@@ -379,14 +350,14 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
                         radius="sm" 
                         className={clsx(
                             'mt-2',
-                            arkpassiveTitle ? 'flex' : 'hidden')
-                        }>{arkpassiveTitle}</Chip>
-                    <p className="text-[#dddddd] text-sm mt-4">{profile.Title ? getParsedText(profile.Title) : '-'}{profile.GuildName ?` · ${profile.GuildName} 길드` : ''}</p>
+                            info.profile.arkpassiveTitle ? 'flex' : 'hidden')
+                        }>{info.profile.arkpassiveTitle}</Chip>
+                    <p className="text-[#dddddd] text-sm mt-4">{getParsedText(info.profile.title)}{info.profile.guildName === '-' ?` · ${info.profile.guildName} 길드` : ''}</p>
                     {isBadge ? (
                         <div className="flex gap-2 items-center">
                             <div className="tag-container-mobile mt-2">
                                 <div className="flex">
-                                    <span className="battletag">{profile.CharacterName}</span>
+                                    <span className="battletag">{info.nickname}</span>
                                     <div className="empty-box-mobile"></div>
                                 </div>
                                 <span className="tail-wrapper">
@@ -395,27 +366,27 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
                             </div>
                             <Tooltip showArrow content="후원자 뱃지"><div className="w-12 h-12 text-white"><VegaIcon/></div></Tooltip>
                         </div>
-                    ) : <p className="text-xl font-bold text-white">{profile.CharacterName}</p>}
+                    ) : <p className="text-xl font-bold text-white">{info.nickname}</p>}
                     <div className="grow grid grid-cols-[75px_1fr] mt-5">
                         <p className="fadedtext text-sm">아이템 레벨</p>
-                        <p className="text-sm text-white">{profile.ItemAvgLevel}</p>
+                        <p className="text-sm text-white">{info.profile.itemLevel.toLocaleString()}</p>
                         <p className="fadedtext text-sm">전투 레벨</p>
-                        <p className="text-sm text-white">{profile.CharacterLevel}</p>
+                        <p className="text-sm text-white">{info.profile.characterLevel.toLocaleString()}</p>
                         <p className="fadedtext text-sm">원정대 레벨</p>
-                        <p className="text-sm text-white">{profile.ExpeditionLevel}</p>
+                        <p className="text-sm text-white">{info.profile.expeditionLevel.toLocaleString()}</p>
                         <p className="fadedtext text-sm">영지</p>
-                        <p className="text-sm text-white">Lv.{profile.TownLevel} {profile.TownName}</p>
+                        <p className="text-sm text-white">Lv.{info.profile.townLevel} {info.profile.townName}</p>
                     </div>
                 </div>
                 <div className="grow hidden sm:block"/>
                 <div className="absolute sm:static top-0 left-0 z-0 bg-[#15181d] sm:bg-transparent w-[100vw] sm:w-[440px] h-full sm:h-[300px] overflow-hidden sm:[mask-image:linear-gradient(to_right,transparent,black,black,black)] lg1280:[mask-image:linear-gradient(to_right,transparent,black,black,transparent)]">
                     <img
-                        src={file.profile.CharacterImage}
+                        src={info.profile.characterImageUrl}
                         alt="character-image"
                         className={clsx(
                             "w-[100vw] h-[500px] object-cover scale-130 origin-top",
                             isMobile ? "translate-x-[20%]" : "",
-                            upperClass.includes(profile.CharacterClassName) ? "translate-y-[-28%]" : "translate-y-[-13%]"
+                            upperClass.includes(info.profile.className) ? "translate-y-[-28%]" : "translate-y-[-13%]"
                         )}/>
                 </div>
             </div>
@@ -424,49 +395,31 @@ export function ProfileComponent({ file, isBadge }: NewProfileComponentProps) {
 }
 
 // 능력치 컴포넌트
-type AbilityComponentProps = {
-    file: CharacterFile,
-    gems: Gem[],
-    setGems: SetStateFn<Gem[]>,
-    combat: number
-}
-export function AbilityComponent({ file, gems, setGems, combat }: AbilityComponentProps) {
+export function AbilityComponent({ info }: { info: CharacterInfo }) {
     return (
         <div className="w-full grid grid-cols-1 md960:grid-cols-[5fr_2fr] gap-8">
             <div className="w-full">
                 <div className="block sm:hidden">
-                    <CombatPowerComponent file={file} combat={combat}/>
+                    <CombatPowerComponent info={info}/>
                 </div>
-                <EquipmentComponent file={file}/>
-                <GemComponent file={file} gems={gems} setGems={setGems} combat={combat}/>
-                <CardComponent file={file}/>
+                <EquipmentComponent info={info}/>
+                <GemComponent info={info}/>
+                <CardComponent info={info}/>
             </div>
             <div className="w-full">
                 <div className="hidden sm:block">
-                    <CombatPowerComponent file={file} combat={combat}/>
+                    <CombatPowerComponent info={info}/>
                 </div>
-                <StatComponent file={file}/>
-                <EngravingComponent file={file}/>
-                <ArkpassiveComponent file={file}/>
+                <StatComponent info={info}/>
+                <EngravingComponent info={info}/>
+                <ArkpassiveComponent info={info}/>
             </div>
         </div>
     )
 }
 
 // 전투력 표시 요소
-type CombatPowerComponentProps = {
-    file: CharacterFile,
-    combat: number
-}
-function CombatPowerComponent({ file, combat }: CombatPowerComponentProps) {
-    const profile = file.profile;
-    const arkpassive = file.arkpassive;
-    const [type, setType] = useState('attack');
-
-    useEffect(() => {
-        setType(getCharacterType(arkpassive));
-    }, [file]);
-
+function CombatPowerComponent({ info }: { info: CharacterInfo }) {
     return (
         <Card fullWidth radius="sm" className="mb-8">
             <CardHeader>
@@ -477,53 +430,53 @@ function CombatPowerComponent({ file, combat }: CombatPowerComponentProps) {
                     startContent={(
                         <div>
                             <div className={clsx(
-                                type === 'supportor' ? 'hidden' : 'block'
+                                info.profile.characterType === 'supportor' ? 'hidden' : 'block'
                             )}><AttackIcon size={14}/></div>
                             <div className={clsx(
-                                type === 'supportor' ? 'block' : 'hidden'
+                                info.profile.characterType === 'supportor' ? 'block' : 'hidden'
                             )}><SupportorIcon size={14}/></div>
                         </div>
                     )}
                     variant="flat"
                     size="sm"
                     className="pl-2"
-                    color={type === 'supportor' ? "success" : "danger"}>
-                    {type === 'supportor' ? '서포터' : '딜러'}
+                    color={info.profile.characterType === 'supportor' ? "success" : "danger"}>
+                    {info.profile.characterType === 'supportor' ? '서포터' : '딜러'}
                 </Chip>
             </CardHeader>
             <Divider/>
             <CardBody>
                 <div className={clsx(
                     "w-full h-[60px] relative flex flex-col items-center justify-center",
-                    type === 'supportor' ? "bg-radial from-[#65d87e] dark:from-[#2b6b39] via-transparent to-transparent" : "bg-radial from-[#ce8888] dark:from-[#a50e0e] via-transparent to-transparent"
+                    info.profile.characterType === 'supportor' ? "bg-radial from-[#65d87e] dark:from-[#2b6b39] via-transparent to-transparent" : "bg-radial from-[#ce8888] dark:from-[#a50e0e] via-transparent to-transparent"
                 )}>
                     <p className={clsx(
                         "text-4xl font-bold",
-                        type === 'supportor' ? "text-[#065c1d] dark:text-[#87e09e]" : "text-[#750d0d] dark:text-[#e49e9e]"
-                    )}>{profile.CombatPower ?? '전투력 없음'}</p>
+                        info.profile.characterType === 'supportor' ? "text-[#065c1d] dark:text-[#87e09e]" : "text-[#750d0d] dark:text-[#e49e9e]"
+                    )}>{info.profile.combatPower ?? '전투력 없음'}</p>
                 </div>
                 <Divider className="mt-2 mb-2"/>
                 <div className="w-full flex gap-1 mt-2">
                     <p className="grow fadedtext">최고 전투력</p>
-                    <p>{combat.toLocaleString()}</p>
+                    <p>{info.profile.maxCombatPower.toLocaleString()}</p>
                 </div>
                 <div className="w-full flex gap-1 mt-2">
                     <p className="grow fadedtext">명예 포인트</p>
-                    <p>{profile.HonorPoint.toLocaleString()}</p>
+                    <p>{info.profile.honorPoint.toLocaleString()}</p>
                 </div>
                 <Progress
                     size="sm"
-                    color={getProgressColorByHonor(profile.HonorPoint)}
-                    value={getProgressValueByHonor(profile.HonorPoint)}
-                    maxValue={getProgressMaxByHonor(profile.HonorPoint)}
+                    color={getProgressColorByHonor(info.profile.honorPoint)}
+                    value={getProgressValueByHonor(info.profile.honorPoint)}
+                    maxValue={getProgressMaxByHonor(info.profile.honorPoint)}
                     className="w-full mt-2"/>
-                <p className="fadedtext text-[8pt] mt-2">다음 명예 등급까지 <span className="text-black dark:text-white font-bold text-[9pt]">{getRemainHonor(profile.HonorPoint)}</span> p 남음.</p>
+                <p className="fadedtext text-[8pt] mt-2">다음 명예 등급까지 <span className="text-black dark:text-white font-bold text-[9pt]">{getRemainHonor(info.profile.honorPoint)}</span> p 남음.</p>
                 <Divider className="mt-2 mb-2"/>
                 <p className="fadedtext mb-2">휘장</p>
                 <div className="w-full grid grid-cols-4 gap-2">
-                    {profile.Decorations.Emblems ? (profile.Decorations.Emblems as string[]).map((emblem, idx) => (
+                    {info.profile.emblems.map((emblem, idx) => (
                         <img key={idx} src={emblem} alt={`emblem-${idx}`} className="w-[50px] h-[50px]"/>
-                    )) : null}
+                    ))}
                 </div>
             </CardBody>
         </Card>
@@ -531,22 +484,11 @@ function CombatPowerComponent({ file, combat }: CombatPowerComponentProps) {
 }
 
 // 장비 컴포넌트 - 능력치 컴포넌트 요소
-export function EquipmentComponent({ file }: ProfileComponentProps) {
-    const [equipments, setEquipments] = useState<Equipment[]>([]);
-    const [accessories, setAccessories] = useState<Accessory[]>([]);
-    const [arm, setArm] = useState<Arm | null>(null);
-    const [stone, setStone] = useState<Stone | null>(null);
-    const [orb, setOrb] = useState<Orb | null>(null);
-    const equipment = file.equipment;
+export function EquipmentComponent({ info }: { info: CharacterInfo }) {
     const isMobile = useMobileQuery();
-
-    useEffect(() => {
-        applyEquipment(equipment, setEquipments);
-        applyAccessories(equipment, setAccessories);
-        applyArmData(equipment, setArm);
-        applyStoneData(equipment, setStone);
-        applyOrbData(equipment, setOrb);
-    }, []);
+    const arm = info.equipment.arm;
+    const stone = info.equipment.stone;
+    const orb = info.equipment.orb;
 
     return (
         <Card fullWidth radius="sm">
@@ -555,10 +497,10 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
             <CardBody>
                 <div className="w-full grid grid-cols-1 sm:grid-cols-[3fr_1px_2fr] gap-2">
                     <div>
-                        {equipments.map((equip, index) => {
+                        {info.equipment.equipments.map((equip, index) => {
                             let parsedEquipment;
                             try {
-                                parsedEquipment = JSON.parse(getObjectByArmorType(equipment, equip.type).Tooltip)
+                                parsedEquipment = JSON.parse(getObjectByArmorType(info.equipment.equipments, equip.type).tooltip)
                             } catch (err) {
                                 console.error("Tooltip JSON 파싱 오류:", err);
                                 return null;
@@ -644,7 +586,7 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
                     </div>
                     <Divider orientation={isMobile ? 'horizontal' : 'vertical'}/>
                     <div>
-                        {accessories.map((equip, index) => {
+                        {info.equipment.accessories.map((equip, index) => {
                             let parsedEquipment;
                             try {
                                 parsedEquipment = JSON.parse(equip.tooltip);
@@ -924,14 +866,15 @@ export function EquipmentComponent({ file }: ProfileComponentProps) {
 }
 
 // 보석 컴포넌트
-function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
+function GemComponent({ info }: { info: CharacterInfo }) {
     const [attack, setAttack] = useState(0);
+    const gems = info.gems;
 
     useEffect(() => {
-        if (file.gem) {
-            loadGems(file.gem, setGems, setAttack);
-        }
-    }, [file.gem]);
+        let sum = 0;
+        info.gems.forEach(gem => sum += gem.attack);
+        setAttack(sum);
+    }, [info]);
 
     return (
         <Card radius="sm" className="mt-8">
@@ -1081,13 +1024,9 @@ function GemComponent({ file, gems, setGems }: AbilityComponentProps) {
 }
 
 // 카드 컴포넌트
-function CardComponent({ file }: ProfileComponentProps) {
-    const [cards, setCards] = useState<CardData[]>([]);
-    const [cardSet, setCardSet] = useState<CardSet[]>([]);
-
-    useEffect(() => {
-        loadCards(file.cards, setCards, setCardSet);
-    }, [file.cards]);
+function CardComponent({ info }: { info: CharacterInfo }) {
+    const cards = info.card.cards;
+    const cardSet = info.card.sets;
 
     return (
         <Card radius="sm" className="mt-8">
@@ -1168,13 +1107,9 @@ function CardComponent({ file }: ProfileComponentProps) {
 }
 
 // 스택 컴포넌트
-function StatComponent({ file }: ProfileComponentProps) {
-    const [stat, setStat] = useState<Stat[]>([]);
+function StatComponent({ info }: { info: CharacterInfo }) {
+    const stat = info.stats;
     const isMobile = useMobileQuery();
-
-    useEffect(() => {
-        loadStats(file.stats, setStat);
-    }, [file.stats]);
 
     return (
         <Card radius="sm">
@@ -1187,7 +1122,7 @@ function StatComponent({ file }: ProfileComponentProps) {
                         placement={isMobile ? 'top' : 'left'}
                         content={<div className="w-[340px] p-2">
                             <ul className="list-disc pl-4">
-                                {getStatByType(stat, '공격력') ? getStatByType(stat, '공격력')?.tooltip.map((line, idx) => (
+                                {getStatByType(stat, '공격력') ? getStatByType(stat, '공격력')?.tooltip.map((line: string, idx: number) => (
                                     <li key={idx}>{line}</li>
                                 )) : <></>}
                             </ul>
@@ -1256,13 +1191,9 @@ function StatComponent({ file }: ProfileComponentProps) {
 }
 
 // 각인 컴포넌트
-function EngravingComponent({ file }: ProfileComponentProps) {
-    const [engravings, setEngravings] = useState<Engraving[]>([]);
+function EngravingComponent({ info }: { info: CharacterInfo }) {
+    const engravings = info.engravings;
     const isMobile = useMobileQuery();
-
-    useEffect(() => {
-        loadEngraving(file.engraving, setEngravings);
-    }, [file.profile])
 
     return (
         <Card radius="sm" className="mt-8">
@@ -1316,16 +1247,12 @@ function EngravingComponent({ file }: ProfileComponentProps) {
 }
 
 // 아크패시브 컴포넌트
-function ArkpassiveComponent({ file }: ProfileComponentProps) {
-    const [points, setPoints] = useState<ArkpassivePoint[]>([]);
-    const [evolution, setEvolution] = useState<ArkpassiveItem[]>([]);
-    const [enlightenment, setEnlightenment] = useState<ArkpassiveItem[]>([]);
-    const [jump, setJump] = useState<ArkpassiveItem[]>([]);
+function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
+    const points = info.arkpassive.points;
+    const evolution = info.arkpassive.evolution;
+    const enlightenment = info.arkpassive.enlightenment;
+    const jump = info.arkpassive.jump;
     const isMobile = useMobileQuery();
-
-    useEffect(() => {
-        loadArkpassive(file.arkpassive, setPoints, setEvolution, setEnlightenment, setJump);
-    }, [file.arkpassive]);
 
     return (
         <Card radius="sm" className="mt-8">

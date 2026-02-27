@@ -1,28 +1,14 @@
-import { useEffect, useState } from "react"
-import { CharacterFile } from "../lib/characterFeat"
-import { AvgSkillPowers, getAllDestory, getTextAttack, getTextTime, loadSkillPoint, loadSkills } from "../lib/skillFeat"
+import { AvgSkillPowers, getAllDestory, getTextAttack, getTextTime } from "../lib/skillFeat"
 import { Card, CardBody, CardHeader, Chip, Divider, Popover, PopoverContent, PopoverTrigger, Progress } from "@heroui/react"
 import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils"
 import clsx from "clsx"
-import { Gem, Skill } from "../model/types"
+import { CharacterInfo, Gem, Skill } from "../model/types"
 
 // 스킬 컴포넌트
-type SkillComponentProps = {
-    file: CharacterFile,
-    gems: Gem[]
-}
-export function SkillComponent({ file, gems }: SkillComponentProps) {
-    const [skills, setSkills] = useState<Skill[]>([]);
-    const [skillPoint, setSkillPoint] = useState(0);
-    const [maxPoint, setMaxPoint] = useState(0);
-
-    useEffect(() => {
-        loadSkills(file.skills, gems, setSkills);
-    }, [file.skills]);
-
-    useEffect(() => {
-        loadSkillPoint(file.profile, setSkillPoint, setMaxPoint);
-    }, [file.profile]);
+export function SkillComponent({ info }: { info: CharacterInfo }) {
+    const skills = info.skill.skills;
+    const skillPoint = info.skill.skillPoint;
+    const maxPoint = info.skill.maxPoint;
 
     return (
         <div className="w-full">

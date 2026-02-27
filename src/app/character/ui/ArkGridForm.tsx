@@ -1,21 +1,12 @@
-import { useEffect, useState } from "react"
-import { CharacterFile } from "../lib/characterFeat"
-import { getColorByType, getCore, getGem, getOtherOptions, getPoint, getPower, loadArkGrid } from "../lib/arkGridPrints"
+import { getColorByType, getCore, getGem, getOtherOptions, getPoint, getPower } from "../lib/arkGridPrints"
 import { Card, CardBody, CardHeader, Chip, Divider, Tooltip } from "@heroui/react"
 import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils"
-import { ArkGridOption, Core } from "../model/types"
+import { CharacterInfo } from "../model/types"
 
 // 아크그리드 컴포넌트
-type ArkGridComponentProps = {
-    file: CharacterFile
-}
-export function ArkGridComponent( { file }: ArkGridComponentProps ) {
-    const [cores, setCores] = useState<Core[]>([]);
-    const [options, setOptions] = useState<ArkGridOption[]>([]);
-
-    useEffect(() => {
-        loadArkGrid(file.arkGrid, setCores, setOptions);
-    }, [file.arkGrid]);
+export function ArkGridComponent( { info }: { info: CharacterInfo } ) {
+    const cores = info.arkgrid.cores;
+    const options = info.arkgrid.options;
 
     return (
         <div className="w-full">
