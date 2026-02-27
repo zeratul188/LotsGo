@@ -286,3 +286,10 @@ export type GemInfo = {
     skillStr: string,
     attack: number
 }
+
+// 칭호 정보
+export type Title = {
+    title: string,
+    grade: string,
+    condition: string
+}

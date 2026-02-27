@@ -109,7 +109,7 @@ export default function CharacterClient() {
         {
             id: 'ability',
             label: '능력치',
-            component: <AbilityComponent info={characterForm.characterInfo}/>
+            component: <AbilityComponent info={characterForm.characterInfo} titles={characterForm.titles}/>
         },
         {
             id: 'skill',

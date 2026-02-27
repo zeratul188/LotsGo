@@ -6,7 +6,7 @@ import { CharacterHistory, saveHistory, updateHistory } from "./history";
 import { Badge } from "../../api/administrator/badge/route";
 import { LoginUser } from "../../store/loginSlice";
 import { decrypt } from "@/utiils/crypto";
-import { CardData, CardSet, CharacterInfo, Equipment, ExpeditionCharacterInfo, Gem, Stat, StoneEffect } from "../model/types";
+import { CardData, CardSet, CharacterInfo, Equipment, ExpeditionCharacterInfo, Gem, Stat, StoneEffect, Title } from "../model/types";
 import { getCharacterInfoByFile, toNumber } from "./characterInfo";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
@@ -350,7 +350,12 @@ export async function loadProfile(
 
 // 해당 칭호가 희귀칭호인지 아닌지 파악하는 함수
 function isRareTitle(title: string): boolean {
-    return data.titles.includes(title);
+    return data.titles?.some(t => t.title === title);
+}
+
+// 칭호 이름으로 칭호 데이터 가져오기
+export function getTitleData(title: string): Title | undefined {
+    return data.titles?.find(t => t.title === title);
 }
 
 // 장비 종류에 따른 값 반환 함수

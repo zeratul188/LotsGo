@@ -44,6 +44,7 @@ import {
     getSumStat, 
     getTextByGrade, 
     getTextColorByGrade, 
+    getTitleData, 
     getUrlGemInImage, 
     getWidthByStat, 
     handleSearch, 
@@ -285,9 +286,6 @@ export function ExpeditionComponent({ setSearched, setLoading, setNickname }: Se
 const upperClass = ['도화가', '기상술사', '환수사'];
 
 // 캐릭터 프로파일
-type ProfileComponentProps = {
-    file: CharacterFile
-}
 type NewProfileComponentProps = {
     info: CharacterInfo,
     isBadge: boolean
@@ -303,7 +301,7 @@ export function ProfileComponent({ info, isBadge }: NewProfileComponentProps) {
                         <Chip color="warning" variant="solid" radius="sm">{info.profile.className}</Chip>
                         <Chip color="primary" variant="solid" radius="sm" className={clsx(info.profile.arkpassiveTitle ? 'flex' : 'hidden')}>{info.profile.arkpassiveTitle}</Chip>
                     </div>
-                    <p className="fadedtext mt-4">{info.profile.title ? getParsedText(info.profile.title) : '-'}{info.profile.guildName === '-' ?` · ${info.profile.guildName} 길드` : ''}</p>
+                    <p className="fadedtext mt-4">{info.profile.title ? getParsedText(info.profile.title) : '-'}{info.profile.guildName !== '-' ?` · ${info.profile.guildName} 길드` : ''}</p>
                     {isBadge ? (
                         <div className="flex gap-2 items-center">
                             <div className="tag-container">
@@ -395,7 +393,7 @@ export function ProfileComponent({ info, isBadge }: NewProfileComponentProps) {
 }
 
 // 능력치 컴포넌트
-export function AbilityComponent({ info }: { info: CharacterInfo }) {
+export function AbilityComponent({ info, titles }: { info: CharacterInfo, titles: string[] }) {
     return (
         <div className="w-full grid grid-cols-1 md960:grid-cols-[5fr_2fr] gap-8">
             <div className="w-full">
@@ -404,6 +402,7 @@ export function AbilityComponent({ info }: { info: CharacterInfo }) {
                 </div>
                 <EquipmentComponent info={info}/>
                 <GemComponent info={info}/>
+                <ArkpassiveComponent info={info}/>
                 <CardComponent info={info}/>
             </div>
             <div className="w-full">
@@ -412,9 +411,30 @@ export function AbilityComponent({ info }: { info: CharacterInfo }) {
                 </div>
                 <StatComponent info={info}/>
                 <EngravingComponent info={info}/>
-                <ArkpassiveComponent info={info}/>
+                <TitleComponent titles={titles}/>
             </div>
         </div>
+    )
+}
+
+// 희귀칭호 목록
+function TitleComponent({titles}: { titles: string[] }) {
+    return (
+        <Card fullWidth radius="sm" className="mt-8">
+            <CardHeader>보유 칭호</CardHeader>
+            <Divider/>
+            <CardBody>
+                {titles.map((title, index) => (
+                    <div key={index} className="mb-2">
+                        <p className={clsx(
+                            'font-bold text-sm',
+                            getColorTextByGrade(getTitleData(title)?.grade ?? 'default')
+                        )}>{title}</p>
+                        <p className="fadedtext text-[9pt]">{getTitleData(title)?.condition ?? '-'}</p>
+                    </div>
+                ))}
+            </CardBody>
+        </Card>
     )
 }
 
@@ -491,100 +511,103 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
     const orb = info.equipment.orb;
 
     return (
-        <Card fullWidth radius="sm">
-            <CardHeader>장비</CardHeader>
-            <Divider/>
-            <CardBody>
-                <div className="w-full grid grid-cols-1 sm:grid-cols-[3fr_1px_2fr] gap-2">
-                    <div>
-                        {info.equipment.equipments.map((equip, index) => {
-                            let parsedEquipment;
-                            try {
-                                parsedEquipment = JSON.parse(getObjectByArmorType(info.equipment.equipments, equip.type).tooltip)
-                            } catch (err) {
-                                console.error("Tooltip JSON 파싱 오류:", err);
-                                return null;
-                            }
-                            return (
-                                <Popover key={index} showArrow disableAnimation>
-                                    <PopoverTrigger>
-                                        <div className="flex gap-2 mb-4 items-center cursor-pointer">
-                                            <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(equip.grade)}`}>
+        <div className="w-full grid sm:grid-cols-2 gap-8">
+            <Card fullWidth radius="sm">
+                <CardHeader>장비</CardHeader>
+                <Divider/>
+                <CardBody>
+                    {info.equipment.equipments.map((equip, index) => {
+                        let parsedEquipment;
+                        try {
+                            parsedEquipment = JSON.parse(getObjectByArmorType(info.equipment.equipments, equip.type).tooltip)
+                        } catch (err) {
+                            console.error("Tooltip JSON 파싱 오류:", err);
+                            return null;
+                        }
+                        return (
+                            <Popover key={index} showArrow disableAnimation>
+                                <PopoverTrigger>
+                                    <div className="flex gap-2 mb-4 items-center cursor-pointer">
+                                        <div className={`w-[46px] h-[46px] p-[3px] aspect-square rounded-md ${getBackgroundByGrade(equip.grade)}`}>
+                                            <img
+                                                src={equip.icon}
+                                                alt="equip-icon"
+                                                className="w-10 h-10"/>
+                                        </div>
+                                        <div className="grow truncate">
+                                            <div className="flex gap-1 items-center">
+                                                <p className="fadedtext text-[10pt] whitespace-nowrap w-[max-content]">{equip.type}</p>
+                                                <p className={`${getColorTextByGrade(equip.grade)} grow`}>{equip.name}</p>
+                                            </div>
+                                            <div className="flex gap-2 items-center">
+                                                {equip.quality >= 0 ? <Chip size="sm" radius="sm" className={`${getColorByQuality(equip.quality)} text-white`}>{equip.quality}</Chip> : <></>}
+                                                {equip.highUpgrade > 0 ? <Tooltip showArrow content={`상급 재련 +${equip.highUpgrade}`}>
+                                                    <Chip size="sm" radius="sm" variant="flat">
+                                                        <p>+{equip.highUpgrade}</p>
+                                                    </Chip>
+                                                </Tooltip> : <></>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </PopoverTrigger>
+                                <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
+                                    <div className="w-[300px] p-3 max-h-[600px] overflow-y-auto scrollbar-hide">
+                                        <h3 className={`w-full text-center text-lg font-bold ${getColorTextByGrade(equip.grade)}`}>{equip.name}</h3>
+                                        <div className="w-full flex gap-2 mt-3">
+                                            <div className={`w-[55px] h-[55px] p-[5px] aspect-square rounded-md ${getBackgroundByGrade(equip.grade)}`}>
                                                 <img
                                                     src={equip.icon}
-                                                    alt="equip-icon"
-                                                    className="w-10 h-10"/>
+                                                    alt="w-[45px] h-[45px] detail-equip-icon"/>
                                             </div>
-                                            <div className="grow truncate">
-                                                <div className="flex gap-1 items-center">
-                                                    <p className="fadedtext text-[10pt] whitespace-nowrap w-[max-content]">{equip.type}</p>
-                                                    <p className={`${getColorTextByGrade(equip.grade)} grow`}>{equip.name}</p>
+                                            <div className="grow">
+                                                <div className="flex gap-2">
+                                                    <p className={`grow ${getColorTextByGrade(equip.grade)}`}>{getParsedText(parsedEquipment.Element_001.value.leftStr0)}</p>
+                                                    <p className="fadedtext grow text-right">Lv.{getParsedText(parsedEquipment.Element_001.value.leftStr2).replaceAll('아이템 레벨 ', '')}</p>
                                                 </div>
-                                                <div className="flex gap-2 items-center">
-                                                    {equip.quality >= 0 ? <Chip size="sm" radius="sm" className={`${getColorByQuality(equip.quality)} text-white`}>{equip.quality}</Chip> : <></>}
-                                                    {equip.highUpgrade > 0 ? <Tooltip showArrow content={`상급 재련 +${equip.highUpgrade}`}>
-                                                        <Chip size="sm" radius="sm" variant="flat">
-                                                            <p>+{equip.highUpgrade}</p>
-                                                        </Chip>
-                                                    </Tooltip> : <></>}
-                                                </div>
+                                                <Progress
+                                                    value={equip.quality}
+                                                    maxValue={100}
+                                                    size="sm"
+                                                    color="primary"
+                                                    label={`${getParsedText(parsedEquipment.Element_001.value.leftStr1)} : ${equip.quality}`}
+                                                    className="w-full fadedtext"/>
                                             </div>
                                         </div>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
-                                        <div className="w-[300px] p-3 max-h-[600px] overflow-y-auto scrollbar-hide">
-                                            <h3 className={`w-full text-center text-lg font-bold ${getColorTextByGrade(equip.grade)}`}>{equip.name}</h3>
-                                            <div className="w-full flex gap-2 mt-3">
-                                                <div className={`w-[55px] h-[55px] p-[5px] aspect-square rounded-md ${getBackgroundByGrade(equip.grade)}`}>
-                                                    <img
-                                                        src={equip.icon}
-                                                        alt="w-[45px] h-[45px] detail-equip-icon"/>
-                                                </div>
-                                                <div className="grow">
-                                                    <div className="flex gap-2">
-                                                        <p className={`grow ${getColorTextByGrade(equip.grade)}`}>{getParsedText(parsedEquipment.Element_001.value.leftStr0)}</p>
-                                                        <p className="fadedtext grow text-right">Lv.{getParsedText(parsedEquipment.Element_001.value.leftStr2).replaceAll('아이템 레벨 ', '')}</p>
-                                                    </div>
-                                                    <Progress
-                                                        value={equip.quality}
-                                                        maxValue={100}
-                                                        size="sm"
-                                                        color="primary"
-                                                        label={`${getParsedText(parsedEquipment.Element_001.value.leftStr1)} : ${equip.quality}`}
-                                                        className="w-full fadedtext"/>
-                                                </div>
-                                            </div>
-                                            <div className="w-full flex gap-2 fadedtext mt-2">
-                                                <p className="grow">{getParsedText(parsedEquipment.Element_002.value)}</p>
-                                                <p className="grow text-right">{getParsedText(parsedEquipment.Element_003.value)}</p>
-                                            </div>
-                                            {equip.highUpgrade > 0 ? (<div className="mt-2">
-                                                {printHighUpgradeInTooltip(parsedEquipment).split(/\r?\n/).map((line, i) => (
-                                                    <p key={i} className={i === 0 ? 'font-bold' : 'text-[9pt]'}>{line}</p>
-                                                ))}
-                                            </div>) : <></>}
-                                            {printInfoInTooltip(parsedEquipment) ? (
-                                                <div className="mt-2">
-                                                    <p className="fadedtext">{printInfoInTooltip(parsedEquipment)?.title}</p>
-                                                    <p className="whitespace-pre-line">{printInfoInTooltip(parsedEquipment)?.content}</p>
-                                                </div>
-                                            ) : <></>}
-                                            {printBonusInTooltip(parsedEquipment) ? (
-                                                <div className="mt-2">
-                                                    <p className="fadedtext">{printBonusInTooltip(parsedEquipment)?.title}</p>
-                                                    <p className="whitespace-pre-line">{printBonusInTooltip(parsedEquipment)?.content}</p>
-                                                </div>
-                                            ) : <></>}
-                                            {printCountInTooltip(parsedEquipment) ? (
-                                                <p className="mt-2">{printCountInTooltip(parsedEquipment)?.replaceAll('|', '')}</p>
-                                            ) : <></>}
+                                        <div className="w-full flex gap-2 fadedtext mt-2">
+                                            <p className="grow">{getParsedText(parsedEquipment.Element_002.value)}</p>
+                                            <p className="grow text-right">{getParsedText(parsedEquipment.Element_003.value)}</p>
                                         </div>
-                                    </PopoverContent>
-                                </Popover>
-                            )
-                        })}
-                    </div>
-                    <Divider orientation={isMobile ? 'horizontal' : 'vertical'}/>
+                                        {equip.highUpgrade > 0 ? (<div className="mt-2">
+                                            {printHighUpgradeInTooltip(parsedEquipment).split(/\r?\n/).map((line, i) => (
+                                                <p key={i} className={i === 0 ? 'font-bold' : 'text-[9pt]'}>{line}</p>
+                                            ))}
+                                        </div>) : <></>}
+                                        {printInfoInTooltip(parsedEquipment) ? (
+                                            <div className="mt-2">
+                                                <p className="fadedtext">{printInfoInTooltip(parsedEquipment)?.title}</p>
+                                                <p className="whitespace-pre-line">{printInfoInTooltip(parsedEquipment)?.content}</p>
+                                            </div>
+                                        ) : <></>}
+                                        {printBonusInTooltip(parsedEquipment) ? (
+                                            <div className="mt-2">
+                                                <p className="fadedtext">{printBonusInTooltip(parsedEquipment)?.title}</p>
+                                                <p className="whitespace-pre-line">{printBonusInTooltip(parsedEquipment)?.content}</p>
+                                            </div>
+                                        ) : <></>}
+                                        {printCountInTooltip(parsedEquipment) ? (
+                                            <p className="mt-2">{printCountInTooltip(parsedEquipment)?.replaceAll('|', '')}</p>
+                                        ) : <></>}
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                        )
+                    })}
+                </CardBody>
+            </Card>
+            <Card fullWidth radius="sm">
+                <CardHeader>악세</CardHeader>
+                <Divider/>
+                <CardBody>
                     <div>
                         {info.equipment.accessories.map((equip, index) => {
                             let parsedEquipment;
@@ -859,9 +882,9 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                             </div>
                         ) : null}
                     </div>
-                </div>
-            </CardBody>
-        </Card>
+                </CardBody>
+            </Card>
+        </div>
     )
 }
 
@@ -1261,109 +1284,121 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
             <CardBody>
                 <div className="w-full grid grid-cols-3 gap-2 mb-2">
                     {points.map((point, index) => (
-                        <div key={index} className="flex flex-col items-center">
-                            <p className="fadedtext text-sm">{point.type}</p>
-                            <p className={`${getColorByType(point.type)} text-2xl font-bold`}>{point.point}</p>
-                            <Chip size="sm" variant="flat" className="mt-1">{point.description ? point.description : '미개방'}</Chip>
-                            <Progress
-                                size="sm"
-                                color={getColorProgressArkpassive(point.type)}
-                                value={point.point}
-                                maxValue={point.max}
-                                className="w-[70px] mt-2"/>
+                        <div key={index} className="w-full flex flex-col sm:flex-row sm:gap-4 items-center justify-center">
+                            <div className="flex flex-col items-center">
+                                <p className="fadedtext text-sm">{point.type}</p>
+                                <p className={`${getColorByType(point.type)} text-2xl font-bold`}>{point.point}</p>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <Chip size="sm" variant="flat" className="mt-1">{point.description ? point.description : '미개방'}</Chip>
+                                <Progress
+                                    size="sm"
+                                    color={getColorProgressArkpassive(point.type)}
+                                    value={point.point}
+                                    maxValue={point.max}
+                                    className="w-[70px] mt-2"/>
+                            </div>
                         </div>
                     ))}
                 </div>
-                <Chip
-                    color="warning"
-                    size="md"
-                    radius="sm"
-                    variant="flat"
-                    className={clsx(
-                        "min-w-full text-center mt-4 mb-4",
-                        evolution.length > 0 ? 'flex' : 'hidden'
-                    )}>
-                    진화
-                </Chip>
-                {evolution.map((item, index) => (
-                    <Tooltip 
-                        key={index} 
-                        placement={isMobile ? 'bottom' : 'left'} 
-                        showArrow 
-                        content={<div className="p-2">
-                            <p className="max-w-[320px]">{item.description}</p>
-                        </div>}>
-                        <div className="flex gap-2 mb-2 items-center">
-                            <img
-                                src={item.icon}
-                                alt="arkpassvie-icon"
-                                className="w-6 h-6 rounded-md"/>
-                            <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
-                            <p className="text-sm">Lv.{item.level}</p>
-                            <p className="grow text-sm">{item.name}</p>
-                        </div>
-                    </Tooltip>
-                ))}
-                <Chip
-                    color="primary"
-                    size="md"
-                    radius="sm"
-                    variant="flat"
-                    className={clsx(
-                        "min-w-full text-center mt-2 mb-4",
-                        enlightenment.length > 0 ? 'flex' : 'hidden'
-                    )}>
-                    깨달음
-                </Chip>
-                {enlightenment.map((item, index) => (
-                    <Tooltip 
-                        key={index} 
-                        placement={isMobile ? 'bottom' : 'left'} 
-                        showArrow 
-                        content={<div className="p-2">
-                            <p className="max-w-[320px]">{item.description}</p>
-                        </div>}>
-                        <div className="flex gap-2 mb-2 items-center">
-                            <img
-                                src={item.icon}
-                                alt="arkpassvie-icon"
-                                className="w-6 h-6 rounded-md"/>
-                            <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
-                            <p className="text-sm">Lv.{item.level}</p>
-                            <p className="grow text-sm">{item.name}</p>
-                        </div>
-                    </Tooltip>
-                ))}
-                <Chip
-                    color="success"
-                    size="md"
-                    radius="sm"
-                    variant="flat"
-                    className={clsx(
-                        "min-w-full text-center mt-2 mb-4",
-                        jump.length > 0 ? 'flex' : 'hidden'
-                    )}>
-                    도약
-                </Chip>
-                {jump.map((item, index) => (
-                    <Tooltip 
-                        key={index} 
-                        placement={isMobile ? 'bottom' : 'left'} 
-                        showArrow 
-                        content={<div className="p-2">
-                            <p className="max-w-[320px]">{item.description}</p>
-                        </div>}>
-                        <div className="flex gap-2 mb-2 items-center">
-                            <img
-                                src={item.icon}
-                                alt="arkpassvie-icon"
-                                className="w-6 h-6 rounded-md"/>
-                            <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
-                            <p className="text-sm">Lv.{item.level}</p>
-                            <p className="grow text-sm">{item.name}</p>
-                        </div>
-                    </Tooltip>
-                ))}
+                <div className="w-full grid sm:grid-cols-3 gap-4 mt-1">
+                    <div>
+                        <Chip
+                            color="warning"
+                            size="md"
+                            radius="sm"
+                            variant="flat"
+                            className={clsx(
+                                "min-w-full text-center mb-4",
+                                evolution.length > 0 ? 'flex' : 'hidden'
+                            )}>
+                            진화
+                        </Chip>
+                        {evolution.map((item, index) => (
+                            <Tooltip 
+                                key={index} 
+                                placement={isMobile ? 'bottom' : 'left'} 
+                                showArrow 
+                                content={<div className="p-2">
+                                    <p className="max-w-[320px]">{item.description}</p>
+                                </div>}>
+                                <div className="flex gap-2 mb-2 items-center">
+                                    <img
+                                        src={item.icon}
+                                        alt="arkpassvie-icon"
+                                        className="w-6 h-6 rounded-md"/>
+                                    <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
+                                    <p className="text-sm">Lv.{item.level}</p>
+                                    <p className="grow text-sm">{item.name}</p>
+                                </div>
+                            </Tooltip>
+                        ))}
+                    </div>
+                    <div>
+                        <Chip
+                            color="primary"
+                            size="md"
+                            radius="sm"
+                            variant="flat"
+                            className={clsx(
+                                "min-w-full text-center mb-4",
+                                enlightenment.length > 0 ? 'flex' : 'hidden'
+                            )}>
+                            깨달음
+                        </Chip>
+                        {enlightenment.map((item, index) => (
+                            <Tooltip 
+                                key={index} 
+                                placement={isMobile ? 'bottom' : 'left'} 
+                                showArrow 
+                                content={<div className="p-2">
+                                    <p className="max-w-[320px]">{item.description}</p>
+                                </div>}>
+                                <div className="flex gap-2 mb-2 items-center">
+                                    <img
+                                        src={item.icon}
+                                        alt="arkpassvie-icon"
+                                        className="w-6 h-6 rounded-md"/>
+                                    <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
+                                    <p className="text-sm">Lv.{item.level}</p>
+                                    <p className="grow text-sm">{item.name}</p>
+                                </div>
+                            </Tooltip>
+                        ))}
+                    </div>
+                    <div>
+                        <Chip
+                            color="success"
+                            size="md"
+                            radius="sm"
+                            variant="flat"
+                            className={clsx(
+                                "min-w-full text-center mb-4",
+                                jump.length > 0 ? 'flex' : 'hidden'
+                            )}>
+                            도약
+                        </Chip>
+                        {jump.map((item, index) => (
+                            <Tooltip 
+                                key={index} 
+                                placement={isMobile ? 'bottom' : 'left'} 
+                                showArrow 
+                                content={<div className="p-2">
+                                    <p className="max-w-[320px]">{item.description}</p>
+                                </div>}>
+                                <div className="flex gap-2 mb-2 items-center">
+                                    <img
+                                        src={item.icon}
+                                        alt="arkpassvie-icon"
+                                        className="w-6 h-6 rounded-md"/>
+                                    <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
+                                    <p className="text-sm">Lv.{item.level}</p>
+                                    <p className="grow text-sm">{item.name}</p>
+                                </div>
+                            </Tooltip>
+                        ))}
+                    </div>
+                </div>
             </CardBody>
         </Card>
     )
