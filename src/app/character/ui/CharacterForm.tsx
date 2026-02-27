@@ -294,7 +294,7 @@ export function ProfileComponent({ info, isBadge }: NewProfileComponentProps) {
     const isMobile = useMobileQuery();
     return (
         <div className="w-full h-[max-content] sm:h-[300px] border-b-1 border-[#dddddd] dark:border-[#333333] bg-[#F6F6F6] dark:bg-[#111111]">
-            <div className="w-full max-w-[1280px] mx-auto flex flex-col-reverse sm:flex-row relative">
+            <div className="w-full h-full max-w-[1280px] mx-auto flex flex-col-reverse sm:flex-row relative">
                 <div className="p-5 h-full hidden sm:flex flex-col">
                     <div className="flex gap-2">
                         <Chip color="secondary" variant="solid" radius="sm">{info.profile.server}</Chip>
@@ -316,24 +316,36 @@ export function ProfileComponent({ info, isBadge }: NewProfileComponentProps) {
                             <Tooltip showArrow content="후원자 뱃지"><div className="w-12 h-12"><VegaIcon/></div></Tooltip>
                         </div>
                     ) : <p className="text-2xl font-bold">{info.nickname}</p>}
+                    <div className="flex items-center gap-2 mt-2">
+                        <p className="fadedtext text-sm">영지</p>
+                        <p className="text-md">Lv.{info.profile.townLevel} {info.profile.townName}</p>
+                    </div>
                     <div className="grow flex flex-col sm:flex-row items-end gap-2 mt-4">
-                        <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            <div>
-                                <p className="fadedtext text-sm">아이템 레벨</p>
-                                <p className="text-lg">{info.profile.itemLevel.toLocaleString()}</p>
-                            </div>
-                            <div>
-                                <p className="fadedtext text-sm">전투 레벨</p>
-                                <p className="text-lg">{info.profile.characterLevel.toLocaleString()}</p>
-                            </div>
-                            <div>
-                                <p className="fadedtext text-sm">원정대 레벨</p>
-                                <p className="text-lg">{info.profile.expeditionLevel.toLocaleString()}</p>
-                            </div>
-                            <div className="col-span-1 sm:col-span-2">
-                                <p className="fadedtext text-sm">영지</p>
-                                <p className="text-lg">Lv.{info.profile.townLevel} {info.profile.townName}</p>
-                            </div>
+                        <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-8">
+                            <Card isBlurred radius="sm" shadow="sm">
+                                <CardBody>
+                                    <div>
+                                        <p className="fadedtext text-[9pt]">아이템 레벨</p>
+                                        <p className="text-2xl font-bold">{info.profile.itemLevel.toLocaleString()}</p>
+                                    </div>
+                                </CardBody>
+                            </Card>
+                            <Card isBlurred radius="sm" shadow="sm">
+                                <CardBody>
+                                    <div>
+                                        <p className="fadedtext text-[9pt]">전투 레벨</p>
+                                        <p className="text-2xl font-bold">{info.profile.characterLevel.toLocaleString()}</p>
+                                    </div>
+                                </CardBody>
+                            </Card>
+                            <Card isBlurred radius="sm" shadow="sm">
+                                <CardBody>
+                                    <div>
+                                        <p className="fadedtext text-[9pt]">원정대 레벨</p>
+                                        <p className="text-2xl font-bold">{info.profile.expeditionLevel.toLocaleString()}</p>
+                                    </div>
+                                </CardBody>
+                            </Card>
                         </div>
                     </div>
                 </div>
