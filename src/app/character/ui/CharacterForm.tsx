@@ -1339,7 +1339,7 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                         ))}
                     </div>
                 ) : null}
-                <div className="w-full grid sm:grid-cols-3 gap-4 mt-1">
+                <div className="w-full grid sm:grid-cols-[1fr_1px_1fr_1px_1fr] gap-3 mt-1">
                     <div>
                         <Chip
                             color="warning"
@@ -1372,6 +1372,7 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                             </Tooltip>
                         ))}
                     </div>
+                    {isMobile ? null : <Divider orientation="horizontal" className="h-full"/>}
                     <div>
                         <Chip
                             color="primary"
@@ -1404,6 +1405,7 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                             </Tooltip>
                         ))}
                     </div>
+                    {isMobile ? null : <Divider orientation="horizontal" className="h-full"/>}
                     <div>
                         <Chip
                             color="success"
