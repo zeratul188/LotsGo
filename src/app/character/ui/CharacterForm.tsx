@@ -1301,7 +1301,10 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                                         variant="flat">
                                         {point.type}
                                     </Chip>
-                                    <p className="truncate">{point.description ? point.description : '미개방'}</p>
+                                    <p className={clsx(
+                                        "truncate",
+                                        point.description ? '' : 'fadedtext'
+                                    )}>{point.description ? point.description : '미개방'}</p>
                                     <p className={`ml-auto font-bold ${getColorByType(point.type)}`}>{point.point}</p>
                                 </div>
                             }
