@@ -18,7 +18,6 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { Character } from "../../store/loginSlice";
 import {  
-    CharacterFile, 
     getBackgroundColorByStat, 
     getCardByIndex, 
     getCardGems, 
@@ -62,6 +61,7 @@ import VegaIcon from "@/Icons/VegaIcon";
 import AttackIcon from "@/Icons/AttackIcon";
 import SupportorIcon from "@/Icons/SupportorIcon";
 import { CharacterInfo, ExpeditionCharacterInfo } from "../model/types";
+import { ItemLevelIcon } from "@/Icons/ItemLevelIcon";
 
 // state 관리
 export function useCharacterForm() {
@@ -317,36 +317,31 @@ export function ProfileComponent({ info, isBadge }: NewProfileComponentProps) {
                         </div>
                     ) : <p className="text-2xl font-bold">{info.nickname}</p>}
                     <div className="flex items-center gap-2 mt-2">
+                        <p className="fadedtext text-sm">전투 레벨</p>
+                        <p className="text-md">{info.profile.characterLevel.toLocaleString()}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <p className="fadedtext text-sm">원정대 레벨</p>
+                        <p className="text-md">{info.profile.expeditionLevel}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
                         <p className="fadedtext text-sm">영지</p>
                         <p className="text-md">Lv.{info.profile.townLevel} {info.profile.townName}</p>
                     </div>
-                    <div className="grow flex flex-col sm:flex-row items-end gap-2 mt-4">
-                        <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-8">
-                            <Card isBlurred radius="sm" shadow="sm">
-                                <CardBody>
-                                    <div>
-                                        <p className="fadedtext text-[9pt]">아이템 레벨</p>
-                                        <p className="text-2xl font-bold">{info.profile.itemLevel.toLocaleString()}</p>
+                    <div className="grow flex flex-row items-center gap-3 mt-5">
+                        <Tooltip showArrow content="아이템 레벨">
+                            <Card radius="sm" shadow="sm" isBlurred>
+                                <CardBody className="px-3 py-1">
+                                    <div className="flex items-center gap-1">
+                                        <ItemLevelIcon size={34}/>
+                                        <p className="text-3xl font-bold">{info.profile.itemLevel.toFixed(2)}</p>
                                     </div>
                                 </CardBody>
                             </Card>
-                            <Card isBlurred radius="sm" shadow="sm">
-                                <CardBody>
-                                    <div>
-                                        <p className="fadedtext text-[9pt]">전투 레벨</p>
-                                        <p className="text-2xl font-bold">{info.profile.characterLevel.toLocaleString()}</p>
-                                    </div>
-                                </CardBody>
-                            </Card>
-                            <Card isBlurred radius="sm" shadow="sm">
-                                <CardBody>
-                                    <div>
-                                        <p className="fadedtext text-[9pt]">원정대 레벨</p>
-                                        <p className="text-2xl font-bold">{info.profile.expeditionLevel.toLocaleString()}</p>
-                                    </div>
-                                </CardBody>
-                            </Card>
-                        </div>
+                        </Tooltip>
+                        {info.profile.emblems.map((emblem, idx) => (
+                            <img key={idx} src={emblem} alt={`emblem-${idx}`} className="w-[40px] h-[40px]"/>
+                        ))}
                     </div>
                 </div>
                 <div className="flex sm:hidden p-5 flex-col z-1 h-[300px] bg-gradient-to-r from-[#15181d] via-[#15181d]/25 to-transparent">
@@ -362,7 +357,7 @@ export function ProfileComponent({ info, isBadge }: NewProfileComponentProps) {
                             'mt-2',
                             info.profile.arkpassiveTitle ? 'flex' : 'hidden')
                         }>{info.profile.arkpassiveTitle}</Chip>
-                    <p className="text-[#dddddd] text-sm mt-4">{getParsedText(info.profile.title)}{info.profile.guildName === '-' ?` · ${info.profile.guildName} 길드` : ''}</p>
+                    <p className="text-[#dddddd] text-sm mt-4">{getParsedText(info.profile.title)}{info.profile.guildName !== '-' ?` · ${info.profile.guildName} 길드` : ''}</p>
                     {isBadge ? (
                         <div className="flex gap-2 items-center">
                             <div className="tag-container-mobile mt-2">
@@ -377,15 +372,22 @@ export function ProfileComponent({ info, isBadge }: NewProfileComponentProps) {
                             <Tooltip showArrow content="후원자 뱃지"><div className="w-12 h-12 text-white"><VegaIcon/></div></Tooltip>
                         </div>
                     ) : <p className="text-xl font-bold text-white">{info.nickname}</p>}
-                    <div className="grow grid grid-cols-[75px_1fr] mt-5">
-                        <p className="fadedtext text-sm">아이템 레벨</p>
-                        <p className="text-sm text-white">{info.profile.itemLevel.toLocaleString()}</p>
-                        <p className="fadedtext text-sm">전투 레벨</p>
-                        <p className="text-sm text-white">{info.profile.characterLevel.toLocaleString()}</p>
-                        <p className="fadedtext text-sm">원정대 레벨</p>
-                        <p className="text-sm text-white">{info.profile.expeditionLevel.toLocaleString()}</p>
-                        <p className="fadedtext text-sm">영지</p>
-                        <p className="text-sm text-white">Lv.{info.profile.townLevel} {info.profile.townName}</p>
+                    <div className="grow w-full flex items-end mt-5">
+                        <div className="grow grid grid-cols-[75px_1fr] gap-y-1.5">
+                            <p className="fadedtext text-sm">아이템 레벨</p>
+                            <p className="text-sm text-white">{info.profile.itemLevel.toLocaleString()}</p>
+                            <p className="fadedtext text-sm">전투 레벨</p>
+                            <p className="text-sm text-white">{info.profile.characterLevel.toLocaleString()}</p>
+                            <p className="fadedtext text-sm">원정대 레벨</p>
+                            <p className="text-sm text-white">{info.profile.expeditionLevel.toLocaleString()}</p>
+                            <p className="fadedtext text-sm">영지</p>
+                            <p className="text-sm text-white">Lv.{info.profile.townLevel} {info.profile.townName}</p>
+                        </div>
+                        <div className="flex gap-1">
+                            {info.profile.emblems.map((emblem, idx) => (
+                                <img key={idx} src={emblem} alt={`emblem-${idx}`} className="w-[28px] h-[28px]"/>
+                            ))}
+                        </div>
                     </div>
                 </div>
                 <div className="grow hidden sm:block"/>
@@ -503,13 +505,6 @@ function CombatPowerComponent({ info }: { info: CharacterInfo }) {
                     maxValue={getProgressMaxByHonor(info.profile.honorPoint)}
                     className="w-full mt-2"/>
                 <p className="fadedtext text-[8pt] mt-2">다음 명예 등급까지 <span className="text-black dark:text-white font-bold text-[9pt]">{getRemainHonor(info.profile.honorPoint)}</span> p 남음.</p>
-                <Divider className="mt-2 mb-2"/>
-                <p className="fadedtext mb-2">휘장</p>
-                <div className="w-full grid grid-cols-4 gap-2">
-                    {info.profile.emblems.map((emblem, idx) => (
-                        <img key={idx} src={emblem} alt={`emblem-${idx}`} className="w-[50px] h-[50px]"/>
-                    ))}
-                </div>
             </CardBody>
         </Card>
     )
@@ -1164,7 +1159,7 @@ function StatComponent({ info }: { info: CharacterInfo }) {
                         </div>}>
                         <div className="w-full flex gap-2 items-center">
                             <p className="fadedtext text-sm">공격력</p>
-                            <p>{getStatByType(stat, '공격력') ? getStatByType(stat, '공격력')?.value : 0}</p>
+                            <p>{getStatByType(stat, '공격력') ? getStatByType(stat, '공격력')?.value.toLocaleString() : 0}</p>
                         </div>
                     </Tooltip>
                     <Tooltip
@@ -1180,7 +1175,7 @@ function StatComponent({ info }: { info: CharacterInfo }) {
                         <div className="w-full flex gap-2 items-center">
                             <div className="w-full flex gap-2 items-center">
                                 <p className="fadedtext text-sm">최대 생명력</p>
-                                <p>{getStatByType(stat, '최대 생명력') ? getStatByType(stat, '최대 생명력')?.value : 0}</p>
+                                <p>{getStatByType(stat, '최대 생명력') ? getStatByType(stat, '최대 생명력')?.value.toLocaleString() : 0}</p>
                             </div>
                         </div>
                     </Tooltip>
@@ -1291,29 +1286,60 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
 
     return (
         <Card radius="sm" className="mt-8">
-            <CardHeader><p className="text-lg">아크패시브</p></CardHeader>
-            <Divider/>
-            <CardBody>
-                <div className="w-full grid grid-cols-3 gap-2 mb-2">
-                    {points.map((point, index) => (
-                        <div key={index} className="w-full flex flex-col sm:flex-row sm:gap-4 items-center justify-center">
-                            <div className="flex flex-col items-center">
-                                <p className="fadedtext text-sm">{point.type}</p>
-                                <p className={`${getColorByType(point.type)} text-2xl font-bold`}>{point.point}</p>
-                            </div>
-                            <div className="flex flex-col items-center">
-                                <Chip size="sm" variant="flat" className="mt-1">{point.description ? point.description : '미개방'}</Chip>
-                                <Progress
-                                    size="sm"
-                                    color={getColorProgressArkpassive(point.type)}
-                                    value={point.point}
-                                    maxValue={point.max}
-                                    className="w-[70px] mt-2"/>
-                            </div>
-                        </div>
+            <CardHeader>
+                <div className="w-full flex gap-3">
+                    <p className="grow text-lg">아크패시브</p>
+                    {isMobile ? null : points.map((point, index) => (
+                        <Progress
+                            key={index}
+                            label={
+                                <div className="w-[178px] flex gap-1.5 items-center">
+                                    <Chip 
+                                        size="sm" 
+                                        radius="sm" 
+                                        color={getColorProgressArkpassive(point.type)}
+                                        variant="flat">
+                                        {point.type}
+                                    </Chip>
+                                    <p className={clsx(
+                                        "truncate",
+                                        point.description ? '' : 'fadedtext'
+                                    )}>{point.description ? point.description : '미개방'}</p>
+                                    <p className={`ml-auto font-bold ${getColorByType(point.type)}`}>{point.point}</p>
+                                </div>
+                            }
+                            size="sm"
+                            color={getColorProgressArkpassive(point.type)}
+                            value={point.point}
+                            maxValue={point.max}
+                            className="w-[180px]"/>
                     ))}
                 </div>
-                <div className="w-full grid sm:grid-cols-3 gap-4 mt-1">
+            </CardHeader>
+            <Divider/>
+            <CardBody>
+                {isMobile ? (
+                    <div className="w-full grid grid-cols-3 gap-2 mb-2">
+                        {points.map((point, index) => (
+                            <div key={index} className="w-full flex flex-col sm:flex-row sm:gap-4 items-center justify-center">
+                                <div className="flex flex-col items-center">
+                                    <p className="fadedtext text-sm">{point.type}</p>
+                                    <p className={`${getColorByType(point.type)} text-2xl font-bold`}>{point.point}</p>
+                                </div>
+                                <div className="flex flex-col items-center">
+                                    <Chip size="sm" variant="flat" className="mt-1">{point.description ? point.description : '미개방'}</Chip>
+                                    <Progress
+                                        size="sm"
+                                        color={getColorProgressArkpassive(point.type)}
+                                        value={point.point}
+                                        maxValue={point.max}
+                                        className="w-[70px] mt-2"/>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : null}
+                <div className="w-full grid sm:grid-cols-[1fr_1px_1fr_1px_1fr] gap-3 mt-1">
                     <div>
                         <Chip
                             color="warning"
@@ -1346,6 +1372,7 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                             </Tooltip>
                         ))}
                     </div>
+                    {isMobile ? null : <Divider orientation="horizontal" className="h-full"/>}
                     <div>
                         <Chip
                             color="primary"
@@ -1378,6 +1405,7 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                             </Tooltip>
                         ))}
                     </div>
+                    {isMobile ? null : <Divider orientation="horizontal" className="h-full"/>}
                     <div>
                         <Chip
                             color="success"
