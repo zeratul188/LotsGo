@@ -1157,42 +1157,42 @@
         {
             "title": "카제로스 The 1st",
             "grade": "고대",
-            "condition": "카제로스 더퍼스트 이벤트 1위 공격대"
+            "condition": "카제로스 The FIRST 이벤트 1위 공격대"
         },
         {
             "title": "카제로스 The 2nd",
             "grade": "고대",
-            "condition": "카제로스 더퍼스트 이벤트 2위 공격대"
+            "condition": "카제로스 The FIRST 이벤트 2위 공격대"
         },
         {
             "title": "카제로스 The 3rd",
             "grade": "고대",
-            "condition": "카제로스 더퍼스트 이벤트 3위 공격대"
+            "condition": "카제로스 The FIRST 이벤트 3위 공격대"
         },
         {
             "title": "카제로스 The TOP10",
             "grade": "고대",
-            "condition": "카제로스 더퍼스트 이벤트 4~10위 공격대"
+            "condition": "카제로스 The FIRST 이벤트 4~10위 공격대"
         },
         {
             "title": "카멘 The 1st",
             "grade": "고대",
-            "condition": "카멘 더퍼스트 이벤트 1위 공격대"
+            "condition": "카멘 The FIRST 이벤트 1위 공격대"
         },
         {
             "title": "카멘 The 2nd",
             "grade": "고대",
-            "condition": "카멘 더퍼스트 이벤트 2위 공격대"
+            "condition": "카멘 The FIRST 이벤트 2위 공격대"
         },
         {
             "title": "카멘 The 3rd",
             "grade": "고대",
-            "condition": "카멘 더퍼스트 이벤트 3위 공격대"
+            "condition": "카멘 The FIRST 이벤트 3위 공격대"
         },
         {
             "title": "카멘 The TOP10",
             "grade": "고대",
-            "condition": "카멘 더퍼스트 이벤트 4~10위 공격대"
+            "condition": "카멘 The FIRST 이벤트 4~10위 공격대"
         },
         {
             "title": "악마 사냥꾼",
@@ -1297,12 +1297,12 @@
         {
             "title": "이클립스",
             "grade": "전설",
-            "condition": "카멘 더퍼스트 클리어 보상"
+            "condition": "카멘 The FIRST 클리어 보상"
         },
         {
             "title": "심연의 군주",
             "grade": "전설",
-            "condition": "카제로스 더퍼스트 클리어 보상"
+            "condition": "카제로스 The FIRST 클리어 보상"
         },
         {
             "title": "심연의 징벌자",
@@ -1365,4 +1365,4 @@
             "condition": "2025년 아바타 공모전 입상 기념"
         }
     ]
-}
+}  
