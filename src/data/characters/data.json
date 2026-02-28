@@ -1175,6 +1175,11 @@
             "condition": "카제로스 The FIRST 이벤트 4~10위 공격대"
         },
         {
+            "title": "에스더의 결속자",
+            "grade": "유물",
+            "condition": "에스더 무기에 엘라 부여하기"
+        },
+        {
             "title": "카멘 The 1st",
             "grade": "유물",
             "condition": "카멘 The FIRST 이벤트 1위 공격대"
@@ -1363,6 +1368,11 @@
             "title": "25년 최고의 금손",
             "grade": "전설",
             "condition": "2025년 아바타 공모전 입상 기념"
+        },
+        {
+            "title": "크리스마스의 기적",
+            "grade": "전설",
+            "condition": "'2021 크리스마스의 낭만 이 함께하길' 업적 칭호 보상"
         }
     ]
 }  
