@@ -1286,28 +1286,56 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
 
     return (
         <Card radius="sm" className="mt-8">
-            <CardHeader><p className="text-lg">아크패시브</p></CardHeader>
-            <Divider/>
-            <CardBody>
-                <div className="w-full grid grid-cols-3 gap-2 mb-2">
-                    {points.map((point, index) => (
-                        <div key={index} className="w-full flex flex-col sm:flex-row sm:gap-4 items-center justify-center">
-                            <div className="flex flex-col items-center">
-                                <p className="fadedtext text-sm">{point.type}</p>
-                                <p className={`${getColorByType(point.type)} text-2xl font-bold`}>{point.point}</p>
-                            </div>
-                            <div className="flex flex-col items-center">
-                                <Chip size="sm" variant="flat" className="mt-1">{point.description ? point.description : '미개방'}</Chip>
-                                <Progress
-                                    size="sm"
-                                    color={getColorProgressArkpassive(point.type)}
-                                    value={point.point}
-                                    maxValue={point.max}
-                                    className="w-[70px] mt-2"/>
-                            </div>
-                        </div>
+            <CardHeader>
+                <div className="w-full flex gap-3">
+                    <p className="grow text-lg">아크패시브</p>
+                    {isMobile ? null : points.map((point, index) => (
+                        <Progress
+                            key={index}
+                            label={
+                                <div className="w-[178px] flex gap-1.5 items-center">
+                                    <Chip 
+                                        size="sm" 
+                                        radius="sm" 
+                                        color={getColorProgressArkpassive(point.type)}
+                                        variant="flat">
+                                        {point.type}
+                                    </Chip>
+                                    <p className="truncate">{point.description ? point.description : '미개방'}</p>
+                                    <p className={`ml-auto font-bold ${getColorByType(point.type)}`}>{point.point}</p>
+                                </div>
+                            }
+                            size="sm"
+                            color={getColorProgressArkpassive(point.type)}
+                            value={point.point}
+                            maxValue={point.max}
+                            className="w-[180px]"/>
                     ))}
                 </div>
+            </CardHeader>
+            <Divider/>
+            <CardBody>
+                {isMobile ? (
+                    <div className="w-full grid grid-cols-3 gap-2 mb-2">
+                        {points.map((point, index) => (
+                            <div key={index} className="w-full flex flex-col sm:flex-row sm:gap-4 items-center justify-center">
+                                <div className="flex flex-col items-center">
+                                    <p className="fadedtext text-sm">{point.type}</p>
+                                    <p className={`${getColorByType(point.type)} text-2xl font-bold`}>{point.point}</p>
+                                </div>
+                                <div className="flex flex-col items-center">
+                                    <Chip size="sm" variant="flat" className="mt-1">{point.description ? point.description : '미개방'}</Chip>
+                                    <Progress
+                                        size="sm"
+                                        color={getColorProgressArkpassive(point.type)}
+                                        value={point.point}
+                                        maxValue={point.max}
+                                        className="w-[70px] mt-2"/>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : null}
                 <div className="w-full grid sm:grid-cols-3 gap-4 mt-1">
                     <div>
                         <Chip
