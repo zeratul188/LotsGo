@@ -1159,7 +1159,7 @@ function StatComponent({ info }: { info: CharacterInfo }) {
                         </div>}>
                         <div className="w-full flex gap-2 items-center">
                             <p className="fadedtext text-sm">공격력</p>
-                            <p>{getStatByType(stat, '공격력') ? getStatByType(stat, '공격력')?.value : 0}</p>
+                            <p>{getStatByType(stat, '공격력') ? getStatByType(stat, '공격력')?.value.toLocaleString() : 0}</p>
                         </div>
                     </Tooltip>
                     <Tooltip
@@ -1175,7 +1175,7 @@ function StatComponent({ info }: { info: CharacterInfo }) {
                         <div className="w-full flex gap-2 items-center">
                             <div className="w-full flex gap-2 items-center">
                                 <p className="fadedtext text-sm">최대 생명력</p>
-                                <p>{getStatByType(stat, '최대 생명력') ? getStatByType(stat, '최대 생명력')?.value : 0}</p>
+                                <p>{getStatByType(stat, '최대 생명력') ? getStatByType(stat, '최대 생명력')?.value.toLocaleString() : 0}</p>
                             </div>
                         </div>
                     </Tooltip>
