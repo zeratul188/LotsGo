@@ -15,6 +15,7 @@ export type CharacterInfo = {
 }
 
 // 장비 영역
+
 export type EquipInfo = {
     equipments: Equipment[],
     accessories: Accessory[],
