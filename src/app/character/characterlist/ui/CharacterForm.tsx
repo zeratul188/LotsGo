@@ -3,7 +3,7 @@ import { ExpeditionCharacter } from "../model/types";
 import { getEnhanceLevel } from "../lib/characterInfoFeat";
 import clsx from "clsx";
 import { getColorTextByGrade } from "@/utiils/utils";
-import { getSmallGradeByAccessory, getSmallGradeByArm, getSrcByGrade, getTextByGrade, getTextColorByGrade } from "../../lib/characterFeat";
+import { getSmallGradeByAccessory, getSmallGradeByArm, getSrcByGrade, getStatByType, getTextByGrade, getTextColorByGrade } from "../../lib/characterFeat";
 import { printEffectInTooltip } from "../../lib/armPrints";
 import { printDefaultInTooltip } from "../../lib/accessoryPrints";
 
@@ -121,3 +121,34 @@ export function AccessoriesComponent({ character }: { character: ExpeditionChara
     )
 }
 
+// 특성 컴포넌트
+export function StatComponent({ character }: { character: ExpeditionCharacter }) {
+    return (
+        <div className="w-full text-[9pt]">
+            <div className="w-full grid grid-cols-2 gap-1 mb-2">
+                <div className="w-full flex gap-2 items-center">
+                    <p className="fadedtext">공격력</p>
+                    <p>{getStatByType(character.stats, '공격력') ? getStatByType(character.stats, '공격력')?.value.toLocaleString() : 0}</p>
+                </div>
+                <div className="w-full flex gap-2 items-center">
+                    <p className="fadedtext">최대 생명력</p>
+                    <p>{getStatByType(character.stats, '최대 생명력') ? getStatByType(character.stats, '최대 생명력')?.value.toLocaleString() : 0}</p>
+                </div>
+            </div>
+            <div className="w-full grid grid-cols-6 gap-1">
+                {character.stats
+                    .sort((a, b) => b.value - a.value)
+                    .filter(item => item.type !== '최대 생명력' && item.type !== '공격력')
+                    .map((item, idx) => (
+                    <div key={idx} className="w-full flex items-center gap-1">
+                        <p className="fadedtext text-[7pt]">{item.type}</p>
+                        <p className={clsx(
+                            'text-sm',
+                            item.value >= 300 ? 'text-orange-700 dark:text-orange-300 font-bold' : '',
+                        )}>{item.value}</p>
+                    </div>
+                ))}
+            </div>
+        </div>
+    )
+}

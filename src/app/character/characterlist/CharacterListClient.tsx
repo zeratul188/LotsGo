@@ -14,7 +14,7 @@ import { getImgByJob } from "../lib/expeditionFeat";
 import { getParsedText, getTitleData } from "../lib/characterFeat";
 import { LoginUser } from "@/app/store/loginSlice";
 import { useRouter } from "next/navigation";
-import { AccessoriesComponent, EquipmentComponent } from "./ui/CharacterForm";
+import { AccessoriesComponent, EquipmentComponent, StatComponent } from "./ui/CharacterForm";
 import { getColorTextByGrade } from "@/utiils/utils";
 
 export default function CharacterListClient() {
@@ -56,7 +56,7 @@ export default function CharacterListClient() {
                                     isBordered
                                     src={getImgByJob(character.profile.className)}/>
                                 <div>
-                                    <p className="fadedtext text-[9pt]">{character.profile.className} · Lv.{character.profile.itemLevel}</p>
+                                    <p className="fadedtext text-[9pt]">{character.profile.className} · Lv.{character.profile.itemLevel} · {character.profile.arkpassiveTitle}</p>
                                     <p>{character.nickname}</p>
                                 </div>
                                 <div className="ml-auto flex flex-col">
@@ -81,6 +81,7 @@ export default function CharacterListClient() {
                                 <Divider/>
                                 <AccessoriesComponent character={character}/>
                                 <Divider/>
+                                <StatComponent character={character}/>
                             </div>
                         </CardBody>
                     </Card>
