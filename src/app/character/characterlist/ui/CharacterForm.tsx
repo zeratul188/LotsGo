@@ -7,6 +7,7 @@ import { getColorByType, getCountAtkGems, getCountDekGems, getEngravingSrcByName
 import { printEffectInTooltip } from "../../lib/armPrints";
 import { printDefaultInTooltip } from "../../lib/accessoryPrints";
 import { useEffect, useState } from "react";
+import { getCore, getGem, getOtherOptions, getPoint, getPower } from "../../lib/arkGridPrints";
 
 // 장비 컴포넌트
 export function EquipmentComponent({ character }: { character: ExpeditionCharacter }) {
@@ -252,18 +253,127 @@ export function EngravingComponent({ character }: { character: ExpeditionCharact
                             alt={engraving.name}
                             className="w-6 h-6 rounded-md"/>
                     </Tooltip>
-                    <div className="flex gap-1 items-center font-bold">
+                    <div className="flex gap-0.5 items-center font-bold">
                         <p className={getColorTextByGrade(engraving.grade)}>◆ {engraving.level}</p>
                         {engraving.stoneLevel > 0 ? (
-                            <div className="flex gap-0.5 items-center">
-                                <img
-                                    src={'/icons/stoneicon.png'}
-                                    alt="stone-icon"
-                                    className="w-2 h-3.5"/>
-                                <p>{engraving.stoneLevel}</p>
-                            </div>
+                            <>
+                                <p className="fadedtext">/</p>
+                                <p className="text-blue-700 dark:text-blue-300">{engraving.stoneLevel}</p>
+                            </>
                         ) : null}
                     </div>
+                </div>
+            ))}
+        </div>
+    )
+}
+
+// 아크그리드 컴포넌트
+export function ArkgridComponent({ character }: { character: ExpeditionCharacter }) {
+    const cores = character.arkgrid.cores;
+    const options = character.arkgrid.options;
+    return (
+        <div className="w-full grid grid-cols-6 gap-1 text-[9pt]">
+            {Array.from({ length: 6 }).map((_, idx) => (
+                <div className="w-full flex flex-col items-center">
+                    <Popover showArrow>
+                        <PopoverTrigger>
+                            <div className="w-[44px]">
+                                <div className={`w-full cursor-pointer p-[3px] aspect-square mb-1 rounded-md ${getBackgroundByGrade(getCore(cores, idx)?.grade ?? '')}`}>
+                                    {getCore(cores, idx) ? (
+                                        <img
+                                            src={getCore(cores, idx)?.icon ?? ''}
+                                            alt="equip-icon"
+                                            className="w-full h-full"/>
+                                    ) : <div className="w-full h-full"></div>}
+                                </div>
+                            </div>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                            <div className="min-w-[320px] py-1">
+                                <div className="w-full flex gap-2 items-center">
+                                    <div className={`w-[32px] h-[32px] p-[2px] aspect-square rounded-md ${getBackgroundByGrade(getCore(cores, idx)?.grade ?? '')}`}>
+                                        {getCore(cores, idx) ? (
+                                            <img
+                                                src={getCore(cores, idx)?.icon ?? ''}
+                                                alt="equip-icon"
+                                                className="w-7 h-7"/>
+                                        ) : null}
+                                    </div>
+                                    <div className="grow leading-tight">
+                                        <h3 className={`${getColorTextByGrade(getCore(cores, idx)?.grade ?? '')} text-md`}>{getCore(cores, idx)?.name ?? '-'}</h3>
+                                        <p className="fadedtext text-[8pt] mt-0.5">{getCore(cores, idx)?.grade ?? '-'} {getCore(cores, idx) ? '아크 그리드 코어' : ''}</p>
+                                    </div>
+                                    <Chip
+                                        radius="sm"
+                                        variant="flat"
+                                        color="warning"
+                                        className="min-h-[max-content] pb-1.5">
+                                        <div className="flex flex-col items-center leading-tight">
+                                            <p className="text-lg font-bold">{getCore(cores, idx)?.point ?? 0}</p>
+                                            <p className="text-[7pt]">Point</p>
+                                        </div>
+                                    </Chip>
+                                </div>
+                                <Divider className="my-1"/>
+                                <p className="fadedtext text-[8pt]">아크 그리드 젬</p>
+                                <div className="w-full flex flex-col gap-2">
+                                    {Array.from({ length: 4 }).map((_, ix) => (
+                                        <div key={ix} className="w-full">
+                                            <div className="w-full flex gap-2 items-center">
+                                                <div className={`w-[28px] h-[28px] p-[2px] aspect-square rounded-md ${getBackgroundByGrade(getGem(getCore(cores, idx)?.gems ?? [], ix)?.grade ?? '')}`}>
+                                                    {getGem(getCore(cores, idx)?.gems ?? [], ix) ? (
+                                                        <img
+                                                            src={getGem(getCore(cores, idx)?.gems ?? [], ix)?.icon ?? ''}
+                                                            alt="equip-icon"
+                                                            className="w-6 h-6"/>
+                                                    ) : null}
+                                                </div>
+                                                <div className="grow flex flex-col leading-tight">
+                                                    <p className={`text-[10pt] mb-0.5 ${getColorTextByGrade(getGem(getCore(cores, idx)?.gems ?? [], ix)?.grade ?? '')}`}>{getGem(getCore(cores, idx)?.gems ?? [], ix)?.name ?? '-'}</p>
+                                                    <p className="fadedtext text-[7pt]">{getGem(getCore(cores, idx)?.gems ?? [], ix)?.grade ?? '-'} {getGem(getCore(cores, idx)?.gems ?? [], ix) ? '아크 그리드 젬' : ''}</p>
+                                                </div>
+                                                <Tooltip showArrow content="의지력 효율">
+                                                    <Chip
+                                                        radius="full"
+                                                        size="sm"
+                                                        variant="flat"
+                                                        color="danger">
+                                                        {getPower(getGem(getCore(cores, idx)?.gems ?? [], ix)?.options ?? [])}
+                                                    </Chip>
+                                                </Tooltip>
+                                                <Tooltip showArrow content="질서 혹은 혼돈 포인트">
+                                                    <Chip
+                                                        radius="full"
+                                                        size="sm"
+                                                        variant="flat"
+                                                        color="primary">
+                                                        {getPoint(getGem(getCore(cores, idx)?.gems ?? [], ix)?.options ?? [])}
+                                                    </Chip>
+                                                </Tooltip>
+                                                <Chip
+                                                    variant="flat"
+                                                    size="sm"
+                                                    color={getGem(getCore(cores, idx)?.gems ?? [], ix)?.isActive ?? false ? 'success' : 'danger'}>
+                                                    {getGem(getCore(cores, idx)?.gems ?? [], ix)?.isActive ?? false ? '활성화' : '비활성화'}
+                                                    {getGem(getCore(cores, idx)?.gems ?? [], ix)?.isActive}
+                                                </Chip>
+                                            </div>
+                                            {(getGem(getCore(cores, idx)?.gems ?? [], ix)?.options ?? []).length > 0 ? (
+                                                <div className="flex">
+                                                    {getOtherOptions(getGem(getCore(cores, idx)?.gems ?? [], ix)?.options ?? []).map((item, ixx) => (
+                                                        <p key={ixx} className="text-[9pt]">{ixx !== 0 ? `, ${item}` : item}</p>
+                                                    ))}
+                                                </div>
+                                            ) : null}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                    <p className={clsx("w-full text-center truncate", getColorTextByGrade(getCore(cores, idx)?.grade ?? ''))}>{getCore(cores, idx)?.name.split(':')[1].trim() ?? '-'}</p>
+                    <p>{getCore(cores, idx)?.point ?? 0}P</p>
                 </div>
             ))}
         </div>
