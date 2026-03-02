@@ -1,9 +1,9 @@
-﻿import { Chip, Divider, Popover, PopoverContent, PopoverTrigger, Progress } from "@heroui/react";
+﻿import { Chip, Divider, Popover, PopoverContent, PopoverTrigger, Progress, Tooltip } from "@heroui/react";
 import { ExpeditionCharacter } from "../model/types";
 import { getEnhanceLevel } from "../lib/characterInfoFeat";
 import clsx from "clsx";
 import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils";
-import { getColorByType, getCountAtkGems, getCountDekGems, getSmallGradeByAccessory, getSmallGradeByArm, getSrcByGrade, getStatByType, getTextByGrade, getTextColorByGrade } from "../../lib/characterFeat";
+import { getColorByType, getCountAtkGems, getCountDekGems, getEngravingSrcByName, getSmallGradeByAccessory, getSmallGradeByArm, getSrcByGrade, getStatByType, getTextByGrade, getTextColorByGrade, printEngravingLevel } from "../../lib/characterFeat";
 import { printEffectInTooltip } from "../../lib/armPrints";
 import { printDefaultInTooltip } from "../../lib/accessoryPrints";
 import { useEffect, useState } from "react";
@@ -236,6 +236,36 @@ export function ArkpassiveComponent({ character }: { character: ExpeditionCharac
                     </div>
                 )
             })}
+        </div>
+    )
+}
+
+// 각인 컴포넌트
+export function EngravingComponent({ character }: { character: ExpeditionCharacter }) {
+    return (
+        <div className="w-full grid grid-cols-5 gap-1 text-[9pt]">
+            {character.engravings.map((engraving, idx) => (
+                <div key={idx} className="w-full flex items-center gap-1">
+                    <Tooltip showArrow content={engraving.name}>
+                        <img
+                            src={getEngravingSrcByName(engraving.name)}
+                            alt={engraving.name}
+                            className="w-6 h-6 rounded-md"/>
+                    </Tooltip>
+                    <div className="flex gap-1 items-center font-bold">
+                        <p className={getColorTextByGrade(engraving.grade)}>◆ {engraving.level}</p>
+                        {engraving.stoneLevel > 0 ? (
+                            <div className="flex gap-0.5 items-center">
+                                <img
+                                    src={'/icons/stoneicon.png'}
+                                    alt="stone-icon"
+                                    className="w-2 h-3.5"/>
+                                <p>{engraving.stoneLevel}</p>
+                            </div>
+                        ) : null}
+                    </div>
+                </div>
+            ))}
         </div>
     )
 }
