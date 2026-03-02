@@ -3,7 +3,7 @@ import { ExpeditionCharacter } from "../model/types";
 import { getEnhanceLevel } from "../lib/characterInfoFeat";
 import clsx from "clsx";
 import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils";
-import { getCountAtkGems, getCountDekGems, getSmallGradeByAccessory, getSmallGradeByArm, getSrcByGrade, getStatByType, getTextByGrade, getTextColorByGrade } from "../../lib/characterFeat";
+import { getColorByType, getCountAtkGems, getCountDekGems, getSmallGradeByAccessory, getSmallGradeByArm, getSrcByGrade, getStatByType, getTextByGrade, getTextColorByGrade } from "../../lib/characterFeat";
 import { printEffectInTooltip } from "../../lib/armPrints";
 import { printDefaultInTooltip } from "../../lib/accessoryPrints";
 import { useEffect, useState } from "react";
@@ -194,21 +194,48 @@ export function GemComponent({ character }: { character: ExpeditionCharacter }) 
                         style={{ gridColumn: `span ${leftSpan} / span ${leftSpan}` }}
                     >
                         <div className="grow h-2 mb-1 border-b-1 border-l-1 border-black/25 dark:border-white/25"/>
-                        <p className="fadedtext">{leftSpan}겁화</p>
+                        <p className="fadedtext">{leftSpan}겁</p>
                         <div className="grow h-2 mb-1 border-b-1 border-r-1 border-black/25 dark:border-white/25"/>
                     </div>
                 ) : null}
                 {rightSpan > 0 ? (
                     <div
                         className="flex items-center h-3 gap-1"
-                        style={{ gridColumn: `span ${rightSpan} / span ${rightSpan}` }}
-                    >
+                        style={{ gridColumn: `span ${rightSpan} / span ${rightSpan}` }}>
                         <div className="grow h-2 mb-1 border-b-1 border-l-1 border-black/25 dark:border-white/25"/>
-                        <p className="fadedtext">{rightSpan}작열</p>
+                        <p className="fadedtext">{rightSpan}작</p>
                         <div className="grow h-2 mb-1 border-b-1 border-r-1 border-black/25 dark:border-white/25"/>
                     </div>
                 ) : null}
             </div>
+        </div>
+    )
+}
+
+// 아크패시브
+export function ArkpassiveComponent({ character }: { character: ExpeditionCharacter }) {
+    return (
+        <div className="w-full grid grid-cols-3 gap-1 text-[9pt]">
+            {character.arkpassive.points.map((point, idx) => {
+                const parsed = point.description?.match(/^(\d+)(랭크)\s+(\d+)(레벨)$/);
+                return (
+                    <div key={idx} className="w-full flex gap-1">
+                        <p className={getColorByType(point.type)}>{point.type}</p>
+                        {!point.description ? (
+                            <p className="fadedtext">미개방</p>
+                        ) : parsed ? (
+                            <p>
+                                {parsed[1]}
+                                <span className="fadedtext text-[8pt]">{parsed[2]}</span>{" "}
+                                {parsed[3]}
+                                <span className="fadedtext text-[8pt]">{parsed[4]}</span>
+                            </p>
+                        ) : (
+                            <p>{point.description}</p>
+                        )}
+                    </div>
+                )
+            })}
         </div>
     )
 }
