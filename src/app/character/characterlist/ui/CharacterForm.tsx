@@ -3,7 +3,7 @@ import { ExpeditionCharacter } from "../model/types";
 import { getEnhanceLevel } from "../lib/characterInfoFeat";
 import clsx from "clsx";
 import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils";
-import { getColorByType, getCountAtkGems, getCountDekGems, getEngravingSrcByName, getSmallGradeByAccessory, getSmallGradeByArm, getSrcByGrade, getStatByType, getTextByGrade, getTextColorByGrade, printEngravingLevel } from "../../lib/characterFeat";
+import { getCardGems, getColorByType, getCountAtkGems, getCountDekGems, getEngravingSrcByName, getSmallGradeByAccessory, getSmallGradeByArm, getSrcByGrade, getStatByType, getTextByGrade, getTextColorByGrade, printEngravingLevel } from "../../lib/characterFeat";
 import { printEffectInTooltip } from "../../lib/armPrints";
 import { printDefaultInTooltip } from "../../lib/accessoryPrints";
 import { useEffect, useState } from "react";
@@ -275,7 +275,7 @@ export function ArkgridComponent({ character }: { character: ExpeditionCharacter
     return (
         <div className="w-full grid grid-cols-6 gap-1 text-[9pt]">
             {Array.from({ length: 6 }).map((_, idx) => (
-                <div className="w-full flex flex-col items-center">
+                <div key={idx} className="w-full flex flex-col items-center">
                     <Popover showArrow>
                         <PopoverTrigger>
                             <div className="w-[44px]">
@@ -374,6 +374,22 @@ export function ArkgridComponent({ character }: { character: ExpeditionCharacter
                     </Popover>
                     <p className={clsx("w-full text-center truncate", getColorTextByGrade(getCore(cores, idx)?.grade ?? ''))}>{getCore(cores, idx)?.name.split(':')[1].trim() ?? '-'}</p>
                     <p>{getCore(cores, idx)?.point ?? 0}P</p>
+                </div>
+            ))}
+        </div>
+    )
+}
+
+// 카드 컴포넌트
+export function CardComponent({ character }: { character: ExpeditionCharacter }) {
+    const cards = character.card.cards;
+    const cardSet = character.card.sets;
+    return (
+        <div className="w-full flex flex-col gap-1 text-[9pt]">
+            {cardSet.map((sets, idx) => (
+                <div key={idx} className="w-full flex gap-1">
+                    <p>{sets.name}</p>
+                    <p className="text-orange-700 dark:text-orange-300 ml-auto">{getCardGems(sets, cards)}각</p>
                 </div>
             ))}
         </div>

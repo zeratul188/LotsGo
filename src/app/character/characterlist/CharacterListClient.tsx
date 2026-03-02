@@ -14,7 +14,7 @@ import { getImgByJob } from "../lib/expeditionFeat";
 import { getParsedText, getTitleData } from "../lib/characterFeat";
 import { LoginUser } from "@/app/store/loginSlice";
 import { useRouter } from "next/navigation";
-import { AccessoriesComponent, ArkgridComponent, ArkpassiveComponent, EngravingComponent, EquipmentComponent, GemComponent, StatComponent } from "./ui/CharacterForm";
+import { AccessoriesComponent, ArkgridComponent, ArkpassiveComponent, CardComponent, EngravingComponent, EquipmentComponent, GemComponent, StatComponent } from "./ui/CharacterForm";
 import { getColorTextByGrade } from "@/utiils/utils";
 
 export default function CharacterListClient() {
@@ -87,6 +87,8 @@ export default function CharacterListClient() {
                                 <GemComponent character={character}/>
                                 <Divider/>
                                 <ArkgridComponent character={character}/>
+                                <Divider/>
+                                <CardComponent character={character}/>
                             </div>
                         </CardBody>
                     </Card>
