@@ -62,6 +62,7 @@ import AttackIcon from "@/Icons/AttackIcon";
 import SupportorIcon from "@/Icons/SupportorIcon";
 import { CharacterInfo, ExpeditionCharacterInfo } from "../model/types";
 import { ItemLevelIcon } from "@/Icons/ItemLevelIcon";
+import { useRouter } from "next/navigation";
 
 // state 관리
 export function useCharacterForm() {
@@ -219,9 +220,20 @@ export function HistoryComponent({ setSearched, setLoading, setNickname }: Searc
 // 로그인된 원정대 목록 가져오기
 export function ExpeditionComponent({ setSearched, setLoading, setNickname }: SearchComponentProps) {
     const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
+    const router = useRouter();
     return (
         <div className="w-full">
-            <p className="mb-4 text-2xl">내 원정대 목록</p>
+            <div className="mb-4 w-full flex gap-1 items-center">
+                <p className="text-2xl">내 원정대 목록</p>
+                <Button
+                    size="sm"
+                    radius="sm"
+                    color="primary"
+                    className="ml-auto"
+                    onPress={() => router.push('/character/characterlist')}>
+                    원정대 스펙 보기
+                </Button>
+            </div>
             <div className="hidden sm:block">
                 <Table removeWrapper selectionMode="single" className="max-h-[700px] overflow-auto overflow-x-hidden">
                     <TableHeader>
