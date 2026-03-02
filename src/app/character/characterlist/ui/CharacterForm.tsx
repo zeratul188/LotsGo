@@ -52,17 +52,17 @@ export function AccessoriesComponent({ character }: { character: ExpeditionChara
                                 <p className={`w-[34px] text-[9pt] cursor-pointer ${getColorTextByGrade(accessory.grade)}`}>{accessory.type}</p>
                             </PopoverTrigger>
                             <PopoverContent>
-                                <div className="min-w-[140px]">
+                                <div className="min-w-[140px] text-[9pt]">
                                     <Progress
                                         size="sm"
-                                        label={`품질 ${accessory.quality}`}
+                                        label={<p className="text-[9pt]">품질 {accessory.quality}</p>}
                                         value={accessory.quality}
                                         maxValue={100}
                                         color="secondary"/>
                                     <Divider className="my-2"/>
                                     <div className="w-full flex gap-1">
                                         <p className="fadedtext">깨달음</p>
-                                        <p className="ml-auto text-blue-700 dark:text-blue-400">+{accessory.point}</p>
+                                        <p className="ml-auto text-sm text-blue-700 dark:text-blue-400">+{accessory.point}</p>
                                     </div>
                                     <Divider className="my-2"/>
                                     <p className="whitespace-pre-line">{printDefaultInTooltip(parsedEquipment)}</p>
@@ -275,7 +275,6 @@ export function EngravingComponent({ character }: { character: ExpeditionCharact
 // 아크그리드 컴포넌트
 export function ArkgridComponent({ character }: { character: ExpeditionCharacter }) {
     const cores = character.arkgrid.cores;
-    const options = character.arkgrid.options;
     return (
         <div className="w-full grid grid-cols-6 gap-1 text-[9pt]">
             {Array.from({ length: 6 }).map((_, idx) => (
@@ -308,16 +307,6 @@ export function ArkgridComponent({ character }: { character: ExpeditionCharacter
                                         <h3 className={`${getColorTextByGrade(getCore(cores, idx)?.grade ?? '')} text-md`}>{getCore(cores, idx)?.name ?? '-'}</h3>
                                         <p className="fadedtext text-[8pt] mt-0.5">{getCore(cores, idx)?.grade ?? '-'} {getCore(cores, idx) ? '아크 그리드 코어' : ''}</p>
                                     </div>
-                                    <Chip
-                                        radius="sm"
-                                        variant="flat"
-                                        color="warning"
-                                        className="min-h-[max-content] pb-1.5">
-                                        <div className="flex flex-col items-center leading-tight">
-                                            <p className="text-lg font-bold">{getCore(cores, idx)?.point ?? 0}</p>
-                                            <p className="text-[7pt]">Point</p>
-                                        </div>
-                                    </Chip>
                                 </div>
                                 <Divider className="my-1"/>
                                 <p className="fadedtext text-[8pt]">아크 그리드 젬</p>
