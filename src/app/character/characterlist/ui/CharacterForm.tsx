@@ -187,17 +187,18 @@ export function GemComponent({ character }: { character: ExpeditionCharacter }) 
             </div>
             <div className="w-full grid grid-cols-11 gap-1">
                 {gems.map((gem, idx) => (
-                    <div key={idx} className={`w-full p-[1px] aspect-square rounded-sm ${getBackgroundByGrade(gem.grade)} flex items-center justify-center`}>
-                        <p className="text-md text-white/75 font-bold">{gem.level}</p>
-                    </div>
+                    <Tooltip key={idx} showArrow content={gem.name}>
+                        <div className={`w-full p-[1px] aspect-square rounded-sm ${getBackgroundByGrade(gem.grade)} flex items-center justify-center`}>
+                            <p className="text-md text-white/75 font-bold">{gem.level}</p>
+                        </div>
+                    </Tooltip>
                 ))}
             </div>
             <div className="w-full mt-1 grid grid-cols-11 gap-1 text-[8pt] fadedtext">
                 {leftSpan > 0 ? (
                     <div
                         className="flex items-center h-3 gap-1"
-                        style={{ gridColumn: `span ${leftSpan} / span ${leftSpan}` }}
-                    >
+                        style={{ gridColumn: `span ${leftSpan} / span ${leftSpan}` }}>
                         <div className="grow h-2 mb-1 border-b-1 border-l-1 border-black/25 dark:border-white/25"/>
                         <p className="fadedtext">{leftSpan}겁</p>
                         <div className="grow h-2 mb-1 border-b-1 border-r-1 border-black/25 dark:border-white/25"/>
