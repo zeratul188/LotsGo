@@ -11,10 +11,11 @@ import AttackIcon from "@/Icons/AttackIcon";
 import clsx from "clsx";
 import { LoadingComponent } from "@/app/UtilsCompnents";
 import { getImgByJob } from "../lib/expeditionFeat";
-import { getParsedText } from "../lib/characterFeat";
+import { getParsedText, getTitleData } from "../lib/characterFeat";
 import { LoginUser } from "@/app/store/loginSlice";
 import { useRouter } from "next/navigation";
 import { AccessoriesComponent, EquipmentComponent } from "./ui/CharacterForm";
+import { getColorTextByGrade } from "@/utiils/utils";
 
 export default function CharacterListClient() {
     const characterName: string = useSelector((state: RootState) => state.login.user.character);
@@ -59,7 +60,10 @@ export default function CharacterListClient() {
                                     <p>{character.nickname}</p>
                                 </div>
                                 <div className="ml-auto flex flex-col">
-                                    <p className="fadedtext text-[9pt] text-right">{getParsedText(character.profile.title)}</p>
+                                    <p className={clsx(
+                                        "text-[9pt] text-right",
+                                        getColorTextByGrade(getTitleData(getParsedText(character.profile.title))?.grade ?? 'default')
+                                    )}>{getParsedText(character.profile.title)}</p>
                                     <div className="flex items-center justify-end">
                                         {character.profile.characterType === 'supportor' ? <SupportorIcon size={18}/> : <AttackIcon size={16}/>}
                                         <p className={clsx(
