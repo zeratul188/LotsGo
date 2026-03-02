@@ -18,7 +18,11 @@ export function EquipmentComponent({ character }: { character: ExpeditionCharact
                     <p className="fadedtext text-[9pt]">{equipment.type}</p>
                     <p className={clsx(
                         "text-xl",
-                        equipment.type === "무기" ? "text-orange-700 dark:text-orange-300" : "",
+                        equipment.type === "무기" ? 
+                            equipment.grade === '에스더' ? 
+                            "text-[#00a6af] dark:text-[#00e5ef]"
+                            : "text-orange-700 dark:text-orange-300" 
+                            : "",
                         getEnhanceLevel(equipment.name) === "-" ? "fadedtext" : "font-bold"
                     )}>{getEnhanceLevel(equipment.name)}</p>
                     <p className="
