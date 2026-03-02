@@ -14,7 +14,7 @@ import { getImgByJob } from "../lib/expeditionFeat";
 import { getParsedText, getTitleData } from "../lib/characterFeat";
 import { LoginUser } from "@/app/store/loginSlice";
 import { useRouter } from "next/navigation";
-import { AccessoriesComponent, EquipmentComponent, StatComponent } from "./ui/CharacterForm";
+import { AccessoriesComponent, EquipmentComponent, GemComponent, StatComponent } from "./ui/CharacterForm";
 import { getColorTextByGrade } from "@/utiils/utils";
 
 export default function CharacterListClient() {
@@ -56,14 +56,11 @@ export default function CharacterListClient() {
                                     isBordered
                                     src={getImgByJob(character.profile.className)}/>
                                 <div>
-                                    <p className="fadedtext text-[9pt]">{character.profile.className} · Lv.{character.profile.itemLevel} · {character.profile.arkpassiveTitle}</p>
+                                    <p className="fadedtext text-[9pt]">{character.profile.className} · Lv.{character.profile.itemLevel}</p>
                                     <p>{character.nickname}</p>
                                 </div>
                                 <div className="ml-auto flex flex-col">
-                                    <p className={clsx(
-                                        "text-[9pt] text-right",
-                                        getColorTextByGrade(getTitleData(getParsedText(character.profile.title))?.grade ?? 'default')
-                                    )}>{getParsedText(character.profile.title)}</p>
+                                    <p className="text-[9pt] text-right text-orange-700 dark:text-orange-300">{character.profile.arkpassiveTitle}</p>
                                     <div className="flex items-center justify-end">
                                         {character.profile.characterType === 'supportor' ? <SupportorIcon size={18}/> : <AttackIcon size={16}/>}
                                         <p className={clsx(
@@ -82,6 +79,8 @@ export default function CharacterListClient() {
                                 <AccessoriesComponent character={character}/>
                                 <Divider/>
                                 <StatComponent character={character}/>
+                                <Divider/>
+                                <GemComponent character={character}/>
                             </div>
                         </CardBody>
                     </Card>
