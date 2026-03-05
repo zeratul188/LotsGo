@@ -15,7 +15,6 @@ export type CharacterInfo = {
 }
 
 // 장비 영역
-
 export type EquipInfo = {
     equipments: Equipment[],
     accessories: Accessory[],
@@ -293,4 +292,10 @@ export type Title = {
     title: string,
     grade: string,
     condition: string
+}
+
+// 카드 세트
+export type CardPiece = {
+    name: string,
+    pieces: number
 }

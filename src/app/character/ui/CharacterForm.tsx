@@ -60,7 +60,7 @@ import '../css/effects.css';
 import VegaIcon from "@/Icons/VegaIcon";
 import AttackIcon from "@/Icons/AttackIcon";
 import SupportorIcon from "@/Icons/SupportorIcon";
-import { CharacterInfo, ExpeditionCharacterInfo } from "../model/types";
+import { CardPiece, CharacterInfo, ExpeditionCharacterInfo } from "../model/types";
 import { ItemLevelIcon } from "@/Icons/ItemLevelIcon";
 import { useRouter } from "next/navigation";
 
@@ -76,6 +76,8 @@ export function useCharacterForm() {
     const [isLoadingUpdate, setLoadingUpdate] = useState(false);
     const [expeditions, setExpeditions] = useState<ExpeditionCharacterInfo[]>([]);
     const [isBadge, setBadge] = useState(false);
+    const [attackPieces, setAttackPieces] = useState<CardPiece[]>([]);
+    const [supporterPieces, setSupporterPieces] = useState<CardPiece[]>([]);
 
     return {
         isLoading, setLoading,
@@ -87,7 +89,9 @@ export function useCharacterForm() {
         isDisable, setDisable,
         isLoadingUpdate, setLoadingUpdate,
         expeditions, setExpeditions,
-        isBadge, setBadge
+        isBadge, setBadge,
+        attackPieces, setAttackPieces,
+        supporterPieces, setSupporterPieces
     }
 }
 
@@ -419,7 +423,13 @@ export function ProfileComponent({ info, isBadge }: NewProfileComponentProps) {
 }
 
 // 능력치 컴포넌트
-export function AbilityComponent({ info, titles }: { info: CharacterInfo, titles: string[] }) {
+type AbilityComponentProps = {
+    info: CharacterInfo, 
+    titles: string[],
+    attackPieces: CardPiece[],
+    supportorPieces: CardPiece[]
+}
+export function AbilityComponent({ info, titles, attackPieces, supportorPieces }: AbilityComponentProps) {
     return (
         <div className="w-full grid grid-cols-1 md960:grid-cols-[5fr_2fr] gap-8">
             <div className="w-full">
@@ -429,7 +439,7 @@ export function AbilityComponent({ info, titles }: { info: CharacterInfo, titles
                 <EquipmentComponent info={info}/>
                 <GemComponent info={info}/>
                 <ArkpassiveComponent info={info}/>
-                <CardComponent info={info}/>
+                <CardComponent info={info} attackPieces={attackPieces} supportorPieces={supportorPieces}/>
             </div>
             <div className="w-full">
                 <div className="hidden sm:block">
@@ -1066,13 +1076,31 @@ function GemComponent({ info }: { info: CharacterInfo }) {
 }
 
 // 카드 컴포넌트
-function CardComponent({ info }: { info: CharacterInfo }) {
+type CardComponentProps = {
+    info: CharacterInfo,
+    attackPieces: CardPiece[],
+    supportorPieces: CardPiece[]
+}
+function CardComponent({ info, attackPieces, supportorPieces }: CardComponentProps) {
     const cards = info.card.cards;
     const cardSet = info.card.sets;
+    const pieces = info.profile.characterType === 'attack' ? attackPieces : supportorPieces;
 
     return (
         <Card radius="sm" className="mt-8">
-            <CardHeader><p className="text-lg">카드</p></CardHeader>
+            <CardHeader>
+                <div className="w-full flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                    <p className="text-lg">카드</p>
+                    <div className="sm:ml-auto w-full sm:w-fit grid grid-cols-6 gap-4 items-center">
+                        {pieces.map((piece, index) => (
+                            <div key={index} className="flex flex-col items-center">
+                                <p className="fadedtext text-[8pt]">{piece.name}</p>
+                                <p className="text-md">{piece.pieces}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </CardHeader>
             <Divider/>
             <CardBody>
                 <div className="w-[800px] sm:w-full p-2 grid gap-2 grid-cols-6 overflow-x-auto sm:overflow-x-hidden scrollbar-hide">
