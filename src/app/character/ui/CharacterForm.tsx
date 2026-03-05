@@ -103,11 +103,13 @@ type SearchComponentProps = {
 }
 export function SearchComponent({ setSearched, setLoading, setNickname }: SearchComponentProps) {
     const [search, setSearch] = useState('');
+    const router = useRouter();
+    const isMobile = useMobileQuery();
     return (
         <div className="w-full h-[300px] flex justify-center items-center flex-col">
             <h1 className="text-4xl sm:text-5xl font-bold">전투 정보실</h1>
             <h2 className="text-xl sm:text-xl mt-4">캐릭터 정보를 확인하기 위해서 캐릭터명을 입력 후 검색해주세요.</h2>
-            <div className="w-full sm:w-[500px] flex gap-3 mt-8 flex-col sm:flex-row">
+            <div className="w-full sm:w-fit flex gap-3 mt-8 flex-col sm:flex-row">
                 <Input
                     size="lg"
                     radius="sm"
@@ -129,9 +131,18 @@ export function SearchComponent({ setSearched, setLoading, setNickname }: Search
                     size="lg"
                     radius="sm"
                     color="primary"
-                    className="w-full sm:w-[max-content]"
                     onPress={() => handleSearch(search, setSearched, setLoading, setNickname)}>
                     검색
+                </Button>
+                <Divider orientation={isMobile ? "horizontal" : "vertical"}/>
+                <Button
+                    size="lg"
+                    radius="sm"
+                    color="secondary"
+                    className="sm:px-10"
+                    variant="flat"
+                    onPress={() => router.push('/character/characterlist')}>
+                    원정대 모아보기
                 </Button>
             </div>
         </div>
@@ -224,20 +235,9 @@ export function HistoryComponent({ setSearched, setLoading, setNickname }: Searc
 // 로그인된 원정대 목록 가져오기
 export function ExpeditionComponent({ setSearched, setLoading, setNickname }: SearchComponentProps) {
     const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
-    const router = useRouter();
     return (
         <div className="w-full">
-            <div className="mb-4 w-full flex gap-1 items-center">
-                <p className="text-2xl">내 원정대 목록</p>
-                <Button
-                    size="sm"
-                    radius="sm"
-                    color="primary"
-                    className="ml-auto"
-                    onPress={() => router.push('/character/characterlist')}>
-                    원정대 스펙 보기
-                </Button>
-            </div>
+            <p className="text-2xl mb-4">내 원정대 목록</p>
             <div className="hidden sm:block">
                 <Table removeWrapper selectionMode="single" className="max-h-[700px] overflow-auto overflow-x-hidden">
                     <TableHeader>
