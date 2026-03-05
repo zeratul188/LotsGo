@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
                 titles: expeditionData.titles ?? [], 
                 expeditions: expeditionData.expeditions ?? [],
                 attackPieces: expeditionData.attackPieces ?? [],
-                supportorPieces: expeditionData.supportorPieces ?? expeditionData.suppportorPieces ?? []
+                supportorPieces: expeditionData.supportorPieces ?? []
             });
         }
         const { date, ...character } = characterDoc.data();
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
             titles: expeditionData.titles ?? [], 
             expeditions: expeditionData.expeditions ?? [],
             attackPieces: expeditionData.attackPieces ?? [],
-            supportorPieces: expeditionData.supportorPieces ?? expeditionData.suppportorPieces ?? []
+            supportorPieces: expeditionData.supportorPieces ?? []
         });
     } catch(e: any) {
         if (e.message === "CHAARACTER_NOT_FOUND") {
