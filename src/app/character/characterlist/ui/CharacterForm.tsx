@@ -164,6 +164,16 @@ export function StatComponent({ character }: { character: ExpeditionCharacter })
 export function GemComponent({ character }: { character: ExpeditionCharacter }) {
     const [attack, setAttack] = useState(0);
     const gems = character.gems;
+    const hasPrioritySkill = (skillStr: string): boolean =>
+        skillStr.includes("피해") || skillStr.includes("지원 효과");
+    const sortedGems = [...gems].sort((a, b) => {
+        const aPriority = hasPrioritySkill(a.skillStr) ? 0 : 1;
+        const bPriority = hasPrioritySkill(b.skillStr) ? 0 : 1;
+        if (aPriority !== bPriority) {
+            return aPriority - bPriority;
+        }
+        return b.level - a.level;
+    });
     const atkGemCount = getCountAtkGems(gems);
     const dekGemCount = getCountDekGems(gems);
     const leftSpan = Math.max(0, Math.min(11, atkGemCount));
@@ -186,7 +196,7 @@ export function GemComponent({ character }: { character: ExpeditionCharacter }) 
                 </div>
             </div>
             <div className="w-full grid grid-cols-11 gap-1">
-                {gems.map((gem, idx) => (
+                {sortedGems.map((gem, idx) => (
                     <Tooltip key={idx} showArrow content={gem.name}>
                         <div className={`w-full p-[1px] aspect-square rounded-sm ${getBackgroundByGrade(gem.grade)} flex items-center justify-center`}>
                             <p className="text-md text-white/75 font-bold">{gem.level}</p>
