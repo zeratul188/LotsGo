@@ -148,7 +148,7 @@ export function StatComponent({ character }: { character: ExpeditionCharacter })
                     .filter(item => item.type !== "최대 생명력" && item.type !== "공격력")
                     .map((item, idx) => (
                     <div key={idx} className="w-full flex items-center gap-1">
-                        <p className="fadedtext text-[7pt]">{item.type}</p>
+                        <p className="fadedtext text-[9pt]">{item.type}</p>
                         <p className={clsx(
                             "text-sm",
                             item.value >= 300 ? "text-orange-700 dark:text-orange-300 font-bold" : "",

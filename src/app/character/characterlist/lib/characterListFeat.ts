@@ -10,6 +10,7 @@ export async function loadCharacterList(
     setExpeditionCharacters: SetStateFn<ExpeditionCharacter[]>,
     setLoading: SetStateFn<boolean>
 ) {
+    setLoading(true);
     const res = await fetch(`/api/characterlist?characterName=${encodeURIComponent(characterName)}`);
     if (!res.ok) {
         setExpeditionCharacters([]);

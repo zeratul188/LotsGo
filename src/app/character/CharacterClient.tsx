@@ -52,7 +52,9 @@ export default function CharacterClient() {
         setExpeditions: characterForm.setExpeditions,
         setBadge: characterForm.setBadge,
         setCharacterInfo: characterForm.setCharacterInfo,
-        setTitles: characterForm.setTitles
+        setTitles: characterForm.setTitles,
+        setAttackPieces: characterForm.setAttackPieces,
+        setSupporterPieces: characterForm.setSupporterPieces
     }
 
     useEffect(() => {
@@ -109,7 +111,11 @@ export default function CharacterClient() {
         {
             id: 'ability',
             label: '능력치',
-            component: <AbilityComponent info={characterForm.characterInfo} titles={characterForm.titles}/>
+            component: <AbilityComponent 
+                info={characterForm.characterInfo}
+                titles={characterForm.titles}
+                attackPieces={characterForm.attackPieces}
+                supportorPieces={characterForm.supporterPieces}/>
         },
         {
             id: 'skill',
@@ -143,12 +149,16 @@ export default function CharacterClient() {
         setCharacterInfo: characterForm.setCharacterInfo,
         setExpeditions: characterForm.setExpeditions,
         setLoadingUpdate: characterForm.setLoadingUpdate,
-        setTitles: characterForm.setTitles
+        setTitles: characterForm.setTitles,
+        setAttackPieces: characterForm.setAttackPieces,
+        setSupportorPieces: characterForm.setSupporterPieces
     }
     const updatePayload: UpdatePayload = {
         nickname: characterForm.nickname,
         expeditions: characterForm.expeditions,
-        titles: characterForm.titles
+        titles: characterForm.titles,
+        attackPieces: characterForm.attackPieces,
+        supportorPieces: characterForm.supporterPieces
     }
     const onClickUpdate = useClickUpdate(updateUI, updatePayload);
 

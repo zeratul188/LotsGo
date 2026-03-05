@@ -60,7 +60,7 @@ import '../css/effects.css';
 import VegaIcon from "@/Icons/VegaIcon";
 import AttackIcon from "@/Icons/AttackIcon";
 import SupportorIcon from "@/Icons/SupportorIcon";
-import { CharacterInfo, ExpeditionCharacterInfo } from "../model/types";
+import { CardPiece, CharacterInfo, ExpeditionCharacterInfo } from "../model/types";
 import { ItemLevelIcon } from "@/Icons/ItemLevelIcon";
 import { useRouter } from "next/navigation";
 
@@ -76,6 +76,8 @@ export function useCharacterForm() {
     const [isLoadingUpdate, setLoadingUpdate] = useState(false);
     const [expeditions, setExpeditions] = useState<ExpeditionCharacterInfo[]>([]);
     const [isBadge, setBadge] = useState(false);
+    const [attackPieces, setAttackPieces] = useState<CardPiece[]>([]);
+    const [supporterPieces, setSupporterPieces] = useState<CardPiece[]>([]);
 
     return {
         isLoading, setLoading,
@@ -87,7 +89,9 @@ export function useCharacterForm() {
         isDisable, setDisable,
         isLoadingUpdate, setLoadingUpdate,
         expeditions, setExpeditions,
-        isBadge, setBadge
+        isBadge, setBadge,
+        attackPieces, setAttackPieces,
+        supporterPieces, setSupporterPieces
     }
 }
 
@@ -99,11 +103,13 @@ type SearchComponentProps = {
 }
 export function SearchComponent({ setSearched, setLoading, setNickname }: SearchComponentProps) {
     const [search, setSearch] = useState('');
+    const router = useRouter();
+    const isMobile = useMobileQuery();
     return (
         <div className="w-full h-[300px] flex justify-center items-center flex-col">
             <h1 className="text-4xl sm:text-5xl font-bold">전투 정보실</h1>
             <h2 className="text-xl sm:text-xl mt-4">캐릭터 정보를 확인하기 위해서 캐릭터명을 입력 후 검색해주세요.</h2>
-            <div className="w-full sm:w-[500px] flex gap-3 mt-8 flex-col sm:flex-row">
+            <div className="w-full sm:w-fit flex gap-3 mt-8 flex-col sm:flex-row">
                 <Input
                     size="lg"
                     radius="sm"
@@ -125,9 +131,18 @@ export function SearchComponent({ setSearched, setLoading, setNickname }: Search
                     size="lg"
                     radius="sm"
                     color="primary"
-                    className="w-full sm:w-[max-content]"
                     onPress={() => handleSearch(search, setSearched, setLoading, setNickname)}>
                     검색
+                </Button>
+                <Divider orientation={isMobile ? "horizontal" : "vertical"}/>
+                <Button
+                    size="lg"
+                    radius="sm"
+                    color="secondary"
+                    className="sm:px-10"
+                    variant="flat"
+                    onPress={() => router.push('/character/characterlist')}>
+                    원정대 모아보기
                 </Button>
             </div>
         </div>
@@ -220,20 +235,9 @@ export function HistoryComponent({ setSearched, setLoading, setNickname }: Searc
 // 로그인된 원정대 목록 가져오기
 export function ExpeditionComponent({ setSearched, setLoading, setNickname }: SearchComponentProps) {
     const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
-    const router = useRouter();
     return (
         <div className="w-full">
-            <div className="mb-4 w-full flex gap-1 items-center">
-                <p className="text-2xl">내 원정대 목록</p>
-                <Button
-                    size="sm"
-                    radius="sm"
-                    color="primary"
-                    className="ml-auto"
-                    onPress={() => router.push('/character/characterlist')}>
-                    원정대 스펙 보기
-                </Button>
-            </div>
+            <p className="text-2xl mb-4">내 원정대 목록</p>
             <div className="hidden sm:block">
                 <Table removeWrapper selectionMode="single" className="max-h-[700px] overflow-auto overflow-x-hidden">
                     <TableHeader>
@@ -419,7 +423,13 @@ export function ProfileComponent({ info, isBadge }: NewProfileComponentProps) {
 }
 
 // 능력치 컴포넌트
-export function AbilityComponent({ info, titles }: { info: CharacterInfo, titles: string[] }) {
+type AbilityComponentProps = {
+    info: CharacterInfo, 
+    titles: string[],
+    attackPieces: CardPiece[],
+    supportorPieces: CardPiece[]
+}
+export function AbilityComponent({ info, titles, attackPieces, supportorPieces }: AbilityComponentProps) {
     return (
         <div className="w-full grid grid-cols-1 md960:grid-cols-[5fr_2fr] gap-8">
             <div className="w-full">
@@ -429,7 +439,7 @@ export function AbilityComponent({ info, titles }: { info: CharacterInfo, titles
                 <EquipmentComponent info={info}/>
                 <GemComponent info={info}/>
                 <ArkpassiveComponent info={info}/>
-                <CardComponent info={info}/>
+                <CardComponent info={info} attackPieces={attackPieces} supportorPieces={supportorPieces}/>
             </div>
             <div className="w-full">
                 <div className="hidden sm:block">
@@ -1066,13 +1076,31 @@ function GemComponent({ info }: { info: CharacterInfo }) {
 }
 
 // 카드 컴포넌트
-function CardComponent({ info }: { info: CharacterInfo }) {
+type CardComponentProps = {
+    info: CharacterInfo,
+    attackPieces: CardPiece[],
+    supportorPieces: CardPiece[]
+}
+function CardComponent({ info, attackPieces, supportorPieces }: CardComponentProps) {
     const cards = info.card.cards;
     const cardSet = info.card.sets;
+    const pieces = info.profile.characterType === 'attack' ? attackPieces : supportorPieces;
 
     return (
         <Card radius="sm" className="mt-8">
-            <CardHeader><p className="text-lg">카드</p></CardHeader>
+            <CardHeader>
+                <div className="w-full flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                    <p className="text-lg">카드</p>
+                    <div className="sm:ml-auto w-full sm:w-fit grid grid-cols-6 gap-4 items-center">
+                        {pieces.map((piece, index) => (
+                            <div key={index} className="flex flex-col items-center">
+                                <p className="fadedtext text-[8pt]">{piece.name}</p>
+                                <p className="text-md">{piece.pieces}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </CardHeader>
             <Divider/>
             <CardBody>
                 <div className="w-[800px] sm:w-full p-2 grid gap-2 grid-cols-6 overflow-x-auto sm:overflow-x-hidden scrollbar-hide">
