@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from "react";
-import { addToast, Tab, Tabs } from "@heroui/react"
+import { addToast, Spinner, Tab, Tabs } from "@heroui/react"
 import { FindComponent } from "./ui/RaidListForm";
 import { LoginUser } from "../store/loginSlice";
 import { loadRaids } from "./lib/raidListFeat";
@@ -31,8 +31,10 @@ export default function RaidsClient() {
     const joinRaids = useSelector((state: RootState) => state.party.joinRaids);
     const selectedKey = useSelector((state: RootState) => state.party.selectedKey);
     const router = useRouter();
+    const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
 
     useEffect(() => {
+        if (!isCheckedToken) return;
         const userStr = sessionStorage.getItem('user');
         const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
         let userId = null;
@@ -47,6 +49,7 @@ export default function RaidsClient() {
                 color: "danger"
             });
             router.push('/login');
+            return;
         }
         const loadData = async () => {
             const pRaids = await loadRaids(dispatch, userId);
@@ -55,11 +58,19 @@ export default function RaidsClient() {
             setLoadingData(false);
         }
         loadData();
-    }, []);
+    }, [isCheckedToken]);
 
     useEffect(() => {
         applyChangeParty(selectedKey, raids, dispatch);
-    }, [selectedKey])
+    }, [selectedKey]);
+
+    if (!isCheckedToken) {
+        return (
+            <div className="min-h-[calc(100vh-65px)] p-5 w-full flex justify-center items-center">
+                <Spinner label="로그인 정보를 확인 중입니다..." variant="wave" classNames={{ label: 'fadedtext mt-4' }}/>
+            </div>
+        )
+    }
 
     return (
         <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
