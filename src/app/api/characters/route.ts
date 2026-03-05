@@ -1,5 +1,5 @@
 import { firestore } from "@/utiils/firebase";
-import { addDoc, collection, collectionGroup, doc, getDoc, getDocs, limit, query, serverTimestamp, setDoc, updateDoc, where, writeBatch } from "firebase/firestore";
+import { collection, collectionGroup, doc, getDoc, getDocs, limit, query, serverTimestamp, setDoc, where, writeBatch } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -27,7 +27,9 @@ export async function GET(req: NextRequest) {
         if (!characterDoc.exists()) {
             return NextResponse.json({ 
                 titles: expeditionData.titles ?? [], 
-                expeditions: expeditionData.expeditions ?? []
+                expeditions: expeditionData.expeditions ?? [],
+                attackPieces: expeditionData.attackPieces ?? [],
+                supportorPieces: expeditionData.supportorPieces ?? []
             });
         }
         const { date, ...character } = characterDoc.data();
@@ -36,7 +38,9 @@ export async function GET(req: NextRequest) {
             date,
             character, 
             titles: expeditionData.titles ?? [], 
-            expeditions: expeditionData.expeditions ?? []
+            expeditions: expeditionData.expeditions ?? [],
+            attackPieces: expeditionData.attackPieces ?? [],
+            supportorPieces: expeditionData.supportorPieces ?? []
         });
     } catch(e: any) {
         if (e.message === "CHAARACTER_NOT_FOUND") {
@@ -53,6 +57,8 @@ export async function POST(req: NextRequest) {
     const characterInfo = body.characterInfo;
     const expeditions = body.expeditions;
     const titles = body.titles;
+    const attackPieces = body.attackPieces;
+    const supportorPieces = body.supportorPieces;
     const encodeNickname = encodeURIComponent(nickname);
 
     try {
@@ -66,7 +72,7 @@ export async function POST(req: NextRequest) {
             const indexData = indexSnapshot.docs[0].data();
             const expeditionId = indexData.expeditionId;
             const expeditionRef = doc(firestore, 'expeditions', expeditionId);
-            await setDoc(expeditionRef, { titles, expeditions });
+            await setDoc(expeditionRef, { titles, expeditions, attackPieces, supportorPieces });
             const characterRef = doc(firestore, 'expeditions', expeditionId, 'expeditionCharacters', encodeNickname);
             await syncExpeditionIndexs(expeditionId, expeditions);
             await setDoc(characterRef, {
@@ -79,7 +85,7 @@ export async function POST(req: NextRequest) {
         const batch = writeBatch(firestore);
 
         const expeditionRef = doc(collection(firestore, 'expeditions'));
-        batch.set(expeditionRef, { titles, expeditions });
+        batch.set(expeditionRef, { titles, expeditions, attackPieces, supportorPieces });
         const characterRef = doc(expeditionRef, 'expeditionCharacters', encodeNickname);
         batch.set(characterRef, {
             ...characterInfo,
