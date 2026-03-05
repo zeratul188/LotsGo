@@ -1,6 +1,6 @@
 'use client'
 import { useMobileQuery } from "@/utiils/utils"
-import { addToast, Tab, Tabs } from "@heroui/react";
+import { addToast, Spinner, Tab, Tabs } from "@heroui/react";
 import { ExpeditionsComponent } from "./ExpeditionForm";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -10,6 +10,8 @@ import DeleteComponent from "./DeleteForm";
 import APIComponent from "./ApiForm";
 import OptionComponent from "./OptionForm";
 import HistoryComponent from "./HistoryForm";
+import { useSelector } from "react-redux";
+import { RootState } from "../store/store";
 
 const tabs = [
     {
@@ -47,8 +49,10 @@ const tabs = [
 export default function SettingClient() {
     const isMobile = useMobileQuery();
     const router = useRouter();
+    const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
 
     useEffect(() => {
+        if (!isCheckedToken) return;
         if (!checkLogin()) {
             addToast({
                 title: "이용 불가",
@@ -57,7 +61,15 @@ export default function SettingClient() {
             });
             router.push('/login');
         }
-    }, []);
+    }, [isCheckedToken]);
+
+    if (!isCheckedToken) {
+        return (
+            <div className="min-h-[calc(100vh-65px)] p-5 w-full flex justify-center items-center">
+                <Spinner label="로그인 정보를 확인 중입니다..." variant="wave" classNames={{ label: 'fadedtext mt-4' }}/>
+            </div>
+        )
+    }
 
     return (
         <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto relative">

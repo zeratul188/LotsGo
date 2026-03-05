@@ -3,13 +3,12 @@ import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, Ch
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
 import { checkLogin, getBosses, getCubes, handleResetChecklist, loadChecklist, settingFilter } from "./checklistFeat";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { CheckCharacter } from "../store/checklistSlice";
 import { Character, LoginUser } from "../store/loginSlice";
-import { addToast, Button, ButtonGroup } from "@heroui/react";
+import { addToast, Button, ButtonGroup, Spinner } from "@heroui/react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
@@ -36,12 +35,13 @@ const LineAd = dynamic(() => import('../ad/LineAd'), { ssr: false });
 
 
 export default function ChecklistClient() {
+    const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
+
     const initialChecklist: CheckCharacter[] = iChecklist;
     const initialBosses: Boss[] = iBosses;
     const initialCubes: Cube[] = iCubes;
 
     const checklistForm = useChecklistForm();
-    const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
     const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
     const checklist: CheckCharacter[] = useSelector((state: RootState) => state.checklist.checklist);
@@ -96,6 +96,7 @@ export default function ChecklistClient() {
     }, [loadChecklist]);
 
     useEffect(() => {
+        if (!isCheckedToken) return;
         const auth = getAuth();
         onAuthStateChanged(auth, async (user) => {
             const loadCubes = async () => {
@@ -146,7 +147,15 @@ export default function ChecklistClient() {
             checklistForm.setShowGoldCharacter,
             checklistForm.setHideCompleteContent
         );
-    }, []);
+    }, [isCheckedToken]);
+
+    if (!isCheckedToken) {
+        return (
+            <div className="min-h-[calc(100vh-65px)] p-5 w-full flex justify-center items-center">
+                <Spinner label="로그인 정보를 확인 중입니다..." variant="wave" classNames={{ label: 'fadedtext mt-4' }}/>
+            </div>
+        )
+    }
 
     if (!checklistForm.isLogined) {
         return (

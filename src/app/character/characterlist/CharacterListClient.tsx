@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { ExpeditionCharacter } from "./model/types";
 import { loadCharacterList } from "./lib/characterListFeat";
-import { Avatar, Button, Card, CardBody, CardHeader, Divider, Input } from "@heroui/react";
+import { Avatar, Button, Card, CardBody, CardHeader, Divider, Input, Spinner } from "@heroui/react";
 import SupportorIcon from "@/Icons/SupportorIcon";
 import AttackIcon from "@/Icons/AttackIcon";
 import clsx from "clsx";
@@ -15,6 +15,7 @@ import { AccessoriesComponent, ArkgridComponent, ArkpassiveComponent, CardCompon
 
 export default function CharacterListClient() {
     const characterName: string = useSelector((state: RootState) => state.login.user.character);
+    const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
     const [expeditionCharacters, setExpeditionCharacters] = useState<ExpeditionCharacter[]>([]);
     const [isLoading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
@@ -25,14 +26,22 @@ export default function CharacterListClient() {
     };
 
     useEffect(() => {
-        if (!characterName) return;
+        if (!characterName || !isCheckedToken) return;
 
         const loadInitialCharacterList = async () => {
             await loadCharacterList(characterName, setExpeditionCharacters, setLoading);
         };
 
         loadInitialCharacterList();
-    }, [characterName]);
+    }, [characterName, isCheckedToken]);
+
+    if (!isCheckedToken) {
+        return (
+            <div className="min-h-[calc(100vh-65px)] p-5 w-full flex justify-center items-center">
+                <Spinner label="로그인 정보를 확인 중입니다..." variant="wave" classNames={{ label: 'fadedtext mt-4' }}/>
+            </div>
+        )
+    }
 
     return (
         <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">

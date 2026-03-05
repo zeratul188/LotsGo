@@ -1,17 +1,19 @@
 'use client'
 import { useEffect } from "react";
 import { useCalendarForm, WeekComponent } from "./CalendarForm"
-import { addToast, Divider } from "@heroui/react";
-import { useRouter } from "next/navigation";
+import { Divider } from "@heroui/react";
 import { loadBosses, loadGuild, loadWorks, loadWorksByParty, removeAutoCalendarsByGuild, removeAutoCalendarsByWorks } from "./calendarFeat";
 import { getAuth, onAuthStateChanged } from "firebase/auth";import BigComponent from "./CalendarForm";
 import { checkLogin } from "../checklist/checklistFeat";
+import { useSelector } from "react-redux";
+import { RootState } from "../store/store";
 
 export default function CalendarClient() {
     const calendarForm = useCalendarForm();
-    const router = useRouter();
+    const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
 
     useEffect(() => {
+        if (!isCheckedToken) return;
         if (checkLogin()) {
             calendarForm.setLogined(true);
         }
@@ -32,7 +34,7 @@ export default function CalendarClient() {
             }
         });
         return () => unsubscribe();
-    }, []);
+    }, [isCheckedToken]);
 
     useEffect(() => {
         const settingData = async () => {
