@@ -13,7 +13,7 @@ import {
     Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, 
     Tooltip 
 } from "@heroui/react";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { Character } from "../../store/loginSlice";
@@ -43,6 +43,7 @@ import {
     getSumStat, 
     getTextByGrade, 
     getTextColorByGrade, 
+    getTextColorByStat, 
     getTitleData, 
     getUrlGemInImage, 
     getWidthByStat, 
@@ -463,7 +464,7 @@ function TitleComponent({titles}: { titles: string[] }) {
                 {titles.map((title, index) => (
                     <div key={index} className="mb-2">
                         <p className={clsx(
-                            'font-bold text-sm',
+                            'text-sm',
                             getColorTextByGrade(getTitleData(title)?.grade ?? 'default')
                         )}>{title}</p>
                         <p className="fadedtext text-[9pt]">{getTitleData(title)?.condition ?? '-'}</p>
@@ -512,11 +513,7 @@ function CombatPowerComponent({ info }: { info: CharacterInfo }) {
                     )}>{info.profile.combatPower ?? '전투력 없음'}</p>
                 </div>
                 <Divider className="mt-2 mb-2"/>
-                <div className="w-full flex gap-1 mt-2">
-                    <p className="grow fadedtext">최고 전투력</p>
-                    <p>{info.profile.maxCombatPower.toLocaleString()}</p>
-                </div>
-                <div className="w-full flex gap-1 mt-2">
+                <div className="w-full flex gap-1">
                     <p className="grow fadedtext">명예 포인트</p>
                     <p>{info.profile.honorPoint.toLocaleString()}</p>
                 </div>
@@ -526,7 +523,16 @@ function CombatPowerComponent({ info }: { info: CharacterInfo }) {
                     value={getProgressValueByHonor(info.profile.honorPoint)}
                     maxValue={getProgressMaxByHonor(info.profile.honorPoint)}
                     className="w-full mt-2"/>
-                <p className="fadedtext text-[8pt] mt-2">다음 명예 등급까지 <span className="text-black dark:text-white font-bold text-[9pt]">{getRemainHonor(info.profile.honorPoint)}</span> p 남음.</p>
+                <p className={clsx(
+                    "fadedtext text-[8pt] mt-2",
+                    info.profile.honorPoint >= 1000 ? 'hidden' : ''
+                )}>
+                    다음 명예 등급까지 <span className="text-black dark:text-white font-bold text-[9pt]">{getRemainHonor(info.profile.honorPoint)}</span> p 남음.
+                </p>
+                <p className={clsx(
+                    "fadedtext text-[8pt] mt-2",
+                    info.profile.honorPoint >= 1000 ? '' : 'hidden'
+                )}>명예 등급이 최고 등급까지 달성하였습니다.</p>
             </CardBody>
         </Card>
     )
@@ -534,7 +540,6 @@ function CombatPowerComponent({ info }: { info: CharacterInfo }) {
 
 // 장비 컴포넌트 - 능력치 컴포넌트 요소
 export function EquipmentComponent({ info }: { info: CharacterInfo }) {
-    const isMobile = useMobileQuery();
     const arm = info.equipment.arm;
     const stone = info.equipment.stone;
     const orb = info.equipment.orb;
@@ -836,7 +841,7 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                                         </div>
                                         {stone.effects.length > 0 ? (
                                             <div className="flex gap-0.5 flex-col">
-                                                {stone.effects.map((effect, idx) => (
+                                                {stone.effects.filter(effect => effect.level > 0).map((effect, idx) => (
                                                     <p key={idx} className={clsx(
                                                         "text-[9pt]",
                                                         idx === 2 ? 'text-red-700 dark:text-red-300' : ''
@@ -906,7 +911,11 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                                 </div>
                                 <div className="grow">
                                     <p className={`${getColorTextByGrade(orb.grade)} grow truncate`}>{orb.name}</p>
-                                    <p className="fadedtext text-[9pt]">{orb.grade} {orb.type}</p>
+                                    <div className="text-[9pt] flex gap-1">
+                                        <p className="fadedtext">{orb.grade} {orb.type}</p>
+                                        <Divider orientation="vertical" className="self-stretch min-h-4 bg-black/20 dark:bg-white/20"/>
+                                        <p><span className="fadedtext">낙원력 : </span>{orb.score.toLocaleString()}</p>
+                                    </div>
                                 </div>
                             </div>
                         ) : null}
@@ -921,12 +930,18 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
 function GemComponent({ info }: { info: CharacterInfo }) {
     const [attack, setAttack] = useState(0);
     const gems = info.gems;
+    const isMobile = useMobileQuery();
 
     useEffect(() => {
         let sum = 0;
         info.gems.forEach(gem => sum += gem.attack);
         setAttack(sum);
     }, [info]);
+
+    const attackLength = gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length;
+    const cooldownLength = gems.filter(item => item.skillStr.includes('재사용 대기시간')).length;
+    const leftSpan = Math.max(0, Math.min(11, attackLength));
+    const rightSpan = Math.max(0, Math.min(11 - leftSpan, cooldownLength));
 
     return (
         <Card radius="sm" className="mt-8">
@@ -942,25 +957,20 @@ function GemComponent({ info }: { info: CharacterInfo }) {
             </CardHeader>
             <Divider/>
             <CardBody>
-                <div className="w-full grid grid-cols-6 sm:grid-cols-11 gap-2 pt-2 pb-2">
+                <div className="w-full grid grid-cols-6 sm:grid-cols-11 gap-2 pt-2">
                     {gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).sort((a, b) => b.level - a.level).map((gem, index) => (
                         <Popover key={index} showArrow disableAnimation>
                             <PopoverTrigger>
-                                <div className="w-full flex items-center justify-center flex-col cursor-pointer">
-                                    <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(gem.grade)}`}>
-                                        <img
-                                            src={gem.icon}
-                                            alt="gem-icon"
-                                            className="w-11 h-11"/>
+                                <div className="w-full flex justify-center">
+                                    <div className="w-[46px] flex items-center justify-start flex-col cursor-pointer rounded-md bg-[#FDD0DF] dark:bg-[#310413]">
+                                        <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(gem.grade)}`}>
+                                            <img
+                                                src={gem.icon}
+                                                alt="detail-gem-icon"
+                                                className="w-11 h-11"/>
+                                        </div>
+                                        <p className="text-[8pt] py-0.5 text-[#610726] dark:text-[#F54180]">{gem.level} {getGemSimpleTailName(gem)}</p>
                                     </div>
-                                    <Chip
-                                        size="sm"
-                                        radius="sm"
-                                        variant="flat"
-                                        color="danger"
-                                        className="mt-2">
-                                        {gem.level} {getGemSimpleTailName(gem)}
-                                    </Chip>
                                 </div>
                             </PopoverTrigger>
                             <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
@@ -979,21 +989,16 @@ function GemComponent({ info }: { info: CharacterInfo }) {
                     {gems.filter(item => item.skillStr.includes('재사용 대기시간')).sort((a, b) => b.level - a.level).map((gem, index) => (
                         <Popover key={index} showArrow disableAnimation>
                             <PopoverTrigger>
-                                <div className="w-full flex items-center justify-center flex-col cursor-pointer">
-                                    <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(gem.grade)}`}>
-                                        <img
-                                            src={gem.icon}
-                                            alt="detail-gem-icon"
-                                            className="w-11 h-11"/>
+                                <div className="w-full flex justify-center">
+                                    <div className="w-[46px] flex items-center justify-start flex-col cursor-pointer rounded-md bg-[#D1F4E0] dark:bg-[#052814]">
+                                        <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(gem.grade)}`}>
+                                            <img
+                                                src={gem.icon}
+                                                alt="detail-gem-icon"
+                                                className="w-11 h-11"/>
+                                        </div>
+                                        <p className="text-[8pt] py-0.5 text-[#095028] dark:text-[#17C964]">{gem.level} {getGemSimpleTailName(gem)}</p>
                                     </div>
-                                    <Chip
-                                        size="sm"
-                                        radius="sm"
-                                        variant="flat"
-                                        color="success"
-                                        className="mt-2">
-                                        {gem.level} {getGemSimpleTailName(gem)}
-                                    </Chip>
                                 </div>
                             </PopoverTrigger>
                             <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
@@ -1010,65 +1015,33 @@ function GemComponent({ info }: { info: CharacterInfo }) {
                         </Popover>
                     ))}
                     {Array.from({ length: 11-gems.length }).map((_, index) => (
-                        <div key={index} className="w-full flex items-center justify-center flex-col cursor-pointer">
+                        <div key={index} className="w-full flex justify-center">
+                            <div className="w-[46px] flex items-center justify-start flex-col cursor-pointer rounded-md bg-[#E4E4E7] dark:bg-[#202024]">
                             <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade("")}`}>
                                 <></>
                             </div>
-                            <Chip
-                                size="sm"
-                                radius="sm"
-                                variant="flat"
-                                className="mt-2">
-                                -
-                            </Chip>
+                                <p className="fadedtext text-[8pt] py-0.5">-</p>
+                            </div>
                         </div>
                     ))}
-                    <Chip 
-                        radius="sm"
-                        color="danger"
-                        variant="flat"
-                        className={clsx(
-                            `min-w-full text-center`,
-                            gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length !== 0 ? 'hidden sm:flex' : 'hidden',
-                            {
-                                'col-span-1': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 1,
-                                'col-span-2': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 2,
-                                'col-span-3': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 3,
-                                'col-span-4': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 4,
-                                'col-span-5': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 5,
-                                'col-span-6': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 6,
-                                'col-span-7': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 7,
-                                'col-span-8': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 8,
-                                'col-span-9': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 9,
-                                'col-span-10': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 10,
-                                'col-span-11': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 11
-                            }
-                        )}>
-                        겁화
-                    </Chip>
-                    <Chip 
-                        radius="sm"
-                        color="success"
-                        variant="flat"
-                        className={clsx(
-                            `min-w-full text-center`,
-                            gems.filter(item => item.skillStr.includes('재사용 대기시간')).length !== 0 ? 'hidden sm:flex' : 'hidden',
-                            {
-                                'col-span-1': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 1,
-                                'col-span-2': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 2,
-                                'col-span-3': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 3,
-                                'col-span-4': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 4,
-                                'col-span-5': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 5,
-                                'col-span-6': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 6,
-                                'col-span-7': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 7,
-                                'col-span-8': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 8,
-                                'col-span-9': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 9,
-                                'col-span-10': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 10,
-                                'col-span-11': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 11
-                            }
-                        )}>
-                        작열
-                    </Chip>
+                    {leftSpan > 0 && !isMobile ? (
+                        <div 
+                            className="flex items-center h-5 gap-2" 
+                            style={{ gridColumn: `span ${leftSpan} / span ${leftSpan}` }}>
+                            <div className="grow h-2.5 mb-2.5 border-b-1 border-l-1 border-black/25 dark:border-white/25"/>
+                            <p className="fadedtext text-[10pt]">{leftSpan}겁</p>
+                            <div className="grow h-2.5 mb-2.5 border-b-1 border-r-1 border-black/25 dark:border-white/25"/>
+                        </div>
+                    ) : null}
+                    {rightSpan > 0 && !isMobile ? (
+                        <div
+                            className="flex items-center h-5 gap-1"
+                            style={{ gridColumn: `span ${rightSpan} / span ${rightSpan}` }}>
+                            <div className="grow h-2.5 mb-2.5 border-b-1 border-l-1 border-black/25 dark:border-white/25"/>
+                            <p className="fadedtext text-[10pt]">{rightSpan}작</p>
+                            <div className="grow h-2.5 mb-2.5 border-b-1 border-r-1 border-black/25 dark:border-white/25"/>
+                        </div>
+                    ) : null}
                 </div>
             </CardBody>
         </Card>
@@ -1091,12 +1064,21 @@ function CardComponent({ info, attackPieces, supportorPieces }: CardComponentPro
             <CardHeader>
                 <div className="w-full flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                     <p className="text-lg">카드</p>
-                    <div className="sm:ml-auto w-full sm:w-fit grid grid-cols-6 gap-4 items-center">
+                    <div className="sm:ml-auto w-full sm:w-fit flex items-center justify-between sm:justify-start sm:gap-2 px-1.5 sm:px-0">
                         {pieces.map((piece, index) => (
-                            <div key={index} className="flex flex-col items-center">
-                                <p className="fadedtext text-[8pt]">{piece.name}</p>
-                                <p className="text-md">{piece.pieces}</p>
-                            </div>
+                            <Fragment key={index}>
+                                <div className="flex flex-col items-center">
+                                    <p className="fadedtext text-[8pt]">{piece.name}</p>
+                                    <p className={clsx(
+                                        "text-md",
+                                        piece.pieces >= 30 ? 'text-orange-700 dark:text-orange-400' : '',
+                                        piece.pieces === 0 ? 'fadedtext' : ''
+                                    )}>{piece.pieces > 0 ? piece.pieces : '-'}</p>
+                                </div>
+                                {index < pieces.length - 1 ? (
+                                    <Divider orientation="vertical" className="h-8"/>
+                                ) : null}
+                            </Fragment>
                         ))}
                     </div>
                 </div>
@@ -1139,7 +1121,9 @@ function CardComponent({ info, attackPieces, supportorPieces }: CardComponentPro
             <Divider/>
             <CardFooter>
                 <div className="w-full max-w-full">
-                    <Accordion fullWidth>
+                    <Accordion fullWidth itemClasses={{
+                        trigger: 'cursor-pointer'
+                    }}>
                         <AccordionItem key={1} title={
                             <p className="whitespace-nowrap overflow-hidden text-ellipsis max-w-full sm:max-w-[600px]">
                                 {getCardSetNames(cardSet, cards)}
@@ -1241,8 +1225,8 @@ function StatComponent({ info }: { info: CharacterInfo }) {
                                 )}/>
                                 <p className="fadedtext text-sm mr-0.5">{item.type}</p>
                                 <p className={clsx(
-                                    item.value >= 300 ? 'font-bold' : ""
-                                )}>{item.value}</p>
+                                    item.value >= 300 ? `font-bold ${getTextColorByStat(item.type)}` : ""
+                                )}>{item.value.toLocaleString()}</p>
                             </div>
                         </Tooltip>
                     ))}
@@ -1278,7 +1262,7 @@ function EngravingComponent({ info }: { info: CharacterInfo }) {
                 </div>
             </CardHeader>
             <Divider/>
-            <CardBody className="pl-1 pb-1 pr-1 pt-2">
+            <CardBody className="pl-1 pb-2 pr-2 pt-2">
                 <div>
                     {engravings.sort((a, b) => b.level - a.level).map((engraving, index) => (
                         <Tooltip 
@@ -1289,7 +1273,7 @@ function EngravingComponent({ info }: { info: CharacterInfo }) {
                                 <p className="max-w-[320px]">{engraving.description}</p>
                             </div>}>
                             <div className={clsx(
-                                "flex gap-2 mb-2 rounded-md pt-1 pb-1 pl-2 pr-2 items-center",
+                                "flex gap-2 mb-0.5 rounded-md pt-1 pb-1 pl-2 pr-2 items-center",
                                 engraving.level >= 4 ? `${getBackgroundRightByGrade(engraving.grade)}` : ""
                             )}>
                                 <img
@@ -1298,13 +1282,16 @@ function EngravingComponent({ info }: { info: CharacterInfo }) {
                                     className="w-6 h-6 rounded-md"/>
                                 <p className={`grow ${getColorTextByGrade(engraving.grade)}`}>{engraving.name}</p>
                                 {engraving.stoneLevel > 0 ? (
-                                    <div className="flex gap-1 items-center fadedtext">
-                                        <img
-                                            src={'/icons/stoneicon.png'}
-                                            alt="stone-icon"
-                                            className="w-3 h-5"/>
-                                        <p>X {engraving.stoneLevel}</p>
-                                    </div>
+                                    <Chip size="sm" radius="sm" variant="faded" color="primary" className="min-w-[48px]">
+                                        <div className="flex gap-0.5 items-center justify-center font-bold">
+                                            <img
+                                                src={'/icons/stoneicon.png'}
+                                                alt="stone-icon"
+                                                className="w-2.5 h-4"/>
+                                            <p className="text-[7pt]">×</p>
+                                            <p>{engraving.stoneLevel}</p>
+                                        </div>
+                                    </Chip>
                                 ) : <></>}
                                 <p className={`${getColorTextByGrade(engraving.grade)}`}>{printEngravingLevel(engraving.level)}</p>
                             </div>
