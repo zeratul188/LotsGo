@@ -512,11 +512,7 @@ function CombatPowerComponent({ info }: { info: CharacterInfo }) {
                     )}>{info.profile.combatPower ?? '전투력 없음'}</p>
                 </div>
                 <Divider className="mt-2 mb-2"/>
-                <div className="w-full flex gap-1 mt-2">
-                    <p className="grow fadedtext">최고 전투력</p>
-                    <p>{info.profile.maxCombatPower.toLocaleString()}</p>
-                </div>
-                <div className="w-full flex gap-1 mt-2">
+                <div className="w-full flex gap-1">
                     <p className="grow fadedtext">명예 포인트</p>
                     <p>{info.profile.honorPoint.toLocaleString()}</p>
                 </div>
@@ -526,7 +522,16 @@ function CombatPowerComponent({ info }: { info: CharacterInfo }) {
                     value={getProgressValueByHonor(info.profile.honorPoint)}
                     maxValue={getProgressMaxByHonor(info.profile.honorPoint)}
                     className="w-full mt-2"/>
-                <p className="fadedtext text-[8pt] mt-2">다음 명예 등급까지 <span className="text-black dark:text-white font-bold text-[9pt]">{getRemainHonor(info.profile.honorPoint)}</span> p 남음.</p>
+                <p className={clsx(
+                    "fadedtext text-[8pt] mt-2",
+                    info.profile.honorPoint >= 1000 ? 'hidden' : ''
+                )}>
+                    다음 명예 등급까지 <span className="text-black dark:text-white font-bold text-[9pt]">{getRemainHonor(info.profile.honorPoint)}</span> p 남음.
+                </p>
+                <p className={clsx(
+                    "fadedtext text-[8pt] mt-2",
+                    info.profile.honorPoint >= 1000 ? '' : 'hidden'
+                )}>명예 등급이 최고 등급까지 달성하였습니다.</p>
             </CardBody>
         </Card>
     )
@@ -921,6 +926,7 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
 function GemComponent({ info }: { info: CharacterInfo }) {
     const [attack, setAttack] = useState(0);
     const gems = info.gems;
+    const isMobile = useMobileQuery();
 
     useEffect(() => {
         let sum = 0;
@@ -1014,7 +1020,7 @@ function GemComponent({ info }: { info: CharacterInfo }) {
                             </div>
                         </div>
                     ))}
-                    {leftSpan > 0 ? (
+                    {leftSpan > 0 && !isMobile ? (
                         <div 
                             className="flex items-center h-5 gap-2" 
                             style={{ gridColumn: `span ${leftSpan} / span ${leftSpan}` }}>
@@ -1023,7 +1029,7 @@ function GemComponent({ info }: { info: CharacterInfo }) {
                             <div className="grow h-2.5 mb-2.5 border-b-1 border-r-1 border-black/25 dark:border-white/25"/>
                         </div>
                     ) : null}
-                    {rightSpan > 0 ? (
+                    {rightSpan > 0 && !isMobile ? (
                         <div
                             className="flex items-center h-5 gap-1"
                             style={{ gridColumn: `span ${rightSpan} / span ${rightSpan}` }}>
@@ -1061,8 +1067,9 @@ function CardComponent({ info, attackPieces, supportorPieces }: CardComponentPro
                                     <p className="fadedtext text-[8pt]">{piece.name}</p>
                                     <p className={clsx(
                                         "text-md",
-                                        piece.pieces >= 30 ? 'text-orange-700 dark:text-orange-400' : ''
-                                    )}>{piece.pieces}</p>
+                                        piece.pieces >= 30 ? 'text-orange-700 dark:text-orange-400' : '',
+                                        piece.pieces === 0 ? 'fadedtext' : ''
+                                    )}>{piece.pieces > 0 ? piece.pieces : '-'}</p>
                                 </div>
                                 {index < pieces.length - 1 ? (
                                     <Divider orientation="vertical" className="h-8"/>
@@ -1215,7 +1222,7 @@ function StatComponent({ info }: { info: CharacterInfo }) {
                                 <p className="fadedtext text-sm mr-0.5">{item.type}</p>
                                 <p className={clsx(
                                     item.value >= 300 ? 'font-bold' : ""
-                                )}>{item.value}</p>
+                                )}>{item.value.toLocaleString()}</p>
                             </div>
                         </Tooltip>
                     ))}
