@@ -1258,7 +1258,7 @@ function EngravingComponent({ info }: { info: CharacterInfo }) {
                 </div>
             </CardHeader>
             <Divider/>
-            <CardBody className="pl-1 pb-1 pr-1 pt-2">
+            <CardBody className="pl-1 pb-2 pr-2 pt-2">
                 <div>
                     {engravings.sort((a, b) => b.level - a.level).map((engraving, index) => (
                         <Tooltip 
