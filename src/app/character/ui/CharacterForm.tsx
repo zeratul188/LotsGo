@@ -43,6 +43,7 @@ import {
     getSumStat, 
     getTextByGrade, 
     getTextColorByGrade, 
+    getTextColorByStat, 
     getTitleData, 
     getUrlGemInImage, 
     getWidthByStat, 
@@ -1221,7 +1222,7 @@ function StatComponent({ info }: { info: CharacterInfo }) {
                                 )}/>
                                 <p className="fadedtext text-sm mr-0.5">{item.type}</p>
                                 <p className={clsx(
-                                    item.value >= 300 ? 'font-bold' : ""
+                                    item.value >= 300 ? `font-bold ${getTextColorByStat(item.type)}` : ""
                                 )}>{item.value.toLocaleString()}</p>
                             </div>
                         </Tooltip>
