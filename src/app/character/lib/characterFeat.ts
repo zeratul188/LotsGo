@@ -106,7 +106,7 @@ export function useClickUpdate(ui: UpdateUI, payload: UpdatePayload) {
                             const findIndex = newExpeditions.findIndex(char => char.nickname === character.nickname);
                             if (findIndex > -1) {
                                 newExpeditions[findIndex] = newExpeditions[findIndex].nickname === payload.nickname ? {
-                                    ...character,
+                                    ...newExpeditions[findIndex],
                                     combatPower: combatPower,
                                     type: characterType
                                 } : character;
@@ -332,7 +332,7 @@ export async function loadProfile(
                 const findIndex = newExpeditions.findIndex(char => char.nickname === character.nickname);
                 if (findIndex > -1) {
                     newExpeditions[findIndex] = newExpeditions[findIndex].nickname === nickname ? {
-                        ...character,
+                        ...newExpeditions[findIndex],
                         combatPower: combatPower,
                         type: characterType
                     } : character;
