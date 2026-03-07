@@ -13,7 +13,7 @@ import {
     Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, 
     Tooltip 
 } from "@heroui/react";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { Character } from "../../store/loginSlice";
@@ -1054,12 +1054,20 @@ function CardComponent({ info, attackPieces, supportorPieces }: CardComponentPro
             <CardHeader>
                 <div className="w-full flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                     <p className="text-lg">카드</p>
-                    <div className="sm:ml-auto w-full sm:w-fit grid grid-cols-6 gap-4 items-center">
+                    <div className="sm:ml-auto w-full sm:w-fit flex items-center justify-between sm:justify-start sm:gap-2 px-1.5 sm:px-0">
                         {pieces.map((piece, index) => (
-                            <div key={index} className="flex flex-col items-center">
-                                <p className="fadedtext text-[8pt]">{piece.name}</p>
-                                <p className="text-md">{piece.pieces}</p>
-                            </div>
+                            <Fragment key={index}>
+                                <div className="flex flex-col items-center">
+                                    <p className="fadedtext text-[8pt]">{piece.name}</p>
+                                    <p className={clsx(
+                                        "text-md",
+                                        piece.pieces >= 30 ? 'text-orange-700 dark:text-orange-400' : ''
+                                    )}>{piece.pieces}</p>
+                                </div>
+                                {index < pieces.length - 1 ? (
+                                    <Divider orientation="vertical" className="h-8"/>
+                                ) : null}
+                            </Fragment>
                         ))}
                     </div>
                 </div>
@@ -1102,7 +1110,9 @@ function CardComponent({ info, attackPieces, supportorPieces }: CardComponentPro
             <Divider/>
             <CardFooter>
                 <div className="w-full max-w-full">
-                    <Accordion fullWidth>
+                    <Accordion fullWidth itemClasses={{
+                        trigger: 'cursor-pointer'
+                    }}>
                         <AccordionItem key={1} title={
                             <p className="whitespace-nowrap overflow-hidden text-ellipsis max-w-full sm:max-w-[600px]">
                                 {getCardSetNames(cardSet, cards)}
