@@ -962,7 +962,7 @@ function GemComponent({ info }: { info: CharacterInfo }) {
                         <Popover key={index} showArrow disableAnimation>
                             <PopoverTrigger>
                                 <div className="w-full flex justify-center">
-                                    <div className="w-[46px] flex items-center justify-start flex-col cursor-pointer rounded-md bg-[#FAA0BF] dark:bg-[#610726]">
+                                    <div className="w-[46px] flex items-center justify-start flex-col cursor-pointer rounded-md bg-[#FDD0DF] dark:bg-[#310413]">
                                         <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(gem.grade)}`}>
                                             <img
                                                 src={gem.icon}
@@ -990,7 +990,7 @@ function GemComponent({ info }: { info: CharacterInfo }) {
                         <Popover key={index} showArrow disableAnimation>
                             <PopoverTrigger>
                                 <div className="w-full flex justify-center">
-                                    <div className="w-[46px] flex items-center justify-start flex-col cursor-pointer rounded-md bg-[#A2E9C1] dark:bg-[#095028]">
+                                    <div className="w-[46px] flex items-center justify-start flex-col cursor-pointer rounded-md bg-[#D1F4E0] dark:bg-[#052814]">
                                         <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(gem.grade)}`}>
                                             <img
                                                 src={gem.icon}
