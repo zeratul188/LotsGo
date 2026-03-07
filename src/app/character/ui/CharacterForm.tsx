@@ -540,7 +540,6 @@ function CombatPowerComponent({ info }: { info: CharacterInfo }) {
 
 // 장비 컴포넌트 - 능력치 컴포넌트 요소
 export function EquipmentComponent({ info }: { info: CharacterInfo }) {
-    const isMobile = useMobileQuery();
     const arm = info.equipment.arm;
     const stone = info.equipment.stone;
     const orb = info.equipment.orb;
@@ -842,7 +841,7 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                                         </div>
                                         {stone.effects.length > 0 ? (
                                             <div className="flex gap-0.5 flex-col">
-                                                {stone.effects.map((effect, idx) => (
+                                                {stone.effects.filter(effect => effect.level > 0).map((effect, idx) => (
                                                     <p key={idx} className={clsx(
                                                         "text-[9pt]",
                                                         idx === 2 ? 'text-red-700 dark:text-red-300' : ''
