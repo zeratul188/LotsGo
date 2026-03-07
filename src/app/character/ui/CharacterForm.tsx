@@ -1252,7 +1252,7 @@ function EngravingComponent({ info }: { info: CharacterInfo }) {
                                 <p className="max-w-[320px]">{engraving.description}</p>
                             </div>}>
                             <div className={clsx(
-                                "flex gap-2 mb-2 rounded-md pt-1 pb-1 pl-2 pr-2 items-center",
+                                "flex gap-2 mb-0.5 rounded-md pt-1 pb-1 pl-2 pr-2 items-center",
                                 engraving.level >= 4 ? `${getBackgroundRightByGrade(engraving.grade)}` : ""
                             )}>
                                 <img
