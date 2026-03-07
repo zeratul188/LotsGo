@@ -928,6 +928,11 @@ function GemComponent({ info }: { info: CharacterInfo }) {
         setAttack(sum);
     }, [info]);
 
+    const attackLength = gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length;
+    const cooldownLength = gems.filter(item => item.skillStr.includes('재사용 대기시간')).length;
+    const leftSpan = Math.max(0, Math.min(11, attackLength));
+    const rightSpan = Math.max(0, Math.min(11 - leftSpan, cooldownLength));
+
     return (
         <Card radius="sm" className="mt-8">
             <CardHeader>
@@ -942,25 +947,20 @@ function GemComponent({ info }: { info: CharacterInfo }) {
             </CardHeader>
             <Divider/>
             <CardBody>
-                <div className="w-full grid grid-cols-6 sm:grid-cols-11 gap-2 pt-2 pb-2">
+                <div className="w-full grid grid-cols-6 sm:grid-cols-11 gap-2 pt-2">
                     {gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).sort((a, b) => b.level - a.level).map((gem, index) => (
                         <Popover key={index} showArrow disableAnimation>
                             <PopoverTrigger>
-                                <div className="w-full flex items-center justify-center flex-col cursor-pointer">
-                                    <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(gem.grade)}`}>
-                                        <img
-                                            src={gem.icon}
-                                            alt="gem-icon"
-                                            className="w-11 h-11"/>
+                                <div className="w-full flex justify-center">
+                                    <div className="w-[46px] flex items-center justify-start flex-col cursor-pointer rounded-md bg-[#FAA0BF] dark:bg-[#610726]">
+                                        <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(gem.grade)}`}>
+                                            <img
+                                                src={gem.icon}
+                                                alt="detail-gem-icon"
+                                                className="w-11 h-11"/>
+                                        </div>
+                                        <p className="text-[8pt] py-0.5 text-[#610726] dark:text-[#F54180]">{gem.level} {getGemSimpleTailName(gem)}</p>
                                     </div>
-                                    <Chip
-                                        size="sm"
-                                        radius="sm"
-                                        variant="flat"
-                                        color="danger"
-                                        className="mt-2">
-                                        {gem.level} {getGemSimpleTailName(gem)}
-                                    </Chip>
                                 </div>
                             </PopoverTrigger>
                             <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
@@ -979,21 +979,16 @@ function GemComponent({ info }: { info: CharacterInfo }) {
                     {gems.filter(item => item.skillStr.includes('재사용 대기시간')).sort((a, b) => b.level - a.level).map((gem, index) => (
                         <Popover key={index} showArrow disableAnimation>
                             <PopoverTrigger>
-                                <div className="w-full flex items-center justify-center flex-col cursor-pointer">
-                                    <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(gem.grade)}`}>
-                                        <img
-                                            src={gem.icon}
-                                            alt="detail-gem-icon"
-                                            className="w-11 h-11"/>
+                                <div className="w-full flex justify-center">
+                                    <div className="w-[46px] flex items-center justify-start flex-col cursor-pointer rounded-md bg-[#A2E9C1] dark:bg-[#095028]">
+                                        <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(gem.grade)}`}>
+                                            <img
+                                                src={gem.icon}
+                                                alt="detail-gem-icon"
+                                                className="w-11 h-11"/>
+                                        </div>
+                                        <p className="text-[8pt] py-0.5 text-[#095028] dark:text-[#17C964]">{gem.level} {getGemSimpleTailName(gem)}</p>
                                     </div>
-                                    <Chip
-                                        size="sm"
-                                        radius="sm"
-                                        variant="flat"
-                                        color="success"
-                                        className="mt-2">
-                                        {gem.level} {getGemSimpleTailName(gem)}
-                                    </Chip>
                                 </div>
                             </PopoverTrigger>
                             <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
@@ -1010,65 +1005,33 @@ function GemComponent({ info }: { info: CharacterInfo }) {
                         </Popover>
                     ))}
                     {Array.from({ length: 11-gems.length }).map((_, index) => (
-                        <div key={index} className="w-full flex items-center justify-center flex-col cursor-pointer">
+                        <div key={index} className="w-full flex justify-center">
+                            <div className="w-[46px] flex items-center justify-start flex-col cursor-pointer rounded-md bg-[#E4E4E7] dark:bg-[#202024]">
                             <div className={`w-[46px] h-[46px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade("")}`}>
                                 <></>
                             </div>
-                            <Chip
-                                size="sm"
-                                radius="sm"
-                                variant="flat"
-                                className="mt-2">
-                                -
-                            </Chip>
+                                <p className="fadedtext text-[8pt] py-0.5">-</p>
+                            </div>
                         </div>
                     ))}
-                    <Chip 
-                        radius="sm"
-                        color="danger"
-                        variant="flat"
-                        className={clsx(
-                            `min-w-full text-center`,
-                            gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length !== 0 ? 'hidden sm:flex' : 'hidden',
-                            {
-                                'col-span-1': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 1,
-                                'col-span-2': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 2,
-                                'col-span-3': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 3,
-                                'col-span-4': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 4,
-                                'col-span-5': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 5,
-                                'col-span-6': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 6,
-                                'col-span-7': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 7,
-                                'col-span-8': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 8,
-                                'col-span-9': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 9,
-                                'col-span-10': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 10,
-                                'col-span-11': gems.filter(item => item.skillStr.includes('피해') || item.skillStr.includes('지원 효과')).length === 11
-                            }
-                        )}>
-                        겁화
-                    </Chip>
-                    <Chip 
-                        radius="sm"
-                        color="success"
-                        variant="flat"
-                        className={clsx(
-                            `min-w-full text-center`,
-                            gems.filter(item => item.skillStr.includes('재사용 대기시간')).length !== 0 ? 'hidden sm:flex' : 'hidden',
-                            {
-                                'col-span-1': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 1,
-                                'col-span-2': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 2,
-                                'col-span-3': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 3,
-                                'col-span-4': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 4,
-                                'col-span-5': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 5,
-                                'col-span-6': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 6,
-                                'col-span-7': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 7,
-                                'col-span-8': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 8,
-                                'col-span-9': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 9,
-                                'col-span-10': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 10,
-                                'col-span-11': gems.filter(item => item.skillStr.includes('재사용 대기시간')).length === 11
-                            }
-                        )}>
-                        작열
-                    </Chip>
+                    {leftSpan > 0 ? (
+                        <div 
+                            className="flex items-center h-5 gap-2" 
+                            style={{ gridColumn: `span ${leftSpan} / span ${leftSpan}` }}>
+                            <div className="grow h-2.5 mb-2.5 border-b-1 border-l-1 border-black/25 dark:border-white/25"/>
+                            <p className="fadedtext text-[10pt]">{leftSpan}겁</p>
+                            <div className="grow h-2.5 mb-2.5 border-b-1 border-r-1 border-black/25 dark:border-white/25"/>
+                        </div>
+                    ) : null}
+                    {rightSpan > 0 ? (
+                        <div
+                            className="flex items-center h-5 gap-1"
+                            style={{ gridColumn: `span ${rightSpan} / span ${rightSpan}` }}>
+                            <div className="grow h-2.5 mb-2.5 border-b-1 border-l-1 border-black/25 dark:border-white/25"/>
+                            <p className="fadedtext text-[10pt]">{rightSpan}작</p>
+                            <div className="grow h-2.5 mb-2.5 border-b-1 border-r-1 border-black/25 dark:border-white/25"/>
+                        </div>
+                    ) : null}
                 </div>
             </CardBody>
         </Card>
