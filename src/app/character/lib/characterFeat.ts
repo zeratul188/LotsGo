@@ -769,6 +769,25 @@ export function getBackgroundColorByStat(type: string): string {
     return 'bg-black';
 }
 
+// 특성에 따른 글자 색상
+export function getTextColorByStat(type: string): string {
+    switch(type) {
+        case '신속':
+            return 'text-blue-500';
+        case '치명':
+            return 'text-red-500';
+        case '특화':
+            return 'text-purple-500';
+        case '제압':
+            return 'text-neutral-500';
+        case '숙련':
+            return 'text-yellow-500';
+        case '인내':
+            return 'text-green-500';
+    }
+    return 'bg-black';
+}
+
 // 특성 위치에 따른 가로길이 반환
 export function getWidthByStat(stat: Stat[], index: number): number {
     let sum = getSumStat(stat);

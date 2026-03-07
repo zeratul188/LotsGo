@@ -8,6 +8,7 @@ import { printEffectInTooltip } from "../../lib/armPrints";
 import { printDefaultInTooltip } from "../../lib/accessoryPrints";
 import { useEffect, useState } from "react";
 import { getCore, getGem, getOtherOptions, getPoint, getPower } from "../../lib/arkGridPrints";
+import { getColorByEquipmentName, getTitleByEquipmentName } from "../lib/characterListFeat";
 
 // 장비 컴포넌트
 export function EquipmentComponent({ character }: { character: ExpeditionCharacter }) {
@@ -25,8 +26,13 @@ export function EquipmentComponent({ character }: { character: ExpeditionCharact
                             : "",
                         getEnhanceLevel(equipment.name) === "-" ? "fadedtext" : "font-bold"
                     )}>{getEnhanceLevel(equipment.name)}</p>
-                    <p className="
-                    text-[9pt]">{equipment.quality} / {equipment.highUpgrade !== -1 ? equipment.highUpgrade : "-"}</p>
+                    <p className="text-[9pt]">{equipment.quality} / {equipment.highUpgrade !== -1 ? equipment.highUpgrade : "-"}</p>
+                    <Chip 
+                        size="sm"  
+                        variant="flat"
+                        color={getColorByEquipmentName(equipment.name)}>
+                        {getTitleByEquipmentName(equipment.name)}
+                    </Chip>
                 </div>
             ))}
         </div>

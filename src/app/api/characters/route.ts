@@ -2,6 +2,22 @@ import { firestore } from "@/utiils/firebase";
 import { collection, collectionGroup, doc, getDoc, getDocs, limit, query, serverTimestamp, setDoc, where, writeBatch } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
 
+function normalizeCharacter(character: any) {
+    if (!character?.equipment?.orb) return character;
+
+    const score = typeof character.equipment.orb.score === "number" ? character.equipment.orb.score : 0;
+    return {
+        ...character,
+        equipment: {
+            ...character.equipment,
+            orb: {
+                ...character.equipment.orb,
+                score
+            }
+        }
+    };
+}
+
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const nickname = searchParams.get('nickname');
@@ -33,10 +49,11 @@ export async function GET(req: NextRequest) {
             });
         }
         const { date, ...character } = characterDoc.data();
+        const normalizedCharacter = normalizeCharacter(character);
 
         return NextResponse.json({ 
             date,
-            character, 
+            character: normalizedCharacter, 
             titles: expeditionData.titles ?? [], 
             expeditions: expeditionData.expeditions ?? [],
             attackPieces: expeditionData.attackPieces ?? [],
