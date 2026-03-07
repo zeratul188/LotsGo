@@ -1282,13 +1282,16 @@ function EngravingComponent({ info }: { info: CharacterInfo }) {
                                     className="w-6 h-6 rounded-md"/>
                                 <p className={`grow ${getColorTextByGrade(engraving.grade)}`}>{engraving.name}</p>
                                 {engraving.stoneLevel > 0 ? (
-                                    <div className="flex gap-1 items-center fadedtext">
-                                        <img
-                                            src={'/icons/stoneicon.png'}
-                                            alt="stone-icon"
-                                            className="w-3 h-5"/>
-                                        <p>X {engraving.stoneLevel}</p>
-                                    </div>
+                                    <Chip size="sm" radius="sm" variant="faded" color="primary" className="min-w-[48px]">
+                                        <div className="flex gap-0.5 items-center justify-center font-bold">
+                                            <img
+                                                src={'/icons/stoneicon.png'}
+                                                alt="stone-icon"
+                                                className="w-2.5 h-4"/>
+                                            <p className="text-[7pt]">×</p>
+                                            <p>{engraving.stoneLevel}</p>
+                                        </div>
+                                    </Chip>
                                 ) : <></>}
                                 <p className={`${getColorTextByGrade(engraving.grade)}`}>{printEngravingLevel(engraving.level)}</p>
                             </div>
