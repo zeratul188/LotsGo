@@ -912,7 +912,11 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                                 </div>
                                 <div className="grow">
                                     <p className={`${getColorTextByGrade(orb.grade)} grow truncate`}>{orb.name}</p>
-                                    <p className="fadedtext text-[9pt]">{orb.grade} {orb.type}</p>
+                                    <div className="text-[9pt] flex gap-1">
+                                        <p className="fadedtext">{orb.grade} {orb.type}</p>
+                                        <Divider orientation="vertical" className="self-stretch min-h-4 bg-black/20 dark:bg-white/20"/>
+                                        <p><span className="fadedtext">낙원력 : </span>{orb.score.toLocaleString()}</p>
+                                    </div>
                                 </div>
                             </div>
                         ) : null}

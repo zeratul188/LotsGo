@@ -95,7 +95,8 @@ export type Orb = {
     icon: string,
     type: string,
     name: string,
-    grade: string
+    grade: string,
+    score: number
 }
 
 // 보석 정보

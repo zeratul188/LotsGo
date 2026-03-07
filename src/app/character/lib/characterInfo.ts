@@ -254,7 +254,8 @@ function getOrbData(data: any): Orb | null {
             icon: obj.Icon,
             type: '보주',
             name: obj.Name,
-            grade: obj.Grade
+            grade: obj.Grade,
+            score: findOrbScoreInTooltip(obj.Tooltip)
         }
         return newOrb;
     }
@@ -262,6 +263,53 @@ function getOrbData(data: any): Orb | null {
 }
 
 // 보석 데이터 가져오기
+function findOrbScoreInTooltip(tooltip: any): number {
+    if (typeof tooltip !== "string") return 0;
+
+    let parsed: TooltipBoject;
+    try {
+        parsed = JSON.parse(tooltip);
+    } catch (err) {
+        console.error("Tooltip JSON parse error:", err);
+        return 0;
+    }
+
+    const scoreRegex = /:\s*([\d,]+)\s*$/;
+    const getScoreFromText = (text: string): number => {
+        const lines = getParsedText(text).split(/\r?\n/);
+        for (const line of lines) {
+            const match = line.match(scoreRegex);
+            if (match?.[1]) return toNumber(match[1]);
+        }
+        return 0;
+    };
+
+    const specialEffectText = parsed?.Element_004?.value?.Element_001;
+    if (typeof specialEffectText === "string") {
+        const score = getScoreFromText(specialEffectText);
+        if (score > 0) return score;
+    }
+
+    for (const key in parsed) {
+        const element = parsed[key];
+        const value = element?.value;
+
+        if (typeof value === "string") {
+            const score = getScoreFromText(value);
+            if (score > 0) return score;
+        } else if (typeof value === "object" && value !== null) {
+            for (const valueKey in value) {
+                const innerValue = value[valueKey];
+                if (typeof innerValue !== "string") continue;
+                const score = getScoreFromText(innerValue);
+                if (score > 0) return score;
+            }
+        }
+    }
+
+    return 0;
+}
+
 function getGems(datas: any): Gem[] {
     let gems: Gem[] = [];
     if (datas) {
