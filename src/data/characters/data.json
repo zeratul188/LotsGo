@@ -219,27 +219,27 @@
     }, 
     "levels": [
         {
-            "level": 1740,
+            "level": 1750,
             "bg": "bg-[#FF6947] dark:bg-[#FF6947] text-white",
             "border": "border-[#FF6947] dark:border-[#FF6947]"
         },
         {
-            "level": 1720,
+            "level": 1730,
             "bg": "bg-[#bbbb71] dark:bg-[#ffffb5] text-white dark:text-black",
             "border": "border-[#bbbb71] dark:border-[#ffffb5]"
         },
         {
-            "level": 1700,
+            "level": 1710,
             "bg": "bg-[#9D71BD] dark:bg-[#9D71BD] text-white",
             "border": "border-[#9D71BD] dark:border-[#9D71BD]"
         },
         {
-            "level": 1680,
+            "level": 1700,
             "bg": "bg-[#6DD66D] dark:bg-[#6DD66D] text-white",
             "border": "border-[#6DD66D] dark:border-[#6DD66D]"
         },
         {
-            "level": 1660,
+            "level": 1680,
             "bg": "bg-[#FF82C8] dark:bg-[#FF82C8] text-white",
             "border": "border-[#FF82C8] dark:border-[#FF82C8]"
         },
