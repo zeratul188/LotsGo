@@ -463,7 +463,7 @@ function TitleComponent({titles}: { titles: string[] }) {
                 {titles.map((title, index) => (
                     <div key={index} className="mb-2">
                         <p className={clsx(
-                            'font-bold text-sm',
+                            'text-sm',
                             getColorTextByGrade(getTitleData(title)?.grade ?? 'default')
                         )}>{title}</p>
                         <p className="fadedtext text-[9pt]">{getTitleData(title)?.condition ?? '-'}</p>
