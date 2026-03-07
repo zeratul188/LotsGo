@@ -182,7 +182,7 @@ function MemberComponent({ index, member, bosses, party }: MemberComponentProps)
                 <Divider/>
                 <CardFooter className="p-0">
                     <div className="w-full">
-                        {member.checklist.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((item, idx) => (
+                        {member.checklist.filter(item => item.contents.length > 0).slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((item, idx) => (
                             <React.Fragment key={idx}>
                                 <div className="w-full flex flex-col sm:flex-row gap-2 sm:gap-5 px-3 py-2 items-center">
                                     <div className="min-w-full sm:min-w-[240px] flex gap-3 items-center">
@@ -259,7 +259,7 @@ function MemberComponent({ index, member, bosses, party }: MemberComponentProps)
                                 color="primary"
                                 page={page}
                                 onChange={setPage}
-                                total={Math.ceil(member.checklist.length / PAGE_SIZE)}/>
+                                total={Math.ceil(member.checklist.filter(item => item.contents.length > 0).length / PAGE_SIZE)}/>
                             <Tabs 
                                 fullWidth={isMobile} 
                                 radius="sm" 
