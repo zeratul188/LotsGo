@@ -1,7 +1,7 @@
 import { SetStateFn } from "@/utiils/utils";
-import { changeChracter, Character, LoginUser, saveExpedition } from "../store/loginSlice";
+import { changeChracter, Character, LoginUser, saveExpedition } from "../../store/loginSlice";
 import { addToast } from "@heroui/react";
-import { AppDispatch, RootState } from "../store/store";
+import { AppDispatch, RootState } from "../../store/store";
 import { decrypt } from "@/utiils/crypto";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';

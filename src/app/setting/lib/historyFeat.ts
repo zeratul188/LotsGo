@@ -1,6 +1,6 @@
 import { SetStateFn } from "@/utiils/utils";
-import { History } from "./model/types";
-import { LoginUser } from "../store/loginSlice";
+import { History } from "../model/types";
+import { LoginUser } from "../../store/loginSlice";
 import { addToast } from "@heroui/react";
 
 export async function loadHistorys(setHistorys: SetStateFn<History[]>, setLoaded: SetStateFn<boolean>) {

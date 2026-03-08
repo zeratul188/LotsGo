@@ -1,6 +1,6 @@
 import { Button, Divider, Input } from "@heroui/react";
 import { useEffect, useState } from "react";
-import { isDisableButton, useChangePassword } from "./changePassworlFeat";
+import { isDisableButton, useChangePassword } from "../lib/changePassworlFeat";
 
 export default function ChangePasswordComponent() {
     const [nowPassworld, setNowPassword] = useState('');

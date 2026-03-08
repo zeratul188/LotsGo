@@ -1,10 +1,10 @@
 import { Button, Checkbox, Code, Divider, Input, Link } from "@heroui/react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../store/store";
+import { AppDispatch, RootState } from "../../store/store";
 import clsx from "clsx";
 import { decrypt } from "@/utiils/crypto";
-import { handleInsertKey, handleRemoveKey } from "./apiFeat";
+import { handleInsertKey, handleRemoveKey } from "../lib/apiFeat";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 

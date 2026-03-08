@@ -1,5 +1,5 @@
 import { SetStateFn } from "@/utiils/utils";
-import { LoginUser } from "../store/loginSlice";
+import { LoginUser } from "../../store/loginSlice";
 import { addToast } from "@heroui/react";
 import { hashValue } from "@/utiils/bcrypt";
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "firebase/auth";

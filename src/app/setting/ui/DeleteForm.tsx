@@ -1,8 +1,8 @@
 import { Button, Checkbox, Divider, Input } from "@heroui/react";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { AppDispatch } from "../store/store";
-import { useDeleteUser } from "./deleteFeat";
+import { AppDispatch } from "../../store/store";
+import { useDeleteUser } from "../lib/deleteFeat";
 
 export default function DeleteComponent() {
     const [isChecked, setChecked] = useState(false);

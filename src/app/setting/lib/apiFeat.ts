@@ -1,6 +1,6 @@
 import { SetStateFn } from "@/utiils/utils";
-import { editApiKey, LoginUser } from "../store/loginSlice";
-import { AppDispatch } from "../store/store";
+import { editApiKey, LoginUser } from "../../store/loginSlice";
+import { AppDispatch } from "../../store/store";
 import { addToast } from "@heroui/react";
 import { encrypt } from "@/utiils/crypto";
 import Cookies from 'js-cookie';

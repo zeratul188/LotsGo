@@ -1,8 +1,8 @@
 import { Button, Divider, Switch } from "@heroui/react";
 import { useEffect, useState } from "react";
-import { Settings } from "../api/setting/route";
-import { handleHideBonusMode, handleHideDayContent, loadSettings, useAllLogout } from "./optionFeat";
-import { LoadingComponent } from "../UtilsCompnents";
+import { Settings } from "../../api/setting/route";
+import { handleHideBonusMode, handleHideDayContent, loadSettings, useAllLogout } from "../lib/optionFeat";
+import { LoadingComponent } from "../../UtilsCompnents";
 
 export default function OptionComponent() {
     const [settings, setSettings] = useState<Settings | null>(null);

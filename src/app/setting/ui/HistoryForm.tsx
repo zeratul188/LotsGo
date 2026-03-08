@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { History } from "./model/types";
-import { LoadingComponent } from "../UtilsCompnents";
-import { getRemainingDays, loadHistorys } from "./historyFeat";
+import { History } from "../model/types";
+import { LoadingComponent } from "../../UtilsCompnents";
+import { getRemainingDays, loadHistorys } from "../lib/historyFeat";
 import { formatDate, useMobileQuery } from "@/utiils/utils";
 import clsx from "clsx";
 import { Chip, Pagination, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react";

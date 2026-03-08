@@ -1,15 +1,15 @@
 'use client'
 import { useMobileQuery } from "@/utiils/utils"
 import { addToast, Spinner, Tab, Tabs } from "@heroui/react";
-import { ExpeditionsComponent } from "./ExpeditionForm";
+import { ExpeditionsComponent } from "./ui/ExpeditionForm";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { checkLogin } from "../checklist/lib/checklistFeat";
-import ChangePasswordComponent from "./ChangePasswordForm";
-import DeleteComponent from "./DeleteForm";
-import APIComponent from "./ApiForm";
-import OptionComponent from "./OptionForm";
-import HistoryComponent from "./HistoryForm";
+import ChangePasswordComponent from "./ui/ChangePasswordForm";
+import DeleteComponent from "./ui/DeleteForm";
+import APIComponent from "./ui/ApiForm";
+import OptionComponent from "./ui/OptionForm";
+import HistoryComponent from "./ui/HistoryForm";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 

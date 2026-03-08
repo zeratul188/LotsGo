@@ -1,12 +1,12 @@
 import { Avatar, Button, Link, Switch, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react";
 import { useEffect, useState } from "react";
-import { Character } from "../store/loginSlice";
-import { ExpeditionCharacter, handleSelectCharacter, initialData, useClickUpdate } from "./expeditionFeat";
+import { Character } from "../../store/loginSlice";
+import { ExpeditionCharacter, handleSelectCharacter, initialData, useClickUpdate } from "../lib/expeditionFeat";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../store/store";
+import { RootState } from "../../store/store";
 import clsx from "clsx";
 import { useMobileQuery } from "@/utiils/utils";
-import { getImgByJob } from "../character/lib/expeditionFeat";
+import { getImgByJob } from "../../character/lib/expeditionFeat";
 
 export function ExpeditionsComponent() {
     const [expedition, setExpedition] = useState<ExpeditionCharacter[]>([]);

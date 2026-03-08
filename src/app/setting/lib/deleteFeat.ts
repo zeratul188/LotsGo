@@ -1,9 +1,9 @@
 import { SetStateFn } from "@/utiils/utils";
-import { LoginUser, logout } from "../store/loginSlice";
+import { LoginUser, logout } from "../../store/loginSlice";
 import { addToast } from "@heroui/react";
 import { auth } from "@/utiils/firebase";
 import { deleteUser, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
-import { AppDispatch } from "../store/store";
+import { AppDispatch } from "../../store/store";
 
 // 회원탈퇴 이벤트 함수
 export function useDeleteUser(
