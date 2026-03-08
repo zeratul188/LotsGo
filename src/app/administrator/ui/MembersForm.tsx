@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Member } from "../api/auth/members/route"
-import { LoadingComponent } from "../UtilsCompnents";
-import { getActivityRange, handleClickIp, handleMoreData, handleRemoveMember, handleRevorkHistory, handleSearchData, isLocked, loadData, loadHistorys } from "./membersFeat";
+import { History, Member } from "../model/types";
+import { LoadingComponent } from "../../UtilsCompnents";
+import { getActivityRange, handleClickIp, handleMoreData, handleRemoveMember, handleRevorkHistory, handleSearchData, isLocked, loadData, loadHistorys } from "../lib/membersFeat";
 import { Button, Chip, Input, Modal, ModalBody, ModalContent, ModalHeader, Pagination, Popover, PopoverContent, PopoverTrigger, Radio, RadioGroup, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react";
 import { formatDate, SetStateFn, useMobileQuery } from "@/utiils/utils";
-import { History } from "../setting/model/types";
 
 export default function MembersComponent() {
     const [memberLength, setMemberLength] = useState(0);

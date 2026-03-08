@@ -2,13 +2,13 @@
 import { Tabs, Tab, addToast } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
-import Checklist from "./Checklist";
+import Checklist from "./ui/Checklist";
 import { useMobileQuery } from "@/utiils/utils";
-import MembersComponent from "./MembersForm";
-import CryptoComponent from "./CryptoForm";
-import DonateComponent from "./DonateForm";
-import BadgeComponent from "./BadgeForm";
-import { isAdministratorByToken } from "./administratorFeat";
+import MembersComponent from "./ui/MembersForm";
+import CryptoComponent from "./ui/CryptoForm";
+import DonateComponent from "./ui/DonateForm";
+import BadgeComponent from "./ui/BadgeForm";
+import { isAdministratorByToken } from "./lib/administratorFeat";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 

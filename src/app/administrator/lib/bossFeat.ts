@@ -1,5 +1,5 @@
 import type { SetStateFn } from "@/utiils/utils";
-import type { Boss, Difficulty } from "../api/checklist/boss/route";
+import type { Boss, Difficulty } from "../model/types";
 import { useCallback } from "react";
 import { addToast } from "@heroui/react";
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from "firebase/firestore";

@@ -1,6 +1,6 @@
 import { Button, Checkbox } from "@heroui/react";
 import { useState } from "react"
-import { useCryptoEmail } from "./cryptoFeat";
+import { useCryptoEmail } from "../lib/cryptoFeat";
 
 export default function CryptoComponent() {
     const [isCheckedEmail, setCheckedEmail] = useState(false);

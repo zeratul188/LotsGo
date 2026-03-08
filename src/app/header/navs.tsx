@@ -22,7 +22,7 @@ import CharacterIcon from "@/Icons/CharacterIcon";
 import AddonIcon from "@/Icons/AddonIcon";
 import RaidIcon from "@/Icons/RaidIcon";
 import { useEffect, useState } from "react";
-import { isAdministratorByToken } from "../administrator/administratorFeat";
+import { isAdministratorByToken } from "../administrator/lib/administratorFeat";
 import { usePathname, useRouter } from "next/navigation";
 import clsx from "clsx";
 

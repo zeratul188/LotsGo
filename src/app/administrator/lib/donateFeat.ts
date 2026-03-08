@@ -1,6 +1,6 @@
 import { SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
-import { Donate } from "../api/administrator/donate/route";
+import { Donate } from "../model/types";
 
 // 후원 데이터 불러오기
 export async function loadDonates(

@@ -1,9 +1,9 @@
-import { addToast } from "@heroui/react";
-import { LoginUser, logout } from "../store/loginSlice";
+﻿import { addToast } from "@heroui/react";
+import { LoginUser, logout } from "../../store/loginSlice";
 import Cookies from 'js-cookie';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/utiils/firebase';
-import { AppDispatch } from "../store/store";
+import { AppDispatch } from "../../store/store";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 async function checkAdministrator(token: string) {
@@ -13,43 +13,54 @@ async function checkAdministrator(token: string) {
         credentials: "include",
     });
 
-    const data = await res.json().catch(() => ({}));
+    const data = await res.json().catch((err) => {
+        console.error("Failed to parse /api/auth/checkadministrator response", err);
+        return {};
+    });
     return { res, data };
 }
 
 async function hardLogout(dispatch: AppDispatch, router: AppRouterInstance) {
-    const res = await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-    });
+    try {
+        const res = await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "include",
+        });
 
-    if (!res.ok) {
+        if (!res.ok) {
+            addToast({
+                title: "처리 오류",
+                description: "로그아웃 처리 중 문제가 발생했습니다.",
+                color: "danger",
+            });
+        }
+    } catch (err) {
+        console.error("Failed to call /api/auth/logout", err);
         addToast({
             title: "처리 오류",
-            description: "로그아웃하는데 문제가 발생하였습니다.",
+            description: "로그아웃 처리 중 문제가 발생했습니다.",
             color: "danger",
         });
-        return;
+    } finally {
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
+        localStorage.removeItem("userSettings");
+        Cookies.remove("userApiKey", { path: "/" });
+
+        dispatch(logout());
+        await signOut(auth);
+
+        addToast({
+            title: "유효 기간 만료",
+            description: "아이디의 유효 기간이 만료되었습니다. 다시 로그인해주시기 바랍니다.",
+            color: "danger",
+        });
+
+        router.push("/");
     }
-
-    sessionStorage.removeItem("token");
-    sessionStorage.removeItem("user");
-    localStorage.removeItem("userSettings");
-    Cookies.remove("userApiKey", { path: "/" });
-
-    dispatch(logout());
-    await signOut(auth);
-
-    addToast({
-        title: "유효 기간 만료",
-        description: "아이디의 유효 기간이 만료되었습니다. 다시 로그인해주시기 바랍니다.",
-        color: "danger",
-    });
-
-    router.push("/");
 }
 
-// 관리자인지 파악하는 함수
+// 愿由ъ옄?몄? ?뚯븙?섎뒗 ?⑥닔
 export async function isAdministratorByToken(dispatch: AppDispatch, router: AppRouterInstance): Promise<boolean> {
     const token = sessionStorage.getItem('token');
     if (!token) return false;
@@ -64,7 +75,10 @@ export async function isAdministratorByToken(dispatch: AppDispatch, router: AppR
                 credentials: "include",
             });
 
-            const refreshData = await refreshRes.json().catch(() => ({}));
+            const refreshData = await refreshRes.json().catch((err) => {
+                console.error("Failed to parse /api/auth/refresh response", err);
+                return {};
+            });
             if (!refreshRes.ok) {
                 await hardLogout(dispatch, router);
                 return false;
@@ -83,13 +97,6 @@ export async function isAdministratorByToken(dispatch: AppDispatch, router: AppR
 
             ({ res, data } = await checkAdministrator(refreshData.accessToken));
             if (res.ok) return Boolean(data.isAdministrator);
-
-            addToast({
-                title: "인증 오류",
-                description: data?.error ?? "토큰 검증에 실패했습니다.",
-                color: "danger",
-            });
-            return false;
         }
         addToast({
             title: "인증 오류",
@@ -100,7 +107,7 @@ export async function isAdministratorByToken(dispatch: AppDispatch, router: AppR
     } catch {
         addToast({
             title: "확인 오류",
-            description: "회원의 데이터를 처리하는데 문제가 발생하였습니다.",
+            description: "회원 데이터 처리 중 문제가 발생했습니다.",
             color: "danger",
         });
         return false;

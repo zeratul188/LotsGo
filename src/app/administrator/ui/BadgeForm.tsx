@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
-import { Badge } from "../api/administrator/badge/route"
-import { LoadingComponent } from "../UtilsCompnents";
-import { loadBadges, loadIds, useUpdateData } from "./badgeFeat";
+import { Badge } from "../model/types";
+import { LoadingComponent } from "../../UtilsCompnents";
+import { loadBadges, loadIds, useUpdateData } from "../lib/badgeFeat";
 import { Button, Input, NumberInput, Pagination, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react";
 import clsx from "clsx";
 

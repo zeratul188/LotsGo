@@ -12,8 +12,8 @@ import {
     Table, TableHeader, TableColumn, TableBody, TableRow, TableCell
  } from "@heroui/react";
 import { ReactNode, useEffect, useState } from "react";
-import { EmptyComponent, LoadingComponent } from "../UtilsCompnents";
-import type { Difficulty, Boss } from "../api/checklist/boss/route";
+import { EmptyComponent, LoadingComponent } from "../../UtilsCompnents";
+import type { Difficulty, Boss, Cube } from "../model/types";
 import { 
     useClearData, 
     useInputHandlers, 
@@ -23,9 +23,8 @@ import {
     useOnRemoveDifficulty, 
     onClickRemove, 
     loadBoss
-} from "./bossFeat";
-import { Cube } from "../api/checklist/cube/route";
-import { handleRemoveCube, loadCubes, useOnAddCube } from "./CubeFeat";
+} from "../lib/bossFeat";
+import { handleRemoveCube, loadCubes, useOnAddCube } from "../lib/CubeFeat";
 
 type TabMenu = {
     key: string,

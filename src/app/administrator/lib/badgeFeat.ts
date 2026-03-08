@@ -1,7 +1,6 @@
 import { SetStateFn } from "@/utiils/utils";
-import { Badge } from "../api/administrator/badge/route";
 import { addToast } from "@heroui/react";
-import { BadgeToUser } from "../api/badgetomembers/route";
+import { Badge, BadgeToUser } from "../model/types";
 
 // 뱃지 데이터 불러오기
 export async function loadBadges(setBadges: SetStateFn<Badge[]>) {

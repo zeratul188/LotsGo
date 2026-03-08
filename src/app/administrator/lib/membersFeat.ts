@@ -1,11 +1,10 @@
 import { SetStateFn } from "@/utiils/utils";
-import { Member } from "../api/auth/members/route";
 import { addToast } from "@heroui/react";
-import { History } from "../setting/model/types";
+import { ActivityLevel, History, Member } from "../model/types";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
-import { RefObject } from "react";
+import type { RefObject } from "react";
 
 // 맴버들 데이터 가져오기
 export async function loadData(
@@ -177,7 +176,6 @@ export async function loadHistorys(
     setLoaded(true);
 }
 
-type ActivityLevel = "success" | "warning" | "danger" | "default";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 

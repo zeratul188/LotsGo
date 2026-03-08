@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
-import { Donate } from "../api/administrator/donate/route"
-import { LoadingComponent } from "../UtilsCompnents";
-import { formatDate, getSumPrice, handleAddDonate, handleDeleteItem, loadDonates, resetInputs } from "./donateFeat";
+import { Donate } from "../model/types";
+import { LoadingComponent } from "../../UtilsCompnents";
+import { formatDate, getSumPrice, handleAddDonate, handleDeleteItem, loadDonates, resetInputs } from "../lib/donateFeat";
 import { Button, Input, Modal, ModalBody, ModalContent, ModalHeader, NumberInput, Pagination, Popover, PopoverContent, PopoverTrigger, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Textarea, Tooltip, useDisclosure } from "@heroui/react";
 import clsx from "clsx";
 import { SetStateFn } from "@/utiils/utils";

@@ -1,5 +1,5 @@
 import { SetStateFn } from "@/utiils/utils";
-import { Cube } from "../api/checklist/cube/route";
+import { Cube } from "../model/types";
 import { addToast } from "@heroui/react";
 import { addDoc, collection, deleteDoc, doc, getDocs } from "firebase/firestore";
 import { firestore } from "@/utiils/firebase";
