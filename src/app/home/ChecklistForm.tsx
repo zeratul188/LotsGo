@@ -82,7 +82,7 @@ export default function ChecklistComponent() {
         return <LoadingComponent heightStyle="min-h-[240px]"/>
     }
 
-    const goruped = groupByLevel10(checklistForm.checklist);
+    const goruped = groupByLevel10(checklistForm.checklist.filter(character => character.checklist.length > 0));
     const groupedChecklist = Array.from(goruped.entries());
 
     return (
@@ -236,7 +236,7 @@ export default function ChecklistComponent() {
                 <Divider/>
                 <CardBody className="pt-0.5">
                     <div className="w-full">
-                        {checklistForm.checklist.slice((page - 1) * maxSize, page * maxSize).map((item, idx) => (
+                        {checklistForm.checklist.filter(character => character.checklist.length > 0).slice((page - 1) * maxSize, page * maxSize).map((item, idx) => (
                             <React.Fragment key={idx}>
                                 <div className="w-full flex flex-col sm:flex-row gap-2 sm:gap-5 px-3 py-2 items-center">
                                     <div className="min-w-full sm:min-w-[240px] flex gap-3 items-center">
@@ -268,7 +268,7 @@ export default function ChecklistComponent() {
                             color="primary"
                             page={page}
                             onChange={setPage}
-                            total={Math.ceil(checklistForm.checklist.length / maxSize)}/>
+                            total={Math.ceil(checklistForm.checklist.filter(character => character.checklist.length > 0).length / maxSize)}/>
                         <p className="ml-auto fadedtext text-[10pt] hidden sm:block">좌우 스크롤은 Shift키를 누르며 마우스 휠로 조작하세요.</p>
                     </div>
                 </CardBody>
