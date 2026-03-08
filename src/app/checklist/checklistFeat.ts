@@ -25,7 +25,7 @@ import { Cube } from "../api/checklist/cube/route";
 import { collection, getDocs } from "firebase/firestore";
 import { database, firestore } from "@/utiils/firebase";
 import { decrypt } from "@/utiils/crypto";
-import { ChecklistData, ChecklistDataDifficulty, getLevelByContent } from "../home/checklistFeat";
+import { ChecklistData, ChecklistDataDifficulty, getLevelByContent } from "../home/lib/checklistFeat";
 import { get, ref } from "firebase/database";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';

@@ -1,7 +1,7 @@
 import dayjs, { Dayjs } from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
-import { ContentData } from './CalendarForm';
+import { ContentData } from '../ui/CalendarForm';
 
 dayjs.extend(utc)
 dayjs.extend(timezone)

@@ -13,14 +13,14 @@ import {
     loadWorksByParty, 
     removeAutoCalendarsByGuild, 
     removeAutoCalendarsByWorks 
-} from "../calendar/calendarFeat";
-import { isLogin } from "./checklistFeat";
+} from "../../calendar/calendarFeat";
+import { isLogin } from "../lib/checklistFeat";
 import { Button, Chip, Divider } from "@heroui/react";
-import { WeekBox } from "../calendar/CalendarForm";
+import { WeekBox } from "../../calendar/CalendarForm";
 import clsx from "clsx";
-import { LoadingComponent } from "../UtilsCompnents";
+import { LoadingComponent } from "../../UtilsCompnents";
 import { useRouter } from "next/navigation";
-import { RaidWork } from "../raids/model/types";
+import { RaidWork } from "../../raids/model/types";
 
 // state 관리
 export function useTodoForm() {

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { CheckCharacter } from "../store/checklistSlice";
-import { getHighestBucket, groupByLevel10, isCompleteHomeworkByCharacter, isLogin, loadChecklist } from "./checklistFeat";
-import { LoadingComponent } from "../UtilsCompnents";
-import { Boss } from "../api/checklist/boss/route";
+import { CheckCharacter } from "../../store/checklistSlice";
+import { getHighestBucket, groupByLevel10, isCompleteHomeworkByCharacter, isLogin, loadChecklist } from "../lib/checklistFeat";
+import { LoadingComponent } from "../../UtilsCompnents";
+import { Boss } from "../../api/checklist/boss/route";
 import { 
     getAllBoundGold,
     getAllContentGold,
@@ -12,7 +12,7 @@ import {
     getBosses, 
     getCompleteChecklistByStage, 
     getHaveGolds 
-} from "../checklist/checklistFeat";
+} from "../../checklist/checklistFeat";
 import { 
     Avatar,
     Card,
@@ -25,10 +25,10 @@ import {
     Tooltip
 } from "@heroui/react";
 import React from "react";
-import { getImgByJob } from "../character/lib/expeditionFeat";
-import { ContentChip } from "../raids/ui/PartyForm";
+import { getImgByJob } from "../../character/lib/expeditionFeat";
+import { ContentChip } from "../../raids/ui/PartyForm";
 import { useMobileQuery } from "@/utiils/utils";
-import CutCircularProgress from "../components/ui/CutCircularProgress";
+import CutCircularProgress from "../../components/ui/CutCircularProgress";
 import PersonIcon from "@/Icons/PersonIcon";
 import clsx from "clsx";
 

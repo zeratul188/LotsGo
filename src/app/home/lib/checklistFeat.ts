@@ -1,10 +1,10 @@
 import { SetStateFn } from "@/utiils/utils";
-import { LoginUser } from "../store/loginSlice";
+import { LoginUser } from "../../store/loginSlice";
 import { addToast } from "@heroui/react";
-import { CheckCharacter } from "../store/checklistSlice";
-import { Boss } from "../api/checklist/boss/route";
+import { CheckCharacter } from "../../store/checklistSlice";
+import { Boss } from "../../api/checklist/boss/route";
 import data from "@/data/home/data.json";
-import { ContentLevels } from "./model/types";
+import { ContentLevels } from "../model/types";
 
 export type ChecklistData = {
     nickname: string,

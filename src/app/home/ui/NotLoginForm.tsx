@@ -1,6 +1,6 @@
 import { Button, Card, CardBody, CardHeader, Divider, Link } from "@heroui/react";
 import { useEffect, useState } from "react";
-import { isLogin } from "./checklistFeat";
+import { isLogin } from "../lib/checklistFeat";
 
 export default function NotLoginComponent() {
     const [isLogined, setLogined] = useState(false);
