@@ -1,5 +1,5 @@
-import { AppDispatch } from "../store/store";
-import type { CheckCharacter, Checklist, ChecklistItem, CubeList, Day, OtherList } from "../store/checklistSlice";
+import { AppDispatch } from "../../store/store";
+import type { CheckCharacter, Checklist, ChecklistItem, CubeList, Day, OtherList } from "../../store/checklistSlice";
 import { 
     calculateOtherGold,
     checkDayList, 
@@ -16,16 +16,16 @@ import {
     saveData, 
     saveRest, 
     updateAccount
-} from "../store/checklistSlice";
+} from "../../store/checklistSlice";
 import { SetStateFn } from "@/utiils/utils";
 import { addToast, Selection } from "@heroui/react";
-import { Boss, Difficulty } from "../api/checklist/boss/route";
-import { Character, LoginUser } from "../store/loginSlice";
-import { Cube } from "../api/checklist/cube/route";
+import { Boss, Difficulty } from "../../api/checklist/boss/route";
+import { Character, LoginUser } from "../../store/loginSlice";
+import { Cube } from "../../api/checklist/cube/route";
 import { collection, getDocs } from "firebase/firestore";
 import { database, firestore } from "@/utiils/firebase";
 import { decrypt } from "@/utiils/crypto";
-import { ChecklistData, ChecklistDataDifficulty, getLevelByContent } from "../home/lib/checklistFeat";
+import { ChecklistData, ChecklistDataDifficulty, getLevelByContent } from "../../home/lib/checklistFeat";
 import { get, ref } from "firebase/database";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';

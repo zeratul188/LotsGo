@@ -4,7 +4,7 @@ import { addToast, Spinner, Tab, Tabs } from "@heroui/react";
 import { ExpeditionsComponent } from "./ExpeditionForm";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { checkLogin } from "../checklist/checklistFeat";
+import { checkLogin } from "../checklist/lib/checklistFeat";
 import ChangePasswordComponent from "./ChangePasswordForm";
 import DeleteComponent from "./DeleteForm";
 import APIComponent from "./ApiForm";

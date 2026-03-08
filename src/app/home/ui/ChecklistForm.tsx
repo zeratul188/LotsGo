@@ -12,7 +12,7 @@ import {
     getBosses, 
     getCompleteChecklistByStage, 
     getHaveGolds 
-} from "../../checklist/checklistFeat";
+} from "../../checklist/lib/checklistFeat";
 import { 
     Avatar,
     Card,

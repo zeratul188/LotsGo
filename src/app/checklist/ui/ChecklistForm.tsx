@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Boss } from "../api/checklist/boss/route";
-import { CheckCharacter, Checklist, ChecklistItem, OtherList } from "../store/checklistSlice";
+import { Boss } from "../../api/checklist/boss/route";
+import { CheckCharacter, Checklist, ChecklistItem, OtherList } from "../../store/checklistSlice";
 import { 
     Button, 
     Card, CardBody, CardHeader,
@@ -124,22 +124,23 @@ import {
     useOnClickRemoveItem, 
     useOnClickSaveRestValue, 
     useOnClickWeekCheck 
-} from "./checklistFeat";
+} from "../lib/checklistFeat";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
-import { SettingIcon } from "../icons/SettingIcon";
+import { SettingIcon } from "../../icons/SettingIcon";
 import clsx from "clsx";
-import { AppDispatch } from "../store/store";
-import AddIcon from "../icons/AddIcon";
-import DeleteIcon from "../icons/DeleteIcon";
-import { Cube } from "../api/checklist/cube/route";
+import { AppDispatch } from "../../store/store";
+import AddIcon from "../../icons/AddIcon";
+import DeleteIcon from "../../icons/DeleteIcon";
+import { Cube } from "../../api/checklist/cube/route";
 import { MAX_CHARACTER_COUNT } from "@/utiils/constants";
 import {
   DragDropContext,
   Droppable,
   Draggable
 } from '@hello-pangea/dnd';
-import { getImgByJob } from "../character/lib/expeditionFeat";
-import { ChecklistData } from "../home/lib/checklistFeat";
+import { getImgByJob } from "../../character/lib/expeditionFeat";
+import { ChecklistData } from "../../home/lib/checklistFeat";
+import { ControlStage } from "../model/types";
 import CheckIcon from "@/Icons/CheckIcon";
 import CharacterIcon from "@/Icons/CharacterIcon";
 import BusIcon from "@/Icons/BusIcon";
@@ -2232,10 +2233,6 @@ type WeekContentComponentProps = {
     setDifficulty : SetStateFn<Selection>,
     isGold: boolean,
     setGold: SetStateFn<boolean>
-}
-export type ControlStage = {
-    stage: number,
-    difficulty: string
 }
 function WeekContentComponent({
     checklist,

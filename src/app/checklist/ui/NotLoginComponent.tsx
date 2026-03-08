@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { CheckCharacter } from "../store/checklistSlice"
+import { CheckCharacter } from "../../store/checklistSlice"
 import { SetStateFn, useMobileQuery } from "@/utiils/utils"
 import { 
     Accordion, AccordionItem, 
@@ -20,16 +20,16 @@ import {
     Tabs, 
     Tooltip 
 } from "@heroui/react"
-import { Boss } from "../api/checklist/boss/route";
-import { DayValue, getAllBoundGold, getAllContentGold, getAllContentOtherGold, getAllCountChecklist, getAllCubeCount, getAllGoldCharacter, getAllGolds, getBackground50ByStage, getBackgroundByStage, getBorderByStage, getCompleteBoundGoldCharacter, getCompleteChecklist, getCompleteGoldCharacter, getCompleteSharedGoldCharacter, getCountCube, getCubeList, getDayName, getDiffByContent, getHaveBoundGolds, getHaveGolds, getHaveSharedGolds, getIndexByNickname, getMaxRestValue, getSimpleBossName, getTypeDayValue, isCheckHomework, printDifficulty } from "./checklistFeat";
+import { Boss } from "../../api/checklist/boss/route";
+import { DayValue, getAllBoundGold, getAllContentGold, getAllContentOtherGold, getAllCountChecklist, getAllCubeCount, getAllGoldCharacter, getAllGolds, getBackground50ByStage, getBackgroundByStage, getBorderByStage, getCompleteBoundGoldCharacter, getCompleteChecklist, getCompleteGoldCharacter, getCompleteSharedGoldCharacter, getCountCube, getCubeList, getDayName, getDiffByContent, getHaveBoundGolds, getHaveGolds, getHaveSharedGolds, getIndexByNickname, getMaxRestValue, getSimpleBossName, getTypeDayValue, isCheckHomework, printDifficulty } from "../lib/checklistFeat";
 import { CubeDetailComponent, CubeStatueComponent, RemainChecklistComponent, SelectServer } from "./ChecklistForm";
 import clsx from "clsx";
-import { Cube } from "../api/checklist/cube/route";
-import { getImgByJob } from "../character/lib/expeditionFeat";
-import { SettingIcon } from "../icons/SettingIcon";
-import DeleteIcon from "../icons/DeleteIcon";
-import { handleControlCube, handleSetOtherGold, handleWeekContent, handleWeekStage, useOnClickCheckGold, useOnClickDayCheck } from "./testFet";
-import AddIcon from "../icons/AddIcon";
+import { Cube } from "../../api/checklist/cube/route";
+import { getImgByJob } from "../../character/lib/expeditionFeat";
+import { SettingIcon } from "../../icons/SettingIcon";
+import DeleteIcon from "../../icons/DeleteIcon";
+import { handleControlCube, handleSetOtherGold, handleWeekContent, handleWeekStage, useOnClickCheckGold, useOnClickDayCheck } from "../lib/testFeat";
+import AddIcon from "../../icons/AddIcon";
 import React from "react";
 
 // 숙제 현황

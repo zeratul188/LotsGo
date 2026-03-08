@@ -1,5 +1,5 @@
 import { SetStateFn } from "@/utiils/utils";
-import { CheckCharacter, Day } from "../store/checklistSlice";
+import { CheckCharacter, Day } from "../../store/checklistSlice";
 import { getMaxRestValue } from "./checklistFeat";
 
 // 캐릭터 골드 지정 이벤트
