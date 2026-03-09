@@ -1,4 +1,4 @@
-import { ControlStage } from "@/app/checklist/ChecklistForm"
+import { ControlStage } from "@/app/checklist/model/types"
 import { ChecklistItem } from "@/app/store/checklistSlice"
 
 // 파티 인원

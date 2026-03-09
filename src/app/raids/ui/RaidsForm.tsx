@@ -22,8 +22,8 @@ import {
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
 import { DateValue, getLocalTimeZone, now, parseAbsolute } from "@internationalized/date";
 import CalendarIcon from "@/Icons/CalendarIcon";
-import { getBossesById, getDifficultyByStage, getTextColorByDifficulty, getWeekContents, getWeekStages } from "@/app/checklist/checklistFeat";
-import { ControlStage } from "@/app/checklist/ChecklistForm";
+import { getBossesById, getDifficultyByStage, getTextColorByDifficulty, getWeekContents, getWeekStages } from "@/app/checklist/lib/checklistFeat";
+import { ControlStage } from "@/app/checklist/model/types";
 import { RaidMember } from "@/app/api/raids/members/route";
 import { SettingIcon } from "@/app/icons/SettingIcon";
 import clsx from "clsx";
