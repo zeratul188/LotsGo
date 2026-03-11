@@ -1,4 +1,5 @@
 {
+    "maxCharacterNameLength": 12,
     "accessory": {
         "neck": [
             {
