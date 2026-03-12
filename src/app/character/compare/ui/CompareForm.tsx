@@ -166,10 +166,10 @@ export function CharacterInputComponent({
 // 검색되지 않았을 때 표시할 내용
 function NotSearchComponent() {
     return (
-        <div className="w-full p-4 flex flex-col items-center justify-center">
+        <div className="w-full h-full p-4 flex flex-col items-center justify-center">
             <SearchEmptyIcon size={64} className="mb-2 text-default-400" />
             <p className="text-base text-foreground">검색한 캐릭터가 없습니다</p>
-            <p className="text-xs mt-1 fadedtext">
+            <p className="text-xs mt-1 fadedtext mb-3">
                 아직 캐릭터를 조회하지 않았거나 표시할 내용이 비어 있습니다.
             </p>
         </div>
@@ -226,7 +226,7 @@ function CharacterProfile({ info }: { info: CharacterInfo | null }) {
                                 )}
                             />
                         </div>
-                        <div className="relative z-10 flex-1 p-4">
+                        <div className="relative z-10 flex h-full flex-1 flex-col p-4">
                             <p className="fadedtext text-xs">
                                 @{info.profile.server} · {info.profile.className} [{info.profile.arkpassiveTitle}]
                             </p>
@@ -236,19 +236,28 @@ function CharacterProfile({ info }: { info: CharacterInfo | null }) {
                             )}>{getParsedText(info.profile.title)}</p>
                             <h3 className="font-semibold text-lg">{info.nickname}</h3>
                             <div className="grid grid-cols-[56px_1fr] gap-1 text-xs mt-1">
-                                <p className="fadedtext text-right">전투 레벨</p>
-                                <p>{info.profile.characterLevel}</p>
                                 <p className="fadedtext text-right">아이템 레벨</p>
                                 <p>{info.profile.itemLevel}</p>
+                                <p className="fadedtext text-right">전투 레벨</p>
+                                <p>{info.profile.characterLevel}</p>
                                 <p className="fadedtext text-right">원정대 레벨</p>
                                 <p>{info.profile.expeditionLevel}</p>
+                                <p className="fadedtext text-right">명예</p>
+                                <p>{info.profile.honorPoint.toLocaleString()}</p>
                             </div>
-                            <div className="flex items-center mt-1">
-                                {info.profile.characterType === 'supportor' ? <SupportorIcon size={18}/> : <AttackIcon size={16}/>}
-                                <p className={clsx(
-                                    "font-bold",
-                                    info.profile.characterType === 'supportor' ? 'text-green-300' : 'text-red-300 ml-0.5'
-                                )}>{info.profile.combatPower}</p>
+                            <div className="w-full flex gap-1 items-center mt-auto">
+                                <div className="flex items-center">
+                                    {info.profile.characterType === 'supportor' ? <SupportorIcon size={18}/> : <AttackIcon size={16}/>}
+                                    <p className={clsx(
+                                        "font-bold",
+                                        info.profile.characterType === 'supportor' ? 'text-green-300' : 'text-red-300 ml-0.5'
+                                    )}>{info.profile.combatPower}</p>
+                                </div>
+                                <div className="flex gap-1 ml-auto">
+                                    {info.profile.emblems.map((emblem, idx) => (
+                                        <img key={idx} src={emblem} alt={`emblem-${idx}`} className="w-[24px] h-[24px]"/>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
