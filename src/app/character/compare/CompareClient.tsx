@@ -1,7 +1,7 @@
 'use client'
 import { useState } from "react"
 import { CharacterInfo } from "../model/types"
-import { CharacterInputComponent } from "./ui/CompareForm";
+import { CharacterInputComponent, CharactersComponent } from "./ui/CompareForm";
 
 export default function CompareClient() {
     const [leftInfo, setLeftInfo] = useState<CharacterInfo | null>(null);
@@ -39,10 +39,7 @@ export default function CompareClient() {
                 leftInput={leftInput}
                 rightInput={rightInput}
             />
-            <div className="w-full grid grid-cols-2 gap-2">
-                <p>{leftInfo ? `${leftInfo.nickname} (${leftInfo.profile.combatPower})` : '-'}</p>
-                <p>{rightInfo ? `${rightInfo.nickname} (${rightInfo.profile.combatPower})` : '-'}</p>
-            </div>
+            <CharactersComponent leftInfo={leftInfo} rightInfo={rightInfo}/>
         </div>
     )
 }
