@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { loadCompareCharacterInfo } from "../lib/compareFeat";
+import { getEquipmentDiffRows, loadCompareCharacterInfo, toExpeditionCharacter } from "../lib/compareFeat";
 import { getColorTextByGrade, SetStateFn, useMobileQuery } from "@/utiils/utils";
-import { Button, Card, CardBody, Input, Spinner } from "@heroui/react";
+import { Button, Card, CardBody, Chip, Divider, Input, Spinner } from "@heroui/react";
 import data from "@/data/characters/data.json";
 import { CharacterInfo } from "../../model/types";
 import SearchEmptyIcon from "@/Icons/SearchEmptyIcon";
@@ -9,6 +9,7 @@ import clsx from "clsx";
 import { getParsedText, getTitleData } from "../../lib/characterFeat";
 import SupportorIcon from "@/Icons/SupportorIcon";
 import AttackIcon from "@/Icons/AttackIcon";
+import { EquipmentComponent } from "../../characterlist/ui/CharacterForm";
 
 type CharacterInputState = {
     value: string;
@@ -113,7 +114,7 @@ export function CharacterInputComponent({
                     {leftInput.isLoading ? (
                         <div className="flex items-center gap-2 sm:ml-1">
                             <Spinner size="sm" color="primary" />
-                            <p className="fadedtext text-xs">캐릭터를 조회중입니다...</p>
+                            <p className="fadedtext text-xs">캐릭터를 조회 중입니다...</p>
                         </div>
                     ) : null}
                     {!leftInput.isLoading && leftCooldown > 0 ? (
@@ -133,7 +134,7 @@ export function CharacterInputComponent({
                     {rightInput.isLoading ? (
                         <div className="flex items-center gap-2 sm:ml-1">
                             <Spinner size="sm" color="primary" />
-                            <p className="fadedtext text-xs">캐릭터를 조회중입니다...</p>
+                            <p className="fadedtext text-xs">캐릭터를 조회 중입니다...</p>
                         </div>
                     ) : null}
                     {!rightInput.isLoading && rightCooldown > 0 ? (
@@ -163,7 +164,7 @@ export function CharacterInputComponent({
     );
 }
 
-// 검색되지 않았을 때 표시할 내용
+// 검색되지 않았을 때 표시되는 내용
 function NotSearchComponent() {
     return (
         <div className="w-full h-full p-4 flex flex-col items-center justify-center">
@@ -173,46 +174,61 @@ function NotSearchComponent() {
                 아직 캐릭터를 조회하지 않았거나 표시할 내용이 비어 있습니다.
             </p>
         </div>
-    )
+    );
+}
+
+function NotSearchVerticalComponent() {
+    return (
+        <div className="w-full h-full gap-2 flex items-center justify-center">
+            <SearchEmptyIcon size={64} className="text-default-400" />
+            <div>
+                <p className="text-base text-foreground">검색한 캐릭터가 없습니다</p>
+                <p className="text-xs mt-1 fadedtext">
+                    아직 캐릭터를 조회하지 않았거나 표시할 내용이 비어 있습니다.
+                </p>
+            </div>
+        </div>
+    );
 }
 
 // 캐릭터 정보 출력 컴포넌트
 type CharactersComponentProps = {
-    leftInfo: CharacterInfo | null,
-    rightInfo: CharacterInfo | null
-}
+    leftInfo: CharacterInfo | null;
+    rightInfo: CharacterInfo | null;
+};
+
 export function CharactersComponent({ leftInfo, rightInfo }: CharactersComponentProps) {
     const isMobile = useMobileQuery();
     return (
         <div className="w-full flex gap-4 flex-col mt-8">
-            <ProfileComponent 
-                leftInfo={leftInfo} 
-                rightInfo={rightInfo}/>
+            <ProfileComponent leftInfo={leftInfo} rightInfo={rightInfo} />
+            <Equipments leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile} />
         </div>
-    )
+    );
 }
 
 type CharacterProps = {
-    leftInfo: CharacterInfo | null,
-    rightInfo: CharacterInfo | null,
-    isMobile: boolean
-}
+    leftInfo: CharacterInfo | null;
+    rightInfo: CharacterInfo | null;
+    isMobile: boolean;
+};
 
 // 프로필 영역
 function ProfileComponent({ leftInfo, rightInfo }: CharactersComponentProps) {
     return (
         <div className="w-full grid min-[1257px]:grid-cols-[420px_1fr_420px] gap-2">
-            <CharacterProfile info={leftInfo}/>
-            <div/>
-            <CharacterProfile info={rightInfo}/>
+            <CharacterProfile info={leftInfo} />
+            <div />
+            <CharacterProfile info={rightInfo} />
         </div>
-    )
+    );
 }
 
-const upperClass = ['도화가', '기상술사', '환수사'];
+const upperClass = ["환수사", "기상술사", "도화가"];
+
 function CharacterProfile({ info }: { info: CharacterInfo | null }) {
     return (
-        <Card radius="sm" shadow="sm" className={info ? "bg-[#15181d] text-white" : ''}>
+        <Card radius="sm" shadow="sm" className={info ? "bg-[#15181d] text-white" : ""}>
             <CardBody className="p-0">
                 {info ? (
                     <div className="relative min-h-[204px] w-full overflow-hidden">
@@ -230,10 +246,14 @@ function CharacterProfile({ info }: { info: CharacterInfo | null }) {
                             <p className="fadedtext text-xs">
                                 @{info.profile.server} · {info.profile.className} [{info.profile.arkpassiveTitle}]
                             </p>
-                            <p className={clsx(
-                                "mt-1 text-xs",
-                                getColorTextByGrade(getTitleData(getParsedText(info.profile.title))?.grade ?? 'default')
-                            )}>{getParsedText(info.profile.title)}</p>
+                            <p
+                                className={clsx(
+                                    "mt-1 text-xs",
+                                    getColorTextByGrade(getTitleData(getParsedText(info.profile.title))?.grade ?? "default")
+                                )}
+                            >
+                                {getParsedText(info.profile.title)}
+                            </p>
                             <h3 className="font-semibold text-lg">{info.nickname}</h3>
                             <div className="grid grid-cols-[56px_1fr] gap-1 text-xs mt-1">
                                 <p className="fadedtext text-right">아이템 레벨</p>
@@ -247,22 +267,117 @@ function CharacterProfile({ info }: { info: CharacterInfo | null }) {
                             </div>
                             <div className="w-full flex gap-1 items-center mt-auto">
                                 <div className="flex items-center">
-                                    {info.profile.characterType === 'supportor' ? <SupportorIcon size={18}/> : <AttackIcon size={16}/>}
-                                    <p className={clsx(
-                                        "font-bold",
-                                        info.profile.characterType === 'supportor' ? 'text-green-300' : 'text-red-300 ml-0.5'
-                                    )}>{info.profile.combatPower}</p>
+                                    {info.profile.characterType === "supportor" ? <SupportorIcon size={18} /> : <AttackIcon size={16} />}
+                                    <p
+                                        className={clsx(
+                                            "font-bold",
+                                            info.profile.characterType === "supportor" ? "text-green-300" : "text-red-300 ml-0.5"
+                                        )}
+                                    >
+                                        {info.profile.combatPower}
+                                    </p>
                                 </div>
                                 <div className="flex gap-1 ml-auto">
                                     {info.profile.emblems.map((emblem, idx) => (
-                                        <img key={idx} src={emblem} alt={`emblem-${idx}`} className="w-[24px] h-[24px]"/>
+                                        <img key={idx} src={emblem} alt={`emblem-${idx}`} className="w-[24px] h-[24px]" />
                                     ))}
                                 </div>
                             </div>
                         </div>
                     </div>
-                ) : <NotSearchComponent/>}
+                ) : (
+                    <NotSearchComponent />
+                )}
             </CardBody>
         </Card>
-    )
+    );
+}
+
+// 장비 컴포넌트
+function Equipments({ leftInfo, rightInfo, isMobile }: CharacterProps) {
+    const leftCharacter = toExpeditionCharacter(leftInfo);
+    const rightCharacter = toExpeditionCharacter(rightInfo);
+    const equipmentDiffRows = getEquipmentDiffRows(leftCharacter, rightCharacter);
+    const hasEquipmentDiff = equipmentDiffRows.some((row) => row.leftText || row.rightText);
+    const canCompareEquipment = Boolean(leftCharacter && rightCharacter);
+    const leftDiffTexts = equipmentDiffRows.filter((row) => row.leftText);
+    const rightDiffTexts = equipmentDiffRows.filter((row) => row.rightText);
+
+    return (
+        <>  
+            {isMobile ? (
+                <h3 className="text-lg font-semibold">장비</h3>
+            ) : null}
+            <div className="mt-5 grid w-full items-start gap-1 min-[1257px]:gap-5 min-[1257px]:grid-cols-[420px_1fr_420px]">
+                <Card radius="sm" shadow="sm">
+                    <CardBody>
+                        {leftCharacter ? <EquipmentComponent character={leftCharacter} /> : <NotSearchVerticalComponent />}
+                    </CardBody>
+                </Card>
+                <div>
+                    {!isMobile ? (
+                        <>
+                            <h2 className="w-full text-center text-lg font-semibold">장비</h2>
+                            <Divider />
+                        </>
+                    ) : null}
+                    <div className="mt-3 grid w-full grid-cols-2 gap-2 text-sm mb-2 min-[1257px]:mb-0">
+                        {isMobile ? (
+                            <>
+                                <div className="w-full">
+                                    <h3 className="font-semibold text-center">{leftInfo ? leftInfo.nickname : '-'}</h3>
+                                    <Divider className="mt-1"/>
+                                </div>
+                                <div className="w-full">
+                                    <h3 className="font-semibold text-center">{rightInfo ? rightInfo.nickname : '-'}</h3>
+                                    <Divider className="mt-1"/>
+                                </div>
+                            </>
+                        ) : null}
+                        {hasEquipmentDiff ? (
+                            <>
+                                <div className="flex flex-col gap-2">
+                                    {leftDiffTexts.map((row) => (
+                                        <Chip
+                                            key={`left-${row.type}`}
+                                            radius="sm"
+                                            color="success"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.leftText}
+                                        </Chip>
+                                    ))}
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    {rightDiffTexts.map((row) => (
+                                        <Chip
+                                            key={`right-${row.type}`}
+                                            radius="sm"
+                                            color="success"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.rightText}
+                                        </Chip>
+                                    ))}
+                                </div>
+                            </>
+                        ) : !canCompareEquipment ? (
+                            <p className="col-span-2 text-center fadedtext">두 캐릭터를 모두 조회하면 비교가 표시됩니다.</p>
+                        ) : (
+                            <p className="col-span-2 text-center fadedtext">6부위 강화 수치가 동일합니다.</p>
+                        )}
+                    </div>
+                </div>
+                <Card radius="sm" shadow="sm">
+                    <CardBody>
+                        {rightCharacter ? <EquipmentComponent character={rightCharacter} /> : <NotSearchVerticalComponent />}
+                    </CardBody>
+                </Card>
+            </div>
+        </>
+    );
 }
