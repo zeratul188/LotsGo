@@ -18,6 +18,11 @@ const ACCESSORY_GRADE_SCORE: Record<string, number> = {
     sm: 1,
     none: 0,
 };
+const ENGRAVING_GRADE_OFFSET: Record<string, number> = {
+    영웅: 0,
+    전설: 4,
+    유물: 8,
+};
 
 function getEffectiveAccessoryOptions(character: ExpeditionCharacter | null): string[] {
     if (!character) {
@@ -425,6 +430,35 @@ export function getKarmaDiffRows(
     });
 
     return { levelRows, pointRows };
+}
+
+export function getEngravingDiffRows(
+    leftCharacter: ExpeditionCharacter | null,
+    rightCharacter: ExpeditionCharacter | null
+): EquipmentDiffRow[] {
+    const leftValue = leftCharacter?.engravings.reduce(
+        (sum, engraving) => sum + engraving.level + (ENGRAVING_GRADE_OFFSET[engraving.grade] ?? 0),
+        0
+    ) ?? null;
+    const rightValue = rightCharacter?.engravings.reduce(
+        (sum, engraving) => sum + engraving.level + (ENGRAVING_GRADE_OFFSET[engraving.grade] ?? 0),
+        0
+    ) ?? null;
+
+    if (leftValue === null || rightValue === null || leftValue === rightValue) {
+        return [{
+            type: "engraving-level",
+            leftText: "",
+            rightText: "",
+        }];
+    }
+
+    const diff = Math.abs(leftValue - rightValue);
+    return [{
+        type: "engraving-level",
+        leftText: leftValue > rightValue ? `각인 합 +${diff}` : "",
+        rightText: rightValue > leftValue ? `각인 합 +${diff}` : "",
+    }];
 }
 
 // 카르마 이름 색상

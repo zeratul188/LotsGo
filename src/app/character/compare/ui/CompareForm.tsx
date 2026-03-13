@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { getAccessoryDiffRows, getColorChipByKarmaType, getEquipmentDiffRows, getKarmaDiffRows, getStatDiffRows, loadCompareCharacterInfo, toExpeditionCharacter } from "../lib/compareFeat";
+import { getAccessoryDiffRows, getColorChipByKarmaType, getEngravingDiffRows, getEquipmentDiffRows, getKarmaDiffRows, getStatDiffRows, loadCompareCharacterInfo, toExpeditionCharacter } from "../lib/compareFeat";
 import { getColorTextByGrade, SetStateFn, useMobileQuery } from "@/utiils/utils";
 import { Button, Card, CardBody, Chip, Divider, Input, Spinner } from "@heroui/react";
 import data from "@/data/characters/data.json";
 import { CharacterInfo } from "../../model/types";
 import SearchEmptyIcon from "@/Icons/SearchEmptyIcon";
 import clsx from "clsx";
-import { getColorByType, getParsedText, getTitleData } from "../../lib/characterFeat";
+import { getColorByType, getEngravingSrcByName, getParsedText, getTitleData, printEngravingLevel } from "../../lib/characterFeat";
 import SupportorIcon from "@/Icons/SupportorIcon";
 import AttackIcon from "@/Icons/AttackIcon";
 import { AccessoriesComponent, EquipmentComponent, StatComponent } from "../../characterlist/ui/CharacterForm";
@@ -206,6 +206,7 @@ export function CharactersComponent({ leftInfo, rightInfo }: CharactersComponent
             <Accessories leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
             <Stats leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
             <KarmaSection leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
+            <Engravings leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
         </div>
     );
 }
@@ -764,5 +765,123 @@ function KarmaSection({ leftInfo, rightInfo, isMobile }: CharacterProps) {
                 </Card>
             </div>
         </>
+    )
+}
+
+// 각인
+function Engravings({ leftInfo, rightInfo, isMobile }: CharacterProps) {
+    const leftCharacter = toExpeditionCharacter(leftInfo);
+    const rightCharacter = toExpeditionCharacter(rightInfo);
+    const engravingDiffRows = getEngravingDiffRows(leftCharacter, rightCharacter);
+    const hasEngravingDiff = engravingDiffRows.some((row) => row.leftText || row.rightText);
+    const canCompareEngraving = Boolean(leftCharacter && rightCharacter);
+    const leftDiffTexts = engravingDiffRows.filter((row) => row.leftText);
+    const rightDiffTexts = engravingDiffRows.filter((row) => row.rightText);
+
+    return (
+        <>
+            {isMobile ? (
+                <h3 className="text-lg font-semibold">각인</h3>
+            ) : null}
+            <div className="grid w-full items-start gap-1 min-[1257px]:gap-5 min-[1257px]:grid-cols-[420px_1fr_420px]">
+                    <Card radius="sm" shadow="sm">
+                        <CardBody>
+                            {leftInfo ? <EngravingComponent info={leftInfo} /> : <NotSearchVerticalComponent />}
+                        </CardBody>
+                    </Card>
+                    <div>
+                        {!isMobile ? (
+                            <>
+                                <h2 className="w-full text-center text-lg font-semibold mb-1.5">각인</h2>
+                                <Divider />
+                            </>
+                        ) : null}
+                        <div className="mt-3 grid w-full grid-cols-2 gap-2 text-sm mb-2 min-[1257px]:mb-0">
+                            {isMobile ? (
+                                <>
+                                    <div className="w-full">
+                                        <h3 className="font-semibold text-center">{leftInfo ? leftInfo.nickname : '-'}</h3>
+                                        <Divider className="mt-1"/>
+                                    </div>
+                                    <div className="w-full">
+                                        <h3 className="font-semibold text-center">{rightInfo ? rightInfo.nickname : '-'}</h3>
+                                        <Divider className="mt-1"/>
+                                </div>
+                            </>
+                        ) : null}
+                        {hasEngravingDiff ? (
+                            <>
+                                <div className="flex flex-col gap-2">
+                                    {leftDiffTexts.map((row) => (
+                                        <Chip
+                                            key={`left-${row.type}`}
+                                            radius="sm"
+                                            color="success"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.leftText}
+                                        </Chip>
+                                    ))}
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    {rightDiffTexts.map((row) => (
+                                        <Chip
+                                            key={`right-${row.type}`}
+                                            radius="sm"
+                                            color="success"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.rightText}
+                                        </Chip>
+                                    ))}
+                                </div>
+                            </>
+                        ) : !canCompareEngraving ? (
+                            <p className="col-span-2 text-center fadedtext">두 캐릭터를 모두 조회하면 비교가 표시됩니다.</p>
+                        ) : (
+                            <p className="col-span-2 text-center fadedtext">각인 수치가 동일합니다.</p>
+                        )}
+                        </div>
+                    </div>
+                    <Card radius="sm" shadow="sm">
+                        <CardBody>
+                            {rightInfo ? <EngravingComponent info={rightInfo} /> : <NotSearchVerticalComponent />}
+                        </CardBody>
+                    </Card>
+            </div>
+        </>
+    )
+}
+
+function EngravingComponent({ info }: { info: CharacterInfo }) {
+    return (
+        <div className="w-full flex flex-col gap-1.5">
+            {info.engravings.sort((a, b) => b.level - a.level).map((engraving, index) => (
+                <div key={index} className={"flex gap-2 rounded-md items-center"}>
+                    <img
+                        src={getEngravingSrcByName(engraving.name)}
+                        alt={engraving.name}
+                        className="w-6 h-6 rounded-md"/>
+                    <p className={`grow ${getColorTextByGrade(engraving.grade)}`}>{engraving.name}</p>
+                    {engraving.stoneLevel > 0 ? (
+                        <Chip size="sm" radius="sm" variant="faded" color="primary" className="min-w-[48px]">
+                            <div className="flex gap-0.5 items-center justify-center font-bold">
+                                <img
+                                    src={'/icons/stoneicon.png'}
+                                    alt="stone-icon"
+                                    className="w-2.5 h-4"/>
+                                <p className="text-[7pt]">×</p>
+                                <p>{engraving.stoneLevel}</p>
+                            </div>
+                        </Chip>
+                    ) : <></>}
+                    <p className={`${getColorTextByGrade(engraving.grade)}`}>{printEngravingLevel(engraving.level)}</p>
+                </div>
+            ))}
+        </div>
     )
 }
