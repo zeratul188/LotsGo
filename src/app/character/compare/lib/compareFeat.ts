@@ -359,3 +359,80 @@ export function getStatDiffRows(
         };
     });
 }
+
+function getKarmaLevelValue(character: ExpeditionCharacter | null, type: string): number | null {
+    const description = character?.arkpassive.points.find((point) => point.type === type)?.description;
+    if (!description) {
+        return null;
+    }
+
+    const numbers = description.match(/\d+/g);
+    if (!numbers || numbers.length < 2) {
+        return null;
+    }
+
+    return Number(numbers[numbers.length - 1]);
+}
+
+function getKarmaPointValue(character: ExpeditionCharacter | null, type: string): number | null {
+    return character?.arkpassive.points.find((point) => point.type === type)?.point ?? null;
+}
+
+export function getKarmaDiffRows(
+    leftCharacter: ExpeditionCharacter | null,
+    rightCharacter: ExpeditionCharacter | null
+): { levelRows: EquipmentDiffRow[]; pointRows: EquipmentDiffRow[] } {
+    const karmaTypes = ["진화", "깨달음", "도약"];
+
+    const levelRows = karmaTypes.map((type) => {
+        const leftValue = getKarmaLevelValue(leftCharacter, type);
+        const rightValue = getKarmaLevelValue(rightCharacter, type);
+
+        if (leftValue === null || rightValue === null || leftValue === rightValue) {
+            return {
+                type: `${type}-level`,
+                leftText: "",
+                rightText: "",
+            };
+        }
+
+        const diff = Math.abs(leftValue - rightValue);
+        return {
+            type: `${type}-level`,
+            leftText: leftValue > rightValue ? `${type} 레벨 +${diff}` : "",
+            rightText: rightValue > leftValue ? `${type} 레벨 +${diff}` : "",
+        };
+    });
+
+    const pointRows = karmaTypes.map((type) => {
+        const leftValue = getKarmaPointValue(leftCharacter, type);
+        const rightValue = getKarmaPointValue(rightCharacter, type);
+
+        if (leftValue === null || rightValue === null || leftValue === rightValue) {
+            return {
+                type: `${type}-point`,
+                leftText: "",
+                rightText: "",
+            };
+        }
+
+        const diff = Math.abs(leftValue - rightValue);
+        return {
+            type: `${type}-point`,
+            leftText: leftValue > rightValue ? `${type} 포인트 +${diff}` : "",
+            rightText: rightValue > leftValue ? `${type} 포인트 +${diff}` : "",
+        };
+    });
+
+    return { levelRows, pointRows };
+}
+
+// 카르마 이름 색상
+export function getColorChipByKarmaType(type: string): "primary" | "success" | "warning" | "default" {
+    switch(type) {
+        case '진화': return 'warning';
+        case '깨달음': return 'primary';
+        case '도약': return 'success';
+    }
+    return 'default';
+}

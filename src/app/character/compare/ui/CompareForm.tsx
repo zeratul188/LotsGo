@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { getAccessoryDiffRows, getEquipmentDiffRows, getStatDiffRows, loadCompareCharacterInfo, toExpeditionCharacter } from "../lib/compareFeat";
+import { getAccessoryDiffRows, getColorChipByKarmaType, getEquipmentDiffRows, getKarmaDiffRows, getStatDiffRows, loadCompareCharacterInfo, toExpeditionCharacter } from "../lib/compareFeat";
 import { getColorTextByGrade, SetStateFn, useMobileQuery } from "@/utiils/utils";
 import { Button, Card, CardBody, Chip, Divider, Input, Spinner } from "@heroui/react";
 import data from "@/data/characters/data.json";
 import { CharacterInfo } from "../../model/types";
 import SearchEmptyIcon from "@/Icons/SearchEmptyIcon";
 import clsx from "clsx";
-import { getParsedText, getTitleData } from "../../lib/characterFeat";
+import { getColorByType, getParsedText, getTitleData } from "../../lib/characterFeat";
 import SupportorIcon from "@/Icons/SupportorIcon";
 import AttackIcon from "@/Icons/AttackIcon";
 import { AccessoriesComponent, EquipmentComponent, StatComponent } from "../../characterlist/ui/CharacterForm";
@@ -205,6 +205,7 @@ export function CharactersComponent({ leftInfo, rightInfo }: CharactersComponent
             <Equipments leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
             <Accessories leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
             <Stats leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
+            <KarmaSection leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
         </div>
     );
 }
@@ -459,7 +460,7 @@ function Accessories({ leftInfo, rightInfo, isMobile }: CharacterProps) {
                         ) : !canCompareAccessory ? (
                             <p className="col-span-2 text-center fadedtext">두 캐릭터를 모두 조회하면 비교가 표시됩니다.</p>
                         ) : (
-                            <p className="col-span-2 text-center fadedtext">악세서리와 스톤 수치가 동일합니다.</p>
+                            <p className="col-span-2 text-center fadedtext">악세서리, 팔찌와 스톤 수치가 동일합니다.</p>
                         )}
                     </div>
                 </div>
@@ -555,6 +556,210 @@ function Stats({ leftInfo, rightInfo, isMobile }: CharacterProps) {
                 <Card radius="sm" shadow="sm">
                     <CardBody>
                         {rightCharacter ? <StatComponent character={rightCharacter} /> : <NotSearchVerticalComponent />}
+                    </CardBody>
+                </Card>
+            </div>
+        </>
+    )
+}
+
+// 아크 패시브
+function Karma({ leftInfo, rightInfo, isMobile }: CharacterProps) {
+
+    return (
+        <>
+            {isMobile ? (
+                <h3 className="text-lg font-semibold">카르마</h3>
+            ) : null}
+            <div className="grid w-full items-start gap-1 min-[1257px]:gap-5 min-[1257px]:grid-cols-[420px_1fr_420px]">
+                <Card radius="sm" shadow="sm">
+                    <CardBody>
+                        {leftInfo ? <KarmaComponent info={leftInfo}/> : <NotSearchVerticalComponent />}
+                    </CardBody>
+                </Card>
+                <div>
+                    {!isMobile ? (
+                        <>
+                            {!isMobile ? (
+                                <>
+                                    <h2 className="w-full text-center text-lg font-semibold mb-1.5">카르마</h2>
+                                    <Divider />
+                                </>
+                            ) : null}
+                            <div className="mt-3 grid w-full grid-cols-2 gap-2 text-sm mb-2 min-[1257px]:mb-0">
+                                {isMobile ? (
+                                    <>
+                                        <div className="w-full">
+                                            <h3 className="font-semibold text-center">{leftInfo ? leftInfo.nickname : '-'}</h3>
+                                            <Divider className="mt-1"/>
+                                        </div>
+                                        <div className="w-full">
+                                            <h3 className="font-semibold text-center">{rightInfo ? rightInfo.nickname : '-'}</h3>
+                                            <Divider className="mt-1"/>
+                                        </div>
+                                    </>
+                                ) : null}
+
+                            </div>
+                        </>
+                    ) : null}
+                </div>
+                <Card radius="sm" shadow="sm">
+                    <CardBody>
+                        {rightInfo ? <KarmaComponent info={rightInfo}/> : <NotSearchVerticalComponent />}
+                    </CardBody>
+                </Card>
+            </div>
+        </>
+    )
+}
+
+function KarmaComponent({ info }: { info: CharacterInfo }) {
+    return (
+        <div className="w-full flex flex-col gap-2">
+            {info.arkpassive.points.map((point, idx) => {
+                const parsed = point.description?.match(/^(\d+)(랭크)\s+(\d+)(레벨)$/);
+                return (
+                    <div key={idx} className="w-full flex gap-2 text-[10pt] items-center">
+                        <Chip
+                            radius="sm"
+                            size="sm"
+                            variant="flat"
+                            color={getColorChipByKarmaType(point.type)}
+                            className="min-w-[50px] text-center">
+                            {point.type}
+                        </Chip>
+                        {!point.description ? (
+                            <p className="fadedtext">미개방</p>
+                        ) : parsed ? (
+                            <p>
+                                {parsed[1]}
+                                <span className="fadedtext text-[8pt]">{parsed[2]}</span>{" "}
+                                {parsed[3]}
+                                <span className="fadedtext text-[8pt]">{parsed[4]}</span>
+                            </p>
+                        ) : (
+                            <p>{point.description}</p>
+                        )}
+                        <p className={`ml-auto font-bold ${getColorByType(point.type)}`}>{point.point}</p>
+                    </div>
+                )
+            })}
+        </div>
+    )
+}
+
+function KarmaSection({ leftInfo, rightInfo, isMobile }: CharacterProps) {
+    const leftCharacter = toExpeditionCharacter(leftInfo);
+    const rightCharacter = toExpeditionCharacter(rightInfo);
+    const { levelRows, pointRows } = getKarmaDiffRows(leftCharacter, rightCharacter);
+    const leftLevelDiffs = levelRows.filter((row) => row.leftText);
+    const rightLevelDiffs = levelRows.filter((row) => row.rightText);
+    const leftPointDiffs = pointRows.filter((row) => row.leftText);
+    const rightPointDiffs = pointRows.filter((row) => row.rightText);
+    const hasKarmaDiff =
+        leftLevelDiffs.length > 0 ||
+        rightLevelDiffs.length > 0 ||
+        leftPointDiffs.length > 0 ||
+        rightPointDiffs.length > 0;
+    const canCompareKarma = Boolean(leftCharacter && rightCharacter);
+
+    return (
+        <>
+            {isMobile ? (
+                <h3 className="text-lg font-semibold">카르마</h3>
+            ) : null}
+            <div className="grid w-full items-start gap-1 min-[1257px]:gap-5 min-[1257px]:grid-cols-[420px_1fr_420px]">
+                <Card radius="sm" shadow="sm">
+                    <CardBody>
+                        {leftInfo ? <KarmaComponent info={leftInfo}/> : <NotSearchVerticalComponent />}
+                    </CardBody>
+                </Card>
+                <div>
+                    {!isMobile ? (
+                        <>
+                            <h2 className="w-full text-center text-lg font-semibold mb-1.5">카르마</h2>
+                            <Divider />
+                        </>
+                    ) : null}
+                    <div className="mt-3 grid w-full grid-cols-2 gap-2 text-sm mb-2 min-[1257px]:mb-0">
+                        {isMobile ? (
+                            <>
+                                <div className="w-full">
+                                    <h3 className="font-semibold text-center">{leftInfo ? leftInfo.nickname : '-'}</h3>
+                                    <Divider className="mt-1"/>
+                                </div>
+                                <div className="w-full">
+                                    <h3 className="font-semibold text-center">{rightInfo ? rightInfo.nickname : '-'}</h3>
+                                    <Divider className="mt-1"/>
+                                </div>
+                            </>
+                        ) : null}
+                        {hasKarmaDiff ? (
+                            <>
+                                <div className="flex flex-col gap-2">
+                                    {leftLevelDiffs.map((row) => (
+                                        <Chip
+                                            key={`left-${row.type}`}
+                                            radius="sm"
+                                            color="success"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.leftText}
+                                        </Chip>
+                                    ))}
+                                    {leftPointDiffs.map((row) => (
+                                        <Chip
+                                            key={`left-${row.type}`}
+                                            radius="sm"
+                                            color="primary"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.leftText}
+                                        </Chip>
+                                    ))}
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    {rightLevelDiffs.map((row) => (
+                                        <Chip
+                                            key={`right-${row.type}`}
+                                            radius="sm"
+                                            color="success"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.rightText}
+                                        </Chip>
+                                    ))}
+                                    {rightPointDiffs.map((row) => (
+                                        <Chip
+                                            key={`right-${row.type}`}
+                                            radius="sm"
+                                            color="primary"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.rightText}
+                                        </Chip>
+                                    ))}
+                                </div>
+                            </>
+                        ) : !canCompareKarma ? (
+                            <p className="col-span-2 text-center fadedtext">두 캐릭터를 모두 조회하면 비교가 표시됩니다.</p>
+                        ) : (
+                            <p className="col-span-2 text-center fadedtext">카르마 수치가 동일합니다.</p>
+                        )}
+                    </div>
+                </div>
+                <Card radius="sm" shadow="sm">
+                    <CardBody>
+                        {rightInfo ? <KarmaComponent info={rightInfo}/> : <NotSearchVerticalComponent />}
                     </CardBody>
                 </Card>
             </div>
