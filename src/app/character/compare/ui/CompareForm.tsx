@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAccessoryDiffRows, getEquipmentDiffRows, loadCompareCharacterInfo, toExpeditionCharacter } from "../lib/compareFeat";
+import { getAccessoryDiffRows, getEquipmentDiffRows, getStatDiffRows, loadCompareCharacterInfo, toExpeditionCharacter } from "../lib/compareFeat";
 import { getColorTextByGrade, SetStateFn, useMobileQuery } from "@/utiils/utils";
 import { Button, Card, CardBody, Chip, Divider, Input, Spinner } from "@heroui/react";
 import data from "@/data/characters/data.json";
@@ -9,7 +9,7 @@ import clsx from "clsx";
 import { getParsedText, getTitleData } from "../../lib/characterFeat";
 import SupportorIcon from "@/Icons/SupportorIcon";
 import AttackIcon from "@/Icons/AttackIcon";
-import { AccessoriesComponent, EquipmentComponent } from "../../characterlist/ui/CharacterForm";
+import { AccessoriesComponent, EquipmentComponent, StatComponent } from "../../characterlist/ui/CharacterForm";
 
 type CharacterInputState = {
     value: string;
@@ -204,6 +204,7 @@ export function CharactersComponent({ leftInfo, rightInfo }: CharactersComponent
             <ProfileComponent leftInfo={leftInfo} rightInfo={rightInfo}/>
             <Equipments leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
             <Accessories leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
+            <Stats leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
         </div>
     );
 }
@@ -465,6 +466,95 @@ function Accessories({ leftInfo, rightInfo, isMobile }: CharacterProps) {
                 <Card radius="sm" shadow="sm">
                     <CardBody>
                         {rightCharacter ? <AccessoriesComponent character={rightCharacter} /> : <NotSearchVerticalComponent />}
+                    </CardBody>
+                </Card>
+            </div>
+        </>
+    )
+}
+
+// 특성 컴포넌트
+function Stats({ leftInfo, rightInfo, isMobile }: CharacterProps) {
+    const leftCharacter = toExpeditionCharacter(leftInfo);
+    const rightCharacter = toExpeditionCharacter(rightInfo);
+    const statDiffRows = getStatDiffRows(leftCharacter, rightCharacter);
+    const hasStatDiff = statDiffRows.some((row) => row.leftText || row.rightText);
+    const canCompareStat = Boolean(leftCharacter && rightCharacter);
+    const leftDiffTexts = statDiffRows.filter((row) => row.leftText);
+    const rightDiffTexts = statDiffRows.filter((row) => row.rightText);
+
+    return (
+        <>
+            {isMobile ? (
+                <h3 className="text-lg font-semibold">특성</h3>
+            ) : null}
+            <div className="grid w-full items-start gap-1 min-[1257px]:gap-5 min-[1257px]:grid-cols-[420px_1fr_420px]">
+                <Card radius="sm" shadow="sm">
+                    <CardBody>
+                        {leftCharacter ? <StatComponent character={leftCharacter} /> : <NotSearchVerticalComponent />}
+                    </CardBody>
+                </Card>
+                <div>
+                    {!isMobile ? (
+                        <>
+                            <h2 className="w-full text-center text-lg font-semibold mb-1.5">특성</h2>
+                            <Divider />
+                        </>
+                    ) : null}
+                    <div className="mt-3 grid w-full grid-cols-2 gap-2 text-sm mb-2 min-[1257px]:mb-0">
+                        {isMobile ? (
+                            <>
+                                <div className="w-full">
+                                    <h3 className="font-semibold text-center">{leftInfo ? leftInfo.nickname : '-'}</h3>
+                                    <Divider className="mt-1"/>
+                                </div>
+                                <div className="w-full">
+                                    <h3 className="font-semibold text-center">{rightInfo ? rightInfo.nickname : '-'}</h3>
+                                    <Divider className="mt-1"/>
+                                </div>
+                            </>
+                        ) : null}
+                        {hasStatDiff ? (
+                            <>
+                                <div className="flex flex-col gap-2">
+                                    {leftDiffTexts.map((row) => (
+                                        <Chip
+                                            key={`left-${row.type}`}
+                                            radius="sm"
+                                            color="success"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.leftText}
+                                        </Chip>
+                                    ))}
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    {rightDiffTexts.map((row) => (
+                                        <Chip
+                                            key={`right-${row.type}`}
+                                            radius="sm"
+                                            color="success"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.rightText}
+                                        </Chip>
+                                    ))}
+                                </div>
+                            </>
+                        ) : !canCompareStat ? (
+                            <p className="col-span-2 text-center fadedtext">두 캐릭터를 모두 조회하면 비교가 표시됩니다.</p>
+                        ) : (
+                            <p className="col-span-2 text-center fadedtext">특성 수치가 동일합니다.</p>
+                        )}
+                    </div>
+                </div>
+                <Card radius="sm" shadow="sm">
+                    <CardBody>
+                        {rightCharacter ? <StatComponent character={rightCharacter} /> : <NotSearchVerticalComponent />}
                     </CardBody>
                 </Card>
             </div>

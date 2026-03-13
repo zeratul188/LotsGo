@@ -33,6 +33,20 @@ export type EquipmentDiffRow = {
     rightText: string;
 };
 
+function getStatValue(character: ExpeditionCharacter | null, type: string): number | null {
+    return character?.stats.find((stat) => stat.type === type)?.value ?? null;
+}
+
+function getHighlightedStatSum(character: ExpeditionCharacter | null): number | null {
+    if (!character) {
+        return null;
+    }
+
+    return character.stats
+        .filter((stat) => stat.type !== "공격력" && stat.type !== "최대 생명력" && stat.value >= 300)
+        .reduce((sum, stat) => sum + stat.value, 0);
+}
+
 function getAccessoryLineLabel(type: string, index: number): string {
     if (type === "귀걸이" || type === "반지") {
         return `${type}${index}`;
@@ -301,4 +315,47 @@ export function getAccessoryDiffRows(
     }
 
     return [...accessoryRows, ...extraRows];
+}
+
+export function getStatDiffRows(
+    leftCharacter: ExpeditionCharacter | null,
+    rightCharacter: ExpeditionCharacter | null
+): EquipmentDiffRow[] {
+    const rows = [
+        {
+            type: "attack-power",
+            label: "공격력",
+            leftValue: getStatValue(leftCharacter, "공격력"),
+            rightValue: getStatValue(rightCharacter, "공격력"),
+        },
+        {
+            type: "max-hp",
+            label: "최대 생명력",
+            leftValue: getStatValue(leftCharacter, "최대 생명력"),
+            rightValue: getStatValue(rightCharacter, "최대 생명력"),
+        },
+        {
+            type: "highlighted-stats",
+            label: "주특성 합",
+            leftValue: getHighlightedStatSum(leftCharacter),
+            rightValue: getHighlightedStatSum(rightCharacter),
+        },
+    ];
+
+    return rows.map(({ type, label, leftValue, rightValue }) => {
+        if (leftValue === null || rightValue === null || leftValue === rightValue) {
+            return {
+                type,
+                leftText: "",
+                rightText: "",
+            };
+        }
+
+        const diff = Math.abs(leftValue - rightValue);
+        return {
+            type,
+            leftText: leftValue > rightValue ? `${label} +${diff.toLocaleString()}` : "",
+            rightText: rightValue > leftValue ? `${label} +${diff.toLocaleString()}` : "",
+        };
+    });
 }
