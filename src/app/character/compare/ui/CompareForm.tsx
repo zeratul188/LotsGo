@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAccessoryDiffRows, getColorChipByKarmaType, getEngravingDiffRows, getEquipmentDiffRows, getGemDiffRows, getKarmaDiffRows, getStatDiffRows, loadCompareCharacterInfo, toExpeditionCharacter } from "../lib/compareFeat";
+import { getAccessoryDiffRows, getArkgridDiffRows, getColorChipByKarmaType, getEngravingDiffRows, getEquipmentDiffRows, getGemDiffRows, getKarmaDiffRows, getStatDiffRows, loadCompareCharacterInfo, toExpeditionCharacter } from "../lib/compareFeat";
 import { getColorTextByGrade, SetStateFn, useMobileQuery } from "@/utiils/utils";
 import { Button, Card, CardBody, Chip, Divider, Input, Spinner } from "@heroui/react";
 import data from "@/data/characters/data.json";
@@ -9,7 +9,7 @@ import clsx from "clsx";
 import { getColorByType, getEngravingSrcByName, getParsedText, getTitleData, printEngravingLevel } from "../../lib/characterFeat";
 import SupportorIcon from "@/Icons/SupportorIcon";
 import AttackIcon from "@/Icons/AttackIcon";
-import { AccessoriesComponent, EquipmentComponent, GemComponent, StatComponent } from "../../characterlist/ui/CharacterForm";
+import { AccessoriesComponent, ArkgridComponent, EquipmentComponent, GemComponent, StatComponent } from "../../characterlist/ui/CharacterForm";
 
 type CharacterInputState = {
     value: string;
@@ -208,6 +208,7 @@ export function CharactersComponent({ leftInfo, rightInfo }: CharactersComponent
             <KarmaSection leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
             <Engravings leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
             <Gems leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
+            <ArkGrids leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
         </div>
     );
 }
@@ -217,6 +218,22 @@ type CharacterProps = {
     rightInfo: CharacterInfo | null;
     isMobile: boolean;
 };
+
+const ATTACK_ARKGRID_OPTION_NAMES = ["공격력", "보스 피해", "추가 피해"];
+
+// 캐릭터 타입에 맞게 아크 그리드 옵션 목록을 필터링한다.
+function getFilteredArkgridOptions(info: CharacterInfo | null) {
+    if (!info) {
+        return [];
+    }
+
+    const sortedOptions = [...info.arkgrid.options].sort((a, b) => b.level - a.level);
+    if (info.profile.characterType === "attack") {
+        return sortedOptions.filter((item) => ATTACK_ARKGRID_OPTION_NAMES.includes(item.name));
+    }
+
+    return sortedOptions.filter((item) => !ATTACK_ARKGRID_OPTION_NAMES.includes(item.name));
+}
 
 // 프로필 영역
 function ProfileComponent({ leftInfo, rightInfo }: CharactersComponentProps) {
@@ -999,6 +1016,145 @@ function Gems({ leftInfo, rightInfo, isMobile }: CharacterProps) {
                 <Card radius="sm" shadow="sm">
                     <CardBody>
                         {rightCharacter ? <GemComponent character={rightCharacter} /> : <NotSearchVerticalComponent />}
+                    </CardBody>
+                </Card>
+            </div>
+        </>
+    )
+}
+
+// 아크 그리드
+function ArkGrids({ leftInfo, rightInfo, isMobile }: CharacterProps) {
+    const leftCharacter = toExpeditionCharacter(leftInfo);
+    const rightCharacter = toExpeditionCharacter(rightInfo);
+    const leftArkgridOptions = getFilteredArkgridOptions(leftInfo);
+    const rightArkgridOptions = getFilteredArkgridOptions(rightInfo);
+    const { coreRows, optionRows } = getArkgridDiffRows(leftCharacter, rightCharacter);
+    const leftCoreDiffs = coreRows.filter((row) => row.leftText);
+    const rightCoreDiffs = coreRows.filter((row) => row.rightText);
+    const leftOptionDiffs = optionRows.filter((row) => row.leftText);
+    const rightOptionDiffs = optionRows.filter((row) => row.rightText);
+    const hasArkgridDiff =
+        leftCoreDiffs.length > 0 ||
+        rightCoreDiffs.length > 0 ||
+        leftOptionDiffs.length > 0 ||
+        rightOptionDiffs.length > 0;
+    const canCompareArkgrid = Boolean(leftCharacter && rightCharacter);
+
+    return (
+        <>
+            {isMobile ? (
+                <h3 className="text-lg font-semibold">아크그리드</h3>
+            ) : null}
+            <div className="grid w-full items-start gap-1 min-[1257px]:gap-5 min-[1257px]:grid-cols-[420px_1fr_420px]">
+                <Card radius="sm" shadow="sm">
+                    <CardBody>
+                        {leftCharacter ? <ArkgridComponent character={leftCharacter} /> : <NotSearchVerticalComponent />}
+                        <Divider className="my-2"/>
+                        <div className="w-full grid grid-cols-2 gap-2 text-xs">
+                            {leftArkgridOptions.map((item, index) => (
+                                <div key={index} className="w-full flex gap-1">
+                                    <p>{item.name}</p>
+                                    <p className="text-orange-700 dark:text-orange-400 ml-auto font-semibold">Lv.{item.level}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </CardBody>
+                </Card>
+                <div>
+                    {!isMobile ? (
+                        <>
+                            <h2 className="w-full text-center text-lg font-semibold mb-1.5">아크그리드</h2>
+                            <Divider />
+                        </>
+                    ) : null}
+                    <div className="mt-3 grid w-full grid-cols-2 gap-2 text-sm mb-2 min-[1257px]:mb-0">
+                        {isMobile ? (
+                            <>
+                                <div className="w-full">
+                                    <h3 className="font-semibold text-center">{leftInfo ? leftInfo.nickname : '-'}</h3>
+                                    <Divider className="mt-1"/>
+                                </div>
+                                <div className="w-full">
+                                    <h3 className="font-semibold text-center">{rightInfo ? rightInfo.nickname : '-'}</h3>
+                                    <Divider className="mt-1"/>
+                                </div>
+                            </>
+                        ) : null}
+                        {hasArkgridDiff ? (
+                            <>
+                                <div className="flex flex-col gap-2">
+                                    {leftCoreDiffs.map((row) => (
+                                        <Chip
+                                            key={`left-${row.type}`}
+                                            radius="sm"
+                                            color="success"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.leftText}
+                                        </Chip>
+                                    ))}
+                                    {leftOptionDiffs.map((row) => (
+                                        <Chip
+                                            key={`left-${row.type}`}
+                                            radius="sm"
+                                            color="warning"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.leftText}
+                                        </Chip>
+                                    ))}
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    {rightCoreDiffs.map((row) => (
+                                        <Chip
+                                            key={`right-${row.type}`}
+                                            radius="sm"
+                                            color="success"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.rightText}
+                                        </Chip>
+                                    ))}
+                                    {rightOptionDiffs.map((row) => (
+                                        <Chip
+                                            key={`right-${row.type}`}
+                                            radius="sm"
+                                            color="warning"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.rightText}
+                                        </Chip>
+                                    ))}
+                                </div>
+                            </>
+                        ) : !canCompareArkgrid ? (
+                            <p className="col-span-2 text-center fadedtext">두 캐릭터를 모두 조회하면 비교가 표시됩니다.</p>
+                        ) : (
+                            <p className="col-span-2 text-center fadedtext">아크그리드 수치가 동일합니다.</p>
+                        )}
+                    </div>
+                </div>
+                <Card radius="sm" shadow="sm">
+                    <CardBody>
+                        {rightCharacter ? <ArkgridComponent character={rightCharacter} /> : <NotSearchVerticalComponent />}
+                        <Divider className="my-2"/>
+                        <div className="w-full grid grid-cols-2 gap-2 text-xs">
+                            {rightArkgridOptions.map((item, index) => (
+                                <div key={index} className="w-full flex gap-1">
+                                    <p>{item.name}</p>
+                                    <p className="text-orange-700 dark:text-orange-400 ml-auto font-semibold">Lv.{item.level}</p>
+                                </div>
+                            ))}
+                        </div>
                     </CardBody>
                 </Card>
             </div>

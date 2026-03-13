@@ -1,7 +1,7 @@
 ﻿import { addToast } from "@heroui/react";
 import { decrypt } from "@/utiils/crypto";
 import { LoginUser } from "@/app/store/loginSlice";
-import { CharacterInfo } from "../../model/types";
+import { ArkGridOption, CharacterInfo } from "../../model/types";
 import { CharacterFile } from "../../lib/characterFeat";
 import { getCharacterInfoByFile, toNumber } from "../../lib/characterInfo";
 import { ExpeditionCharacter } from "../../characterlist/model/types";
@@ -24,6 +24,13 @@ const ENGRAVING_GRADE_OFFSET: Record<string, number> = {
     유물: 8,
 };
 const TIER4_GEM_KEYWORDS = ["광휘", "겁화", "작열"];
+const ARKGRID_CORE_GRADE_SCORE: Record<string, number> = {
+    영웅: 1,
+    전설: 2,
+    유물: 3,
+    고대: 4,
+};
+const ATTACK_ARKGRID_OPTION_NAMES = ["공격력", "보스 피해", "추가 피해"];
 
 // 캐릭터 역할에 맞는 유효 악세서리 옵션 목록을 가져온다.
 function getEffectiveAccessoryOptions(character: ExpeditionCharacter | null): string[] {
@@ -517,6 +524,56 @@ export function getGemDiffRows(
     }];
 
     return { levelRows, attackRows };
+}
+
+// 캐릭터 타입에 맞게 아크그리드 옵션 중 비교 대상만 추려낸다.
+function getFilteredArkgridOptions(character: ExpeditionCharacter | null) {
+    if (!character) {
+        return [];
+    }
+
+    if (character.profile.characterType === "attack") {
+        return character.arkgrid.options.filter((item) => ATTACK_ARKGRID_OPTION_NAMES.includes(item.name));
+    }
+
+    return character.arkgrid.options.filter((item) => !ATTACK_ARKGRID_OPTION_NAMES.includes(item.name));
+}
+
+// 아크그리드 코어 등급 합과 옵션 레벨 합 차이를 비교용 문구로 만든다.
+export function getArkgridDiffRows(
+    leftCharacter: ExpeditionCharacter | null,
+    rightCharacter: ExpeditionCharacter | null
+): { coreRows: EquipmentDiffRow[]; optionRows: EquipmentDiffRow[] } {
+    const leftCoreValue = leftCharacter?.arkgrid.cores.reduce((sum, core) => sum + (ARKGRID_CORE_GRADE_SCORE[core.grade] ?? 0), 0) ?? null;
+    const rightCoreValue = rightCharacter?.arkgrid.cores.reduce((sum, core) => sum + (ARKGRID_CORE_GRADE_SCORE[core.grade] ?? 0), 0) ?? null;
+    const leftOptionValue = getFilteredArkgridOptions(leftCharacter).reduce((sum, item) => sum + item.level, 0);
+    const rightOptionValue = getFilteredArkgridOptions(rightCharacter).reduce((sum, item) => sum + item.level, 0);
+
+    const coreRows = [{
+        type: "arkgrid-core",
+        leftText:
+            leftCoreValue !== null && rightCoreValue !== null && leftCoreValue > rightCoreValue
+                ? `코어 +${leftCoreValue - rightCoreValue}`
+                : "",
+        rightText:
+            leftCoreValue !== null && rightCoreValue !== null && rightCoreValue > leftCoreValue
+                ? `코어 +${rightCoreValue - leftCoreValue}`
+                : "",
+    }];
+
+    const optionRows = [{
+        type: "arkgrid-option",
+        leftText:
+            leftCharacter && rightCharacter && leftOptionValue > rightOptionValue
+                ? `효과 +${leftOptionValue - rightOptionValue}`
+                : "",
+        rightText:
+            leftCharacter && rightCharacter && rightOptionValue > leftOptionValue
+                ? `효과 +${rightOptionValue - leftOptionValue}`
+                : "",
+    }];
+
+    return { coreRows, optionRows };
 }
 
 // 카르마 이름 색상
