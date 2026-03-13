@@ -1482,5 +1482,9 @@
             "color": "secondary",
             "level": 6
         }
-    ]
+    ],
+    "effectedAccessories": {
+        "attack": ["적주피", "추피", "무공%", "공격력%", "치적", "치피"],
+        "supportor": ["낙인력", "폿아덴", "무공%", "피해강화", "공격강화"]
+    }
 }  

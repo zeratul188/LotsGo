@@ -7,15 +7,91 @@ import { getCharacterInfoByFile, toNumber } from "../../lib/characterInfo";
 import { ExpeditionCharacter } from "../../characterlist/model/types";
 import data from "@/data/characters/data.json";
 import { getEnhanceLevel } from "../../characterlist/lib/characterInfoFeat";
+import { getSmallGradeByAccessory, getSmallGradeByArm } from "../../lib/characterFeat";
+import { printEffectInTooltip } from "../../lib/armPrints";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : "null";
 const COMPARE_EQUIPMENT_TYPES = ["무기", "투구", "어깨", "장갑", "상의", "하의"] as const;
+const ACCESSORY_GRADE_SCORE: Record<string, number> = {
+    lg: 3,
+    md: 2,
+    sm: 1,
+    none: 0,
+};
+
+function getEffectiveAccessoryOptions(character: ExpeditionCharacter | null): string[] {
+    if (!character) {
+        return [];
+    }
+
+    return data.effectedAccessories[character.profile.characterType as "attack" | "supportor"] ?? [];
+}
 
 export type EquipmentDiffRow = {
     type: string;
     leftText: string;
     rightText: string;
 };
+
+function getAccessoryLineLabel(type: string, index: number): string {
+    if (type === "귀걸이" || type === "반지") {
+        return `${type}${index}`;
+    }
+
+    return type;
+}
+
+function getAccessoryCompareValue(character: ExpeditionCharacter | null, index: number): number | null {
+    const accessory = character?.equipment.accessories[index];
+    if (!accessory) {
+        return null;
+    }
+
+    const effectiveOptions = getEffectiveAccessoryOptions(character);
+
+    return accessory.items
+        .slice(0, 3)
+        .reduce((sum, item) => {
+            const parsedItem = getSmallGradeByAccessory(accessory.type, item);
+            if (!effectiveOptions.includes(parsedItem.name)) {
+                return sum;
+            }
+
+            return sum + ACCESSORY_GRADE_SCORE[parsedItem.grade];
+        }, 0);
+}
+
+function getStoneCompareValue(character: ExpeditionCharacter | null): number | null {
+    const stone = character?.equipment.stone;
+    if (!stone || stone.effects.length === 0) {
+        return null;
+    }
+
+    return stone.effects.slice(0, 3).reduce((sum, effect, index) => {
+        return sum + (index === 2 ? -effect.level : effect.level);
+    }, 0);
+}
+
+function getArmCompareValue(character: ExpeditionCharacter | null): number | null {
+    const arm = character?.equipment.arm;
+    if (!arm) {
+        return null;
+    }
+
+    const effects = printEffectInTooltip(arm.tooltip);
+    if (effects.length === 0) {
+        return null;
+    }
+
+    return effects.reduce((sum, effect) => {
+        const parsedEffect = getSmallGradeByArm(effect);
+        if (parsedEffect.name === "null") {
+            return sum;
+        }
+
+        return sum + ACCESSORY_GRADE_SCORE[parsedEffect.grade];
+    }, 0);
+}
 
 export async function loadCompareCharacterInfo(nickname: string): Promise<CharacterInfo | null> {
     const trimmedNickname = nickname.trim();
@@ -161,4 +237,64 @@ export function getEquipmentDiffRows(
             rightText: rightValue > leftValue ? `${type} +${diff}` : "",
         };
     });
+}
+
+export function getAccessoryDiffRows(
+    leftCharacter: ExpeditionCharacter | null,
+    rightCharacter: ExpeditionCharacter | null
+): EquipmentDiffRow[] {
+    const leftAccessories = leftCharacter?.equipment.accessories ?? [];
+    const rightAccessories = rightCharacter?.equipment.accessories ?? [];
+    const accessoryLength = Math.max(leftAccessories.length, rightAccessories.length);
+    const typeCounts: Record<string, number> = {};
+
+    const accessoryRows = Array.from({ length: accessoryLength }, (_, index) => {
+        const type = leftAccessories[index]?.type ?? rightAccessories[index]?.type ?? `악세${index + 1}`;
+        typeCounts[type] = (typeCounts[type] ?? 0) + 1;
+        const label = getAccessoryLineLabel(type, typeCounts[type]);
+
+        const leftValue = getAccessoryCompareValue(leftCharacter, index);
+        const rightValue = getAccessoryCompareValue(rightCharacter, index);
+
+        if (leftValue === null || rightValue === null || leftValue === rightValue) {
+            return {
+                type: `${type}-${index}`,
+                leftText: "",
+                rightText: "",
+            };
+        }
+
+        const diff = Math.abs(leftValue - rightValue);
+        return {
+            type: `${type}-${index}`,
+            leftText: leftValue > rightValue ? `${label} +${diff}` : "",
+            rightText: rightValue > leftValue ? `${label} +${diff}` : "",
+        };
+    });
+
+    const leftStoneValue = getStoneCompareValue(leftCharacter);
+    const rightStoneValue = getStoneCompareValue(rightCharacter);
+    const leftArmValue = getArmCompareValue(leftCharacter);
+    const rightArmValue = getArmCompareValue(rightCharacter);
+    const extraRows = [];
+
+    if (leftArmValue !== null && rightArmValue !== null && leftArmValue !== rightArmValue) {
+        const armDiff = Math.abs(leftArmValue - rightArmValue);
+        extraRows.push({
+            type: "arm",
+            leftText: leftArmValue > rightArmValue ? "팔찌 +" + armDiff : "",
+            rightText: rightArmValue > leftArmValue ? "팔찌 +" + armDiff : "",
+        });
+    }
+
+    if (leftStoneValue !== null && rightStoneValue !== null && leftStoneValue !== rightStoneValue) {
+        const stoneDiff = Math.abs(leftStoneValue - rightStoneValue);
+        extraRows.push({
+            type: "stone",
+            leftText: leftStoneValue > rightStoneValue ? `스톤 +${stoneDiff}` : "",
+            rightText: rightStoneValue > leftStoneValue ? `스톤 +${stoneDiff}` : "",
+        });
+    }
+
+    return [...accessoryRows, ...extraRows];
 }
