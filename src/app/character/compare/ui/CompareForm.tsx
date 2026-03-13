@@ -309,7 +309,7 @@ function Equipments({ leftInfo, rightInfo, isMobile }: CharacterProps) {
             {isMobile ? (
                 <h3 className="text-lg font-semibold">장비</h3>
             ) : null}
-            <div className="mt-5 grid w-full items-start gap-1 min-[1257px]:gap-5 min-[1257px]:grid-cols-[420px_1fr_420px]">
+            <div className="grid w-full items-start gap-1 min-[1257px]:gap-5 min-[1257px]:grid-cols-[420px_1fr_420px]">
                 <Card radius="sm" shadow="sm">
                     <CardBody>
                         {leftCharacter ? <EquipmentComponent character={leftCharacter} /> : <NotSearchVerticalComponent />}
@@ -318,7 +318,7 @@ function Equipments({ leftInfo, rightInfo, isMobile }: CharacterProps) {
                 <div>
                     {!isMobile ? (
                         <>
-                            <h2 className="w-full text-center text-lg font-semibold">장비</h2>
+                            <h2 className="w-full text-center text-lg font-semibold mb-1.5">장비</h2>
                             <Divider />
                         </>
                     ) : null}
@@ -398,7 +398,7 @@ function Accessories({ leftInfo, rightInfo, isMobile }: CharacterProps) {
             {isMobile ? (
                 <h3 className="text-lg font-semibold">악세서리</h3>
             ) : null}
-            <div className="mt-5 grid w-full items-start gap-1 min-[1257px]:gap-5 min-[1257px]:grid-cols-[420px_1fr_420px]">
+            <div className="grid w-full items-start gap-1 min-[1257px]:gap-5 min-[1257px]:grid-cols-[420px_1fr_420px]">
                 <Card radius="sm" shadow="sm">
                     <CardBody>
                         {leftCharacter ? <AccessoriesComponent character={leftCharacter} /> : <NotSearchVerticalComponent />}
@@ -407,7 +407,7 @@ function Accessories({ leftInfo, rightInfo, isMobile }: CharacterProps) {
                 <div>
                     {!isMobile ? (
                         <>
-                            <h2 className="w-full text-center text-lg font-semibold">악세서리</h2>
+                            <h2 className="w-full text-center text-lg font-semibold mb-1.5">악세서리</h2>
                             <Divider />
                         </>
                     ) : null}

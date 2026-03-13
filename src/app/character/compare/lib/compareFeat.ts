@@ -182,12 +182,16 @@ function isEstherEquipment(character: ExpeditionCharacter | null, type: string):
     return getCharacterEquipment(character, type)?.grade === "에스더";
 }
 
-// 장비 이름에 포함된 tier 문자열을 기준으로 계승 단계를 찾는다.
-function getEquipmentTierLevel(name: string): number {
-    return data.armoryTiers.find((tier) => name.includes(tier.tier))?.level ?? 0;
+// 장비 이름에 포함된 tier 문자열을 기준으로 장비 기본 레벨을 찾는다.
+function getEquipmentStartLevel(name: string): number {
+    return data.armoryTiers.find((tier) => name.includes(tier.tier))?.startLevel ?? 0;
 }
 
-// 장비의 실제 비교값을 계산한다. 계승 단계 1당 강화 9와 같은 가치로 환산한다.
+function formatEquipmentDiff(diff: number): string {
+    return (diff / 5).toString();
+}
+
+// 장비의 실제 비교값을 계산한다. 기본 레벨에 강화 수치와 상급 재련 수치를 더한다.
 function getEquipmentCompareValue(character: ExpeditionCharacter | null, type: string): number | null {
     const equipment = getCharacterEquipment(character, type);
     if (!equipment) {
@@ -199,7 +203,7 @@ function getEquipmentCompareValue(character: ExpeditionCharacter | null, type: s
         return null;
     }
 
-    return enhanceLevel + getEquipmentTierLevel(equipment.name) * 9;
+    return getEquipmentStartLevel(equipment.name) + enhanceLevel * 5 + Math.max(equipment.highUpgrade, 0);
 }
 
 // 좌우 캐릭터의 6부위 장비를 비교해서 더 높은 쪽에만 표시할 문구를 만든다.
@@ -233,8 +237,8 @@ export function getEquipmentDiffRows(
         const diff = Math.abs(leftValue - rightValue);
         return {
             type,
-            leftText: leftValue > rightValue ? `${type} +${diff}` : "",
-            rightText: rightValue > leftValue ? `${type} +${diff}` : "",
+            leftText: leftValue > rightValue ? `${type} +${formatEquipmentDiff(diff)}` : "",
+            rightText: rightValue > leftValue ? `${type} +${formatEquipmentDiff(diff)}` : "",
         };
     });
 }
