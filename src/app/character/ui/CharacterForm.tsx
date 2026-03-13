@@ -110,41 +110,55 @@ export function SearchComponent({ setSearched, setLoading, setNickname }: Search
         <div className="w-full h-[300px] flex justify-center items-center flex-col">
             <h1 className="text-4xl sm:text-5xl font-bold">전투 정보실</h1>
             <h2 className="text-xl sm:text-xl mt-4">캐릭터 정보를 확인하기 위해서 캐릭터명을 입력 후 검색해주세요.</h2>
-            <div className="w-full sm:w-fit flex gap-3 mt-8 flex-col sm:flex-row">
-                <Input
-                    size="lg"
-                    radius="sm"
-                    placeholder="캐릭터명을 입력하세요."
-                    maxLength={12}
-                    value={search}
-                    onValueChange={setSearch}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                            handleSearch(search, setSearched, setLoading, setNickname);
-                            const params = new URLSearchParams(window.location.search);
-                            params.set("nickname", search);
-                            const newUrl = `${window.location.pathname}?${params.toString()}`;
-                            window.history.pushState({}, "", newUrl);
-                        }
-                    }}
-                    className="grow"/>
-                <Button
-                    size="lg"
-                    radius="sm"
-                    color="primary"
-                    onPress={() => handleSearch(search, setSearched, setLoading, setNickname)}>
-                    검색
-                </Button>
-                <Divider orientation={isMobile ? "horizontal" : "vertical"}/>
-                <Button
-                    size="lg"
-                    radius="sm"
-                    color="secondary"
-                    className="sm:px-10"
-                    variant="flat"
-                    onPress={() => router.push('/character/characterlist')}>
-                    원정대 모아보기
-                </Button>
+            <div className="w-full sm:w-fit flex flex-col items-center mt-8 gap-2">
+                <div className="w-full flex items-center gap-3">
+                    <Input
+                        size="lg"
+                        radius="sm"
+                        placeholder="캐릭터명을 입력하세요."
+                        maxLength={12}
+                        value={search}
+                        onValueChange={setSearch}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                handleSearch(search, setSearched, setLoading, setNickname);
+                                const params = new URLSearchParams(window.location.search);
+                                params.set("nickname", search);
+                                const newUrl = `${window.location.pathname}?${params.toString()}`;
+                                window.history.pushState({}, "", newUrl);
+                            }
+                        }}
+                        className="w-full sm:w-[300px]"/>
+                    <Button
+                        size="lg"
+                        radius="sm"
+                        color="primary"
+                        onPress={() => handleSearch(search, setSearched, setLoading, setNickname)}>
+                        검색
+                    </Button>
+                </div>
+                <div className="w-full flex gap-2 mt-2 justify-center">
+                    <Button
+                        fullWidth={isMobile}
+                        size="sm"
+                        radius="sm"
+                        color="secondary"
+                        className="sm:px-10"
+                        variant="faded"
+                        onPress={() => router.push('/character/characterlist')}>
+                        원정대 모아보기
+                    </Button>
+                    <Button
+                        fullWidth={isMobile}
+                        size="sm"
+                        radius="sm"
+                        color="secondary"
+                        className="sm:px-10"
+                        variant="faded"
+                        onPress={() => router.push('/character/compare')}>
+                        캐릭터 비교
+                    </Button>
+                </div>
             </div>
         </div>
     )
