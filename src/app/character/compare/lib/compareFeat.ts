@@ -24,6 +24,7 @@ const ENGRAVING_GRADE_OFFSET: Record<string, number> = {
     유물: 8,
 };
 
+// 캐릭터 역할에 맞는 유효 악세서리 옵션 목록을 가져온다.
 function getEffectiveAccessoryOptions(character: ExpeditionCharacter | null): string[] {
     if (!character) {
         return [];
@@ -38,10 +39,12 @@ export type EquipmentDiffRow = {
     rightText: string;
 };
 
+// 특정 특성의 수치를 찾아 비교용 숫자로 반환한다.
 function getStatValue(character: ExpeditionCharacter | null, type: string): number | null {
     return character?.stats.find((stat) => stat.type === type)?.value ?? null;
 }
 
+// 강조 표시 대상인 300 이상 특성들의 합계를 계산한다.
 function getHighlightedStatSum(character: ExpeditionCharacter | null): number | null {
     if (!character) {
         return null;
@@ -52,6 +55,7 @@ function getHighlightedStatSum(character: ExpeditionCharacter | null): number | 
         .reduce((sum, stat) => sum + stat.value, 0);
 }
 
+// 귀걸이와 반지처럼 같은 종류의 악세서리에 번호 라벨을 붙인다.
 function getAccessoryLineLabel(type: string, index: number): string {
     if (type === "귀걸이" || type === "반지") {
         return `${type}${index}`;
@@ -60,6 +64,7 @@ function getAccessoryLineLabel(type: string, index: number): string {
     return type;
 }
 
+// 한 줄의 악세서리에서 유효 옵션만 골라 등급 점수 합계를 계산한다.
 function getAccessoryCompareValue(character: ExpeditionCharacter | null, index: number): number | null {
     const accessory = character?.equipment.accessories[index];
     if (!accessory) {
@@ -80,6 +85,7 @@ function getAccessoryCompareValue(character: ExpeditionCharacter | null, index: 
         }, 0);
 }
 
+// 어빌리티 스톤의 1, 2옵션은 더하고 3옵션은 빼서 비교값을 만든다.
 function getStoneCompareValue(character: ExpeditionCharacter | null): number | null {
     const stone = character?.equipment.stone;
     if (!stone || stone.effects.length === 0) {
@@ -91,6 +97,7 @@ function getStoneCompareValue(character: ExpeditionCharacter | null): number | n
     }, 0);
 }
 
+// 팔찌 효과 중 판정 가능한 옵션만 모아 등급 점수 합계를 계산한다.
 function getArmCompareValue(character: ExpeditionCharacter | null): number | null {
     const arm = character?.equipment.arm;
     if (!arm) {
@@ -183,6 +190,7 @@ export async function loadCompareCharacterInfo(nickname: string): Promise<Charac
     return getCharacterInfoByFile(file, combatPower);
 }
 
+// 비교 화면에서 사용하는 캐릭터 타입으로 데이터를 변환한다.
 export function toExpeditionCharacter(info: CharacterInfo | null): ExpeditionCharacter | null {
     if (!info) return null;
     return {
@@ -206,6 +214,7 @@ function getEquipmentStartLevel(name: string): number {
     return data.armoryTiers.find((tier) => name.includes(tier.tier))?.startLevel ?? 0;
 }
 
+// 장비 내부 비교값 차이를 UI에 표시할 강화 수치 형식으로 변환한다.
 function formatEquipmentDiff(diff: number): string {
     return (diff / 5).toString();
 }
@@ -262,6 +271,7 @@ export function getEquipmentDiffRows(
     });
 }
 
+// 악세서리, 팔찌, 스톤 비교 결과를 좌우 표시용 문구로 만든다.
 export function getAccessoryDiffRows(
     leftCharacter: ExpeditionCharacter | null,
     rightCharacter: ExpeditionCharacter | null
@@ -322,6 +332,7 @@ export function getAccessoryDiffRows(
     return [...accessoryRows, ...extraRows];
 }
 
+// 공격력, 최대 생명력, 강조 특성 합 비교 결과를 문구로 만든다.
 export function getStatDiffRows(
     leftCharacter: ExpeditionCharacter | null,
     rightCharacter: ExpeditionCharacter | null
@@ -365,6 +376,7 @@ export function getStatDiffRows(
     });
 }
 
+// 카르마 설명 문자열에서 각 타입의 실제 레벨 수치를 추출한다.
 function getKarmaLevelValue(character: ExpeditionCharacter | null, type: string): number | null {
     const description = character?.arkpassive.points.find((point) => point.type === type)?.description;
     if (!description) {
@@ -379,10 +391,12 @@ function getKarmaLevelValue(character: ExpeditionCharacter | null, type: string)
     return Number(numbers[numbers.length - 1]);
 }
 
+// 카르마 타입별 포인트 수치를 찾아 비교값으로 반환한다.
 function getKarmaPointValue(character: ExpeditionCharacter | null, type: string): number | null {
     return character?.arkpassive.points.find((point) => point.type === type)?.point ?? null;
 }
 
+// 카르마 레벨 차이와 포인트 차이를 각각 분리해 비교용 문구로 만든다.
 export function getKarmaDiffRows(
     leftCharacter: ExpeditionCharacter | null,
     rightCharacter: ExpeditionCharacter | null
@@ -432,6 +446,7 @@ export function getKarmaDiffRows(
     return { levelRows, pointRows };
 }
 
+// 각인 등급 보정을 포함한 총합 차이를 비교용 문구로 만든다.
 export function getEngravingDiffRows(
     leftCharacter: ExpeditionCharacter | null,
     rightCharacter: ExpeditionCharacter | null
