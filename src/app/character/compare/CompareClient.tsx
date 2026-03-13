@@ -33,7 +33,7 @@ export default function CompareClient() {
             <h1 className="text-3xl font-bold">캐릭터 비교하기</h1>
             <div className="mt-2">
                 <p className="text-sm fadedtext">2명의 캐릭터들의 스펙을 비교 확인할 수 있습니다.</p>
-                <p className="text-xs fadedtext">전투 정보에는 최소 1회 이상 조회한 캐릭터들만 표시하며, 전투 정보 조회 시점에 등록된 데이터만 출력됩니다.</p>
+                <p className="text-xs fadedtext">불러온 캐릭터 정보가 갱신이 되지 않았을 경우 전투정보실에서 갱신해주시기 바랍니다.</p>
             </div>
             <CharacterInputComponent
                 leftInput={leftInput}

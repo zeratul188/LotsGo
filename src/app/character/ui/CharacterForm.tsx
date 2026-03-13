@@ -111,7 +111,7 @@ export function SearchComponent({ setSearched, setLoading, setNickname }: Search
             <h1 className="text-4xl sm:text-5xl font-bold">전투 정보실</h1>
             <h2 className="text-xl sm:text-xl mt-4">캐릭터 정보를 확인하기 위해서 캐릭터명을 입력 후 검색해주세요.</h2>
             <div className="w-full sm:w-fit flex flex-col items-center mt-8 gap-2">
-                <div className="flex items-center gap-3">
+                <div className="w-full flex items-center gap-3">
                     <Input
                         size="lg"
                         radius="sm"
@@ -128,7 +128,7 @@ export function SearchComponent({ setSearched, setLoading, setNickname }: Search
                                 window.history.pushState({}, "", newUrl);
                             }
                         }}
-                        className="grow"/>
+                        className="w-full sm:w-[300px]"/>
                     <Button
                         size="lg"
                         radius="sm"
@@ -137,14 +137,14 @@ export function SearchComponent({ setSearched, setLoading, setNickname }: Search
                         검색
                     </Button>
                 </div>
-                <div className="flex gap-2">
+                <div className="w-full flex gap-2 mt-2 justify-center">
                     <Button
                         fullWidth={isMobile}
                         size="sm"
                         radius="sm"
                         color="secondary"
                         className="sm:px-10"
-                        variant="flat"
+                        variant="faded"
                         onPress={() => router.push('/character/characterlist')}>
                         원정대 모아보기
                     </Button>
@@ -154,7 +154,7 @@ export function SearchComponent({ setSearched, setLoading, setNickname }: Search
                         radius="sm"
                         color="secondary"
                         className="sm:px-10"
-                        variant="flat"
+                        variant="faded"
                         onPress={() => router.push('/character/compare')}>
                         캐릭터 비교
                     </Button>
