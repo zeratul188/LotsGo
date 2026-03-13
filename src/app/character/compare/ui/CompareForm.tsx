@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getAccessoryDiffRows, getColorChipByKarmaType, getEngravingDiffRows, getEquipmentDiffRows, getKarmaDiffRows, getStatDiffRows, loadCompareCharacterInfo, toExpeditionCharacter } from "../lib/compareFeat";
+import { getAccessoryDiffRows, getColorChipByKarmaType, getEngravingDiffRows, getEquipmentDiffRows, getGemDiffRows, getKarmaDiffRows, getStatDiffRows, loadCompareCharacterInfo, toExpeditionCharacter } from "../lib/compareFeat";
 import { getColorTextByGrade, SetStateFn, useMobileQuery } from "@/utiils/utils";
 import { Button, Card, CardBody, Chip, Divider, Input, Spinner } from "@heroui/react";
 import data from "@/data/characters/data.json";
@@ -9,7 +9,7 @@ import clsx from "clsx";
 import { getColorByType, getEngravingSrcByName, getParsedText, getTitleData, printEngravingLevel } from "../../lib/characterFeat";
 import SupportorIcon from "@/Icons/SupportorIcon";
 import AttackIcon from "@/Icons/AttackIcon";
-import { AccessoriesComponent, EquipmentComponent, StatComponent } from "../../characterlist/ui/CharacterForm";
+import { AccessoriesComponent, EquipmentComponent, GemComponent, StatComponent } from "../../characterlist/ui/CharacterForm";
 
 type CharacterInputState = {
     value: string;
@@ -207,6 +207,7 @@ export function CharactersComponent({ leftInfo, rightInfo }: CharactersComponent
             <Stats leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
             <KarmaSection leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
             <Engravings leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
+            <Gems leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
         </div>
     );
 }
@@ -883,5 +884,124 @@ function EngravingComponent({ info }: { info: CharacterInfo }) {
                 </div>
             ))}
         </div>
+    )
+}
+
+// 보석
+function Gems({ leftInfo, rightInfo, isMobile }: CharacterProps) {
+    const leftCharacter = toExpeditionCharacter(leftInfo);
+    const rightCharacter = toExpeditionCharacter(rightInfo);
+    const { levelRows, attackRows } = getGemDiffRows(leftCharacter, rightCharacter);
+    const leftLevelDiffs = levelRows.filter((row) => row.leftText);
+    const rightLevelDiffs = levelRows.filter((row) => row.rightText);
+    const leftAttackDiffs = attackRows.filter((row) => row.leftText);
+    const rightAttackDiffs = attackRows.filter((row) => row.rightText);
+    const hasGemDiff =
+        leftLevelDiffs.length > 0 ||
+        rightLevelDiffs.length > 0 ||
+        leftAttackDiffs.length > 0 ||
+        rightAttackDiffs.length > 0;
+    const canCompareGem = Boolean(leftCharacter && rightCharacter);
+
+    return (
+        <>
+            {isMobile ? (
+                <h3 className="text-lg font-semibold">보석</h3>
+            ) : null}
+            <div className="grid w-full items-start gap-1 min-[1257px]:gap-5 min-[1257px]:grid-cols-[420px_1fr_420px]">
+                <Card radius="sm" shadow="sm">
+                    <CardBody>
+                        {leftCharacter ? <GemComponent character={leftCharacter} /> : <NotSearchVerticalComponent />}
+                    </CardBody>
+                </Card>
+                <div>
+                    {!isMobile ? (
+                        <>
+                            <h2 className="w-full text-center text-lg font-semibold mb-1.5">보석</h2>
+                            <Divider />
+                        </>
+                    ) : null}
+                    <div className="mt-3 grid w-full grid-cols-2 gap-2 text-sm mb-2 min-[1257px]:mb-0">
+                        {isMobile ? (
+                            <>
+                                <div className="w-full">
+                                    <h3 className="font-semibold text-center">{leftInfo ? leftInfo.nickname : '-'}</h3>
+                                    <Divider className="mt-1"/>
+                                </div>
+                                <div className="w-full">
+                                    <h3 className="font-semibold text-center">{rightInfo ? rightInfo.nickname : '-'}</h3>
+                                    <Divider className="mt-1"/>
+                                </div>
+                            </>
+                        ) : null}
+                        {hasGemDiff ? (
+                            <>
+                                <div className="flex flex-col gap-2">
+                                    {leftLevelDiffs.map((row) => (
+                                        <Chip
+                                            key={`left-${row.type}`}
+                                            radius="sm"
+                                            color="success"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.leftText}
+                                        </Chip>
+                                    ))}
+                                    {leftAttackDiffs.map((row) => (
+                                        <Chip
+                                            key={`left-${row.type}`}
+                                            radius="sm"
+                                            color="warning"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.leftText}
+                                        </Chip>
+                                    ))}
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    {rightLevelDiffs.map((row) => (
+                                        <Chip
+                                            key={`right-${row.type}`}
+                                            radius="sm"
+                                            color="success"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.rightText}
+                                        </Chip>
+                                    ))}
+                                    {rightAttackDiffs.map((row) => (
+                                        <Chip
+                                            key={`right-${row.type}`}
+                                            radius="sm"
+                                            color="warning"
+                                            size="sm"
+                                            variant="flat"
+                                            className="min-w-full text-center"
+                                        >
+                                            {row.rightText}
+                                        </Chip>
+                                    ))}
+                                </div>
+                            </>
+                        ) : !canCompareGem ? (
+                            <p className="col-span-2 text-center fadedtext">두 캐릭터를 모두 조회하면 비교가 표시됩니다.</p>
+                        ) : (
+                            <p className="col-span-2 text-center fadedtext">보석 수치가 동일합니다.</p>
+                        )}
+                    </div>
+                </div>
+                <Card radius="sm" shadow="sm">
+                    <CardBody>
+                        {rightCharacter ? <GemComponent character={rightCharacter} /> : <NotSearchVerticalComponent />}
+                    </CardBody>
+                </Card>
+            </div>
+        </>
     )
 }

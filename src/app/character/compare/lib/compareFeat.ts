@@ -23,6 +23,7 @@ const ENGRAVING_GRADE_OFFSET: Record<string, number> = {
     전설: 4,
     유물: 8,
 };
+const TIER4_GEM_KEYWORDS = ["광휘", "겁화", "작열"];
 
 // 캐릭터 역할에 맞는 유효 악세서리 옵션 목록을 가져온다.
 function getEffectiveAccessoryOptions(character: ExpeditionCharacter | null): string[] {
@@ -474,6 +475,48 @@ export function getEngravingDiffRows(
         leftText: leftValue > rightValue ? `각인 합 +${diff}` : "",
         rightText: rightValue > leftValue ? `각인 합 +${diff}` : "",
     }];
+}
+
+// 보석 이름을 기준으로 4티어 여부를 판별해 비교용 레벨을 환산한다.
+function getGemCompareLevel(name: string, level: number): number {
+    return TIER4_GEM_KEYWORDS.some((keyword) => name.includes(keyword)) ? level + 2 : level;
+}
+
+// 보석 레벨 총합과 기본 공격력 합 차이를 비교용 문구로 만든다.
+export function getGemDiffRows(
+    leftCharacter: ExpeditionCharacter | null,
+    rightCharacter: ExpeditionCharacter | null
+): { levelRows: EquipmentDiffRow[]; attackRows: EquipmentDiffRow[] } {
+    const leftLevelValue = leftCharacter?.gems.reduce((sum, gem) => sum + getGemCompareLevel(gem.name, gem.level), 0) ?? null;
+    const rightLevelValue = rightCharacter?.gems.reduce((sum, gem) => sum + getGemCompareLevel(gem.name, gem.level), 0) ?? null;
+    const leftAttackValue = leftCharacter?.gems.reduce((sum, gem) => sum + gem.attack, 0) ?? null;
+    const rightAttackValue = rightCharacter?.gems.reduce((sum, gem) => sum + gem.attack, 0) ?? null;
+
+    const levelRows = [{
+        type: "gem-level",
+        leftText:
+            leftLevelValue !== null && rightLevelValue !== null && leftLevelValue > rightLevelValue
+                ? `보석 레벨 합 +${leftLevelValue - rightLevelValue}`
+                : "",
+        rightText:
+            leftLevelValue !== null && rightLevelValue !== null && rightLevelValue > leftLevelValue
+                ? `보석 레벨 합 +${rightLevelValue - leftLevelValue}`
+                : "",
+    }];
+
+    const attackRows = [{
+        type: "gem-attack",
+        leftText:
+            leftAttackValue !== null && rightAttackValue !== null && leftAttackValue > rightAttackValue
+                ? `기본 공격력 +${(leftAttackValue - rightAttackValue).toFixed(1)}%`
+                : "",
+        rightText:
+            leftAttackValue !== null && rightAttackValue !== null && rightAttackValue > leftAttackValue
+                ? `기본 공격력 +${(rightAttackValue - leftAttackValue).toFixed(1)}%`
+                : "",
+    }];
+
+    return { levelRows, attackRows };
 }
 
 // 카르마 이름 색상
