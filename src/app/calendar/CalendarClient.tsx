@@ -4,7 +4,7 @@ import { useCalendarForm, WeekComponent } from "./CalendarForm"
 import { Divider } from "@heroui/react";
 import { loadBosses, loadGuild, loadWorks, loadWorksByParty, removeAutoCalendarsByGuild, removeAutoCalendarsByWorks } from "./calendarFeat";
 import { getAuth, onAuthStateChanged } from "firebase/auth";import BigComponent from "./CalendarForm";
-import { checkLogin } from "../checklist/checklistFeat";
+import { checkLogin } from "../checklist/lib/checklistFeat";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 

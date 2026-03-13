@@ -1,8 +1,8 @@
 'use client'
-import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent, RemainChecklistComponent, FilterComponent, BossInfoModal } from "./ChecklistForm"
+import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent, RemainChecklistComponent, FilterComponent, BossInfoModal } from "./ui/ChecklistForm"
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
-import { checkLogin, getBosses, getCubes, handleResetChecklist, loadChecklist, settingFilter } from "./checklistFeat";
+import { checkLogin, getBosses, getCubes, handleResetChecklist, loadChecklist, settingFilter } from "./lib/checklistFeat";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
@@ -14,7 +14,7 @@ import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
 import Script from "next/script";
-import NotLoginedComponent from "./NotLoginComponent";
+import NotLoginedComponent from "./ui/NotLoginComponent";
 import iChecklist from '@/data/checklist/data.json';
 import iBosses from '@/data/bosses/data.json';
 import iCubes from '@/data/cubes/data.json';

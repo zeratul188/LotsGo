@@ -1,4 +1,5 @@
 {
+    "maxCharacterNameLength": 12,
     "accessory": {
         "neck": [
             {
@@ -1448,32 +1449,48 @@
         {
             "tier": "명예의 송곳니",
             "title": "3T 유물",
-            "color": "warning"
+            "color": "warning",
+            "level": 1,
+            "startLevel": 1250
         },
         {
             "tier": "명예의 속삭임",
             "title": "3T 고대",
-            "color": "warning"
+            "color": "warning",
+            "level": 2,
+            "startLevel": 1390
         },
         {
             "tier": "명예의 낙인",
             "title": "볼다이크",
-            "color": "primary"
+            "color": "primary",
+            "level": 3,
+            "startLevel": 1525
         },
         {
             "tier": "운명의 결단",
             "title": "4T 유물",
-            "color": "danger"
+            "color": "danger",
+            "level": 4,
+            "startLevel": 1590
         },
         {
             "tier": "운명의 업화",
             "title": "4T 고대",
-            "color": "danger"
+            "color": "danger",
+            "level": 5,
+            "startLevel": 1590
         },
         {
             "tier": "운명의 전율",
             "title": "세르카",
-            "color": "secondary"
+            "color": "secondary",
+            "level": 6,
+            "startLevel": 1675
         }
-    ]
+    ],
+    "effectedAccessories": {
+        "attack": ["적주피", "추피", "무공%", "공격력%", "치적", "치피"],
+        "supportor": ["낙인력", "폿아덴", "무공%", "피해강화", "공격강화"]
+    }
 }  

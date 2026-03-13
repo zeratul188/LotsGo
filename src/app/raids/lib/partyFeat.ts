@@ -8,7 +8,7 @@ import { Character } from "../../signup/signupFeat";
 import type { AppDispatch } from "../../store/store";
 import { changeSelectedRaid, initialMembers } from "../../store/partySlice";
 import { Raid, RemainCharacter } from "../model/types";
-import { getBossBoundCheckGold, getBossBoundGold, getBossCheckedGold, getBossGold } from "@/app/checklist/checklistFeat";
+import { getBossBoundCheckGold, getBossBoundGold, getBossCheckedGold, getBossGold } from "@/app/checklist/lib/checklistFeat";
 import { ChecklistItem } from "@/app/store/checklistSlice";
 
 // 선택한 파티 적용 함수

@@ -1,9 +1,9 @@
 import { dateValueToDate, SetStateFn } from "@/utiils/utils";
 import { DragableParty, Party, PartyResponse, Raid, TeamCharacter, TeamMember } from "../model/types";
-import { ControlStage } from "../../checklist/ChecklistForm";
+import { ControlStage } from "../../checklist/model/types";
 import { DateValue } from "@internationalized/date";
 import { addToast, Selection, SharedSelection } from "@heroui/react";
-import { getBossesById, getWeekContents, getWeekStages, WeekContent } from "../../checklist/checklistFeat";
+import { getBossesById, getWeekContents, getWeekStages, WeekContent } from "../../checklist/lib/checklistFeat";
 import { Boss } from "../../api/checklist/boss/route";
 import { AppDispatch } from "../../store/store";
 import { updatePartys } from "../../store/partySlice";

@@ -39,7 +39,7 @@ import {
     Tooltip
 } from "@heroui/react";
 import {DateValue, getLocalTimeZone, now} from "@internationalized/date";
-import { getBossesById, getTextColorByDifficulty, getWeekContents } from "../checklist/checklistFeat";
+import { getBossesById, getTextColorByDifficulty, getWeekContents } from "../checklist/lib/checklistFeat";
 import CalendarIcon from "@/Icons/CalendarIcon";
 import { SetStateFn } from "@/utiils/utils";
 import { RaidWork } from "../raids/model/types";
