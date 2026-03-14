@@ -896,10 +896,18 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                                             {stone.effects.length > 0 ? (
                                                 <div className="flex gap-0.5 flex-col">
                                                     {stone.effects.filter(effect => effect.level > 0).map((effect, idx) => (
-                                                        <p key={idx} className={clsx(
-                                                            "text-[9pt]",
-                                                            idx === 2 ? 'text-red-700 dark:text-red-300' : ''
-                                                        )}><strong>Lv.{effect.level}</strong> {effect.name}</p>
+                                                        <Chip
+                                                            key={idx}
+                                                            radius="sm"
+                                                            size="sm"
+                                                            variant="dot"
+                                                            color={idx === 2 ? 'danger' : "primary"}
+                                                            className="min-w-[130px]">
+                                                            <div className="w-full flex gap-0.5">
+                                                                <p>{effect.name}</p>
+                                                                <p className="font-semibold ml-auto">Lv.{effect.level}</p>
+                                                            </div>
+                                                        </Chip>
                                                     ))}
                                                 </div>
                                             ) : <></>}
