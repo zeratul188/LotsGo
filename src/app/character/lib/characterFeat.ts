@@ -602,6 +602,16 @@ export function getTextColorByGrade(grade: string): string {
     return 'fadedtext';
 }
 
+// 등급 별 글자 색상 반환
+export function getBorderByGrade(grade: string): string {
+    switch(grade) {
+        case 'lg': return 'border-[#f7890c] bg-[#f7890c]/10';
+        case 'md': return 'border-[#ae30e9] bg-[#ae30e9]/10';
+        case 'sm': return 'border-[#1f88dd] bg-[#1f88dd]/10';
+    }
+    return '';
+}
+
 //스톤 각인 가져오기
 export function getStoneEffectInTooltip(parsed: any): StoneEffect[] {
     for (const key in parsed) {
@@ -748,6 +758,57 @@ export function getSumStat(stat: Stat[]): number {
 // 원하는 종류의 스택 반환 함수
 export function getStatByType(stat: Stat[], type: string): Stat | undefined {
     return stat.find(item => item.type === type);
+}
+
+// 악세 기본 효과 문자열에서 힘, 민첩, 지능 수치와 옵션 범위 퍼센트를 계산한다.
+export function getAccessoryStatSummary(equip: any, defaultEffectText: string) {
+    const statMatch = defaultEffectText.match(/(?:힘|민첩|지능)\s*\+?\s*([\d,]+)/);
+    const statValue = statMatch ? Number(statMatch[1].replaceAll(',', '')) : null;
+
+    if (!statValue) {
+        return null;
+    }
+
+    const accessoryOptionData = data.accessoryOption.find((option) =>
+        option.names.some((name) => equip.name.includes(name))
+    );
+    const optionKey =
+        equip.type === '목걸이' ? 'neck' :
+        equip.type === '귀걸이' ? 'ear' :
+        equip.type === '반지' ? 'ring' :
+        null;
+
+    if (!accessoryOptionData || !optionKey) {
+        return { statValue, percentValue: null, percentText: null };
+    }
+
+    const levelData = accessoryOptionData[optionKey].find((option) => option.level === equip.items.length);
+
+    if (!levelData || levelData.max <= levelData.min) {
+        return { statValue, percentValue: null, percentText: null };
+    }
+
+    const percent = Math.min(
+        100,
+        Math.max(0, ((statValue - levelData.min) / (levelData.max - levelData.min)) * 100)
+    );
+
+    return {
+        statValue,
+        percentValue: percent,
+        percentText: `${percent.toFixed(1)}%`
+    };
+}
+
+// 힘, 민첩, 지능 퍼센트 구간에 맞는 글자색 클래스를 반환한다.
+export function getAccessoryStatPercentColor(percent: number | null) {
+    if (percent === null) return "";
+    if (percent >= 100) return "text-orange-600 dark:text-orange-400";
+    if (percent >= 90) return "text-violet-700 dark:text-violet-400";
+    if (percent >= 70) return "text-blue-700 dark:text-blue-400";
+    if (percent >= 40) return "text-green-700 dark:text-green-400";
+    if (percent >= 20) return "text-yellow-700 dark:text-yellow-300";
+    return "text-red-700 dark:text-red-400";
 }
 
 // 특성에 따른 동그라미 색상
