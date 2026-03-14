@@ -64,6 +64,7 @@ import SupportorIcon from "@/Icons/SupportorIcon";
 import { CardPiece, CharacterInfo, ExpeditionCharacterInfo } from "../model/types";
 import { ItemLevelIcon } from "@/Icons/ItemLevelIcon";
 import { useRouter } from "next/navigation";
+import { getCore } from "../lib/arkGridPrints";
 
 // state 관리
 export function useCharacterForm() {
@@ -462,6 +463,7 @@ export function AbilityComponent({ info, titles, attackPieces, supportorPieces }
                 </div>
                 <StatComponent info={info}/>
                 <EngravingComponent info={info}/>
+                <ArkGridSimple info={info}/>
                 <TitleComponent titles={titles}/>
             </div>
         </div>
@@ -1297,19 +1299,44 @@ function EngravingComponent({ info }: { info: CharacterInfo }) {
                                 <p className={`grow ${getColorTextByGrade(engraving.grade)}`}>{engraving.name}</p>
                                 {engraving.stoneLevel > 0 ? (
                                     <Chip size="sm" radius="sm" variant="faded" color="primary" className="min-w-[48px]">
-                                        <div className="flex gap-0.5 items-center justify-center font-bold">
-                                            <img
-                                                src={'/icons/stoneicon.png'}
-                                                alt="stone-icon"
-                                                className="w-2.5 h-4"/>
-                                            <p className="text-[7pt]">×</p>
-                                            <p>{engraving.stoneLevel}</p>
-                                        </div>
+                                        <p className="w-full text-center font-semibold">Lv.{engraving.stoneLevel}</p>
                                     </Chip>
                                 ) : <></>}
                                 <p className={`${getColorTextByGrade(engraving.grade)}`}>{printEngravingLevel(engraving.level)}</p>
                             </div>
                         </Tooltip>
+                    ))}
+                </div>
+            </CardBody>
+        </Card>
+    )
+}
+
+// 아크 그리드
+function ArkGridSimple({ info }: { info: CharacterInfo }) {
+    const cores = info.arkgrid.cores;
+
+    return (
+        <Card radius="sm" shadow="sm" className="mt-8">
+            <CardHeader>아크그리드</CardHeader>
+            <Divider/>
+            <CardBody>
+                <div className="w-full flex flex-col gap-2">
+                    {Array.from({ length: 6 }).map((_, index) => (
+                        <div key={index} className="w-full flex gap-2 items-center">
+                            <div className={`w-[36px] h-[36px] p-[2px] aspect-square rounded-md ${getBackgroundByGrade(getCore(cores, index)?.grade ?? '')}`}>
+                                {getCore(cores, index) ? (
+                                    <img
+                                        src={getCore(cores, index)?.icon ?? ''}
+                                        alt="equip-icon"
+                                        className="w-8 h-8"/>
+                                ) : null}
+                            </div>
+                            <div className="grow">
+                                <h3 className={`${getColorTextByGrade(getCore(cores, index)?.grade ?? '')} text-md`}>{getCore(cores, index)?.name ?? '-'}</h3>
+                                <p className="fadedtext text-xs">{getCore(cores, index)?.grade ?? '-'} {getCore(cores, index) ? '아크 그리드 코어' : ''}</p>
+                            </div>
+                        </div>
                     ))}
                 </div>
             </CardBody>
@@ -1326,7 +1353,7 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
     const isMobile = useMobileQuery();
 
     return (
-        <Card radius="sm" className="mt-8">
+        <Card radius="sm" shadow="sm" className="mt-8">
             <CardHeader>
                 <div className="w-full flex gap-3">
                     <p className="grow text-lg">아크패시브</p>
