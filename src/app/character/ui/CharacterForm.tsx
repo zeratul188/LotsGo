@@ -1375,6 +1375,9 @@ function ArkGridSimple({ info }: { info: CharacterInfo }) {
                                 <h3 className={`${getColorTextByGrade(getCore(cores, index)?.grade ?? '')} text-md`}>{getCore(cores, index)?.name ?? '-'}</h3>
                                 <p className="fadedtext text-xs">{getCore(cores, index)?.grade ?? '-'} {getCore(cores, index) ? '아크 그리드 코어' : ''}</p>
                             </div>
+                            <p className="text-md font-semibold text-orange-600 dark:text-orange-400">
+                                {getCore(cores, index)?.point ?? 0}P
+                            </p>
                         </div>
                     ))}
                 </div>

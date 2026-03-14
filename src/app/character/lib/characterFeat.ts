@@ -796,7 +796,7 @@ export function getAccessoryStatSummary(equip: any, defaultEffectText: string) {
     return {
         statValue,
         percentValue: percent,
-        percentText: `${percent.toFixed(1)}%`
+        percentText: `${percent.toFixed(2)}%`
     };
 }
 
