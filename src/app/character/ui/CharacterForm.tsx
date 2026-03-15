@@ -725,8 +725,9 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                                                     </div>
                                                     <div className="w-full flex gap-1 items-center text-xs mt-1">
                                                         <p>힘민지 +{accessoryStatSummary?.statValue.toLocaleString() ?? '-'}</p>
+                                                        <div className="grow border-b border-dotted border-default-300" />
                                                         <p className={clsx(
-                                                            "ml-auto font-semibold",
+                                                            "font-semibold",
                                                             getAccessoryStatPercentColor(accessoryStatSummary?.percentValue ?? null)
                                                         )}>{accessoryStatSummary?.percentText ? accessoryStatSummary.percentText : ''}</p>
                                                     </div>
