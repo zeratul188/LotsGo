@@ -8,6 +8,7 @@ import {
     Chip, 
     Divider, 
     Input, 
+    Pagination,
     Popover, PopoverContent, PopoverTrigger, 
     Progress, 
     Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, 
@@ -474,12 +475,21 @@ export function AbilityComponent({ info, titles, attackPieces, supportorPieces }
 
 // 희귀칭호 목록
 function TitleComponent({titles}: { titles: string[] }) {
+    const [page, setPage] = useState(1);
+    const titlesPerPage = 7;
+    const totalPages = Math.max(1, Math.ceil(titles.length / titlesPerPage));
+    const paginatedTitles = titles.slice((page - 1) * titlesPerPage, page * titlesPerPage);
+
+    useEffect(() => {
+        setPage(1);
+    }, [titles]);
+
     return (
         <Card fullWidth radius="sm" className="mt-8">
             <CardHeader>보유 칭호</CardHeader>
             <Divider/>
             <CardBody>
-                {titles.map((title, index) => (
+                {paginatedTitles.map((title, index) => (
                     <div key={index} className="mb-2">
                         <p className={clsx(
                             'text-sm',
@@ -488,6 +498,18 @@ function TitleComponent({titles}: { titles: string[] }) {
                         <p className="fadedtext text-[9pt]">{getTitleData(title)?.condition ?? '-'}</p>
                     </div>
                 ))}
+                {totalPages > 1 ? (
+                    <div className="mt-2 flex">
+                        <Pagination
+                            showControls 
+                            page={page}
+                            total={totalPages}
+                            onChange={setPage}
+                            size="sm"
+                            radius="sm"
+                        />
+                    </div>
+                ) : null}
             </CardBody>
         </Card>
     )
@@ -1485,8 +1507,9 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                                         alt="arkpassvie-icon"
                                         className="w-6 h-6 rounded-md"/>
                                     <Chip size="sm" radius="sm" variant="flat">{item.tier}티어</Chip>
-                                    <p className="grow text-sm">{item.name}</p>
-                                    <p className="text-sm ml-auto font-semibold">Lv.{item.level}</p>
+                                    <p className="text-sm shrink-0">{item.name}</p>
+                                    <div className="grow border-b border-dotted border-default-300" />
+                                    <p className="text-sm ml-auto font-semibold shrink-0">Lv.{item.level}</p>
                                 </div>
                             </Tooltip>
                         ))}
@@ -1518,8 +1541,9 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                                         alt="arkpassvie-icon"
                                         className="w-6 h-6 rounded-md"/>
                                     <Chip size="sm" radius="sm" variant="flat">{item.tier}티어</Chip>
-                                    <p className="grow text-sm">{item.name}</p>
-                                    <p className="text-sm ml-auto font-semibold">Lv.{item.level}</p>
+                                    <p className="text-sm shrink-0">{item.name}</p>
+                                    <div className="grow border-b border-dotted border-default-300" />
+                                    <p className="text-sm ml-auto font-semibold shrink-0">Lv.{item.level}</p>
                                 </div>
                             </Tooltip>
                         ))}
@@ -1551,8 +1575,9 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                                         alt="arkpassvie-icon"
                                         className="w-6 h-6 rounded-md"/>
                                     <Chip size="sm" radius="sm" variant="flat">{item.tier}티어</Chip>
-                                    <p className="grow text-sm">{item.name}</p>
-                                    <p className="text-sm ml-auto font-semibold">Lv.{item.level}</p>
+                                    <p className="text-sm shrink-0">{item.name}</p>
+                                    <div className="grow border-b border-dotted border-default-300" />
+                                    <p className="text-sm ml-auto font-semibold shrink-0">Lv.{item.level}</p>
                                 </div>
                             </Tooltip>
                         ))}
@@ -1626,4 +1651,3 @@ export function InfomationComponent() {
         </Card>
     )
 }
-
