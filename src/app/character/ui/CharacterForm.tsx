@@ -1,4 +1,4 @@
-import { getBackgroundByGrade, getBackgroundRightByGrade, getColorTextByGrade, SetStateFn, useMobileQuery } from "@/utiils/utils";
+﻿import { getBackgroundByGrade, getBackgroundRightByGrade, getColorTextByGrade, SetStateFn, useMobileQuery } from "@/utiils/utils";
 import { 
     Accordion,
     AccordionItem,
@@ -38,6 +38,7 @@ import {
     getProgressColorByHonor, 
     getProgressMaxByHonor, 
     getProgressValueByHonor, 
+    renderArkPassiveDescription,
     getRemainHonor, 
     getSmallGradeByAccessory, 
     getSmallGradeByArm, 
@@ -1405,7 +1406,7 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
     return (
         <Card radius="sm" shadow="sm" className="mt-8">
             <CardHeader>
-                <div className="w-full flex gap-3">
+                <div className="w-full flex gap-3 items-center">
                     <p className="grow text-lg">아크패시브</p>
                     {isMobile ? null : points.map((point, index) => (
                         <Progress
@@ -1422,7 +1423,7 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                                     <p className={clsx(
                                         "truncate",
                                         point.description ? '' : 'fadedtext'
-                                    )}>{point.description ? point.description : '미개방'}</p>
+                                    )}>{renderArkPassiveDescription(point.description)}</p>
                                     <p className={`ml-auto font-bold ${getColorByType(point.type)}`}>{point.point}</p>
                                 </div>
                             }
@@ -1473,7 +1474,7 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                         {evolution.map((item, index) => (
                             <Tooltip 
                                 key={index} 
-                                placement={isMobile ? 'bottom' : 'left'} 
+                                placement={isMobile ? 'bottom' : 'right'} 
                                 showArrow 
                                 content={<div className="p-2">
                                     <p className="max-w-[320px]">{item.description}</p>
@@ -1483,9 +1484,9 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                                         src={item.icon}
                                         alt="arkpassvie-icon"
                                         className="w-6 h-6 rounded-md"/>
-                                    <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
-                                    <p className="text-sm">Lv.{item.level}</p>
+                                    <Chip size="sm" radius="sm" variant="flat">{item.tier}티어</Chip>
                                     <p className="grow text-sm">{item.name}</p>
+                                    <p className="text-sm ml-auto font-semibold">Lv.{item.level}</p>
                                 </div>
                             </Tooltip>
                         ))}
@@ -1506,7 +1507,7 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                         {enlightenment.map((item, index) => (
                             <Tooltip 
                                 key={index} 
-                                placement={isMobile ? 'bottom' : 'left'} 
+                                placement={isMobile ? 'bottom' : 'right'} 
                                 showArrow 
                                 content={<div className="p-2">
                                     <p className="max-w-[320px]">{item.description}</p>
@@ -1516,9 +1517,9 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                                         src={item.icon}
                                         alt="arkpassvie-icon"
                                         className="w-6 h-6 rounded-md"/>
-                                    <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
-                                    <p className="text-sm">Lv.{item.level}</p>
+                                    <Chip size="sm" radius="sm" variant="flat">{item.tier}티어</Chip>
                                     <p className="grow text-sm">{item.name}</p>
+                                    <p className="text-sm ml-auto font-semibold">Lv.{item.level}</p>
                                 </div>
                             </Tooltip>
                         ))}
@@ -1539,7 +1540,7 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                         {jump.map((item, index) => (
                             <Tooltip 
                                 key={index} 
-                                placement={isMobile ? 'bottom' : 'left'} 
+                                placement={isMobile ? 'bottom' : 'right'} 
                                 showArrow 
                                 content={<div className="p-2">
                                     <p className="max-w-[320px]">{item.description}</p>
@@ -1549,9 +1550,9 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                                         src={item.icon}
                                         alt="arkpassvie-icon"
                                         className="w-6 h-6 rounded-md"/>
-                                    <Chip size="sm" radius="sm" variant="flat">T{item.tier}</Chip>
-                                    <p className="text-sm">Lv.{item.level}</p>
+                                    <Chip size="sm" radius="sm" variant="flat">{item.tier}티어</Chip>
                                     <p className="grow text-sm">{item.name}</p>
+                                    <p className="text-sm ml-auto font-semibold">Lv.{item.level}</p>
                                 </div>
                             </Tooltip>
                         ))}
@@ -1625,3 +1626,4 @@ export function InfomationComponent() {
         </Card>
     )
 }
+

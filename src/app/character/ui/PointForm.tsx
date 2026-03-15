@@ -6,6 +6,14 @@ import clsx from "clsx"
 import { getBackgroundByGrade, getColorTextByGrade, useMobileQuery } from "@/utiils/utils"
 import { getTextAttack } from "../lib/skillFeat"
 import { CharacterInfo, Collect } from "../model/types"
+import collectData from "@/data/characters/collect/data.json"
+
+function getCollectMethod(type: string, name: string): string | null {
+    const findType = collectData.find((item) => item.type === type);
+    const findCollection = findType?.collections.find((item) => item.name === name);
+
+    return findCollection?.method ? findCollection.method : null;
+}
 
 // 수집품 컴포넌트
 export function PointComponent({ info }: { info: CharacterInfo }) {
@@ -122,7 +130,7 @@ type DetailComponentProps = {
 }
 export function DetailComponent({ collects, isSelected }: DetailComponentProps) {
     return (
-        <div className="w-full grid grid-cols-1 sm:grid-cols-3 md960:grid-cols-5 gap-4">
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 md960:grid-cols-4 gap-4">
             {collects.map((collect, index) => (
                 <Card radius="sm" key={index} className={clsx(
                     isSelected && getCompletePoint(collect) === getCompleteMaxPoint(collect) ? 'hidden' : 'flex'
@@ -145,24 +153,36 @@ export function DetailComponent({ collects, isSelected }: DetailComponentProps) 
                     <Divider/>
                     <CardBody>
                         <div className="w-full max-h-[500px] overflow-y-auto scrollbar-hide">
-                            {collect.items.map((item, idx) => (
-                                <div key={idx} className={clsx(
-                                    "w-full flex gap-2 mb-2",
-                                    isSelected && item.point >= item.maxPoint ? 'hidden' : 'block'
-                                )}>
-                                    <p className={clsx(
-                                        "grow text-sm",
-                                        item.point >= item.maxPoint ? 'fadedtext' : ''
-                                    )}>{item.name}</p>
-                                    {item.maxPoint === 1 ? <></> : (
-                                        <p className={clsx(
-                                            "text-sm",
-                                            item.point >= item.maxPoint ? 'fadedtext' : ''
-                                        )}>{item.point} / {item.maxPoint}</p>
-                                    )}
-                                    {item.point >= item.maxPoint ? <div className="w-4 h-4"><CheckIcon/></div> : <></>}
-                                </div>
-                            ))}
+                            {collect.items.map((item, idx) => {
+                                const method = getCollectMethod(collect.type, item.name);
+
+                                return (
+                                    <div key={idx} className={clsx(
+                                        "w-full flex gap-2 mb-2 items-center",
+                                        isSelected && item.point >= item.maxPoint ? 'hidden' : 'block'
+                                    )}>
+                                        <div className="grow min-w-0">
+                                            <p className={clsx(
+                                                "text-sm",
+                                                item.point >= item.maxPoint ? 'opacity-50' : ''
+                                            )}>{item.name}</p>
+                                        {method ? (
+                                            <p className={clsx(
+                                                "block w-full text-[8pt] fadedtext truncate whitespace-nowrap overflow-hidden text-ellipsis",
+                                                item.point >= item.maxPoint ? 'opacity-50' : ''
+                                            )}>{method}</p>
+                                        ) : null}
+                                        </div>
+                                        {item.maxPoint === 1 ? null : (
+                                            <p className={clsx(
+                                                "text-sm",
+                                                item.point >= item.maxPoint ? 'fadedtext' : ''
+                                            )}>{item.point} / {item.maxPoint}</p>
+                                        )}
+                                        {item.point >= item.maxPoint ? <div className="w-4 h-4"><CheckIcon/></div> : <></>}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </CardBody>
                     <Divider/>

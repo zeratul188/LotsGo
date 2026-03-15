@@ -8,6 +8,7 @@ import { LoginUser } from "../../store/loginSlice";
 import { decrypt } from "@/utiils/crypto";
 import { CardData, CardPiece, CardSet, CharacterInfo, Equipment, ExpeditionCharacterInfo, Gem, Stat, StoneEffect, Title } from "../model/types";
 import { getCharacterInfoByFile, toNumber } from "./characterInfo";
+import { ReactNode, createElement } from "react";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
@@ -916,6 +917,20 @@ export function printEngravingLevel(level: number): string {
         case 4: return '◆◆◆◆';
     }
     return '◇◇◇◇';
+}
+
+// 아크패시브 설명 문자열에서 '랭크', '레벨'만 작은 보조 텍스트 스타일로 분리한다.
+export function renderArkPassiveDescription(description?: string): ReactNode {
+    if (!description) return '미개방';
+
+    return description
+        .split(/(랭크|레벨)/)
+        .filter(Boolean)
+        .map((part, index) =>
+            part === '랭크' || part === '레벨'
+                ? createElement('span', { key: index, className: "text-xs fadedtext" }, part)
+                : part
+        );
 }
 
 // 명예 진행값 반환
