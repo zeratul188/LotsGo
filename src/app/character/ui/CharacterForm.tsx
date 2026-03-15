@@ -486,7 +486,12 @@ function TitleComponent({titles}: { titles: string[] }) {
 
     return (
         <Card fullWidth radius="sm" className="mt-8">
-            <CardHeader>보유 칭호</CardHeader>
+            <CardHeader>
+                <div className="w-full flex items-center">
+                    <h3>보유 칭호</h3>
+                    <p className="fadedtext ml-auto text-sm">총 {titles.length}개</p>
+                </div>
+            </CardHeader>
             <Divider/>
             <CardBody>
                 {paginatedTitles.map((title, index) => (
