@@ -468,6 +468,16 @@ export function getColorByQuality(quality: number) {
     return 'bg-[#6f6f6f]';
 }
 
+// 품질 별 색 반환
+export function getTextColorByQuality(quality: number) {
+    if (quality === 100) return 'text-[#ff8000]'
+    if (quality >= 90) return 'text-[#a335ee]';
+    if (quality >= 70) return 'text-[#0070dd]';
+    if (quality >= 40) return 'text-[#1e8800]';
+    if (quality >= 10) return 'text-[#e23737]';
+    return 'text-[#6f6f6f]';
+}
+
 // 장비 종류에 따른 값 반환 함수
 export function getListByArmorType(list: any[], type: string): any[] {
     const obj = list.filter((item) => item.Type === type);

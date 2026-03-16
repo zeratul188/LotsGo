@@ -53,7 +53,8 @@ import {
     getUrlGemInImage, 
     getWidthByStat, 
     handleSearch, 
-    printEngravingLevel
+    printEngravingLevel,
+    getTextColorByQuality
 } from "../lib/characterFeat";
 import { printBonusInTooltip, printCountInTooltip, printHighUpgradeInTooltip, printInfoInTooltip } from "../lib/equipmentPrints";
 import clsx from "clsx";
@@ -589,6 +590,47 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
     const arm = info.equipment.arm;
     const stone = info.equipment.stone;
     const orb = info.equipment.orb;
+    const averageUpgradeTargets = new Set(['무기', '투구', '어깨', '상의', '하의', '장갑']);
+    const averageUpgradeEquipments = info.equipment.equipments.filter((equip) => averageUpgradeTargets.has(equip.type));
+    const upgradeValues = averageUpgradeEquipments
+        .map((equip) => Number(equip.name.match(/^\+(\d+)/)?.[1] ?? NaN))
+        .filter((value) => !Number.isNaN(value));
+    const averageUpgrade = upgradeValues.length > 0
+        ? upgradeValues.reduce((sum, value) => sum + value, 0) / upgradeValues.length
+        : null;
+    const highUpgradeValues = averageUpgradeEquipments
+        .map((equip) => equip.highUpgrade)
+        .filter((value) => value > -1);
+    const averageHighUpgrade = highUpgradeValues.length > 0
+        ? highUpgradeValues.reduce((sum, value) => sum + value, 0) / highUpgradeValues.length
+        : null;
+    const qualityValues = averageUpgradeEquipments
+        .map((equip) => equip.quality)
+        .filter((value) => value >= 0);
+    const averageQuality = qualityValues.length > 0
+        ? qualityValues.reduce((sum, value) => sum + value, 0) / qualityValues.length
+        : null;
+    const accessoryQualityValues = info.equipment.accessories
+        .map((equip) => equip.quality)
+        .filter((value) => value >= 0);
+    const averageAccessoryQuality = accessoryQualityValues.length > 0
+        ? accessoryQualityValues.reduce((sum, value) => sum + value, 0) / accessoryQualityValues.length
+        : null;
+    const accessoryPercentValues = info.equipment.accessories
+        .map((equip) => {
+            try {
+                const parsedEquipment = JSON.parse(equip.tooltip);
+                const defaultEffectText = printDefaultInTooltip(parsedEquipment);
+                return getAccessoryStatSummary(equip, defaultEffectText)?.percentValue ?? null;
+            } catch (err) {
+                console.error("Tooltip JSON 파싱 오류:", err);
+                return null;
+            }
+        })
+        .filter((value): value is number => value !== null);
+    const averageAccessoryStatPercent = accessoryPercentValues.length > 0
+        ? accessoryPercentValues.reduce((sum, value) => sum + value, 0) / accessoryPercentValues.length
+        : null;
     const effectedAccessoryNames =
         data.effectedAccessoriesInCharacters[
             info.profile.characterType as keyof typeof data.effectedAccessoriesInCharacters
@@ -1010,6 +1052,51 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                                     </div>
                                 </div>
                             ) : null}
+                            <Divider/>
+                            <div className="flex gap-2 items-center text-xs">
+                                <p>장비 강화 평균</p>
+                                <div className="grow border-b border-dotted border-default-300" />
+                                <p className={clsx(
+                                    averageUpgrade !== null ? "font-semibold" : 'fadedtext',
+                                )}>{averageUpgrade !== null ? averageUpgrade.toFixed(1) : '-'}</p>
+                            </div>
+                            <div className="flex gap-2 items-center text-xs">
+                                <p>상급 재련 평균</p>
+                                <div className="grow border-b border-dotted border-default-300" />
+                                <p className={clsx(averageHighUpgrade === null ? 'fadedtext' : "font-semibold")}>
+                                    {averageHighUpgrade !== null ? averageHighUpgrade.toFixed(1) : '-'}
+                                </p>
+                            </div>
+                            <div className="flex gap-2 items-center text-xs">
+                                <p>장비 품질 평균</p>
+                                <div className="grow border-b border-dotted border-default-300" />
+                                <p className={clsx(
+                                    averageQuality !== null ? "font-semibold" : 'fadedtext',
+                                    getTextColorByQuality(averageQuality ?? 0)
+                                )}>
+                                    {averageQuality !== null ? averageQuality.toFixed(1) : '-'}
+                                </p>
+                            </div>
+                            <div className="flex gap-2 items-center text-xs">
+                                <p>악세 품질 평균</p>
+                                <div className="grow border-b border-dotted border-default-300" />
+                                <p className={clsx(
+                                    averageAccessoryQuality !== null ? "font-semibold" : 'fadedtext',
+                                    getTextColorByQuality(averageAccessoryQuality ?? 0)
+                                )}>
+                                    {averageAccessoryQuality !== null ? averageAccessoryQuality.toFixed(1) : '-'}
+                                </p>
+                            </div>
+                            <div className="flex gap-2 items-center text-xs">
+                                <p>악세 힘민지 평균</p>
+                                <div className="grow border-b border-dotted border-default-300" />
+                                <p className={clsx(
+                                    averageAccessoryStatPercent === null ? 'fadedtext' : "font-semibold",
+                                    getAccessoryStatPercentColor(averageAccessoryStatPercent ?? null)
+                                )}>
+                                    {averageAccessoryStatPercent !== null ? `${averageAccessoryStatPercent.toFixed(2)}%` : '-'}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </CardBody>
@@ -1034,16 +1121,26 @@ function GemComponent({ info }: { info: CharacterInfo }) {
     const cooldownLength = gems.filter(item => item.skillStr.includes('재사용 대기시간')).length;
     const leftSpan = Math.max(0, Math.min(11, attackLength));
     const rightSpan = Math.max(0, Math.min(11 - leftSpan, cooldownLength));
+    const averageGemLevel = gems.length > 0
+        ? gems.reduce((sum, gem) => sum + gem.level, 0) / gems.length
+        : null;
 
     return (
         <Card radius="sm" className="mt-8">
             <CardHeader>
                 <div className="w-full flex gap-1 items-center">
                     <p className="grow text-lg">보석</p>
-                    <div className="flex gap-2 items-center">
-                        <p className="fadedtext text-md">{getCountAtkGems(gems)}겁 {getCountDekGems(gems)}작</p>
+                    <div className="flex gap-2 items-center text-sm">
+                        <p>평균 : {averageGemLevel !== null ? averageGemLevel.toFixed(1) : '-'}</p>
                         <Divider orientation="vertical" className="h-5"/>
-                        <p className="fadedtext text-md">기본 공격력 : {attack.toFixed(1)}%</p>
+                        <p>{getCountAtkGems(gems)}겁 {getCountDekGems(gems)}작</p>
+                        <Divider orientation="vertical" className="h-5"/>
+                        <Tooltip showArrow content="기본 공격력">
+                            <p className="flex items-center gap-1">
+                                <AttackIcon size={12} color="currentColor" />
+                                <span>{attack.toFixed(1)}%</span>
+                            </p>
+                        </Tooltip>
                     </div>
                 </div>
             </CardHeader>
@@ -1488,17 +1585,16 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                 ) : null}
                 <div className="w-full grid sm:grid-cols-[1fr_1px_1fr_1px_1fr] gap-3 mt-1">
                     <div>
-                        <Chip
-                            color="warning"
-                            size="md"
-                            radius="sm"
-                            variant="flat"
-                            className={clsx(
-                                "min-w-full text-center mb-4",
-                                evolution.length > 0 ? 'flex' : 'hidden'
-                            )}>
-                            진화
-                        </Chip>
+                        {evolution.length > 0 ? (
+                            <Chip
+                                color="warning"
+                                size="md"
+                                radius="sm"
+                                variant="flat"
+                                className="min-w-full text-center mb-4">
+                                진화
+                            </Chip>
+                        ) : null}
                         {evolution.map((item, index) => (
                             <Tooltip 
                                 key={index} 
@@ -1522,17 +1618,16 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                     </div>
                     {isMobile ? null : <Divider orientation="horizontal" className="h-full"/>}
                     <div>
-                        <Chip
-                            color="primary"
-                            size="md"
-                            radius="sm"
-                            variant="flat"
-                            className={clsx(
-                                "min-w-full text-center mb-4",
-                                enlightenment.length > 0 ? 'flex' : 'hidden'
-                            )}>
-                            깨달음
-                        </Chip>
+                        {enlightenment.length > 0 ? (
+                            <Chip
+                                color="primary"
+                                size="md"
+                                radius="sm"
+                                variant="flat"
+                                className="min-w-full text-center mb-4">
+                                깨달음
+                            </Chip>
+                        ) : null}
                         {enlightenment.map((item, index) => (
                             <Tooltip 
                                 key={index} 
@@ -1556,17 +1651,16 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                     </div>
                     {isMobile ? null : <Divider orientation="horizontal" className="h-full"/>}
                     <div>
-                        <Chip
-                            color="success"
-                            size="md"
-                            radius="sm"
-                            variant="flat"
-                            className={clsx(
-                                "min-w-full text-center mb-4",
-                                jump.length > 0 ? 'flex' : 'hidden'
-                            )}>
-                            도약
-                        </Chip>
+                        {jump.length > 0 ? (
+                            <Chip
+                                color="success"
+                                size="md"
+                                radius="sm"
+                                variant="flat"
+                                className="min-w-full text-center mb-4">
+                                도약
+                            </Chip>
+                        ) : null}
                         {jump.map((item, index) => (
                             <Tooltip 
                                 key={index} 
