@@ -8,6 +8,7 @@ import { LoginUser } from "../../store/loginSlice";
 import { decrypt } from "@/utiils/crypto";
 import { CardData, CardPiece, CardSet, CharacterInfo, Equipment, ExpeditionCharacterInfo, Gem, Stat, StoneEffect, Title } from "../model/types";
 import { getCharacterInfoByFile, toNumber } from "./characterInfo";
+import { ReactNode, createElement } from "react";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
@@ -467,6 +468,16 @@ export function getColorByQuality(quality: number) {
     return 'bg-[#6f6f6f]';
 }
 
+// 품질 별 색 반환
+export function getTextColorByQuality(quality: number) {
+    if (quality === 100) return 'text-[#ff8000]'
+    if (quality >= 90) return 'text-[#a335ee]';
+    if (quality >= 70) return 'text-[#0070dd]';
+    if (quality >= 40) return 'text-[#1e8800]';
+    if (quality >= 10) return 'text-[#e23737]';
+    return 'text-[#6f6f6f]';
+}
+
 // 장비 종류에 따른 값 반환 함수
 export function getListByArmorType(list: any[], type: string): any[] {
     const obj = list.filter((item) => item.Type === type);
@@ -600,6 +611,16 @@ export function getTextColorByGrade(grade: string): string {
         case 'sm': return 'text-[#1f88dd]';
     }
     return 'fadedtext';
+}
+
+// 등급 별 글자 색상 반환
+export function getBorderByGrade(grade: string): string {
+    switch(grade) {
+        case 'lg': return 'border-[#f7890c] bg-[#f7890c]/10';
+        case 'md': return 'border-[#ae30e9] bg-[#ae30e9]/10';
+        case 'sm': return 'border-[#1f88dd] bg-[#1f88dd]/10';
+    }
+    return '';
 }
 
 //스톤 각인 가져오기
@@ -750,6 +771,57 @@ export function getStatByType(stat: Stat[], type: string): Stat | undefined {
     return stat.find(item => item.type === type);
 }
 
+// 악세 기본 효과 문자열에서 힘, 민첩, 지능 수치와 옵션 범위 퍼센트를 계산한다.
+export function getAccessoryStatSummary(equip: any, defaultEffectText: string) {
+    const statMatch = defaultEffectText.match(/(?:힘|민첩|지능)\s*\+?\s*([\d,]+)/);
+    const statValue = statMatch ? Number(statMatch[1].replaceAll(',', '')) : null;
+
+    if (!statValue) {
+        return null;
+    }
+
+    const accessoryOptionData = data.accessoryOption.find((option) =>
+        option.names.some((name) => equip.name.includes(name))
+    );
+    const optionKey =
+        equip.type === '목걸이' ? 'neck' :
+        equip.type === '귀걸이' ? 'ear' :
+        equip.type === '반지' ? 'ring' :
+        null;
+
+    if (!accessoryOptionData || !optionKey) {
+        return { statValue, percentValue: null, percentText: null };
+    }
+
+    const levelData = accessoryOptionData[optionKey].find((option) => option.level === equip.items.length);
+
+    if (!levelData || levelData.max <= levelData.min) {
+        return { statValue, percentValue: null, percentText: null };
+    }
+
+    const percent = Math.min(
+        100,
+        Math.max(0, ((statValue - levelData.min) / (levelData.max - levelData.min)) * 100)
+    );
+
+    return {
+        statValue,
+        percentValue: percent,
+        percentText: `${percent.toFixed(2)}%`
+    };
+}
+
+// 힘, 민첩, 지능 퍼센트 구간에 맞는 글자색 클래스를 반환한다.
+export function getAccessoryStatPercentColor(percent: number | null) {
+    if (percent === null) return "";
+    if (percent >= 100) return "text-orange-600 dark:text-orange-400";
+    if (percent >= 90) return "text-violet-700 dark:text-violet-400";
+    if (percent >= 70) return "text-blue-700 dark:text-blue-400";
+    if (percent >= 40) return "text-green-700 dark:text-green-400";
+    if (percent >= 20) return "text-yellow-700 dark:text-yellow-300";
+    return "text-red-700 dark:text-red-400";
+}
+
 // 특성에 따른 동그라미 색상
 export function getBackgroundColorByStat(type: string): string {
     switch(type) {
@@ -855,6 +927,20 @@ export function printEngravingLevel(level: number): string {
         case 4: return '◆◆◆◆';
     }
     return '◇◇◇◇';
+}
+
+// 아크패시브 설명 문자열에서 '랭크', '레벨'만 작은 보조 텍스트 스타일로 분리한다.
+export function renderArkPassiveDescription(description?: string): ReactNode {
+    if (!description) return '미개방';
+
+    return description
+        .split(/(랭크|레벨)/)
+        .filter(Boolean)
+        .map((part, index) =>
+            part === '랭크' || part === '레벨'
+                ? createElement('span', { key: index, className: "text-xs fadedtext" }, part)
+                : part
+        );
 }
 
 // 명예 진행값 반환
