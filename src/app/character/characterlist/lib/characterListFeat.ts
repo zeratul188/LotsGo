@@ -13,23 +13,25 @@ function isEquipmentColor(color: unknown): color is EquipmentColor {
 type LoadCharacterListResponse = {
     expeditionCharacters?: ExpeditionCharacter[]
 }
+export async function fetchCharacterList(characterName: string): Promise<ExpeditionCharacter[]> {
+    const res = await fetch(`/api/characterlist?characterName=${encodeURIComponent(characterName)}`);
+    if (!res.ok) {
+        return [];
+    }
+
+    const data: LoadCharacterListResponse = await res.json();
+    return [...(data.expeditionCharacters ?? [])].sort(
+        (a, b) => b.profile.itemLevel - a.profile.itemLevel
+    );
+}
+
 export async function loadCharacterList(
     characterName: string, 
     setExpeditionCharacters: SetStateFn<ExpeditionCharacter[]>,
     setLoading: SetStateFn<boolean>
 ) {
     setLoading(true);
-    const res = await fetch(`/api/characterlist?characterName=${encodeURIComponent(characterName)}`);
-    if (!res.ok) {
-        setExpeditionCharacters([]);
-        setLoading(false);
-        return;
-    }
-
-    const data: LoadCharacterListResponse = await res.json();
-    const characters: ExpeditionCharacter[] = [...(data.expeditionCharacters ?? [])].sort(
-        (a, b) => b.profile.itemLevel - a.profile.itemLevel
-    );
+    const characters = await fetchCharacterList(characterName);
     setExpeditionCharacters(characters);
     setLoading(false);
 }
