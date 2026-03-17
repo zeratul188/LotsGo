@@ -34,6 +34,25 @@ type BarLabelProps = {
     value?: number | string
 }
 
+function renderBarLabel({ x = 0, y = 0, width = 0, height = 0, value }: BarLabelProps) {
+    const numericValue = Number(value);
+    if (!numericValue) {
+        return <g />;
+    }
+
+    return (
+        <text
+            x={x + width / 2}
+            y={y + height / 2}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize="9pt"
+            fill="#ffffff">
+            {Math.abs(numericValue)}
+        </text>
+    );
+}
+
 export function ExpeditionStatComponent({
     nickname,
     expeditionCharacters,
@@ -321,11 +340,11 @@ function GemComponent({ expeditionCharacters }: { expeditionCharacters: Expediti
                                     isSelected={isBound}
                                     onValueChange={setBound}
                                     className="sm:ml-auto">
-                                    귀속만 표시
+                                    귀속 제외
                                 </Checkbox>
                             </div>
                             <div className="w-full flex-1 min-h-0 mt-2">
-                                <div className="w-full h-[400px] sm:h-[220px] max-h-[900px] sm:max-h-[700px]">
+                                <div className="w-full h-[220px] max-h-[900px] sm:max-h-[700px]">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart
                                             data={gemLevelChartData}
@@ -357,23 +376,14 @@ function GemComponent({ expeditionCharacters }: { expeditionCharacters: Expediti
                                                 stackId="gem-count" 
                                                 fill={attackBarColor} 
                                                 radius={[0, 5, 5, 0]} 
-                                                label={{ 
-                                                    position: 'center', 
-                                                    formatter: (label: ReactNode) => Math.abs(Number(label?.toString())),
-                                                    fontSize: '9pt',
-                                                    fill: '#ffffff'
-                                                }}/>
+                                                label={renderBarLabel}/>
                                             <Bar 
                                                 dataKey="cooldown" 
                                                 name="cooldown" 
                                                 stackId="gem-count" 
                                                 fill={cooldownBarColor} 
                                                 radius={[0, 5, 5, 0]}
-                                                label={{ 
-                                                    position: 'center',
-                                                    fontSize: '9pt',
-                                                    fill: '#ffffff' 
-                                                }} />
+                                                label={renderBarLabel} />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>

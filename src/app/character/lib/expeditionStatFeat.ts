@@ -87,7 +87,7 @@ export function getGemLevelChartData(
     isBound: boolean
 ): GemLevelChartData[] {
     const gems = characters.flatMap(character => character.gems).filter((gem) => {
-        if (isBound && !gem.name.includes('귀속')) {
+        if (isBound && gem.name.includes('귀속')) {
             return false;
         }
 
