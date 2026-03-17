@@ -82,6 +82,11 @@ export function ExpeditionStatComponent({
                 이 원정대 정보는 최소 1번 이상 조회했던 캐릭터만 포함되며, 조회 또는 갱신했던 시점을 기준으로 계산된 값입니다.
             </p>
             <GemComponent expeditionCharacters={expeditionCharacters}/>
+            <div className="w-full grid grid-cols-3 mt-4 gap-4">
+                <StatCard expeditionCharacters={expeditionCharacters}/>
+                <EngravingCard expeditionCharacters={expeditionCharacters}/>
+                <ArkGridCard expeditionCharacters={expeditionCharacters}/>
+            </div>
         </div>
     )
 }
@@ -423,5 +428,50 @@ function GemComponent({ expeditionCharacters }: { expeditionCharacters: Expediti
                 </CardBody>
             </Card>
         </div>
+    )
+}
+
+// 특성 Card
+function StatCard({ expeditionCharacters }: { expeditionCharacters: ExpeditionCharacter[] }) {
+    return (
+        <Card fullWidth radius="sm" shadow="sm">
+            <CardHeader>특성</CardHeader>
+            <Divider/>
+            <CardBody>
+                <div className="w-full sm:h-[240px]">
+                    
+                </div>
+            </CardBody>
+        </Card>
+    )
+}
+
+// 각인 Card
+function EngravingCard({ expeditionCharacters }: { expeditionCharacters: ExpeditionCharacter[] }) {
+    return (
+        <Card fullWidth radius="sm" shadow="sm">
+            <CardHeader>각인</CardHeader>
+            <Divider/>
+            <CardBody>
+                <div className="w-full sm:h-[240px]">
+                    
+                </div>
+            </CardBody>
+        </Card>
+    )
+}
+
+// 아크그리드 Card
+function ArkGridCard({ expeditionCharacters }: { expeditionCharacters: ExpeditionCharacter[] }) {
+    return (
+        <Card fullWidth radius="sm" shadow="sm">
+            <CardHeader>아크그리드</CardHeader>
+            <Divider/>
+            <CardBody>
+                <div className="w-full sm:h-[240px]">
+                    
+                </div>
+            </CardBody>
+        </Card>
     )
 }
