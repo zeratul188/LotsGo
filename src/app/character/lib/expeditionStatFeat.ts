@@ -184,11 +184,6 @@ export function getStatComboSummary(expeditionCharacters: ExpeditionCharacter[])
         });
 }
 
-// 집계된 특성 조합 목록에서 조합을 가진 전체 캐릭터 수를 계산한다.
-export function getStatComboCharacterCount(statComboSummary: StatComboSummary[]): number {
-    return statComboSummary.reduce((sum, item) => sum + item.count, 0);
-}
-
 // 캐릭터별로 300 이상 특성 조합을 추출해, 가장 높은 특성 수치 순으로 목록화한다.
 export function getCharacterStatUsageSummary(expeditionCharacters: ExpeditionCharacter[]): CharacterStatUsageSummary[] {
     return expeditionCharacters

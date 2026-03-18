@@ -11,7 +11,6 @@ import {
     getGemLevelChartRange,
     getExpeditionStatStatusMessage,
     getStatChipColor,
-    getStatComboCharacterCount,
     getStatComboSummary,
     getTier3BoundGem,
     getTier3Gem,
@@ -455,7 +454,6 @@ function StatCard({ expeditionCharacters }: { expeditionCharacters: ExpeditionCh
 // 원정대 캐릭터들의 300 이상 특성 조합과 사용 캐릭터 수를 요약해서 표시한다.
 function StatSummaryCard({ expeditionCharacters }: { expeditionCharacters: ExpeditionCharacter[] }) {
     const statComboSummary = getStatComboSummary(expeditionCharacters);
-    const statComboCharacterCount = getStatComboCharacterCount(statComboSummary);
     const characterStatUsageSummary = getCharacterStatUsageSummary(expeditionCharacters);
 
     return (
