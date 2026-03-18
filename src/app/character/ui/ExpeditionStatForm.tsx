@@ -465,11 +465,6 @@ function StatSummaryCard({ expeditionCharacters }: { expeditionCharacters: Exped
             <CardBody>
                 <div className="w-full h-[240px] grid grid-cols-[2fr_1px_3fr] gap-3">
                     <div className="h-full grow overflow-y-auto scrollbar-hide flex flex-col gap-2">
-                        <div className="w-full flex gap-2 items-center text-sm mb-1">
-                            <p className="font-semibold">조합 사용</p>
-                            <div className="grow border-b border-dotted border-default-300" />
-                            <p className="shrink-0 font-semibold">{statComboCharacterCount}</p>
-                        </div>
                         {statComboSummary.length > 0 ? (
                             statComboSummary.map((item) => (
                                 <div
