@@ -1,8 +1,8 @@
 'use client'
-
-import { Card, CardBody, CardHeader, Checkbox, Divider, Progress, Radio, RadioGroup, Spinner, Tooltip } from "@heroui/react";
+import { Card, CardBody, CardHeader, Checkbox, Chip, Divider, Progress, Radio, RadioGroup, Spinner, Tooltip } from "@heroui/react";
 import { ExpeditionCharacter } from "../characterlist/model/types";
 import {
+    getCharacterStatUsageSummary,
     getAverageGemLevel,
     getCountAttackBoundGem,
     getCountAttackGem,
@@ -10,15 +10,20 @@ import {
     getGemLevelChartData,
     getGemLevelChartRange,
     getExpeditionStatStatusMessage,
+    getStatChipColor,
+    getStatComboCharacterCount,
+    getStatComboSummary,
     getTier3BoundGem,
     getTier3Gem,
     getTier4BoundGem,
-    getTier4Gem
+    getTier4Gem,
+    getStatTextColor
 } from "../lib/expeditionStatFeat";
 import { useMobileQuery } from "@/utiils/utils";
-import { ReactNode, useState } from "react";
+import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis } from "recharts";
 import { useTheme } from "next-themes";
+import clsx from "clsx";
 
 type ExpeditionStatComponentProps = {
     nickname: string | null,
@@ -82,8 +87,8 @@ export function ExpeditionStatComponent({
                 이 원정대 정보는 최소 1번 이상 조회했던 캐릭터만 포함되며, 조회 또는 갱신했던 시점을 기준으로 계산된 값입니다.
             </p>
             <GemComponent expeditionCharacters={expeditionCharacters}/>
-            <div className="w-full grid grid-cols-3 mt-4 gap-4">
-                <StatCard expeditionCharacters={expeditionCharacters}/>
+            <div className="w-full grid sm:grid-cols-3 mt-4 gap-4">
+                <StatSummaryCard expeditionCharacters={expeditionCharacters}/>
                 <EngravingCard expeditionCharacters={expeditionCharacters}/>
                 <ArkGridCard expeditionCharacters={expeditionCharacters}/>
             </div>
@@ -433,6 +438,7 @@ function GemComponent({ expeditionCharacters }: { expeditionCharacters: Expediti
 
 // 특성 Card
 function StatCard({ expeditionCharacters }: { expeditionCharacters: ExpeditionCharacter[] }) {
+    
     return (
         <Card fullWidth radius="sm" shadow="sm">
             <CardHeader>특성</CardHeader>
@@ -446,7 +452,72 @@ function StatCard({ expeditionCharacters }: { expeditionCharacters: ExpeditionCh
     )
 }
 
-// 각인 Card
+// 원정대 캐릭터들의 300 이상 특성 조합과 사용 캐릭터 수를 요약해서 표시한다.
+function StatSummaryCard({ expeditionCharacters }: { expeditionCharacters: ExpeditionCharacter[] }) {
+    const statComboSummary = getStatComboSummary(expeditionCharacters);
+    const statComboCharacterCount = getStatComboCharacterCount(statComboSummary);
+    const characterStatUsageSummary = getCharacterStatUsageSummary(expeditionCharacters);
+
+    return (
+        <Card fullWidth radius="sm" shadow="sm">
+            <CardHeader>특성</CardHeader>
+            <Divider/>
+            <CardBody>
+                <div className="w-full h-[240px] grid grid-cols-[2fr_1px_3fr] gap-3">
+                    <div className="h-full grow overflow-y-auto scrollbar-hide flex flex-col gap-2">
+                        <div className="w-full flex gap-2 items-center text-sm mb-1">
+                            <p className="font-semibold">조합 사용</p>
+                            <div className="grow border-b border-dotted border-default-300" />
+                            <p className="shrink-0 font-semibold">{statComboCharacterCount}</p>
+                        </div>
+                        {statComboSummary.length > 0 ? (
+                            statComboSummary.map((item) => (
+                                <div
+                                    key={item.label}
+                                    className="w-full flex gap-1 items-center text-sm">
+                                    {item.label.split(' / ').map((stat, index) => (
+                                        <Chip 
+                                            key={index}
+                                            size="sm"
+                                            variant={index === 0 ? 'solid' : 'flat'}
+                                            color={getStatChipColor(stat)}
+                                            radius="sm">{stat}</Chip>
+                                    ))}
+                                    <div className="grow border-b border-dotted border-default-300" />
+                                    <p className="shrink-0 font-semibold">{item.count}</p>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="fadedtext text-xs">300 이상 특성 조합이 있는 캐릭터가 없습니다.</p>
+                        )}
+                    </div>
+                    <Divider orientation="vertical" className="h-full"/>
+                    <div className="h-full grow overflow-y-auto scrollbar-hide flex flex-col gap-2">
+                        {characterStatUsageSummary.length > 0 ? (
+                            characterStatUsageSummary.map((character) => (
+                                <div
+                                    key={character.nickname}
+                                    className="w-full flex gap-2 items-center text-xs">
+                                    <p className="shrink-0 font-medium">{character.nickname}</p>
+                                    <div className="grow border-b border-dotted border-default-300" />
+                                    {character.label.split(' / ').map((stat, index) => (
+                                        <span key={index} className={clsx(
+                                            getStatTextColor(stat),
+                                            index === 0 ? 'font-semibold' : ''
+                                        )}>{stat}</span>
+                                    ))}
+                                </div>
+                            ))
+                        ) : (
+                            <p className="fadedtext text-xs">300 이상 특성을 사용하는 캐릭터가 없습니다.</p>
+                        )}
+                    </div>
+                </div>
+            </CardBody>
+        </Card>
+    )
+}
+
 function EngravingCard({ expeditionCharacters }: { expeditionCharacters: ExpeditionCharacter[] }) {
     return (
         <Card fullWidth radius="sm" shadow="sm">

@@ -6,6 +6,28 @@ export type GemLevelChartData = {
     cooldown: number
 }
 
+export type StatComboSummary = {
+    label: string,
+    count: number
+}
+
+export type StatChipColor = "secondary" | "danger" | "success" | "default" | "primary" | "warning";
+
+export type CharacterStatUsageSummary = {
+    nickname: string,
+    label: string,
+    values: number[]
+}
+
+// 특성 조합 집계에 포함할 전투 특성 목록이다.
+const COMBAT_STAT_TYPES = ["특화", "치명", "인내", "숙련", "신속", "제압"] as const;
+
+function getSortedCombatStats(character: ExpeditionCharacter) {
+    return character.stats
+        .filter((stat) => COMBAT_STAT_TYPES.includes(stat.type as (typeof COMBAT_STAT_TYPES)[number]) && stat.value >= 300)
+        .sort((a, b) => b.value - a.value);
+}
+
 // 닉네임 유무, 로딩 상태, 데이터 유무에 맞는 안내 문구를 반환한다.
 export function getExpeditionStatStatusMessage(
     nickname: string | null,
@@ -134,4 +156,91 @@ export function getGemLevelChartRange(data: GemLevelChartData[]): number {
     }, 0);
 
     return max === 0 ? 1 : max;
+}
+
+// 캐릭터별로 300 이상 특성만 골라 조합을 만들고, 같은 조합의 캐릭터 수를 집계한다.
+export function getStatComboSummary(expeditionCharacters: ExpeditionCharacter[]): StatComboSummary[] {
+    const comboCountMap = new Map<string, number>();
+
+    expeditionCharacters.forEach((character) => {
+        const combo = getSortedCombatStats(character).map((stat) => stat.type);
+
+        if (combo.length === 0) {
+            return;
+        }
+
+        const comboKey = combo.join(" / ");
+        comboCountMap.set(comboKey, (comboCountMap.get(comboKey) ?? 0) + 1);
+    });
+
+    return Array.from(comboCountMap.entries())
+        .map(([label, count]) => ({ label, count }))
+        .sort((a, b) => {
+            if (b.count !== a.count) {
+                return b.count - a.count;
+            }
+
+            return a.label.localeCompare(b.label, "ko");
+        });
+}
+
+// 집계된 특성 조합 목록에서 조합을 가진 전체 캐릭터 수를 계산한다.
+export function getStatComboCharacterCount(statComboSummary: StatComboSummary[]): number {
+    return statComboSummary.reduce((sum, item) => sum + item.count, 0);
+}
+
+// 캐릭터별로 300 이상 특성 조합을 추출해, 가장 높은 특성 수치 순으로 목록화한다.
+export function getCharacterStatUsageSummary(expeditionCharacters: ExpeditionCharacter[]): CharacterStatUsageSummary[] {
+    return expeditionCharacters
+        .sort((a, b) => b.profile.itemLevel - a.profile.itemLevel)
+        .map((character) => {
+            const stats = getSortedCombatStats(character);
+
+            return {
+                nickname: character.nickname,
+                label: stats.map((stat) => stat.type).join(" / "),
+                values: stats.map((stat) => stat.value)
+            };
+        })
+        .filter((character) => character.values.length > 0);
+}
+
+// 특성 이름에 맞는 Chip 색상을 반환한다.
+export function getStatChipColor(stat: string): StatChipColor {
+    switch (stat) {
+        case "특화":
+            return "secondary";
+        case "치명":
+            return "danger";
+        case "인내":
+            return "success";
+        case "제압":
+            return "default";
+        case "신속":
+            return "primary";
+        case "숙련":
+            return "warning";
+        default:
+            return "default";
+    }
+}
+
+// 특성 이름에 맞는 글자 색상을 반환한다.
+export function getStatTextColor(stat: string): string {
+    switch (stat) {
+        case "특화":
+            return "text-secondary";
+        case "치명":
+            return "text-danger";
+        case "인내":
+            return "text-success";
+        case "제압":
+            return "text-default";
+        case "신속":
+            return "text-primary";
+        case "숙련":
+            return "text-warning";
+        default:
+            return "text-default";
+    }
 }
