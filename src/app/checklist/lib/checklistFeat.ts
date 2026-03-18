@@ -2710,7 +2710,7 @@ export function getBackgroundByStage(diff: string, isDisable: boolean): string {
     if (isDisable) return 'bg-gray-400 dark:bg-gray-600';
     if (diff.includes('싱글')) return 'bg-blue-400 dark:bg-blue-600';
     else if (diff.includes('노말') || diff.includes('1단계')) return 'bg-green-600 dark:bg-green-400';
-    else if (diff.includes('하드')) return 'bg-red-600 dark:bg-red-400';
+    else if (diff.includes('하드') || diff.includes('2단계')) return 'bg-red-600 dark:bg-red-400';
     else if (diff.includes('더퍼스트') || diff.includes('나이트메어') || diff.includes('3단계')) return 'bg-purple-600 dark:bg-purple-400';
     return 'bg-gray-600 dark:bg-gray-400';
 }
