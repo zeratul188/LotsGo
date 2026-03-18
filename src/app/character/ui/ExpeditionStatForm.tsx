@@ -368,6 +368,11 @@ function GemComponent({ expeditionCharacters }: { expeditionCharacters: Expediti
                             </div>
                             <div className="w-full sm:h-[240px] mt-2 overflow-hidden flex flex-col sm:flex-row">
                                 <div className="w-full sm:w-[200px] h-full flex gap-1 flex-col sm:mr-2 mb-2 sm:mb-0">
+                                    <div className="w-full flex gap-1 items-center">
+                                        <div className="grow border-b border-dotted border-default-800" />
+                                        <h3 className="text-xs font-semibold">레벨 별 보석 개수</h3>
+                                        <div className="grow border-b border-dotted border-default-800" />
+                                    </div>
                                     {gemLevelSummary.map((item) => (
                                         <div
                                             key={item.level}
@@ -464,6 +469,11 @@ function StatSummaryCard({ expeditionCharacters }: { expeditionCharacters: Exped
             <CardBody>
                 <div className="w-full h-[240px] grid grid-cols-[2fr_1px_3fr] gap-3">
                     <div className="h-full grow overflow-y-auto scrollbar-hide flex flex-col gap-2">
+                        <div className="w-full flex gap-1 items-center">
+                            <div className="grow border-b border-dotted border-default-800" />
+                            <h3 className="text-xs font-semibold">특성 조합 비율</h3>
+                            <div className="grow border-b border-dotted border-default-800" />
+                        </div>
                         {statComboSummary.length > 0 ? (
                             statComboSummary.map((item) => (
                                 <div
@@ -487,6 +497,11 @@ function StatSummaryCard({ expeditionCharacters }: { expeditionCharacters: Exped
                     </div>
                     <Divider orientation="vertical" className="h-full"/>
                     <div className="h-full grow overflow-y-auto scrollbar-hide flex flex-col gap-2">
+                        <div className="w-full flex gap-1 items-center">
+                            <div className="grow border-b border-dotted border-default-800" />
+                            <h3 className="text-xs font-semibold">캐릭터들의 특성 조합</h3>
+                            <div className="grow border-b border-dotted border-default-800" />
+                        </div>
                         {characterStatUsageSummary.length > 0 ? (
                             characterStatUsageSummary.map((character) => (
                                 <div
@@ -613,6 +628,11 @@ function EngravingCard({ expeditionCharacters }: { expeditionCharacters: Expedit
             <CardBody>
                 <div className="w-full h-[240px] grid grid-cols-[1fr_1px_1fr] gap-3">
                     <div className="h-full overflow-y-auto scrollbar-hide flex flex-col gap-2 pr-1">
+                        <div className="w-full flex gap-1 items-center">
+                            <div className="grow border-b border-dotted border-default-800" />
+                            <h3 className="text-xs font-semibold">자주 사용하는 각인</h3>
+                            <div className="grow border-b border-dotted border-default-800" />
+                        </div>
                         {engravingSummary.length > 0 ? (
                             engravingSummary.map((engraving) => (
                                 <div
@@ -635,6 +655,11 @@ function EngravingCard({ expeditionCharacters }: { expeditionCharacters: Expedit
                     </div>
                     <Divider orientation="vertical" className="h-full"/>
                     <div className="h-full overflow-y-auto scrollbar-hide flex flex-col gap-2 pr-1">
+                        <div className="w-full flex gap-1 items-center">
+                            <div className="grow border-b border-dotted border-default-800" />
+                            <h3 className="text-xs font-semibold">유물 각인서</h3>
+                            <div className="grow border-b border-dotted border-default-800" />
+                        </div>
                         {relicEngravingSummary.length > 0 ? (
                             relicEngravingSummary.map((engraving) => (
                                 <div
