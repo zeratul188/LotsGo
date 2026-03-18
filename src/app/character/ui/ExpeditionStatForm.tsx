@@ -18,11 +18,12 @@ import {
     getTier4Gem,
     getStatTextColor
 } from "../lib/expeditionStatFeat";
-import { useMobileQuery } from "@/utiils/utils";
+import { getColorTextByGrade, useMobileQuery } from "@/utiils/utils";
 import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis } from "recharts";
 import { useTheme } from "next-themes";
 import clsx from "clsx";
+import { getEngravingSrcByName } from "../lib/characterFeat";
 
 type ExpeditionStatComponentProps = {
     nickname: string | null,
@@ -512,13 +513,148 @@ function StatSummaryCard({ expeditionCharacters }: { expeditionCharacters: Exped
 }
 
 function EngravingCard({ expeditionCharacters }: { expeditionCharacters: ExpeditionCharacter[] }) {
+    const engravingSummary = Array.from(
+        expeditionCharacters.reduce((map, character) => {
+            character.engravings.forEach((engraving) => {
+                if (!engraving?.name) {
+                    return;
+                }
+
+                const current = map.get(engraving.name);
+
+                if (current) {
+                    current.count += 1;
+                    current.totalLevel += engraving.level;
+                    current.maxLevel = Math.max(current.maxLevel, engraving.level);
+                    return;
+                }
+
+                map.set(engraving.name, {
+                    name: engraving.name,
+                    grade: engraving.grade,
+                    count: 1,
+                    totalLevel: engraving.level,
+                    maxLevel: engraving.level
+                });
+            });
+
+            return map;
+        }, new Map<string, {
+            name: string,
+            grade: string,
+            count: number,
+            totalLevel: number,
+            maxLevel: number
+        }>())
+            .values()
+    ).sort((a, b) => {
+        if (b.maxLevel !== a.maxLevel) return b.maxLevel - a.maxLevel;
+        if (b.count !== a.count) return b.count - a.count;
+        if (b.totalLevel !== a.totalLevel) return b.totalLevel - a.totalLevel;
+        return (a.name ?? '').localeCompare(b.name ?? '');
+    });
+
+    const relicEngravingSummary = Array.from(
+        expeditionCharacters.reduce((map, character) => {
+            character.engravings.forEach((engraving) => {
+                if (!engraving?.name || engraving.grade !== '유물' || engraving.level < 1) {
+                    return;
+                }
+
+                const current = map.get(engraving.name);
+
+                if (current) {
+                    current.count += 1;
+                    current.totalLevel += engraving.level;
+                    current.maxLevel = Math.max(current.maxLevel, engraving.level);
+                    return;
+                }
+
+                map.set(engraving.name, {
+                    name: engraving.name,
+                    grade: engraving.grade,
+                    count: 1,
+                    totalLevel: engraving.level,
+                    maxLevel: engraving.level
+                });
+            });
+
+            return map;
+        }, new Map<string, {
+            name: string,
+            grade: string,
+            count: number,
+            totalLevel: number,
+            maxLevel: number
+        }>())
+            .values()
+    ).sort((a, b) => {
+        if (b.maxLevel !== a.maxLevel) return b.maxLevel - a.maxLevel;
+        if (b.count !== a.count) return b.count - a.count;
+        if (b.totalLevel !== a.totalLevel) return b.totalLevel - a.totalLevel;
+        return (a.name ?? '').localeCompare(b.name ?? '');
+    });
+    const sumEngraving = relicEngravingSummary.reduce((total, engraving) => {
+        return total + engraving.maxLevel;
+    }, 0);
+
     return (
         <Card fullWidth radius="sm" shadow="sm">
-            <CardHeader>각인</CardHeader>
+            <CardHeader>
+                <div className="w-full flex gap-1 items-center">
+                    <h1>각인</h1>
+                    <div className="flex gap-1 items-end ml-auto">
+                        <p className="fadedtext text-[7pt]">총 각인 레벨 합</p>
+                        <p className="text-md text-orange-600 dark:text-orange-400">{sumEngraving.toLocaleString()}</p>
+                    </div>
+                </div>
+            </CardHeader>
             <Divider/>
             <CardBody>
-                <div className="w-full sm:h-[240px]">
-                    
+                <div className="w-full h-[240px] grid grid-cols-[1fr_1px_1fr] gap-3">
+                    <div className="h-full overflow-y-auto scrollbar-hide flex flex-col gap-2 pr-1">
+                        {engravingSummary.length > 0 ? (
+                            engravingSummary.map((engraving) => (
+                                <div
+                                    key={engraving.name}
+                                    className="w-full flex items-center gap-2 text-sm">
+                                    <img
+                                        src={getEngravingSrcByName(engraving.name)}
+                                        alt={engraving.name}
+                                        className="w-6 h-6 rounded-md shrink-0"/>
+                                    <p className="truncate">
+                                        {engraving.name}
+                                    </p>
+                                    <div className="grow border-b border-dotted border-default-300" />
+                                    <p className="shrink-0 font-semibold">{engraving.count}</p>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="fadedtext text-xs">사용 중인 각인이 있는 캐릭터가 없습니다.</p>
+                        )}
+                    </div>
+                    <Divider orientation="vertical" className="h-full"/>
+                    <div className="h-full overflow-y-auto scrollbar-hide flex flex-col gap-2 pr-1">
+                        {relicEngravingSummary.length > 0 ? (
+                            relicEngravingSummary.map((engraving) => (
+                                <div
+                                    key={`relic-${engraving.name}`}
+                                    className="w-full flex items-center gap-2 text-sm">
+                                    <img
+                                        src={getEngravingSrcByName(engraving.name)}
+                                        alt={engraving.name}
+                                        className="w-6 h-6 rounded-md shrink-0"/>
+                                    <p className={clsx("truncate", getColorTextByGrade(engraving.grade))}>
+                                        {engraving.name}
+                                    </p>
+                                    <div className="grow border-b border-dotted border-default-300" />
+                                    <p className="shrink-0 font-semibold text-orange-600 dark:text-orange-400">{engraving.maxLevel}</p>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="fadedtext text-xs">유물 등급 각인을 1칸 이상 사용하는 캐릭터가 없습니다.</p>
+                        )}
+                    </div>
                 </div>
             </CardBody>
         </Card>
