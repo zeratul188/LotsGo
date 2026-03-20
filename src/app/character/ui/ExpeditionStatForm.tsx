@@ -18,7 +18,7 @@ import {
     getTier4Gem,
     getStatTextColor
 } from "../lib/expeditionStatFeat";
-import { getColorTextByGrade, useMobileQuery } from "@/utiils/utils";
+import { getBackgroundByGrade, getColorTextByGrade, useMobileQuery } from "@/utiils/utils";
 import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis } from "recharts";
 import { useTheme } from "next-themes";
@@ -618,8 +618,8 @@ function EngravingCard({ expeditionCharacters }: { expeditionCharacters: Expedit
             <CardHeader>
                 <div className="w-full flex gap-1 items-center">
                     <h1>각인</h1>
-                    <div className="flex gap-1 items-end ml-auto">
-                        <p className="fadedtext text-[7pt]">총 각인 레벨 합</p>
+                    <div className="flex gap-1 items-end ml-auto text-sm">
+                        <p className="fadedtext">총 각인 레벨 합 :</p>
                         <p className="text-md text-orange-600 dark:text-orange-400">{sumEngraving.toLocaleString()}</p>
                     </div>
                 </div>
@@ -688,13 +688,159 @@ function EngravingCard({ expeditionCharacters }: { expeditionCharacters: Expedit
 
 // 아크그리드 Card
 function ArkGridCard({ expeditionCharacters }: { expeditionCharacters: ExpeditionCharacter[] }) {
+    const coreGradeOrder = ['고대', '유물', '전설', '영웅'] as const;
+    const highCoreGradeOrder = ['고대', '유물'] as const;
+    const coreGradeSummary = coreGradeOrder.map((grade) => ({
+        grade,
+        count: expeditionCharacters.reduce((total, character) => {
+            return total + character.arkgrid.cores.filter((core) => core.grade === grade).length;
+        }, 0),
+        orderCount: expeditionCharacters.reduce((total, character) => {
+            return total + character.arkgrid.cores.filter((core) =>
+                core.grade === grade && (core.name ?? '').includes('질서')
+            ).length;
+        }, 0),
+        chaosCount: expeditionCharacters.reduce((total, character) => {
+            return total + character.arkgrid.cores.filter((core) =>
+                core.grade === grade && (core.name ?? '').includes('혼돈')
+            ).length;
+        }, 0)
+    }));
+    const gemGradeSummary = coreGradeOrder.map((grade) => ({
+        grade,
+        count: expeditionCharacters.reduce((total, character) => {
+            return total + character.arkgrid.cores.reduce((coreTotal, core) => {
+                return coreTotal + core.gems.filter((gem) => gem.grade === grade).length;
+            }, 0);
+        }, 0),
+        orderCount: expeditionCharacters.reduce((total, character) => {
+            return total + character.arkgrid.cores.reduce((coreTotal, core) => {
+                return coreTotal + core.gems.filter((gem) =>
+                    gem.grade === grade && (gem.name ?? '').includes('질서')
+                ).length;
+            }, 0);
+        }, 0),
+        chaosCount: expeditionCharacters.reduce((total, character) => {
+            return total + character.arkgrid.cores.reduce((coreTotal, core) => {
+                return coreTotal + core.gems.filter((gem) =>
+                    gem.grade === grade && (gem.name ?? '').includes('혼돈')
+                ).length;
+            }, 0);
+        }, 0)
+    }));
+    const highGradeCores = expeditionCharacters
+        .flatMap((character) =>
+            character.arkgrid.cores
+                .filter((core) => highCoreGradeOrder.includes(core.grade as typeof highCoreGradeOrder[number]))
+                .map((core) => ({
+                    icon: core.icon,
+                    name: core.name,
+                    grade: core.grade,
+                    nickname: character.nickname
+                }))
+        )
+        .sort((a, b) => {
+            const gradeDiff =
+                highCoreGradeOrder.indexOf(a.grade as typeof highCoreGradeOrder[number]) -
+                highCoreGradeOrder.indexOf(b.grade as typeof highCoreGradeOrder[number]);
+
+            if (gradeDiff !== 0) return gradeDiff;
+            const nameDiff = (a.name ?? '').localeCompare(b.name ?? '');
+            if (nameDiff !== 0) return nameDiff;
+            return (a.nickname ?? '').localeCompare(b.nickname ?? '');
+        });
+
     return (
         <Card fullWidth radius="sm" shadow="sm">
             <CardHeader>아크그리드</CardHeader>
             <Divider/>
             <CardBody>
-                <div className="w-full sm:h-[240px]">
-                    
+                <div className="w-full h-[240px] grid grid-cols-[2fr_1px_3fr] gap-3">
+                    <div className="h-full flex flex-col gap-2 pr-1">
+                        <div className="flex-1 h-full flex flex-col gap-1.5">
+                            <div className="w-full flex gap-1 items-center">
+                                <div className="grow border-b border-dotted border-default-800" />
+                                <h3 className="text-xs font-semibold">코어 개수</h3>
+                                <div className="grow border-b border-dotted border-default-800" />
+                            </div>
+                            {coreGradeSummary.map((item) => (
+                                <div
+                                    key={item.grade}
+                                    className="w-full flex items-center gap-2 text-xs">
+                                    <p className={clsx("shrink-0 font-medium", getColorTextByGrade(item.grade))}>
+                                        {item.grade}
+                                    </p>
+                                    <div className="grow border-b border-dotted border-default-300" />
+                                    <p className="shrink-0 font-semibold">
+                                        {item.count} 
+                                        <span className="font-normal ml-0.5">
+                                            (
+                                            <span className="text-danger">{item.orderCount}</span>
+                                            /
+                                            <span className="text-primary">{item.chaosCount}</span>
+                                            )
+                                        </span>
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                        <Divider/>
+                        <div className="flex-1 flex flex-col gap-1.5">
+                            <div className="w-full flex gap-1 items-center">
+                                <div className="grow border-b border-dotted border-default-800" />
+                                <h3 className="text-xs font-semibold">젬 개수</h3>
+                                <div className="grow border-b border-dotted border-default-800" />
+                            </div>
+                            {gemGradeSummary.map((item) => (
+                                <div
+                                    key={`gem-${item.grade}`}
+                                    className="w-full flex items-center gap-2 text-xs">
+                                    <p className={clsx("shrink-0 font-medium", getColorTextByGrade(item.grade))}>
+                                        {item.grade}
+                                    </p>
+                                    <div className="grow border-b border-dotted border-default-300" />
+                                    <p className="shrink-0 font-semibold">
+                                        {item.count}
+                                        <span className="font-normal ml-0.5">
+                                            (
+                                            <span className="text-danger">{item.orderCount}</span>
+                                            /
+                                            <span className="text-primary">{item.chaosCount}</span>
+                                            )
+                                        </span>
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <Divider orientation="vertical" className="h-full"/>
+                    <div className="h-full overflow-y-auto scrollbar-hide flex flex-col gap-2 pr-1">
+                        {highGradeCores.length > 0 ? (
+                            highGradeCores.map((core, index) => (
+                                <div
+                                    key={`${core.nickname}-${core.name}-${index}`}
+                                    className="w-full flex items-center gap-2 text-xs">
+                                    <div className={clsx(
+                                        "w-9 h-9 shrink-0 rounded-md p-[2px]",
+                                        getBackgroundByGrade(core.grade)
+                                    )}>
+                                        <img
+                                            src={core.icon}
+                                            alt={core.name}
+                                            className="w-full h-full rounded-md"/>
+                                    </div>
+                                    <div className="min-w-0 grow leading-tight">
+                                        <p className={clsx("truncate font-medium", getColorTextByGrade(core.grade))}>
+                                            {core.name}
+                                        </p>
+                                        <p>{core.nickname}</p>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="fadedtext text-xs">유물 이상 코어를 장착한 캐릭터가 없습니다.</p>
+                        )}
+                    </div>
                 </div>
             </CardBody>
         </Card>
