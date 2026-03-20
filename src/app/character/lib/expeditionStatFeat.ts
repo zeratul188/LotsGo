@@ -67,6 +67,62 @@ export function getAverageGemLevel(
     }, 0) / gems.length;
 }
 
+// 캐릭터 목록의 전투력 평균을 반환한다.
+export function getAverageCombatPower(characters: ExpeditionCharacter[]): number | null {
+    if (characters.length === 0) return null;
+
+    return characters.reduce((sum, character) => {
+        return sum + character.profile.combatPower;
+    }, 0) / characters.length;
+}
+
+// 전투력 평균값을 소수점 둘째 자리 문자열로 반환한다.
+export function formatCombatPower(value: number | null): string {
+    if (value === null) return '-';
+
+    return value.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+// 캐릭터 목록의 최고 전투력을 반환한다.
+export function getMaxCombatPower(characters: ExpeditionCharacter[]): number | null {
+    if (characters.length === 0) return null;
+
+    return Math.max(...characters.map(character => character.profile.combatPower));
+}
+
+// 캐릭터 목록의 최저 전투력을 반환한다.
+export function getMinCombatPower(characters: ExpeditionCharacter[]): number | null {
+    if (characters.length === 0) return null;
+
+    return Math.min(...characters.map(character => character.profile.combatPower));
+}
+
+// 캐릭터 목록의 아이템 레벨 평균을 반환한다.
+export function getAverageItemLevel(characters: ExpeditionCharacter[]): number | null {
+    if (characters.length === 0) return null;
+
+    return characters.reduce((sum, character) => {
+        return sum + character.profile.itemLevel;
+    }, 0) / characters.length;
+}
+
+// 캐릭터 목록의 최고 아이템 레벨을 반환한다.
+export function getMaxItemLevel(characters: ExpeditionCharacter[]): number | null {
+    if (characters.length === 0) return null;
+
+    return Math.max(...characters.map(character => character.profile.itemLevel));
+}
+
+// 캐릭터 목록의 최저 아이템 레벨을 반환한다.
+export function getMinItemLevel(characters: ExpeditionCharacter[]): number | null {
+    if (characters.length === 0) return null;
+
+    return Math.min(...characters.map(character => character.profile.itemLevel));
+}
+
 // 특정 캐릭터의 겁화 보석 개수를 반환한다.
 export function getCountAttackGem(character: ExpeditionCharacter): number {
     return character.gems.filter(gem => gem.skillStr.includes('피해') || gem.skillStr.includes('지원 효과')).length;

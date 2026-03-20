@@ -1,7 +1,10 @@
-'use client'
-import { Card, CardBody, CardHeader, Checkbox, Chip, Divider, Progress, Radio, RadioGroup, Spinner, Tooltip } from "@heroui/react";
+﻿'use client'
+import { Card, CardBody, CardHeader, Checkbox, Chip, Divider, NumberInput, Progress, Radio, RadioGroup, Spinner, Tooltip } from "@heroui/react";
 import { ExpeditionCharacter } from "../characterlist/model/types";
 import {
+    formatCombatPower,
+    getAverageCombatPower,
+    getAverageItemLevel,
     getCharacterStatUsageSummary,
     getAverageGemLevel,
     getCountAttackBoundGem,
@@ -10,6 +13,10 @@ import {
     getGemLevelChartData,
     getGemLevelChartRange,
     getExpeditionStatStatusMessage,
+    getMaxCombatPower,
+    getMaxItemLevel,
+    getMinCombatPower,
+    getMinItemLevel,
     getStatChipColor,
     getStatComboSummary,
     getTier3BoundGem,
@@ -19,11 +26,15 @@ import {
     getStatTextColor
 } from "../lib/expeditionStatFeat";
 import { getBackgroundByGrade, getColorTextByGrade, useMobileQuery } from "@/utiils/utils";
-import { useState } from "react";
+import homeData from "@/data/home/data.json";
+import classData from "@/data/classimgs/data.json";
+import { useEffect, useState } from "react";
 import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis } from "recharts";
 import { useTheme } from "next-themes";
 import clsx from "clsx";
 import { getEngravingSrcByName } from "../lib/characterFeat";
+import { ClassCount } from "../model/types";
+import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 
 type ExpeditionStatComponentProps = {
     nickname: string | null,
@@ -86,6 +97,7 @@ export function ExpeditionStatComponent({
             <p className="fadedtext text-sm mb-3">
                 이 원정대 정보는 최소 1번 이상 조회했던 캐릭터만 포함되며, 조회 또는 갱신했던 시점을 기준으로 계산된 값입니다.
             </p>
+            <Characters expeditionCharacters={expeditionCharacters}/>
             <GemComponent expeditionCharacters={expeditionCharacters}/>
             <div className="w-full grid sm:grid-cols-3 mt-4 gap-4">
                 <StatSummaryCard expeditionCharacters={expeditionCharacters}/>
@@ -182,7 +194,7 @@ function GemComponent({ expeditionCharacters }: { expeditionCharacters: Expediti
     });
 
     return (
-        <div>
+        <div className="mt-4">
             <Card fullWidth radius="sm" shadow="sm">
                 <CardHeader>
                     <div className="w-full flex flex-col sm:flex-row gap-2 sm:items-center">
@@ -840,6 +852,191 @@ function ArkGridCard({ expeditionCharacters }: { expeditionCharacters: Expeditio
                         ) : (
                             <p className="fadedtext text-xs">유물 이상 코어를 장착한 캐릭터가 없습니다.</p>
                         )}
+                    </div>
+                </div>
+            </CardBody>
+        </Card>
+    )
+}
+
+// 캐릭터 통계
+function Characters({ expeditionCharacters }: { expeditionCharacters: ExpeditionCharacter[] }) {
+    const isMobile = useMobileQuery();
+    const [level, setLevel] = useState(1640);
+    const [characters, setCharacters] = useState<ExpeditionCharacter[]>([]);
+    const contentLevels = [...homeData.contentLevels]
+        .filter((contentLevel) => contentLevel >= 1580)
+        .sort((a, b) => b - a);
+    const dealerCharacters = characters.filter(character => character.profile.characterType === 'attack');
+    const supportCharacters = characters.filter(character => character.profile.characterType === 'supportor');
+    const averageCombatPower = getAverageCombatPower(characters);
+    const averageDealerCombatPower = getAverageCombatPower(dealerCharacters);
+    const averageSupportCombatPower = getAverageCombatPower(supportCharacters);
+    const maxCombatPower = getMaxCombatPower(characters);
+    const minCombatPower = getMinCombatPower(characters);
+    const averageItemLevel = getAverageItemLevel(characters);
+    const averageDealerItemLevel = getAverageItemLevel(dealerCharacters);
+    const averageSupportItemLevel = getAverageItemLevel(supportCharacters);
+    const maxItemLevel = getMaxItemLevel(characters);
+    const minItemLevel = getMinItemLevel(characters);
+    const combatPowerByLevelRange = contentLevels.map((currentLevel, index) => {
+        const upperLevel = index === 0 ? null : contentLevels[index - 1];
+        const targetCharacters = expeditionCharacters.filter(character => {
+            const itemLevel = character.profile.itemLevel;
+
+            if (upperLevel === null) {
+                return itemLevel >= currentLevel;
+            }
+
+            return itemLevel >= currentLevel && itemLevel < upperLevel;
+        });
+
+        return {
+            label: upperLevel === null
+                ? `${currentLevel} ~`
+                : `${currentLevel} ~ ${upperLevel-1}`,
+            averageCombatPower: getAverageCombatPower(targetCharacters)
+        };
+    });
+    const createInitialClassCounts = () => classData.classImgs.map(data => {
+        return { className: data.job, count: 0 };
+    });
+    const [classCounts, setClassCount] = useState<ClassCount[]>(createInitialClassCounts);
+
+    useEffect(() => {
+        setCharacters(expeditionCharacters.filter(character => character.profile.itemLevel >= level));
+    }, [expeditionCharacters, level]);
+
+    useEffect(() => {
+        const nextClassCounts = createInitialClassCounts();
+        characters.forEach(character => {
+            const findIndex = nextClassCounts.findIndex(c => c.className === character.profile.className);
+            if (findIndex > -1) {
+                nextClassCounts[findIndex].count++;
+            }
+        });
+        nextClassCounts.sort((a, b) => b.count - a.count);
+        setClassCount(nextClassCounts);
+    }, [characters]);
+
+    return (
+        <Card fullWidth radius="sm" shadow="sm">
+            <CardHeader>
+                <div className="w-full flex gap-2 items-center">
+                    <div>
+                        <h1 className="text-lg">캐릭터 통계</h1>
+                        <p className="fadedtext text-xs">집계 대상 캐릭터 수 : {characters.length}</p>
+                    </div>
+                    <NumberInput
+                        hideStepper
+                        size="sm"
+                        radius="sm"
+                        label="집계 대상 최소 레벨"
+                        placeholder="0 ~ 9999"
+                        value={level}
+                        onValueChange={setLevel}
+                        maxLength={4}
+                        className="w-[160px] ml-auto"/>
+                </div>
+            </CardHeader>
+            <Divider/>
+            <CardBody>
+                <div className="w-full flex flex-col sm:flex-row gap-2">
+                    <div className="w-full sm:w-[337px] grid grid-cols-[1fr_1px_1fr] gap-2">
+                        <div className="flex flex-col items-center">
+                            <p className="fadedtext text-xs">전투력 평균</p>
+                            <p className="text-3xl font-bold">{formatCombatPower(averageCombatPower)}</p>
+                            <div className="w-full flex gap-2 items-center mt-auto text-xs">
+                                <p className="shrink-0">딜러 평균</p>
+                                <div className="grow border-b border-dotted border-default-300" />
+                                <p className="shrink-0 text-danger">{formatCombatPower(averageDealerCombatPower)}</p>
+                            </div>
+                            <div className="w-full flex gap-2 items-center mt-2 text-xs">
+                                <p className="shrink-0">서폿 평균</p>
+                                <div className="grow border-b border-dotted border-default-300" />
+                                <p className="shrink-0 text-success">{formatCombatPower(averageSupportCombatPower)}</p>
+                            </div>
+                            <div className="w-full flex gap-2 items-center mt-2 text-xs">
+                                <p className="shrink-0">최고 전투력</p>
+                                <div className="grow border-b border-dotted border-default-300" />
+                                <p className="shrink-0">{formatCombatPower(maxCombatPower)}</p>
+                            </div>
+                            <div className="w-full flex gap-2 items-center mt-2 text-xs">
+                                <p className="shrink-0">최저 전투력</p>
+                                <div className="grow border-b border-dotted border-default-300" />
+                                <p className="shrink-0">{formatCombatPower(minCombatPower)}</p>
+                            </div>
+                        </div>
+                        <Divider orientation="vertical" className="min-h-full"/>
+                        <div className="flex flex-col items-center w-full">
+                            <div className="w-full flex gap-1 items-center">
+                                <div className="grow border-b border-dotted border-default-800" />
+                                <h3 className="text-xs font-semibold">레벨대 전투력 평균</h3>
+                                <div className="grow border-b border-dotted border-default-800" />
+                            </div>
+                            <div className="w-full flex flex-col gap-1 mt-2 text-xs">
+                                {combatPowerByLevelRange.map((item) => (
+                                    <div
+                                        key={item.label}
+                                        className="w-full flex gap-2 items-center">
+                                        <p className="shrink-0">{item.label}</p>
+                                        <div className="grow border-b border-dotted border-default-300" />
+                                        <p className="shrink-0 font-semibold">{formatCombatPower(item.averageCombatPower)}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <Divider
+                        orientation={isMobile ? 'horizontal' : 'vertical'}
+                        className="w-full h-px shrink-0 self-stretch sm:w-px sm:h-auto sm:min-h-full"
+                    />
+                    <div className="flex self-stretch">
+                        <div className="w-full sm:w-[160px] flex flex-col items-center">
+                
+                            <p className="fadedtext text-xs">아이템 레벨 평균</p>
+                            <p className="text-3xl font-bold">{formatCombatPower(averageItemLevel)}</p>
+                            <div className="w-full flex gap-2 items-center mt-auto text-xs">
+                                <p className="shrink-0">딜러 평균</p>
+                                <div className="grow border-b border-dotted border-default-300" />
+                                <p className="shrink-0 text-danger">{formatCombatPower(averageDealerItemLevel)}</p>
+                            </div>
+                            <div className="w-full flex gap-2 items-center mt-2 text-xs">
+                                <p className="shrink-0">서폿 평균</p>
+                                <div className="grow border-b border-dotted border-default-300" />
+                                <p className="shrink-0 text-success">{formatCombatPower(averageSupportItemLevel)}</p>
+                            </div>
+                            <div className="w-full flex gap-2 items-center mt-2 text-xs">
+                                <p className="shrink-0">최고 레벨</p>
+                                <div className="grow border-b border-dotted border-default-300" />
+                                <p className="shrink-0">{formatCombatPower(maxItemLevel)}</p>
+                            </div>
+                            <div className="w-full flex gap-2 items-center mt-2 text-xs">
+                                <p className="shrink-0">최저 레벨</p>
+                                <div className="grow border-b border-dotted border-default-300" />
+                                <p className="shrink-0">{formatCombatPower(minItemLevel)}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <Divider
+                        orientation={isMobile ? 'horizontal' : 'vertical'}
+                        className="w-full h-px shrink-0 self-stretch sm:w-px sm:h-auto sm:min-h-full"
+                    />
+                    <div className="grow h-fit grid grid-cols-3 sm:grid-cols-5 gap-2">
+                        {classCounts.filter(count => count.count > 0).map((count, index) => (
+                            <Chip
+                                key={index}
+                                size="sm"
+                                variant="faded"
+                                radius="sm"
+                                startContent={<JobEmblemIcon job={count.className} size={16}/>}
+                                className="min-w-full">
+                                <div className="w-full flex items-center text-xs">
+                                    <p>{count.className}</p>
+                                    <p className="font-semibold ml-auto">{count.count}</p>
+                                </div>
+                            </Chip>
+                        ))}
                     </div>
                 </div>
             </CardBody>
