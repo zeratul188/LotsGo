@@ -48,6 +48,7 @@ export function useClickUpdate(ui: UpdateUI, payload: UpdatePayload) {
         const userStr = sessionStorage.getItem('user');
         const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
         const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
+        let isSuccess = false;
         
         if (payload.nickname) {
             ui.setLoadingUpdate(true);
@@ -152,6 +153,7 @@ export function useClickUpdate(ui: UpdateUI, payload: UpdatePayload) {
                             ui.setExpeditions(newExpeditions);
                             ui.setTitles(cloneTitles);
                             ui.setCharacterInfo(info);
+                            isSuccess = true;
                             addToast({
                                 title: "갱신 완료",
                                 description: `캐릭터 정보를 갱신하였습니다.`,
@@ -170,6 +172,7 @@ export function useClickUpdate(ui: UpdateUI, payload: UpdatePayload) {
                 ui.setDisable(false);
             }, cooldownMS);
         }
+        return isSuccess;
     }
 }
 

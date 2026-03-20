@@ -7,6 +7,7 @@ import { RootState } from "../../store/store";
 import clsx from "clsx";
 import { useMobileQuery } from "@/utiils/utils";
 import { getImgByJob } from "../../character/lib/expeditionFeat";
+import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 
 export function ExpeditionsComponent() {
     const [expedition, setExpedition] = useState<ExpeditionCharacter[]>([]);
@@ -90,8 +91,8 @@ export function ExpeditionsComponent() {
                         {expedition.map((character, index) => (
                             <TableRow key={index}>
                                 <TableCell>
-                                    <div className="flex gap-4">
-                                        <Avatar isBordered size="md" src={getImgByJob(character.job)}/>
+                                    <div className="flex gap-2">
+                                        <JobEmblemIcon job={character.job} size={38}/>
                                         <div>
                                             <p className="truncate text-md overflow-hidden whitespace-nowrap">{character.nickname}</p>
                                             <p className="fadedtext truncate overflow-hidden whitespace-nowrap text-[10pt]">{character.job}</p>

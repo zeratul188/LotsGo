@@ -300,3 +300,9 @@ export type CardPiece = {
     name: string,
     pieces: number
 }
+
+// 클래스 개수
+export type ClassCount = {
+    className: string,
+    count: number
+}

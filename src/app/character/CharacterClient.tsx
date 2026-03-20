@@ -15,12 +15,21 @@ import BoxAd from "../ad/BoxAd";
 import Script from "next/script";
 import FixedLineAd from "../ad/FixedLineAd";
 import { ArkGridComponent } from "./ui/ArkGridForm";
+import { ExpeditionStatComponent } from "./ui/ExpeditionStatForm";
+import { ExpeditionCharacter } from "./characterlist/model/types";
+import { fetchCharacterList } from "./characterlist/lib/characterListFeat";
 
 export default function CharacterClient() {
     const characterForm = useCharacterForm();
     const searchParams = useSearchParams();
     const nickname = searchParams.get('nickname');
     const isMobile = useMobileQuery();
+    const [selectedTab, setSelectedTab] = useState("ability");
+    const [expeditionStatRefreshKey, setExpeditionStatRefreshKey] = useState(0);
+    const [expeditionStatCharacters, setExpeditionStatCharacters] = useState<ExpeditionCharacter[]>([]);
+    const [isLoadingExpeditionStat, setLoadingExpeditionStat] = useState(false);
+    const [loadedExpeditionStatNickname, setLoadedExpeditionStatNickname] = useState<string | null>(null);
+    const [loadedExpeditionStatRefreshKey, setLoadedExpeditionStatRefreshKey] = useState(-1);
     //const onClickUpdate = useClickUpdate(nickname, characterForm.setDisable, characterForm.setLoadingUpdate, characterForm.file, characterForm.setFile, characterForm.setExpeditions, characterForm.setGems, characterForm.setCombat, characterForm.combat);
     
     useEffect(() => {
@@ -66,6 +75,53 @@ export default function CharacterClient() {
             document.title = `전투정보실 · 로츠고 Lot's Go`
         }
     }, [characterForm.nickname]);
+
+    useEffect(() => {
+        setExpeditionStatCharacters([]);
+        setLoadingExpeditionStat(false);
+        setLoadedExpeditionStatNickname(null);
+        setLoadedExpeditionStatRefreshKey(-1);
+    }, [characterForm.nickname]);
+
+    useEffect(() => {
+        const targetNickname = characterForm.nickname;
+        if (!targetNickname || selectedTab !== 'expeditionstat') {
+            return;
+        }
+        if (
+            loadedExpeditionStatNickname === targetNickname &&
+            loadedExpeditionStatRefreshKey === expeditionStatRefreshKey
+        ) {
+            return;
+        }
+
+        let isMounted = true;
+
+        const loadExpeditionStatCharacters = async () => {
+            setLoadingExpeditionStat(true);
+            const characters = await fetchCharacterList(targetNickname);
+            if (!isMounted) {
+                return;
+            }
+
+            setExpeditionStatCharacters(characters);
+            setLoadedExpeditionStatNickname(targetNickname);
+            setLoadedExpeditionStatRefreshKey(expeditionStatRefreshKey);
+            setLoadingExpeditionStat(false);
+        };
+
+        loadExpeditionStatCharacters();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [
+        characterForm.nickname,
+        expeditionStatRefreshKey,
+        loadedExpeditionStatNickname,
+        loadedExpeditionStatRefreshKey,
+        selectedTab
+    ]);
     const [inputSearch, setInputSearch] = useState('');
 
     if (!characterForm.isSearched) {
@@ -141,6 +197,16 @@ export default function CharacterClient() {
             id: 'expedition',
             label: '원정대',
             component: <ExpeditionsComponent expeditions={characterForm.expeditions}/>
+        },
+        {
+            id: 'expeditionstat',
+            label: '원정대 정보',
+            component: (
+                <ExpeditionStatComponent
+                    nickname={characterForm.nickname || null}
+                    expeditionCharacters={expeditionStatCharacters}
+                    isLoading={isLoadingExpeditionStat}/>
+            )
         }
     ]
 
@@ -161,6 +227,12 @@ export default function CharacterClient() {
         supportorPieces: characterForm.supporterPieces
     }
     const onClickUpdate = useClickUpdate(updateUI, updatePayload);
+    const onPressUpdate = async () => {
+        const isSuccess = await onClickUpdate();
+        if (isSuccess) {
+            setExpeditionStatRefreshKey((prev) => prev + 1);
+        }
+    };
 
     return (
         <>
@@ -205,12 +277,14 @@ export default function CharacterClient() {
                                 isLoading={characterForm.isLoadingUpdate}
                                 isDisabled={characterForm.isDisable}
                                 className="w-full md960:w-[max-content]"
-                                onPress={onClickUpdate}>
+                                onPress={onPressUpdate}>
                                 갱신하기
                             </Button>
                         </Tooltip>
                     </div>
                     <Tabs 
+                        selectedKey={selectedTab}
+                        onSelectionChange={(key) => setSelectedTab(String(key))}
                         fullWidth={isMobile} 
                         aria-label="character-tabs" 
                         items={tabs} 
