@@ -104,6 +104,7 @@ export function ExpeditionStatComponent({
                 <EngravingCard expeditionCharacters={expeditionCharacters}/>
                 <ArkGridCard expeditionCharacters={expeditionCharacters}/>
             </div>
+            <CharacterImages expeditionCharacters={expeditionCharacters}/>
         </div>
     )
 }
@@ -1038,6 +1039,41 @@ function Characters({ expeditionCharacters }: { expeditionCharacters: Expedition
                             </Chip>
                         ))}
                     </div>
+                </div>
+            </CardBody>
+        </Card>
+    )
+}
+
+// 캐릭터 이미지 출력
+function CharacterImages({ expeditionCharacters }: { expeditionCharacters: ExpeditionCharacter[] }) {
+    return (
+        <Card fullWidth radius="sm" shadow="sm" className="mt-4">
+            <CardHeader>캐릭터 아바타</CardHeader>
+            <Divider/>
+            <CardBody>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-3">
+                    {expeditionCharacters
+                        .filter((character) => character.profile.characterImageUrl !== '-')
+                        .map((character) => (
+                            <div
+                                key={character.nickname}
+                                className="w-full overflow-hidden rounded-md bg-[#15181d] border border-default-200 dark:border-default-100/10 shadow-md">
+                                <div className="w-full aspect-[3/5]">
+                                    <img
+                                        src={character.profile.characterImageUrl}
+                                        alt={character.nickname}
+                                        loading="lazy"
+                                        className="w-full h-full object-cover object-top"/>
+                                </div>
+                                <div className="w-full px-2 pb-2">
+                                    <div className="w-full p-1 rounded-md bg-[#ffffff]/10">
+                                        <p className="text-white text-xs">{character.nickname}</p>
+                                        <p className="fadedtext text-[7pt]">{character.profile.className} · Lv.{character.profile.itemLevel}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                 </div>
             </CardBody>
         </Card>
