@@ -4,7 +4,6 @@ import { DragableParty, Raid, TeamCharacter, TeamMember } from "../model/types";
 import { deleteParty, filterPartys, getBossById, getBossDataById, getEffectsByPartyMembers, getInvolvedNickname, getTeamCharactersList, handleAddParty, handleChangeManager, handleChangePosition, handleEditParty, InvolvedCharacter, isDisableEditParty, isExistPartyMember, isInvolvedPosition, isManagerOfParty, isSelectedDifficulty, moveOrSwapPartys, onSelectionChangeContent, onSelectionChangeStages, toCheckData, toSlots, toStringByRaidDate } from "../lib/raidsFeat";
 import { 
     addToast, 
-    Avatar, 
     Button, 
     Card, CardBody, CardFooter, CardHeader, 
     Checkbox, 
@@ -31,7 +30,6 @@ import data from "@/data/characters/data.json";
 import { useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store/store";
 import { getCharacterInfoById, getMaxLengthByContent, handleCancelInvolvedParty, handleJoinRaid, handleRefreshPartys, JoinRaidPayload } from "../lib/raidListFeat";
-import { getImgByJob } from "@/app/character/lib/expeditionFeat";
 import LeaderIcon from "@/Icons/LeaderIcon";
 import { ListTurnBackIcon } from "@/Icons/ListTurnBackIcon";
 import { DndContext, DragEndEvent, useDraggable, useDroppable } from "@dnd-kit/core";
@@ -39,6 +37,7 @@ import { CrownIcon } from "@/Icons/CrownIcon";
 import DeleteIcon from "@/app/icons/DeleteIcon";
 import { EditIcon } from "@/Icons/EditIcon";
 import PersonIcon from "@/Icons/PersonIcon";
+import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 
 // 파티 내 레이드 목록 컴포넌트
 type PartyRaidsComponentProps = {
@@ -261,8 +260,8 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                                                         radius="sm"
                                                         color={teamCharacter.type === 'supporter' ? 'success' : 'danger'}
                                                         className="h-14">
-                                                        <div className="w-full flex gap-4 items-center">
-                                                            <Avatar isBordered size="sm" src={getImgByJob(getCharacterInfoById(members, teamCharacter.userId, teamCharacter.nickname).job)}/>
+                                                        <div className="w-full flex gap-3 items-center">
+                                                            <JobEmblemIcon job={getCharacterInfoById(members, teamCharacter.userId, teamCharacter.nickname).job} size={32} className="text-black dark:text-white"/>
                                                             <div className="grow text-left">
                                                                 <div className="flex gap-1">
                                                                     <div className="flex items-center grow gap-1">
@@ -904,7 +903,7 @@ function PartySlot({ partyId, slotIndex, member, members }: PartySlotProps) {
                     {...attributes}
                     style={style}
                     className="w-full cursor-grab flex gap-4 items-center rounded-[8px] bg-white dark:bg-[#171717]">
-                    <Avatar isBordered size="sm" src={getImgByJob(getCharacterInfoById(members, member.userId, member.nickname).job)}/>
+                    <JobEmblemIcon job={getCharacterInfoById(members, member.userId, member.nickname).job} size={32} className="text-black dark:text-white"/>
                     <div className="grow text-left">
                         <div className="flex gap-1">
                             <div className="flex items-center grow gap-1">

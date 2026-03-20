@@ -2,7 +2,6 @@
 import { 
     Accordion,
     AccordionItem,
-    Avatar,
     Button, 
     Card, CardBody, CardFooter, CardHeader, 
     Chip, 
@@ -61,7 +60,6 @@ import clsx from "clsx";
 import { printDefaultInTooltip, printListInTooltip, printPointInTooltip, printUseInTooltip } from "../lib/accessoryPrints";
 import { printArmPointInTooltip, printArmUseInTooltip, printBooleanInTooltip, printEffectInTooltip } from "../lib/armPrints";
 import { printBonusStoneInTooltip, printDefaultStoneInTooltip, printStoneUseInTooltip } from "../lib/stonePrints";
-import { getImgByJob } from "../lib/expeditionFeat";
 import { CharacterHistory } from "../lib/history";
 import '../css/effects.css';
 import VegaIcon from "@/Icons/VegaIcon";
@@ -72,6 +70,7 @@ import { ItemLevelIcon } from "@/Icons/ItemLevelIcon";
 import { useRouter } from "next/navigation";
 import { getCore } from "../lib/arkGridPrints";
 import data from "@/data/characters/data.json";
+import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 
 // state 관리
 export function useCharacterForm() {
@@ -209,8 +208,8 @@ export function HistoryComponent({ setSearched, setLoading, setNickname }: Searc
                                 className="cursor-pointer"
                                 onClick={() => handleSearch(character.nickname, setSearched, setLoading, setNickname)}>
                                 <TableCell>
-                                    <div className="w-full flex gap-4 items-center">
-                                        <Avatar isBordered size="md" src={getImgByJob(character.job)}/>
+                                    <div className="w-full flex gap-2 items-center">
+                                        <JobEmblemIcon job={character.job} size={38}/>
                                         <div>
                                             <p className="text-lg">{character.nickname}</p>
                                             <p className="text-sm fadedtext">@{character.server} · {character.job}</p>
@@ -238,7 +237,7 @@ export function HistoryComponent({ setSearched, setLoading, setNickname }: Searc
                                 onClick={() => handleSearch(character.nickname, setSearched, setLoading, setNickname)}>
                                 <TableCell>
                                     <div className="w-full flex gap-4 items-center">
-                                        <Avatar isBordered size="md" src={getImgByJob(character.job)}/>
+                                        <JobEmblemIcon job={character.job} size={38}/>
                                         <div>
                                             <p className="text-lg">{character.nickname}</p>
                                             <p className="text-sm fadedtext">@{character.server} · {character.job} · Lv.{character.level}</p>
@@ -276,7 +275,7 @@ export function ExpeditionComponent({ setSearched, setLoading, setNickname }: Se
                                 onClick={() => handleSearch(character.nickname, setSearched, setLoading, setNickname)}>
                                 <TableCell>
                                     <div className="w-full flex gap-4 items-center">
-                                        <Avatar isBordered size="md" src={getImgByJob(character.job)}/>
+                                        <JobEmblemIcon job={character.job} size={38}/>
                                         <div>
                                             <p className="text-lg">{character.nickname}</p>
                                             <p className="text-sm fadedtext">{character.job}</p>
@@ -304,7 +303,7 @@ export function ExpeditionComponent({ setSearched, setLoading, setNickname }: Se
                                 onClick={() => handleSearch(character.nickname, setSearched, setLoading, setNickname)}>
                                 <TableCell>
                                     <div className="w-full flex gap-4 items-center">
-                                        <Avatar isBordered size="md" src={getImgByJob(character.job)}/>
+                                        <JobEmblemIcon job={character.job} size={38}/>
                                         <div>
                                             <p className="text-lg">{character.nickname}</p>
                                             <p className="text-sm fadedtext">@{character.server} · {character.job}</p>

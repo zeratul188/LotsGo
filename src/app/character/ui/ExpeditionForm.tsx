@@ -1,10 +1,11 @@
 import clsx from "clsx";
-import { getBgColorByLevels, getBorderColorByLevel, getCountByLevel, getImgByJob, getServerNames, handleSelectCharacter } from "../lib/expeditionFeat"
+import { getBgColorByLevels, getBorderColorByLevel, getCountByLevel, getServerNames, handleSelectCharacter } from "../lib/expeditionFeat"
 import data from "@/data/characters/data.json";
-import { Avatar, Card, CardBody, Chip, Divider } from "@heroui/react";
+import { Card, CardBody, Chip, Divider } from "@heroui/react";
 import { ExpeditionCharacterInfo } from "../model/types";
 import SupportorIcon from "@/Icons/SupportorIcon";
 import AttackIcon from "@/Icons/AttackIcon";
+import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 
 type ExpeditionComponentProps = {
     expeditions: ExpeditionCharacterInfo[]
@@ -34,8 +35,8 @@ export function ExpeditionsComponent({ expeditions }: ExpeditionComponentProps) 
                                 className={`border-2 ${getBorderColorByLevel(character.level)}`}
                                 onPress={() => handleSelectCharacter(character.nickname)}>
                                 <CardBody>
-                                    <div className="w-full flex gap-4 items-center">
-                                        <Avatar isBordered size="md" src={getImgByJob(character.job)} className="border-[#ff968a]"/>
+                                    <div className="w-full flex gap-2 items-center">
+                                        <JobEmblemIcon job={character.job} size={38}/>
                                         <div className="w-full">
                                             <p className="truncate overflow-hidden whitespace-nowrap">{character.nickname}</p>
                                             <div className="w-full flex gap-1 items-center">

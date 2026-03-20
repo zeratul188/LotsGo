@@ -43,6 +43,7 @@ import { PartySettingComponent } from "./SettingFrom";
 import { ShieldSecurityIcon } from "@/Icons/ShieldSecurityIcon";
 import CheckIcon from "@/Icons/CheckIcon";
 import { useMobileQuery } from "@/utiils/utils";
+import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 
 const PAGE_SIZE = 10;
 
@@ -123,8 +124,8 @@ function MemberComponent({ index, member, bosses, party }: MemberComponentProps)
             )}>
                 <CardHeader>
                     <div className="w-full h-full flex flex-col sm:flex-row gap-2 sm:gap-4 items-center">
-                        <div className="w-full flex gap-4 items-center">
-                            <Avatar size="md" isBordered src={getImgByJob(getCharacterByMain(member.expeditions, member.nickname)?.job ?? '-')}/>
+                        <div className="w-full flex gap-2 items-center">
+                            <JobEmblemIcon job={getCharacterByMain(member.expeditions, member.nickname)?.job ?? '-'} size={38}/>
                             <div className="grow">
                                 <div className="flex gap-2 items-center">
                                     <div className="flex gap-2 items-center">
