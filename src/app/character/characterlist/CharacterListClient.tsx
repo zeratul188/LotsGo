@@ -4,13 +4,13 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { ExpeditionCharacter } from "./model/types";
 import { loadCharacterList } from "./lib/characterListFeat";
-import { Avatar, Button, Card, CardBody, CardHeader, Divider, Input, Spinner } from "@heroui/react";
+import { Button, Card, CardBody, CardHeader, Divider, Input, Spinner } from "@heroui/react";
 import SupportorIcon from "@/Icons/SupportorIcon";
 import AttackIcon from "@/Icons/AttackIcon";
 import clsx from "clsx";
 import { LoadingComponent } from "@/app/UtilsCompnents";
-import { getImgByJob } from "../lib/expeditionFeat";
 import { AccessoriesComponent, ArkgridComponent, ArkpassiveComponent, CardComponent, EngravingComponent, EquipmentComponent, GemComponent, StatComponent } from "./ui/CharacterForm";
+import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 
 export default function CharacterListClient() {
     const characterName: string = useSelector((state: RootState) => state.login.user.character);
@@ -77,10 +77,8 @@ export default function CharacterListClient() {
                         {expeditionCharacters.map((character) => (
                             <Card key={character.id} fullWidth radius="sm">
                                 <CardHeader>
-                                    <div className="w-full flex gap-4 items-center">
-                                        <Avatar
-                                            isBordered
-                                            src={getImgByJob(character.profile.className)}/>
+                                    <div className="w-full flex gap-2 items-center">
+                                        <JobEmblemIcon job={character.profile.className} size={38}/>
                                         <div>
                                             <p className="fadedtext text-[9pt]">{character.profile.className} · Lv.{character.profile.itemLevel}</p>
                                             <p>{character.nickname}</p>

@@ -13,6 +13,7 @@ export default function JobEmblem29({ size = 24, ...props }: JobEmblemSvgProps) 
             viewBox="0 0 500 500"
             width={size}
             height={size}
+            fill="currentColor"
             dangerouslySetInnerHTML={{ __html: svgContent }}
             {...props}
         />
