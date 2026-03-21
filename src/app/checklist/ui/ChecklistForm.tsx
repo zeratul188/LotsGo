@@ -47,6 +47,10 @@ import {
     getAllCubeCount, 
     getAllGoldCharacter, 
     getAllGolds, 
+    buildWeekChecklistItems,
+    createDefaultWeekStages,
+    createWeekStagesFromChecklist,
+    EMPTY_STAGE_DIFFICULTY,
     getBackground50ByStage, 
     getBackgroundByStage, 
     getBorderByStage, 
@@ -119,6 +123,7 @@ import {
     useCloseModal, 
     useOnClickAddDayList, 
     useOnClickAddItem, 
+    useOnClickEditItem,
     useOnClickAddWeekList, 
     useOnClickDayCheck, 
     useOnClickRemoveItem, 
@@ -487,7 +492,8 @@ type ChecklistStatueProps = {
     max: number,
     setMax: SetStateFn<number>,
     accounts: string[],
-    setAccounts: SetStateFn<string[]>
+    setAccounts: SetStateFn<string[]>,
+    isLoadingData: boolean
 }
 export function ChecklistStatue({ 
     server,
@@ -505,7 +511,8 @@ export function ChecklistStatue({
     max, 
     setMax,
     accounts,
-    setAccounts
+    setAccounts,
+    isLoadingData
  }: ChecklistStatueProps) {
     const isMobile = useMobileQuery();
     const [isLoading, setLoading] = useState(false);
@@ -792,6 +799,7 @@ export function ChecklistStatue({
                                                     radius="sm"
                                                     color="primary"
                                                     className="mt-3"
+                                                    isDisabled={isLoadingData}
                                                     onPress={onClickLife}>
                                                     저장
                                                 </Button>
@@ -812,6 +820,7 @@ export function ChecklistStatue({
                             color="primary"
                             size="sm"
                             variant="flat"
+                            isDisabled={isLoadingData}
                             onPress={() => onOpenChangePosition(true)}>순서 변경</Button>
                         <Button
                             fullWidth
@@ -819,6 +828,7 @@ export function ChecklistStatue({
                             color="success"
                             variant="flat"
                             size="sm"
+                            isDisabled={isLoadingData}
                             onPress={onOpen}>캐릭터 추가</Button>
                         <Tooltip 
                             showArrow
@@ -830,7 +840,7 @@ export function ChecklistStatue({
                                 color="primary"
                                 variant="flat"
                                 size="sm"
-                                isDisabled={isDisableUpdate}
+                                isDisabled={isDisableUpdate || isLoadingData}
                                 isLoading={isLoading}
                                 onPress={onClickUpdatedCharacters}>캐릭터 갱신하기</Button>
                         </Tooltip>
@@ -2234,6 +2244,52 @@ type WeekContentComponentProps = {
     isGold: boolean,
     setGold: SetStateFn<boolean>
 }
+
+type WeekStageEditorProps = {
+    bosses: Boss[],
+    contentKey: string,
+    stages: ControlStage[],
+    setStages: SetStateFn<ControlStage[]>
+}
+function WeekStageEditor({ bosses, contentKey, stages, setStages }: WeekStageEditorProps) {
+    if (!contentKey) return <></>;
+
+    return (
+        <>
+            {getWeekStages(bosses, contentKey).map((level, idx) => (
+                <div key={idx} className="mt-2">
+                    <h3 className="font-bold mb-1">{level}관문</h3>
+                    <Tabs
+                        fullWidth
+                        radius="sm"
+                        color="primary"
+                        selectedKey={stages.length > idx ? stages[idx].difficulty : EMPTY_STAGE_DIFFICULTY}
+                        onSelectionChange={(key) => {
+                            const diff = key.toString();
+                            if (stages.length > idx) {
+                                const cloneStages = structuredClone(stages);
+                                if (idx > 0 && cloneStages[idx - 1].difficulty === EMPTY_STAGE_DIFFICULTY) {
+                                    return;
+                                }
+                                cloneStages[idx].difficulty = diff;
+                                if (diff === EMPTY_STAGE_DIFFICULTY) {
+                                    for (let i = idx; i < cloneStages.length; i++) {
+                                        cloneStages[i].difficulty = EMPTY_STAGE_DIFFICULTY;
+                                    }
+                                }
+                                setStages(cloneStages);
+                            }
+                        }}>
+                        {getDifficultyByStage(bosses, contentKey, level).map((diff) => (
+                            <Tab key={diff} title={diff}/>
+                        ))}
+                    </Tabs>
+                </div>
+            ))}
+        </>
+    );
+}
+
 function WeekContentComponent({
     checklist,
     index,
@@ -2245,58 +2301,165 @@ function WeekContentComponent({
     isGold, setGold
 }: WeekContentComponentProps) {
     const [isLoadingAdd, setLoadingAdd] = useState(false);
+    const [isLoadingEdit, setLoadingEdit] = useState(false);
     const [stages, setStages] = useState<ControlStage[]>([]);
+    const [isEditOpen, setEditOpen] = useState(false);
+    const [editingIndex, setEditingIndex] = useState(-1);
+    const [editStages, setEditStages] = useState<ControlStage[]>([]);
 
     useEffect(() => {
         if (!Array.from(content)[0]) setStages([]);
         else {
             const findBoss = getBossesById(bosses, Array.from(content)[0].toString());
-            const newStages: ControlStage[] = [];
             if (findBoss) {
-                for (const st of getWeekStages(bosses, Array.from(content)[0].toString())) {
-                    const newStage: ControlStage = {
-                        stage: st,
-                        difficulty: '선택안함'
-                    }
-                    newStages.push(newStage);
-                }
-                setStages(newStages);
+                setStages(createDefaultWeekStages(bosses, Array.from(content)[0].toString()));
             }
         }
     }, [content]);
 
+    const closeEditModal = () => {
+        setEditOpen(false);
+        setEditingIndex(-1);
+        setEditStages([]);
+    };
+
+    const handleOpenEdit = (checklistIndex: number) => {
+        const targetChecklist = checklist[index].checklist[checklistIndex];
+        const findBoss = bosses.find((boss) => boss.name === targetChecklist.name);
+        if (!findBoss) {
+            addToast({
+                title: "콘텐츠 정보 오류",
+                description: "해당 콘텐츠의 기준 데이터를 찾을 수 없습니다.",
+                color: "danger"
+            });
+            return;
+        }
+
+        setEditingIndex(checklistIndex);
+        setEditStages(createWeekStagesFromChecklist(bosses, findBoss.id, targetChecklist.items));
+        setEditOpen(true);
+    };
+
     return (
         <>
-            <Table aria-label="checklist-table" removeWrapper>
-                <TableHeader>
-                    <TableColumn>콘텐츠명</TableColumn>
-                    <TableColumn>골드지정</TableColumn>
-                    <TableColumn>삭제</TableColumn>
-                </TableHeader>
-                <TableBody emptyContent={"설정된 콘텐츠가 없습니다."}>
-                    {checklist[index].checklist.map((item, idx) => (
-                        <TableRow key={idx}>
-                            <TableCell>{item.name}</TableCell>
-                            <TableCell>
-                                <Switch
-                                    size="sm"
-                                    color="warning"
-                                    isSelected={item.isGold}
-                                    onValueChange={async (isSelected) => {
-                                        await handleCheckGolds(checklist, index, idx, dispatch, isSelected, bosses);
-                                    }}/>
-                            </TableCell>
-                            <TableCell>
-                                <button className="underline redbutton" onClick={async () => {
-                                    if (confirm('해당 콘텐츠를 삭제하시겠습니까? 삭제 후 되돌릴 수 없습니다.')) {
-                                        await useOnClickRemoveItem(checklist, index, idx, dispatch);
-                                    }
-                                }}>삭제</button>
-                            </TableCell>
-                        </TableRow>
-                        ))}
-                </TableBody>
-            </Table>
+            <div className="w-full flex flex-col gap-2">
+                {checklist[index].checklist.map((item, idx) => (
+                    <div key={idx} className="w-full flex gap-2 items-center">
+                        <p className="grow text-xs">{item.name}</p>
+                        <Switch
+                            size="sm"
+                            color="primary"
+                            isSelected={item.isGold}
+                            thumbIcon={({isSelected, className}) => isSelected ? 
+                                <img 
+                                    src="/icons/gold.png" 
+                                    alt="goldicon"
+                                    className={className}/>
+                                : null}
+                            onValueChange={async (isSelected) => {
+                                await handleCheckGolds(checklist, index, idx, dispatch, isSelected, bosses);
+                            }}/>
+                        <Button
+                            size="sm"
+                            variant="flat"
+                            radius="sm"
+                            onPress={() => handleOpenEdit(idx)}>
+                            수정
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="flat"
+                            radius="sm"
+                            color="danger"
+                            onPress={async () => {
+                                if (confirm('해당 콘텐츠를 삭제하시겠습니까? 삭제 후 되돌릴 수 없습니다.')) {
+                                    await useOnClickRemoveItem(checklist, index, idx, dispatch);
+                                }
+                            }}>
+                            삭제
+                        </Button>
+                    </div>
+                ))}
+            </div>
+            <Modal
+                radius="sm"
+                isOpen={isEditOpen}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        closeEditModal();
+                    }
+                }}>
+                <ModalContent>
+                    {() => {
+                        const editingChecklist = editingIndex > -1 ? checklist[index].checklist[editingIndex] : null;
+                        const editingBoss = editingChecklist ? bosses.find((boss) => boss.name === editingChecklist.name) : null;
+
+                        return (
+                            <>
+                                <ModalHeader>{editingChecklist ? `${editingChecklist.name} 수정` : '주간 콘텐츠 수정'}</ModalHeader>
+                                <ModalBody>
+                                    {editingChecklist && editingBoss ? (
+                                        <div className="pb-2">
+                                            <WeekStageEditor
+                                                bosses={bosses}
+                                                contentKey={editingBoss.id}
+                                                stages={editStages}
+                                                setStages={setEditStages}/>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm fadedtext">수정할 콘텐츠 정보를 불러올 수 없습니다.</p>
+                                    )}
+                                </ModalBody>
+                                <ModalFooter>
+                                    <Button
+                                        variant="light"
+                                        radius="sm"
+                                        onPress={closeEditModal}>
+                                        취소
+                                    </Button>
+                                    <Button
+                                        color="primary"
+                                        isLoading={isLoadingEdit}
+                                        radius="sm"
+                                        isDisabled={editStages.length === 0 || editStages[0]?.difficulty === EMPTY_STAGE_DIFFICULTY}
+                                        onPress={async () => {
+                                            if (editingIndex < 0) {
+                                                return;
+                                            }
+
+                                            const prevChecklist = checklist[index].checklist[editingIndex];
+                                            const findBoss = bosses.find((boss) => boss.name === prevChecklist.name);
+                                            if (!findBoss) {
+                                                return;
+                                            }
+
+                                            setLoadingEdit(true);
+                                            const editChecklist: Checklist = {
+                                                ...prevChecklist,
+                                                items: buildWeekChecklistItems(findBoss, editStages, prevChecklist.items)
+                                            };
+
+                                            const isSuccess = await useOnClickEditItem(
+                                                checklist,
+                                                index,
+                                                editingIndex,
+                                                editChecklist,
+                                                dispatch
+                                            );
+                                            setLoadingEdit(false);
+
+                                            if (isSuccess) {
+                                                closeEditModal();
+                                            }
+                                        }}>
+                                        저장
+                                    </Button>
+                                </ModalFooter>
+                            </>
+                        );
+                    }}
+                </ModalContent>
+            </Modal>
             <Divider className="mt-4"/>
             <div className="mt-4 pb-4">
                 <div className="flex gap-1 items-center">
@@ -2320,38 +2483,11 @@ function WeekContentComponent({
                         <SelectItem key={item.key}>{item.name}</SelectItem>
                     ))}
                 </Select>
-                {Array.from(content)[0] ? getWeekStages(bosses, Array.from(content)[0].toString()).map((level, idx) => (
-                    <div key={idx} className="mt-2">
-                        <h3 className="font-bold mb-1">{level}관문</h3>
-                        <Tabs 
-                            fullWidth 
-                            radius="sm" 
-                            color="primary"
-                            selectedKey={stages.length > idx ? stages[idx].difficulty : '선택안함'}
-                            onSelectionChange={(key) => {
-                                const diff = key.toString();
-                                if (stages.length > idx) {
-                                    const cloneStages = structuredClone(stages);
-                                    if (idx > 0) {
-                                        if (cloneStages[idx-1].difficulty === '선택안함') {
-                                            return;
-                                        }
-                                    }
-                                    cloneStages[idx].difficulty = diff;
-                                    if (diff === '선택안함') {
-                                        for (let i = idx; i < cloneStages.length; i++) {
-                                            cloneStages[i].difficulty = '선택안함';
-                                        }
-                                    }
-                                    setStages(cloneStages);
-                                }
-                            }}>
-                            {getDifficultyByStage(bosses, Array.from(content)[0].toString(), level).map((diff) => (
-                                <Tab key={diff} title={diff}/>
-                            ))}
-                        </Tabs>
-                    </div>
-                )) : <></>}
+                <WeekStageEditor
+                    bosses={bosses}
+                    contentKey={Array.from(content)[0]?.toString() ?? ''}
+                    stages={stages}
+                    setStages={setStages}/>
                 <div className={clsx(
                     "mt-3",
                     Array.from(content)[0] ? 'block' : "hidden"
@@ -2366,27 +2502,13 @@ function WeekContentComponent({
                     radius="sm"
                     color="primary"
                     isLoading={isLoadingAdd}
-                    isDisabled={stages.length > 0 ? stages[0].difficulty === '선택안함' : true}
+                    isDisabled={stages.length > 0 ? stages[0].difficulty === EMPTY_STAGE_DIFFICULTY : true}
                     onPress={async () => {
                         if (Array.from(content)[0]) {
                             setLoadingAdd(true);
                             const findBoss = getBossesById(bosses, Array.from(content)[0].toString());
                             const name: string = findBoss?.name ?? '';
-                            const items: ChecklistItem[] = [];
-                            for (const stage of stages) {
-                                if (stage.difficulty !== '선택안함') {
-                                    const diff = findBoss ? findBoss.difficulty.find(d => d.stage === stage.stage && d.difficulty === stage.difficulty) : null;
-                                    const isBiweekly = diff ? diff.isBiweekly : false;
-                                    items.push({
-                                        stage: stage.stage,
-                                        difficulty: stage.difficulty,
-                                        isBonus: false,
-                                        isCheck: false,
-                                        isDisable: false,
-                                        isBiweekly: isBiweekly
-                                    });
-                                }
-                            }
+                            const items = buildWeekChecklistItems(findBoss, stages);
                             const addItem: Checklist = {
                                 name: name,
                                 isGold: isGold,
