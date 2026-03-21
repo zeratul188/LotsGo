@@ -185,7 +185,8 @@ export default function ChecklistClient() {
                     max={checklistForm.max}
                     setMax={checklistForm.setMax}
                     accounts={checklistForm.accounts}
-                    setAccounts={checklistForm.setAccounts}/>
+                    setAccounts={checklistForm.setAccounts}
+                    isLoadingData={checklistForm.isLoading}/>
             </div>
             {!checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
                 <div className="w-full flex justify-center overflow-hidden md960:pt-[110px]">

@@ -492,7 +492,8 @@ type ChecklistStatueProps = {
     max: number,
     setMax: SetStateFn<number>,
     accounts: string[],
-    setAccounts: SetStateFn<string[]>
+    setAccounts: SetStateFn<string[]>,
+    isLoadingData: boolean
 }
 export function ChecklistStatue({ 
     server,
@@ -510,7 +511,8 @@ export function ChecklistStatue({
     max, 
     setMax,
     accounts,
-    setAccounts
+    setAccounts,
+    isLoadingData
  }: ChecklistStatueProps) {
     const isMobile = useMobileQuery();
     const [isLoading, setLoading] = useState(false);
@@ -797,6 +799,7 @@ export function ChecklistStatue({
                                                     radius="sm"
                                                     color="primary"
                                                     className="mt-3"
+                                                    isDisabled={isLoadingData}
                                                     onPress={onClickLife}>
                                                     저장
                                                 </Button>
@@ -817,6 +820,7 @@ export function ChecklistStatue({
                             color="primary"
                             size="sm"
                             variant="flat"
+                            isDisabled={isLoadingData}
                             onPress={() => onOpenChangePosition(true)}>순서 변경</Button>
                         <Button
                             fullWidth
@@ -824,6 +828,7 @@ export function ChecklistStatue({
                             color="success"
                             variant="flat"
                             size="sm"
+                            isDisabled={isLoadingData}
                             onPress={onOpen}>캐릭터 추가</Button>
                         <Tooltip 
                             showArrow
@@ -835,7 +840,7 @@ export function ChecklistStatue({
                                 color="primary"
                                 variant="flat"
                                 size="sm"
-                                isDisabled={isDisableUpdate}
+                                isDisabled={isDisableUpdate || isLoadingData}
                                 isLoading={isLoading}
                                 onPress={onClickUpdatedCharacters}>캐릭터 갱신하기</Button>
                         </Tooltip>
