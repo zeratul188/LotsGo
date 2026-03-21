@@ -27,6 +27,7 @@ import { database, firestore } from "@/utiils/firebase";
 import { decrypt } from "@/utiils/crypto";
 import { ChecklistData, ChecklistDataDifficulty, getLevelByContent } from "../../home/lib/checklistFeat";
 import { get, ref } from "firebase/database";
+import { ControlStage } from "../model/types";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
@@ -435,6 +436,9 @@ export function getAllGoldCharacter(
     let golds = character.isGold ? character.checklist
         .filter(item => item.isGold)
         .reduce((total, item) => total + getBossGold(bosses, item.name, item.items) + getBossBoundGold(bosses, item.name, item.items), 0) : 0;
+    golds -= character.isGold ? character.checklist
+        .filter(item => !item.isGold)
+        .reduce((total, item) => total + getBossBonusGold(bosses, item.name, item.items), 0) : 0;
     golds += character.checklist
         .filter(item => item.busGold !== 0 && item.busGold)
         .reduce((total, item) => total + (item.busGold ?? 0), 0);
@@ -449,6 +453,9 @@ export function getCompleteGoldCharacter(
     let golds = character.isGold ? character.checklist
         .filter(item => item.isGold)
         .reduce((total, item) => total + getBossCheckedGold(bosses, item.name, item.items) + getBossBoundCheckGold(bosses, item.name, item.items), 0) : 0;
+    golds -= character.isGold ? character.checklist
+        .filter(item => !item.isGold)
+        .reduce((total, item) => total + getBossCheckedBonusGold(bosses, item.name, item.items), 0) : 0;
     golds += character.checklist
         .filter(item => item.busGold !== 0 && item.busGold)
         .reduce((total, item) => total + (isCheckHomework(item) ? item.busGold ?? 0 : 0), 0);
@@ -463,6 +470,9 @@ export function getCompleteSharedGoldCharacter(
     let golds = character.isGold ? character.checklist
         .filter(item => item.isGold)
         .reduce((total, item) => total + getBossCheckedGold(bosses, item.name, item.items), 0) : 0;
+    golds -= character.isGold ? character.checklist
+        .filter(item => !item.isGold)
+        .reduce((total, item) => total + getBossCheckedBonusGold(bosses, item.name, item.items), 0) : 0;
     golds += character.checklist
         .filter(item => item.busGold !== 0 && item.busGold)
         .reduce((total, item) => total + (isCheckHomework(item) ? item.busGold ?? 0 : 0), 0);
@@ -489,9 +499,12 @@ export function getAllGolds(
     sum = checklist
         .filter(character => character.isGold)
         .reduce((total, character) => {
-        const goldFromChecklist = character.checklist
+        let goldFromChecklist = character.checklist
             .filter(item => item.isGold)
             .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.items) + getBossBoundGold(bosses, item.name, item.items), 0);
+        goldFromChecklist -= character.checklist
+            .filter(item => !item.isGold)
+            .reduce((sum, item) => sum + getBossBonusGold(bosses, item.name, item.items), 0);
         return total + goldFromChecklist;
     }, 0);
     sum += checklist
@@ -516,9 +529,12 @@ export function getHaveGolds(
     sum = checklist
         .filter(character => character.isGold)
         .reduce((total, character) => {
-        const goldFromChecklist = character.checklist
+        let goldFromChecklist = character.checklist
             .filter(item => item.isGold)
             .reduce((sum, item) => sum + getBossCheckedGold(bosses, item.name, item.items) + getBossBoundCheckGold(bosses, item.name, item.items), 0);
+        goldFromChecklist -= character.checklist
+            .filter(item => !item.isGold)
+            .reduce((sum, item) => sum + getBossCheckedBonusGold(bosses, item.name, item.items), 0);
         return total + goldFromChecklist;
     }, 0);
     sum += checklist
@@ -546,6 +562,9 @@ export function getHaveSharedGolds(
         let goldFromChecklist = character.checklist
             .filter(item => item.isGold)
             .reduce((sum, item) => sum + getBossCheckedGold(bosses, item.name, item.items), 0);
+        goldFromChecklist -= character.checklist
+            .filter(item => !item.isGold)
+            .reduce((sum, item) => sum + getBossCheckedBonusGold(bosses, item.name, item.items), 0);
         goldFromChecklist += character.checklist
             .filter(item => item.busGold !== 0 && item.busGold)
             .reduce((total, item) => total + (isCheckHomework(item) ? item.busGold ?? 0 : 0), 0);
@@ -643,6 +662,27 @@ export function getBossGold(
     return gold;
 }
 
+// 관문에 설정된 더보기 사용분만 합산합니다.
+export function getBossBonusGold(
+    bosses: Boss[],
+    name: string,
+    items: ChecklistItem[]
+): number {
+    let gold = 0;
+    for (const boss of bosses) {
+        if (boss.name === name) {
+            for (const item of items) {
+                const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
+                if (item.isBonus) {
+                    gold += diff ? diff.bonus : 0;
+                }
+            }
+            break;
+        }
+    }
+    return gold;
+}
+
 // 특정 콘텐츠 골드 획득량 가져오는 함수
 export function getBossCheckedGold(
     bosses: Boss[],
@@ -659,6 +699,27 @@ export function getBossCheckedGold(
                     if (item.isBonus) {
                         gold -= diff ? diff.bonus : 0;
                     }
+                }
+            }
+            break;
+        }
+    }
+    return gold;
+}
+
+// 체크된 관문 중 더보기 사용분만 합산합니다.
+export function getBossCheckedBonusGold(
+    bosses: Boss[],
+    name: string,
+    items: ChecklistItem[]
+): number {
+    let gold = 0;
+    for (const boss of bosses) {
+        if (boss.name === name) {
+            for (const item of items) {
+                const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
+                if (item.isCheck && item.isBonus) {
+                    gold += diff ? diff.bonus : 0;
                 }
             }
             break;
@@ -1465,6 +1526,55 @@ export async function useOnClickAddItem(
     setLoadingAdd(false); 
 }
 
+// 주간 콘텐츠 수정 이벤트 함수
+export async function useOnClickEditItem(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    checklistIndex: number,
+    editChecklist: Checklist,
+    dispatch: AppDispatch
+) {
+    const userStr = sessionStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser ? storedUser.id : '';
+    const prevChecklist = structuredClone(checklist[characterIndex].checklist[checklistIndex]);
+
+    dispatch(checkWeek({
+        characterIndex: characterIndex,
+        checklistIndex: checklistIndex,
+        checklist: editChecklist
+    }));
+
+    const editRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            id: id,
+            checklist: checklist,
+            type: 'check-week',
+            characterIndex: characterIndex,
+            checklistIndex: checklistIndex,
+            checklistItem: editChecklist
+        })
+    });
+
+    if (!editRes.ok) {
+        addToast({
+            title: "데이터 로드 오류 (콘텐츠)",
+            description: `데이터를 가져오는데 문제가 발생하였습니다.`,
+            color: "danger"
+        });
+        dispatch(checkWeek({
+            characterIndex: characterIndex,
+            checklistIndex: checklistIndex,
+            checklist: prevChecklist
+        }));
+        return false;
+    }
+
+    return true;
+}
+
 // 골드 받는 콘텐츠 개수 반환 함수
 export function getTakeGold(checklist: Checklist[]): number {
     return checklist.filter(item => item.isGold).length;
@@ -1504,6 +1614,51 @@ export function getWeekStages(bosses: Boss[], id: string): number[] {
     const diffs = findBoss ? findBoss.difficulty.map(diff => diff.stage) : [];
     const results = [...new Set(diffs)];
     return results;
+}
+
+// 주간 콘텐츠 관문 선택에서 사용하는 기본 난이도 값을 반환합니다.
+export const EMPTY_STAGE_DIFFICULTY = '선택안함';
+
+// 콘텐츠 id 기준으로 관문 목록을 만들고 모든 관문의 난이도를 기본값으로 초기화합니다.
+export function createDefaultWeekStages(bosses: Boss[], contentKey: string): ControlStage[] {
+    return getWeekStages(bosses, contentKey).map((stage) => ({
+        stage,
+        difficulty: EMPTY_STAGE_DIFFICULTY
+    }));
+}
+
+// 저장된 체크리스트 항목을 기준으로 관문별 선택 난이도를 복원합니다.
+export function createWeekStagesFromChecklist(bosses: Boss[], contentKey: string, items: ChecklistItem[]): ControlStage[] {
+    return createDefaultWeekStages(bosses, contentKey).map((stage) => {
+        const selectedItem = items.find((item) => item.stage === stage.stage);
+        return {
+            ...stage,
+            difficulty: selectedItem?.difficulty ?? EMPTY_STAGE_DIFFICULTY
+        };
+    });
+}
+
+// 관문 선택 상태를 실제 저장용 ChecklistItem 배열로 변환합니다.
+// 이전과 같은 stage + difficulty 조합은 체크 상태를 유지하고, 변경된 조합은 새 항목으로 취급합니다.
+export function buildWeekChecklistItems(
+    boss: Boss | undefined,
+    stages: ControlStage[],
+    prevItems: ChecklistItem[] = []
+): ChecklistItem[] {
+    return stages
+        .filter((stage) => stage.difficulty !== EMPTY_STAGE_DIFFICULTY)
+        .map((stage) => {
+            const prevItem = prevItems.find((item) => item.stage === stage.stage && item.difficulty === stage.difficulty);
+            const diff = boss?.difficulty.find((item) => item.stage === stage.stage && item.difficulty === stage.difficulty);
+            return {
+                stage: stage.stage,
+                difficulty: stage.difficulty,
+                isBonus: prevItem?.isBonus ?? false,
+                isCheck: prevItem?.isCheck ?? false,
+                isDisable: prevItem?.isDisable ?? false,
+                isBiweekly: diff?.isBiweekly ?? false
+            };
+        });
 }
 
 // 관문의 난이도 가져오는 함수
