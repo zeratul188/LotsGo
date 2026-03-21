@@ -436,6 +436,9 @@ export function getAllGoldCharacter(
     let golds = character.isGold ? character.checklist
         .filter(item => item.isGold)
         .reduce((total, item) => total + getBossGold(bosses, item.name, item.items) + getBossBoundGold(bosses, item.name, item.items), 0) : 0;
+    golds -= character.isGold ? character.checklist
+        .filter(item => !item.isGold)
+        .reduce((total, item) => total + getBossBonusGold(bosses, item.name, item.items), 0) : 0;
     golds += character.checklist
         .filter(item => item.busGold !== 0 && item.busGold)
         .reduce((total, item) => total + (item.busGold ?? 0), 0);
@@ -450,6 +453,9 @@ export function getCompleteGoldCharacter(
     let golds = character.isGold ? character.checklist
         .filter(item => item.isGold)
         .reduce((total, item) => total + getBossCheckedGold(bosses, item.name, item.items) + getBossBoundCheckGold(bosses, item.name, item.items), 0) : 0;
+    golds -= character.isGold ? character.checklist
+        .filter(item => !item.isGold)
+        .reduce((total, item) => total + getBossCheckedBonusGold(bosses, item.name, item.items), 0) : 0;
     golds += character.checklist
         .filter(item => item.busGold !== 0 && item.busGold)
         .reduce((total, item) => total + (isCheckHomework(item) ? item.busGold ?? 0 : 0), 0);
@@ -464,6 +470,9 @@ export function getCompleteSharedGoldCharacter(
     let golds = character.isGold ? character.checklist
         .filter(item => item.isGold)
         .reduce((total, item) => total + getBossCheckedGold(bosses, item.name, item.items), 0) : 0;
+    golds -= character.isGold ? character.checklist
+        .filter(item => !item.isGold)
+        .reduce((total, item) => total + getBossCheckedBonusGold(bosses, item.name, item.items), 0) : 0;
     golds += character.checklist
         .filter(item => item.busGold !== 0 && item.busGold)
         .reduce((total, item) => total + (isCheckHomework(item) ? item.busGold ?? 0 : 0), 0);
@@ -490,9 +499,12 @@ export function getAllGolds(
     sum = checklist
         .filter(character => character.isGold)
         .reduce((total, character) => {
-        const goldFromChecklist = character.checklist
+        let goldFromChecklist = character.checklist
             .filter(item => item.isGold)
             .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.items) + getBossBoundGold(bosses, item.name, item.items), 0);
+        goldFromChecklist -= character.checklist
+            .filter(item => !item.isGold)
+            .reduce((sum, item) => sum + getBossBonusGold(bosses, item.name, item.items), 0);
         return total + goldFromChecklist;
     }, 0);
     sum += checklist
@@ -517,9 +529,12 @@ export function getHaveGolds(
     sum = checklist
         .filter(character => character.isGold)
         .reduce((total, character) => {
-        const goldFromChecklist = character.checklist
+        let goldFromChecklist = character.checklist
             .filter(item => item.isGold)
             .reduce((sum, item) => sum + getBossCheckedGold(bosses, item.name, item.items) + getBossBoundCheckGold(bosses, item.name, item.items), 0);
+        goldFromChecklist -= character.checklist
+            .filter(item => !item.isGold)
+            .reduce((sum, item) => sum + getBossCheckedBonusGold(bosses, item.name, item.items), 0);
         return total + goldFromChecklist;
     }, 0);
     sum += checklist
@@ -547,6 +562,9 @@ export function getHaveSharedGolds(
         let goldFromChecklist = character.checklist
             .filter(item => item.isGold)
             .reduce((sum, item) => sum + getBossCheckedGold(bosses, item.name, item.items), 0);
+        goldFromChecklist -= character.checklist
+            .filter(item => !item.isGold)
+            .reduce((sum, item) => sum + getBossCheckedBonusGold(bosses, item.name, item.items), 0);
         goldFromChecklist += character.checklist
             .filter(item => item.busGold !== 0 && item.busGold)
             .reduce((total, item) => total + (isCheckHomework(item) ? item.busGold ?? 0 : 0), 0);
@@ -644,6 +662,27 @@ export function getBossGold(
     return gold;
 }
 
+// 관문에 설정된 더보기 사용분만 합산합니다.
+export function getBossBonusGold(
+    bosses: Boss[],
+    name: string,
+    items: ChecklistItem[]
+): number {
+    let gold = 0;
+    for (const boss of bosses) {
+        if (boss.name === name) {
+            for (const item of items) {
+                const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
+                if (item.isBonus) {
+                    gold += diff ? diff.bonus : 0;
+                }
+            }
+            break;
+        }
+    }
+    return gold;
+}
+
 // 특정 콘텐츠 골드 획득량 가져오는 함수
 export function getBossCheckedGold(
     bosses: Boss[],
@@ -660,6 +699,27 @@ export function getBossCheckedGold(
                     if (item.isBonus) {
                         gold -= diff ? diff.bonus : 0;
                     }
+                }
+            }
+            break;
+        }
+    }
+    return gold;
+}
+
+// 체크된 관문 중 더보기 사용분만 합산합니다.
+export function getBossCheckedBonusGold(
+    bosses: Boss[],
+    name: string,
+    items: ChecklistItem[]
+): number {
+    let gold = 0;
+    for (const boss of bosses) {
+        if (boss.name === name) {
+            for (const item of items) {
+                const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
+                if (item.isCheck && item.isBonus) {
+                    gold += diff ? diff.bonus : 0;
                 }
             }
             break;
