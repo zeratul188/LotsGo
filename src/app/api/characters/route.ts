@@ -1,5 +1,5 @@
 import { firestore } from "@/utiils/firebase";
-import { collection, collectionGroup, doc, getDoc, getDocs, limit, query, serverTimestamp, setDoc, where, writeBatch } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, limit, query, serverTimestamp, setDoc, where, writeBatch } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
 
 function normalizeCharacter(character: any) {
@@ -160,14 +160,14 @@ async function syncExpeditionIndexs(expeditionId: string, expeditions: any[]) {
     }
 
     for (const data of toRemove) {
-        const characterQuery = query(
-            collectionGroup(firestore, 'expeditionCharacters'),
-            where('nickname', '==', data.nickname)
+        const characterRef = doc(
+            firestore,
+            "expeditions",
+            expeditionId,
+            "expeditionCharacters",
+            encodeURIComponent(data.nickname)
         );
-        const characterSnapshot = await getDocs(characterQuery);
-        if (!characterSnapshot.empty) {
-            characterSnapshot.docs.forEach(snapshot => { batch.delete(snapshot.ref) });
-        }
+        batch.delete(characterRef);
         const indexRef = doc(firestore, "expeditionIndexs", data.id);
         batch.delete(indexRef);
     }
