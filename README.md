@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+![top](https://github.com/user-attachments/assets/07c3a15c-031a-4df7-be6f-a0772ff9f53d)
+# 로츠고(Lot's Go) - 로스트아크 숙제, 정보 및 일정 관리
+로스트아크 플레이에 도움이 되는 숙제 체크, 일정 관리, 게임 내 콘텐츠 일정과 이벤트, 공지 확인, 레이드 파티 시스템을 구현한 웹 서비스
 
-## Getting Started
+## 📑 프로젝트 소개
 
-First, run the development server:
+로츠고(Lot's Go)는 로스트아크 유저의 숙제와 일정, 레이드 관리를 지원하는 웹 서비스입니다.  
+여러 캐릭터를 동시에 육성하면서 발생하는 숙제 관리의 불편함을 해결하기 위해 개발되었으며, 게임 외부에서도 진행 상태를 확인하고 관리할 수 있도록 설계되었습니다.  
+일일/주간 숙제 추적, 일정 관리, 레이드 파티 기능을 통해 플레이 흐름을 보다 효율적으로 정리할 수 있습니다.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🔥 주요 기능
+### 📝 숙제 관리
+- 일일 / 주간 콘텐츠 숙제 체크
+- 06시 기준 자동 초기화 (일일 / 매주 수요일)
+- 콘텐츠 외 기타 숙제 커스텀 관리
+- 주간 총 재화 획득량 집계
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 📆 일정 관리
+- 레이드, 숙제, 개인 일정 등록 및 관리
+- 파티에 등록된 레이드 일정 관리
+- 특정 날짜에 해야 할 콘텐츠 및 숙제 통합 확인
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 🧔🏻 전투정보실 (캐릭터 조회)
+- 캐릭터 전투 정보 조회 (캐릭터 스펙, 특성 등)
+- 주요 정보를 한눈에 확인할 수 있는 시각화 UI 제공
+- 원정대 내 캐릭터 정보 통합 확인
+- 원정대 내 캐릭터 스펙 집계
+- 캐릭터 세팅 및 성장 상태를 빠르게 파악할 수 있도록 구성
+- 최신 정보 반영을 위한 데이터 동기화
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 👥 파티 모집
+- 고정 파티 일정 및 숙제 공유
+- 레이드 파티 생성 및 참여
+- 파티 일정 관리
 
-## Learn More
+### 🔧 도구
+- 경매 최적가 계산
+- 아이템 시세 조회
+- 시세 변동 분석
+- 레이드 참여 비용 계산
 
-To learn more about Next.js, take a look at the following resources:
+## 🎬 기능 미리보기
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🧱 기술 스택
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🧠 아키텍처 설계
 
-## Deploy on Vercel
+## ⚡ 성능 최적화
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🧪 문제 해결 경험
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 💡 개발하면서 느낀 점
+
+## 🔮 향후 개선 계획
