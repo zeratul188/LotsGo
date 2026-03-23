@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+![top](https://github.com/user-attachments/assets/07c3a15c-031a-4df7-be6f-a0772ff9f53d)
+# 로츠고(Lot's Go) - 로스트아크 숙제, 정보 및 일정 관리
+로스트아크 플레이에 도움이 되는 숙제 체크, 일정 관리, 게임 내 콘텐츠 일정과 이벤트, 공지 확인, 레이드 파티 시스템을 구현한 웹 서비스
 
-## Getting Started
+## 📑 프로젝트 소개
 
-First, run the development server:
+로츠고(Lot's Go)는 로스트아크 유저의 숙제와 일정, 레이드 관리를 지원하는 웹 서비스입니다.  
+여러 캐릭터를 동시에 육성하면서 발생하는 숙제 관리의 불편함을 해결하기 위해 개발되었으며, 게임 외부에서도 진행 상태를 확인하고 관리할 수 있도록 설계되었습니다.  
+일일/주간 숙제 추적, 일정 관리, 레이드 파티 기능을 통해 플레이 흐름을 보다 효율적으로 정리할 수 있습니다.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🔥 주요 기능
+<details>
+  <summary><b>📝 숙제 관리</b></summary>
+  <ul>
+    <li>일일 / 주간 콘텐츠 숙제 체크</li>
+    <li>06시 기준 자동 초기화 (일일 / 매주 수요일)</li>
+    <li>콘텐츠 외 기타 숙제 커스텀 관리</li>
+    <li>주간 총 재화 획득량 집계</li>
+  </ul>
+</details>
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+<details>
+  <summary><b>📆 일정 관리</b></summary>
+  <ul>
+    <li>레이드, 숙제, 개인 일정 등록 및 관리</li>
+    <li>파티에 등록된 레이드 일정 관리</li>
+    <li>특정 날짜에 해야 할 콘텐츠 및 숙제 통합 확인</li>
+  </ul>
+</details>
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+<details>
+  <summary><b>🧔🏻 전투정보실 (캐릭터 조회)</b></summary>
+  <ul>
+    <li>캐릭터 전투 정보 조회 (캐릭터 스펙, 특성 등)</li>
+    <li>주요 정보를 한눈에 확인할 수 있는 시각화 UI 제공</li>
+    <li>원정대 내 캐릭터 정보 통합 확인</li>
+    <li>원정대 내 캐릭터 스펙 집계</li>
+    <li>캐릭터 세팅 및 성장 상태를 빠르게 파악</li>
+    <li>최신 정보 반영을 위한 데이터 동기화</li>
+  </ul>
+</details>
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+<details>
+  <summary><b>👥 파티 모집</b></summary>
+  <ul>
+    <li>고정 파티 일정 및 숙제 공유</li>
+    <li>레이드 파티 생성 및 참여</li>
+    <li>파티 일정 관리</li>
+  </ul>
+</details>
 
-## Learn More
+<details>
+  <summary><b>🔧 도구</b></summary>
+  <ul>
+    <li>경매 최적가 계산</li>
+    <li>아이템 시세 조회</li>
+    <li>시세 변동 분석</li>
+    <li>레이드 참여 비용 계산</li>
+  </ul>
+</details>
 
-To learn more about Next.js, take a look at the following resources:
+<details>
+  <summary><b>🫆 회원 데이터</b></summary>
+  <ul>
+    <li>회원 가입 및 로그인 기능</li>
+    <li>JWT 기반 인증 및 세션 관리 (refresh token)</li>
+    <li>사용자 권한 및 접근 제어</li>
+  </ul>
+</details>
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🎬 기능 미리보기
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🧱 기술 스택
+### 📌 프레임워크 & 언어
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 
-## Deploy on Vercel
+### 🎨 UI & 스타일링
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![HeroUI](https://img.shields.io/badge/HeroUI-111111?style=for-the-badge&logo=heroui&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### 📊 상태 & 데이터 관리
+![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-764ABC?style=for-the-badge&logo=redux&logoColor=white)
+![React Redux](https://img.shields.io/badge/React_Redux-593D88?style=for-the-badge&logo=redux&logoColor=white)
+![Axios](https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 🗄️ 백엔드 / 인프라
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
+![Firebase Admin](https://img.shields.io/badge/Firebase_Admin-DD2C00?style=for-the-badge&logo=firebase&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-2E7D32?style=for-the-badge&logo=redis&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+
+### ⚙️ 유틸리티
+![Codex](https://img.shields.io/badge/Codex-000000?style=for-the-badge&logo=openai&logoColor=white)
+![Day.js](https://img.shields.io/badge/Day.js-FF5F5F?style=for-the-badge&logo=javascript&logoColor=white)
+![Recharts](https://img.shields.io/badge/Recharts-8884D8?style=for-the-badge)
+![dnd-kit](https://img.shields.io/badge/dnd--kit-3B82F6?style=for-the-badge)
+![hello-pangea-dnd](https://img.shields.io/badge/hello--pangea--dnd-3B82F6?style=for-the-badge)
+![clsx](https://img.shields.io/badge/clsx-D92C20?style=for-the-badge)
+
+### 🚀 배포 & 운영
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![Analytics](https://img.shields.io/badge/Vercel_Analytics-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![next-sitemap](https://img.shields.io/badge/next--sitemap-2E7D32?style=for-the-badge&logo=googlechrome&logoColor=white)
+![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+
+## 🧠 아키텍처 설계
+
+## ⚡ 성능 최적화
+
+## 🧪 문제 해결 경험
+
+## 💡 개발하면서 느낀 점
+
+## 🔮 향후 개선 계획

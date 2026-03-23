@@ -432,7 +432,6 @@ function createCardPieces(type: string): CardPiece[] {
             pieces.push({ name: piece.simeple, pieces: 0 });
         });
     }
-    console.log(pieces);
     return pieces;
 }
 
