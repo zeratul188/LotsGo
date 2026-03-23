@@ -1,5 +1,12 @@
 [
     {
+        "url": "/main/main8.webp",
+        "title": "지평의 성당 : 아르세노스",
+        "sub": "어비스 던전",
+        "color": "#d6ba83",
+        "isBlack": true
+    },
+    {
         "url": "/main/main7.webp",
         "title": "고통의 마녀 : 세르카",
         "sub": "그림자 레이드",
@@ -18,13 +25,6 @@
         "title": "종막 : 카제로스",
         "sub": "카제로스 레이드",
         "color": "#a51e1e",
-        "isBlack": false
-    },
-    {
-        "url": "/main/main4.webp",
-        "title": "4막 : 아르모체",
-        "sub": "카제로스 레이드",
-        "color": "#3b219a",
         "isBlack": false
     }
 ]
