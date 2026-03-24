@@ -91,7 +91,7 @@
   <tr>
     <td align="center" width="25%"><b>전투정보실</b></td>
     <td align="center" width="25%"><b>파티 레이드 추가</b></td>
-    <td align="center" width="25%"><b>파티 레이드 참여 및 관리</b></td>
+    <td align="center" width="25%"><b>파티 레이드 관리</b></td>
     <td align="center" width="25%"><b>편의성 도구</b></td>
   </tr>
 </table>
