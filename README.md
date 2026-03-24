@@ -133,61 +133,9 @@
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
 
 ## 🧠 아키텍처 설계
-```mermaid
-flowchart TD
+![로츠고](https://github.com/user-attachments/assets/6fa24f2d-d49c-4baa-9bf5-6bfd2b5e3ee0)
 
-User["👤 이용자"]
 
-subgraph FE["프론트엔드 레이어"]
-  Frontend["🌐 프론트엔드<br/>Next.js + React<br/>Tailwind + HeroUI"]
-end
-
-subgraph BE["서버 레이어"]
-  API["⚙️ 서버 / API 로직<br/>Next.js API Routes<br/>JWT 인증 처리"]
-end
-
-subgraph DATA["데이터베이스 & 외부 서비스"]
-  Firebase["🔥 Firebase<br/>Firestore + 인증"]
-  Redis["⚡ Redis"]
-  LostArk["🎮 로스트아크 API"]
-end
-
-subgraph AUTO["자동화"]
-  Scheduler["⏱ Cloud Scheduler<br/>스케줄 실행"]
-  Functions["🛠 Cloud Functions<br/>데이터 처리"]
-end
-
-subgraph DEPLOY["배포"]
-  Dev["💻 개발 환경"]
-  GitHub["🐙 GitHub"]
-  Vercel["🚀 Vercel 배포"]
-end
-
-User --> Frontend
-Frontend -->|API 요청| API
-API -->|데이터 조회| Firebase
-API -->|캐시 조회| Redis
-API -->|외부 API 호출| LostArk
-Scheduler --> Functions
-Functions --> Firebase
-Dev --> GitHub
-GitHub --> Vercel
-Vercel --> Frontend
-
-classDef fe fill:#EAFBF3,stroke:#22C55E,stroke-width:2px,color:#111;
-classDef be fill:#FFF4E5,stroke:#F59E0B,stroke-width:2px,color:#111;
-classDef data fill:#FCE7F3,stroke:#EC4899,stroke-width:2px,color:#111;
-classDef auto fill:#F3F4F6,stroke:#6B7280,stroke-width:2px,color:#111;
-classDef deploy fill:#EDE9FE,stroke:#8B5CF6,stroke-width:2px,color:#111;
-classDef user fill:#E8F0FE,stroke:#4A90E2,stroke-width:2px,color:#111;
-
-class User user;
-class Frontend fe;
-class API be;
-class Firebase,Redis,LostArk data;
-class Scheduler,Functions auto;
-class Dev,GitHub,Vercel deploy;
-```
 
 ## ⚡ 성능 최적화
 
