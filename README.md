@@ -71,10 +71,10 @@
 ## 🎬 기능 미리보기
 <table>
   <tr>
-    <td align="center" width="25%"><img src="./assets/readme/home.gif" width="220"/></td>
-    <td align="center" width="25%"><img src="./assets/readme/homework.gif" width="220"/></td>
-    <td align="center" width="25%"><img src="./assets/readme/add homework.gif" width="220"/></td>
-    <td align="center" width="25%"><img src="./assets/readme/calendar.gif" width="220"/></td>
+    <td align="center" width="25%"><img src="./assets/readme/home.gif" width="160"/></td>
+    <td align="center" width="25%"><img src="./assets/readme/homework.gif" width="160"/></td>
+    <td align="center" width="25%"><img src="./assets/readme/add homework.gif" width="160"/></td>
+    <td align="center" width="25%"><img src="./assets/readme/calendar.gif" width="160"/></td>
   </tr>
   <tr>
     <td align="center" width="25%"><b>로스트아크 정보</b></td>
@@ -83,10 +83,10 @@
     <td align="center" width="25%"><b>일정 관리</b></td>
   </tr>
   <tr>
-    <td align="center" width="25%"><img src="./assets/readme/character.gif" width="220"/></td>
-    <td align="center" width="25%"><img src="./assets/readme/party raid add.gif" width="220"/></td>
-    <td align="center" width="25%"><img src="./assets/readme/party manage.gif" width="220"/></td>
-    <td align="center" width="25%"><img src="./assets/readme/tool.gif" width="220"/></td>
+    <td align="center" width="25%"><img src="./assets/readme/character.gif" width="160"/></td>
+    <td align="center" width="25%"><img src="./assets/readme/party raid add.gif" width="160"/></td>
+    <td align="center" width="25%"><img src="./assets/readme/party manage.gif" width="160"/></td>
+    <td align="center" width="25%"><img src="./assets/readme/tool.gif" width="160"/></td>
   </tr>
   <tr>
     <td align="center" width="25%"><b>전투정보실</b></td>
