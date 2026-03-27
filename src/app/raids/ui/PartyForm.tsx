@@ -35,7 +35,7 @@ import { Boss } from "@/app/api/checklist/boss/route"
 import { getImgByJob } from "@/app/character/lib/expeditionFeat"
 import LeaderIcon from "@/Icons/LeaderIcon"
 import clsx from "clsx"
-import { getSimpleBossName, getTextColorByDifficulty } from "@/app/checklist/lib/checklistFeat"
+import { getBackgroundByStage, getSimpleBossName } from "@/app/checklist/lib/checklistFeat"
 import { PartyRaidsComponent } from "./RaidsForm"
 import { AppDispatch, RootState } from "@/app/store/store"
 import { useSelector } from "react-redux"
@@ -301,7 +301,6 @@ export function ContentChip({ content, bosses, isMemberGold }: ContentChipProps)
             radius="sm"
             variant="flat"
             color={content.items.every(item => item.isCheck) ? "success" : 'danger'}
-            startContent={content.items.every(item => item.isCheck) ? <CheckIcon size={18}/> : null}
             classNames={{
                 base: "min-w-full sm:min-w-fit",
                 content: "w-full min-w-0"
@@ -319,16 +318,13 @@ export function ContentChip({ content, bosses, isMemberGold }: ContentChipProps)
                 <div ref={scrollRef} className="ml-auto w-fit min-w-0 sm:min-w-fit max-w-full overflow-x-auto sm:overflow-x-hidden scrollbar-hide">
                     <div className="flex flex-nowrap gap-1 w-max justify-end items-center">
                         {content.items.map((contentItem, itemIndex) => (
-                            <Tooltip key={itemIndex} showArrow content={contentItem.difficulty}>
-                                <Chip
-                                    size="sm"
-                                    radius="sm"
-                                    endContent={contentItem.isCheck ? <CheckIcon size={12} /> : null}
-                                    color={getTextColorByDifficulty(contentItem.difficulty)}
-                                    className={contentItem.isCheck ? "bg-green-300/25 dark:bg-green-800/25" : "bg-white dark:bg-[#171717]"}
-                                    variant="dot">
-                                    {contentItem.stage}관문
-                                </Chip>
+                            <Tooltip key={itemIndex} showArrow content={`${contentItem.difficulty} ${contentItem.stage}`}>
+                                <div className={clsx(
+                                    "w-[12px] h-[12px] rounded-full p-0.5 flex justify-center items-center opacity-75",
+                                    getBackgroundByStage(contentItem.difficulty, false)
+                                )}>
+                                    {contentItem.isCheck ? <CheckIcon size={10} color="#ffffff"/> : null}
+                                </div>
                             </Tooltip>
                         ))}
                     </div>
