@@ -1,6 +1,6 @@
 import RelicsClient from "./RelicsClient";
 import { Metadata } from "next";
-import { loadBooks } from "./relicsFeat";
+import { loadRelicBooks } from "./relicsServer";
 
 export const metadata: Metadata = {
     title: '유물 각인서 시세 · 로츠고 도구',
@@ -8,6 +8,6 @@ export const metadata: Metadata = {
 };
 
 export default async function RelicsComponent() {
-    const relics = await loadBooks();
+    const relics = await loadRelicBooks();
     return <RelicsClient relics={relics}/>
 }
