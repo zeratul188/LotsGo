@@ -1,4 +1,6 @@
 'use client'
+import dynamic from "next/dynamic";
+import Script from "next/script";
 import { useEffect, useRef, useState } from "react"
 import { ChartData, formatMonthData, getDiffPrice, getMaxGoldByBook, getMinGoldByBook, getUndoPrice, RelicBook } from "./relicsFeat";
 import { Button, Card, CardBody, Chip, Divider, Modal, ModalBody, ModalContent, ModalHeader, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, useDisclosure } from "@heroui/react";
@@ -6,8 +8,8 @@ import clsx from "clsx";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useMobileQuery } from "@/utiils/utils";
 import { getEngravingSrcByName } from "../../character/lib/characterFeat";
-import LineAd from "@/app/ad/LineAd";
-import BoxAd from "@/app/ad/BoxAd";
+const LineAd = dynamic(() => import("@/app/ad/LineAd"), { ssr: false });
+const BoxAd = dynamic(() => import("@/app/ad/BoxAd"), { ssr: false });
 
 type MonthChartProps = {
     selectedRelic: RelicBook | null
@@ -274,6 +276,10 @@ export default function RelicsClient({ relics }: RelicsClientProps) {
                 )}
             </div>
             <ChartModal isOpen={isOpen} selectedRelic={selectedRelic} onOpenChange={onOpenChange}/>
+            <Script
+                async
+                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
+                crossOrigin="anonymous"/>
         </div>
     )
 }

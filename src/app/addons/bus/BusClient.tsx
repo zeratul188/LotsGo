@@ -1,10 +1,13 @@
 'use client'
 import { addToast, Card, CardBody, CardHeader, Checkbox, Divider, NumberInput, Radio, RadioGroup } from "@heroui/react"
+import Script from "next/script";
 import { useEffect, useState } from "react";
 import { formatGold, useClickPersons } from "../calcFeat";
 import { useMobileQuery } from "@/utiils/utils";
-import LineAd from "@/app/ad/LineAd";
-import FixedLineAd from "@/app/ad/FixedLineAd";
+import dynamic from "next/dynamic";
+const LineAd = dynamic(() => import("@/app/ad/LineAd"), { ssr: false });
+const FixedLineAd = dynamic(() => import("@/app/ad/FixedLineAd"), { ssr: false });
+const BoxAd = dynamic(() => import("@/app/ad/BoxAd"), { ssr: false });
 
 function CalcComponent() {
     const [person, setPerson] = useState(4);
@@ -482,6 +485,25 @@ export default function BusClient() {
             )}
             <RelicComponent/>
             <p className="mt-2">위 계산들은 최초 입찰 금액(50골드), 신뢰도로 인한 수수료를 제외하고 계산되었습니다.</p>
+            {isMobile ? (
+                <div className="w-full flex justify-center px-4">
+                    <div className="w-full max-w-[360px] min-h-[100px] mt-4">
+                        <BoxAd isLoaded={true}/>
+                    </div>
+                </div>
+            ) : (
+                <div className="w-full flex justify-center px-4 overflow-hidden mt-8">
+                    <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-8">
+                        <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px]">
+                            <LineAd isLoaded={true}/>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <Script
+                async
+                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
+                crossOrigin="anonymous"/>
         </div>
     )
 }
