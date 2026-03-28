@@ -660,7 +660,7 @@ export function ChecklistStatue({
                                             <p className="font-bold text-black dark:text-white ml-0.5 mr-0.5">
                                                 {getMissedBonusGoldByGoldCharacter(bosses, checklist).toLocaleString()}
                                             </p>
-                                            <p>입니다</p>
+                                            <p>입니다.</p>
                                         </div>
                                         <div className="w-full grid grid-cols-1 min-[501px]:grid-cols-3 gap-x-2 gap-y-1 p-1 items-center">
                                             <div className="w-full flex items-center gap-1">

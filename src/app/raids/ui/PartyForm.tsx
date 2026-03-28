@@ -318,7 +318,7 @@ export function ContentChip({ content, bosses, isMemberGold }: ContentChipProps)
                 <div ref={scrollRef} className="ml-auto w-fit min-w-0 sm:min-w-fit max-w-full overflow-x-auto sm:overflow-x-hidden scrollbar-hide">
                     <div className="flex flex-nowrap gap-1 w-max justify-end items-center">
                         {content.items.map((contentItem, itemIndex) => (
-                            <Tooltip key={itemIndex} showArrow content={`${contentItem.difficulty} ${contentItem.stage}`}>
+                            <Tooltip key={itemIndex} showArrow content={`${contentItem.difficulty} ${contentItem.stage}관문`}>
                                 <div className={clsx(
                                     "w-[12px] h-[12px] rounded-full p-0.5 flex justify-center items-center opacity-75",
                                     getBackgroundByStage(contentItem.difficulty, false)
