@@ -212,7 +212,6 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
                                                 <div className={clsx(
                                                     "hidden sm:block w-[34px] h-[34px] aspect-square p-[3px] rounded-md",
                                                     getBackgroundByGrade(item.grade)
-
                                                 )}>
                                                     <img
                                                         src={item.icon} 
