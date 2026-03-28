@@ -82,6 +82,7 @@ import {
     getHaveSharedGolds, 
     getIndexByNickname, 
     getMaxRestValue, 
+    getMissedBonusGoldByGoldCharacter,
     getServerList, 
     getSimpleBossName, 
     getSumGoldByDifficulty, 
@@ -650,7 +651,18 @@ export function ChecklistStatue({
                                             </div>
                                         </div>
                                         <Divider className="mt-1 mb-2"/>
-                                        <div className="w-full grid grid-cols-1 min-[501px]:grid-cols-3 gap-4 p-1 items-center">
+                                        <div className="flex items-center fadedtext text-[10pt] mb-1">
+                                            <p>더보기로 빠진 골드는</p>
+                                            <img 
+                                                src="/icons/gold.png" 
+                                                alt="goldicon"
+                                                className="w-[16px] h-[16px] ml-1"/>
+                                            <p className="font-bold text-black dark:text-white ml-0.5 mr-0.5">
+                                                {getMissedBonusGoldByGoldCharacter(bosses, checklist).toLocaleString()}
+                                            </p>
+                                            <p>입니다.</p>
+                                        </div>
+                                        <div className="w-full grid grid-cols-1 min-[501px]:grid-cols-3 gap-x-2 gap-y-1 p-1 items-center">
                                             <div className="w-full flex items-center gap-1">
                                                 <p className="grow text-[9pt] fadedtext">총 콘텐츠</p>
                                                 <img

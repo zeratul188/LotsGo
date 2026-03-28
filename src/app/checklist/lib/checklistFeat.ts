@@ -597,6 +597,20 @@ export function getHaveBoundGolds(
 }
 
 // 특정 콘텐츠 귀속 골드 획득가능량 가져오는 함수
+export function getMissedBonusGoldByGoldCharacter(
+    bosses: Boss[],
+    checklist: CheckCharacter[]
+): number {
+    return checklist
+        .filter(character => character.isGold)
+        .reduce((total, character) => {
+            const missedBonusGold = character.checklist
+                .reduce((sum, item) => sum + getBossCheckedBonusGold(bosses, item.name, item.items), 0);
+
+            return total + missedBonusGold;
+        }, 0);
+}
+
 export function getBossBoundGold(
     bosses: Boss[],
     name: string,
