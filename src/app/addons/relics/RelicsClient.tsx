@@ -1,4 +1,6 @@
 'use client'
+import dynamic from "next/dynamic";
+import Script from "next/script";
 import { useEffect, useRef, useState } from "react"
 import { ChartData, formatMonthData, getDiffPrice, getMaxGoldByBook, getMinGoldByBook, getUndoPrice, RelicBook } from "./relicsFeat";
 import { Button, Card, CardBody, Chip, Divider, Modal, ModalBody, ModalContent, ModalHeader, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, useDisclosure } from "@heroui/react";
@@ -6,12 +8,14 @@ import clsx from "clsx";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useMobileQuery } from "@/utiils/utils";
 import { getEngravingSrcByName } from "../../character/lib/characterFeat";
-import LineAd from "@/app/ad/LineAd";
-import BoxAd from "@/app/ad/BoxAd";
+
+const LineAd = dynamic(() => import("@/app/ad/LineAd"), { ssr: false });
+const BoxAd = dynamic(() => import("@/app/ad/BoxAd"), { ssr: false });
 
 type MonthChartProps = {
     selectedRelic: RelicBook | null
 }
+
 function MonthChart({ selectedRelic }: MonthChartProps) {
     const [data, setData] = useState<ChartData[]>([]);
     const isMobile = useMobileQuery();
@@ -27,7 +31,7 @@ function MonthChart({ selectedRelic }: MonthChartProps) {
         requestAnimationFrame(() => {
             const container = scrollRef.current;
             if (container) {
-            container.scrollLeft = container.scrollWidth;
+                container.scrollLeft = container.scrollWidth;
             }
         });
     }, [selectedRelic]);
@@ -48,9 +52,7 @@ function MonthChart({ selectedRelic }: MonthChartProps) {
                     <LineChart width={data.length * itemSize < bigSize ? bigSize : data.length * itemSize} height={389} data={data}>
                         <CartesianGrid strokeDasharray="3 3" horizontal={false}/>
                         <XAxis dataKey="date" />
-                        <YAxis
-                            domain={['dataMin', 'dataMax']}
-                            hide={true}/>
+                        <YAxis domain={['dataMin', 'dataMax']} hide={true}/>
                         <Tooltip content={<CustomTooltip data={data}/>}/>
                         <Line type="monotone" dataKey="price" stroke="#338EF7" strokeWidth={2} dot={{ r: 4 }} />
                     </LineChart>
@@ -61,14 +63,11 @@ function MonthChart({ selectedRelic }: MonthChartProps) {
 }
 
 function YAxisComponent({ data }: { data: ChartData[] }) {
-    const max = Math.max(...data.map(d => d.price));
-    const min = Math.min(...data.map(d => d.price));
+    const max = Math.max(...data.map((d) => d.price));
+    const min = Math.min(...data.map((d) => d.price));
     const steps = 4;
-
     const stepSize = (max - min) / steps;
-    const ticks = Array.from({ length: steps + 1 }, (_, i) =>
-        Math.round(max - i * stepSize)
-    );
+    const ticks = Array.from({ length: steps + 1 }, (_, i) => Math.round(max - i * stepSize));
 
     return (
         <div className="w-[58px] h-[400px] flex flex-col justify-between pb-7">
@@ -82,26 +81,22 @@ function YAxisComponent({ data }: { data: ChartData[] }) {
 function CustomTooltip({ active, payload, label, data }: any) {
     if (active && payload && payload.length) {
         const price = payload[0].value;
-
         const currentIndex = data.findIndex((item: any) => item.date === label);
         const prevPrice = currentIndex > 0 ? data[currentIndex - 1].price : null;
         const diff = prevPrice !== null ? price - prevPrice : 0;
 
         return (
-        <div className="rounded-lg border-1 border-[#eeeeee] dark:border-[#333333] px-3 py-2 bg-white dark:bg-[#1a1a1a] flex gap-1 items-center">
-            <Chip size="sm" radius="sm" variant="flat" className="min-w-[50px] text-center">{label}</Chip>
-            <div className="flex gap-1 items-center">
-                <img 
-                    src="/icons/gold.png" 
-                    alt="goldicon"
-                    className="w-[16px] h-[16px]"/>
-                <span className="text-sm">{price?.toLocaleString()}</span>
-                <span className={clsx(
-                    "text-sm ml-2",
-                    diff > 0 ? 'text-green-700 dark:text-green-400' : diff < 0 ? 'text-red-700 dark:text-red-400' : 'fadedtext'
-                )}>{diff > 0 ? '+ ' : diff < 0 ? '- ' : ''}{Math.abs(diff).toLocaleString()}</span>
+            <div className="rounded-lg border-1 border-[#eeeeee] dark:border-[#333333] px-3 py-2 bg-white dark:bg-[#1a1a1a] flex gap-1 items-center">
+                <Chip size="sm" radius="sm" variant="flat" className="min-w-[50px] text-center">{label}</Chip>
+                <div className="flex gap-1 items-center">
+                    <img src="/icons/gold.png" alt="goldicon" className="w-[16px] h-[16px]"/>
+                    <span className="text-sm">{price?.toLocaleString()}</span>
+                    <span className={clsx(
+                        "text-sm ml-2",
+                        diff > 0 ? 'text-green-700 dark:text-green-400' : diff < 0 ? 'text-red-700 dark:text-red-400' : 'fadedtext'
+                    )}>{diff > 0 ? '+ ' : diff < 0 ? '- ' : ''}{Math.abs(diff).toLocaleString()}</span>
+                </div>
             </div>
-        </div>
         );
     }
 
@@ -113,19 +108,21 @@ type ChartModalProps = {
     isOpen: boolean,
     onOpenChange: () => void
 }
+
 function ChartModal({ selectedRelic, isOpen, onOpenChange }: ChartModalProps) {
     if (!selectedRelic) {
         return <></>
     }
+
     return (
         <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="5xl">
             <ModalContent>
-                {(onClose) => (
+                {() => (
                     <>
                         <ModalHeader>
                             <div className="flex gap-2 items-center">
                                 <img
-                                    src={getEngravingSrcByName(selectedRelic.name.replaceAll(' 각인서', ''))} 
+                                    src={getEngravingSrcByName(selectedRelic.name.replaceAll(' 각인서', ''))}
                                     alt="relic book icon"
                                     className="w-[32px] h-[32px] rounded-md"/>
                                 <p className="text-relics text-[12pt]">{selectedRelic.name}</p>
@@ -141,10 +138,7 @@ function ChartModal({ selectedRelic, isOpen, onOpenChange }: ChartModalProps) {
                                             <div className="w-full flex gap-1 items-center">
                                                 <Chip radius="sm" variant="flat">3개월 최고 가격</Chip>
                                                 <div className="grow"/>
-                                                <img 
-                                                    src="/icons/gold.png" 
-                                                    alt="goldicon"
-                                                    className="w-[18px] h-[18px]"/>
+                                                <img src="/icons/gold.png" alt="goldicon" className="w-[18px] h-[18px]"/>
                                                 <span className="text-[14pt]">{getMaxGoldByBook(selectedRelic).toLocaleString()}</span>
                                             </div>
                                         </CardBody>
@@ -154,10 +148,7 @@ function ChartModal({ selectedRelic, isOpen, onOpenChange }: ChartModalProps) {
                                             <div className="w-full flex gap-1 items-center">
                                                 <Chip radius="sm" variant="flat">3개월 최저 가격</Chip>
                                                 <div className="grow"/>
-                                                <img 
-                                                    src="/icons/gold.png" 
-                                                    alt="goldicon"
-                                                    className="w-[18px] h-[18px]"/>
+                                                <img src="/icons/gold.png" alt="goldicon" className="w-[18px] h-[18px]"/>
                                                 <span className="text-[14pt]">{getMinGoldByBook(selectedRelic).toLocaleString()}</span>
                                             </div>
                                         </CardBody>
@@ -175,6 +166,7 @@ function ChartModal({ selectedRelic, isOpen, onOpenChange }: ChartModalProps) {
 type RelicsClientProps = {
     relics: RelicBook[]
 }
+
 export default function RelicsClient({ relics }: RelicsClientProps) {
     const [selectedRelic, setSelectedRelic] = useState<RelicBook | null>(null);
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
@@ -198,7 +190,7 @@ export default function RelicsClient({ relics }: RelicsClientProps) {
                                 <TableCell>
                                     <div className="flex gap-2 items-center">
                                         <img
-                                            src={getEngravingSrcByName(relic.name.replaceAll(' 각인서', ''))} 
+                                            src={getEngravingSrcByName(relic.name.replaceAll(' 각인서', ''))}
                                             alt="relic book icon"
                                             className="w-[28px] h-[28px] rounded-md"/>
                                         <p className="text-relics text-[12pt]">{relic.name}</p>
@@ -206,37 +198,29 @@ export default function RelicsClient({ relics }: RelicsClientProps) {
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex gap-1 items-center">
-                                        <img 
-                                            src="/icons/gold.png" 
-                                            alt="goldicon"
-                                            className="w-[16px] h-[16px]"/>
+                                        <img src="/icons/gold.png" alt="goldicon" className="w-[16px] h-[16px]"/>
                                         <span className="text-[12pt]">{relic.price.toLocaleString()}</span>
                                     </div>
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex gap-1 items-center">
-                                        <img 
-                                            src="/icons/gold.png" 
-                                            alt="goldicon"
-                                            className="w-[16px] h-[16px]"/>
+                                        <img src="/icons/gold.png" alt="goldicon" className="w-[16px] h-[16px]"/>
                                         <span className="text-[12pt]">{getUndoPrice(relic).toLocaleString()}</span>
                                     </div>
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex gap-1 items-center">
-                                        <span 
-                                            className={clsx(
-                                                "text-[12pt]",
-                                                getDiffPrice(relic) > 0 ? "text-green-700 dark:text-green-400" : getDiffPrice(relic) < 0 ? 'text-red-700 dark:text-red-400' : 'fadedtext'
-                                            )}>
+                                        <span className={clsx(
+                                            "text-[12pt]",
+                                            getDiffPrice(relic) > 0 ? "text-green-700 dark:text-green-400" : getDiffPrice(relic) < 0 ? 'text-red-700 dark:text-red-400' : 'fadedtext'
+                                        )}>
                                             {getDiffPrice(relic) > 0 ? '+' : getDiffPrice(relic) < 0 ? '-' : ''}
                                         </span>
-                                        <span 
-                                            className={clsx(
-                                                "text-[12pt]",
-                                                getDiffPrice(relic) > 0 ? "text-green-700 dark:text-green-400" : getDiffPrice(relic) < 0 ? 'text-red-700 dark:text-red-400' : 'fadedtext'
-                                            )}>
-                                            {Math.abs(getDiffPrice(relic)).toLocaleString()} ({Math.round(getDiffPrice(relic) / getUndoPrice(relic) * 1000) / 10}%)
+                                        <span className={clsx(
+                                            "text-[12pt]",
+                                            getDiffPrice(relic) > 0 ? "text-green-700 dark:text-green-400" : getDiffPrice(relic) < 0 ? 'text-red-700 dark:text-red-400' : 'fadedtext'
+                                        )}>
+                                            {Math.abs(getDiffPrice(relic)).toLocaleString()} ({Math.round((getDiffPrice(relic) / getUndoPrice(relic)) * 1000) / 10}%)
                                         </span>
                                     </div>
                                 </TableCell>
@@ -274,6 +258,10 @@ export default function RelicsClient({ relics }: RelicsClientProps) {
                 )}
             </div>
             <ChartModal isOpen={isOpen} selectedRelic={selectedRelic} onOpenChange={onOpenChange}/>
+            <Script
+                async
+                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
+                crossOrigin="anonymous"/>
         </div>
     )
 }

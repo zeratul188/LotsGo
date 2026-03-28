@@ -355,6 +355,53 @@ export function WeekComponent({ works, partyWorks, guild, bosses, setWorks, setG
                                         </PopoverContent>
                                     </Popover>
                                 ))}
+                                {getCalendarByPartyWorks(week, partyWorks).map((work, index) => (
+                                    <Popover key={index} radius="sm" showArrow>
+                                        <PopoverTrigger>
+                                            <div className="rounded-md border-2 pl-2 pr-2 pt-1 pb-1 mb-2 cursor-pointer border-[#b61500] dark:border-[#a31300] hover:bg-[#f0f1f3] hover:dark:bg-[#242f3b]">
+                                                <div className="w-full flex gap-2 items-center mb-1">
+                                                    <div className="w-[12px] h-[12px] rounded-full bg-[#b61500] dark:bg-[#a31300]"/>
+                                                    <p className="text-[9pt] fadedtext grow">파티 일정</p>
+                                                    <p className="truncate text-[9pt] fadedtext">{formatHours(work.date)}</p>
+                                                </div>
+                                                <p className="w-full truncate text-sm">{work.name}</p>
+                                            </div>
+                                        </PopoverTrigger>
+                                        <PopoverContent>
+                                            <div className="w-[400px] pb-2">
+                                                <div className="w-full flex gap-2 items-center mb-2 mt-2">
+                                                    <div className="w-[16px] h-[16px] rounded-full bg-[#b61500] dark:bg-[#a31300]"/>
+                                                    <p className="text-[12pt] fadedtext">파티 일정</p>
+                                                </div>
+                                                <Divider className="mb-1"/>
+                                                <p className="text-sm fadedtext">제목</p>
+                                                <p className="truncate mb-2">{work.name}</p>
+                                                <p className="text-sm fadedtext">파티명</p>
+                                                <p className="truncate mb-2">{work.raidName}</p>
+                                                <p className="text-sm fadedtext">날짜 및 시간</p>
+                                                <p className="truncate mb-2">{formatDatetoString(work.date)}</p>
+                                                <Divider className="mb-2.5"/>
+                                                <p className="truncate mb-2 text-lg">{getBossesById(bosses, work.content)?.name}</p>
+                                                <div className="grid gap-2 grid-cols-4">
+                                                    {work.stages.map((stage, index) => {
+                                                        if (stage.difficulty === '선택안함') return null;
+                                                        return (
+                                                            <Chip
+                                                                key={index}
+                                                                color={getTextColorByDifficulty(stage.difficulty)}
+                                                                radius="sm"
+                                                                variant="flat"
+                                                                size="sm"
+                                                                className="min-w-full text-center">
+                                                                {stage.difficulty} {stage.stage}관
+                                                            </Chip>
+                                                        )
+                                                    })}
+                                                </div>
+                                            </div>
+                                        </PopoverContent>
+                                    </Popover>
+                                ))}
                             </div>
                         </div>
                     ))}

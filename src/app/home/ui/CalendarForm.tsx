@@ -63,8 +63,8 @@ function EventComponent({ events }: EventComponentProps) {
                                 </CardBody>
                                 <CardFooter>
                                     <div className="w-full text-left">
-                                        <p className="text-lg truncate">{event.title}</p>
-                                        <p className="fadedtext text-sm truncate">{getStringByDate(dayjs(event.startDate))} ~ {getStringByDate(dayjs(event.endDate))}</p>
+                                        <p className="text-md truncate">{event.title}</p>
+                                        <p className="fadedtext text-xs truncate">{getStringByDate(dayjs(event.startDate))} ~ {getStringByDate(dayjs(event.endDate))}</p>
                                     </div>
                                 </CardFooter>
                             </Card>
@@ -110,11 +110,11 @@ function NoticeComponent({ notices }: NoticeComponentProps) {
                     {notices.map((notice, index) => (
                         <a href={notice.link} key={index} target="_blank" rel="noopener noreferrer">
                             <div className={clsx(
-                                "w-full pr-2 pl-2 pt-4 pb-4 hover:bg-gray-100 dark:hover:bg-[#222222]",
+                                "w-full pr-2 pl-2 pt-2 pb-2 hover:bg-gray-100 dark:hover:bg-[#222222]",
                                 index !== 0 ? "border-t-1 border-[#dddddd] dark:border-[#222222]" : ""
                             )}>
-                                <p className="text-md truncate">{notice.title}</p>
-                                <p className="fadedtext text-sm truncate">{getStringByDate(dayjs(notice.date))}</p>
+                                <p className="text-sm truncate">{notice.title}</p>
+                                <p className="fadedtext text-xs truncate">{getStringByDate(dayjs(notice.date))}</p>
                             </div>
                         </a>
                     ))}
@@ -212,7 +212,6 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
                                                 <div className={clsx(
                                                     "hidden sm:block w-[34px] h-[34px] aspect-square p-[3px] rounded-md",
                                                     getBackgroundByGrade(item.grade)
-
                                                 )}>
                                                     <img
                                                         src={item.icon} 
@@ -464,4 +463,3 @@ export default function CalendarComponent({ gate, boss, islands, islandTime, isl
         </div>
     )
 }
-

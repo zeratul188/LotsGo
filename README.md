@@ -4,9 +4,9 @@
 
 ## 📑 프로젝트 소개
 
-로츠고(Lot's Go)는 로스트아크 유저의 숙제와 일정, 레이드 관리를 지원하는 웹 서비스입니다.  
+**로츠고(Lot's Go)**는 로스트아크 유저의 숙제와 일정, 레이드 관리를 지원하는 웹 서비스입니다.  
 여러 캐릭터를 동시에 육성하면서 발생하는 숙제 관리의 불편함을 해결하기 위해 개발되었으며, 게임 외부에서도 진행 상태를 확인하고 관리할 수 있도록 설계되었습니다.  
-일일/주간 숙제 추적, 일정 관리, 레이드 파티 기능을 통해 플레이 흐름을 보다 효율적으로 정리할 수 있습니다.
+**일일/주간 숙제 추적, 일정 관리, 레이드 파티 기능**을 통해 플레이 흐름을 보다 효율적으로 정리할 수 있습니다.
 
 ## 🔥 주요 기능
 <details>
@@ -69,6 +69,32 @@
 </details>
 
 ## 🎬 기능 미리보기
+<table>
+  <tr>
+    <td align="center" width="25%"><img src="./assets/readme/home.gif" width="160"/></td>
+    <td align="center" width="25%"><img src="./assets/readme/homework.gif" width="160"/></td>
+    <td align="center" width="25%"><img src="./assets/readme/add homework.gif" width="160"/></td>
+    <td align="center" width="25%"><img src="./assets/readme/calendar.gif" width="160"/></td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><b>로스트아크 정보</b></td>
+    <td align="center" width="25%"><b>숙제 체크</b></td>
+    <td align="center" width="25%"><b>숙제 추가</b></td>
+    <td align="center" width="25%"><b>일정 관리</b></td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><img src="./assets/readme/character.gif" width="160"/></td>
+    <td align="center" width="25%"><img src="./assets/readme/party raid add.gif" width="160"/></td>
+    <td align="center" width="25%"><img src="./assets/readme/party manage.gif" width="160"/></td>
+    <td align="center" width="25%"><img src="./assets/readme/tool.gif" width="160"/></td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><b>전투정보실</b></td>
+    <td align="center" width="25%"><b>파티 레이드 추가</b></td>
+    <td align="center" width="25%"><b>파티 레이드 관리</b></td>
+    <td align="center" width="25%"><b>편의성 도구</b></td>
+  </tr>
+</table>
 
 ## 🧱 기술 스택
 ### 📌 프레임워크 & 언어
@@ -107,11 +133,15 @@
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
 
 ## 🧠 아키텍처 설계
+![로츠고](https://github.com/user-attachments/assets/6fa24f2d-d49c-4baa-9bf5-6bfd2b5e3ee0)
+
+로츠고는 **Next.js 기반의 프론트엔드와 API Route**를 중심으로 구성되어 있으며, **Firebase**를 데이터 저장소로 이용하고 있고 자주 이용하는 데이터는 **Redis**를 통해 캐싱을 적용하여 성능을 최적화했습니다.  
+사용자의 요청은 프론트엔드를 통해 서버로 전달되며, 서버는 Firebase 및 외부 로스트아크 API와 통신하여 데이터를 처리한 뒤 응답을 받습니다.  
+또한 **Cloud Scheduler와 Cloud Functions**를 활용하여 일일 및 주간 숙제 초기화를 자동화하도록 설계하였습니다.
 
 ## ⚡ 성능 최적화
-
-## 🧪 문제 해결 경험
-
-## 💡 개발하면서 느낀 점
-
-## 🔮 향후 개선 계획
+- **Redis 기반 캐시**를 적용하여 반복 조회 데이터의 응답 속도를 개선
+- **cursor 기반 페이지네이션**을 도입하여 대량 데이터 조회 시 초기 로딩 부담 감소와 읽기 비용 감소
+- **검색 전용 구조 및 인덱스**를 활용하여 닉네임/캐릭터 조회 성능 최적화
+- 일괄 처리 작업에는 **batch 방식**을 적용하여 네트워크 요청 수와 처리 비용을 최소화
+- 숙제 초기화 로직을 **스케줄러 기반**으로 분리하여 사용자 요청 시점의 서버 부담을 감소

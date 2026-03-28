@@ -9,11 +9,13 @@ import {
     Radio, RadioGroup, 
     Table, TableBody, TableCell, TableColumn, TableHeader, TableRow 
 } from "@heroui/react";
+import dynamic from "next/dynamic";
+import Script from "next/script";
 import { useEffect, useState } from "react"
 import { CalData, formatGold, getBreakpointGold, loadData, useClickPersons, useClickResetDatas, useClickSaveData } from "./calcFeat";
 import { useMobileQuery } from "@/utiils/utils";
-import LineAd from "../ad/LineAd";
-import FixedLineAd from "../ad/FixedLineAd";
+const LineAd = dynamic(() => import('../ad/LineAd'), { ssr: false });
+const FixedLineAd = dynamic(() => import('../ad/FixedLineAd'), { ssr: false });
 
 export default function CalcClient() {
     const [gold, setGold] = useState(0);
@@ -612,6 +614,10 @@ export default function CalcClient() {
                 </div>
             ) : <></>}
             <p className="mt-2 fadedtext text-sm">항목을 클릭하시면 클립보드에 복사됩니다.</p>
+            <Script
+                async
+                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
+                crossOrigin="anonymous"/>
         </div>
     )
 }

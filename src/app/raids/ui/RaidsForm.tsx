@@ -38,6 +38,7 @@ import DeleteIcon from "@/app/icons/DeleteIcon";
 import { EditIcon } from "@/Icons/EditIcon";
 import PersonIcon from "@/Icons/PersonIcon";
 import JobEmblemIcon from "@/Icons/JobEmblemIcon";
+import SearchEmptyIcon from "@/Icons/SearchEmptyIcon";
 
 // 파티 내 레이드 목록 컴포넌트
 type PartyRaidsComponentProps = {
@@ -359,10 +360,16 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                 ))}
             </div>
             <div className={clsx(
-                `w-full h-[500px] flex items-center justify-center flex-col`,
+                `w-full h-[500px] flex items-center justify-center flex-col gap-3 text-center`,
                 selectedParty.party.filter(filterPartys(bosses, searchContent)).length === 0 ? '' : 'hidden'
             )}>
-                추가된 레이드가 없습니다.
+                <div className="flex items-center justify-center">
+                    <SearchEmptyIcon size={82} className="text-default-400" />
+                </div>
+                <div className="space-y-1">
+                    <p className="text-lg text-foreground">추가된 파티가 없습니다.</p>
+                    <p className="text-sm fadedtext">새 파티를 추가하면 이곳에 표시됩니다.</p>
+                </div>
             </div>
             <AddPartyModal 
                 dispatch={dispatch}

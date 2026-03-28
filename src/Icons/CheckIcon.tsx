@@ -1,17 +1,21 @@
 import React from 'react';
 
 type CheckIconProps = {
-  size?: number; // 아이콘 크기
+  size?: number;
+  color?: string;
 };
 
-export default function CheckIcon({ size }: CheckIconProps) {
+export default function CheckIcon({
+  size,
+  color = '#22c55e',
+}: CheckIconProps) {
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="#22c55e"
+      stroke={color}
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
