@@ -132,6 +132,19 @@ export default function CharacterClient() {
                     setLoading={characterForm.setLoading}
                     setNickname={characterForm.setNickname}/>
                 <Divider/>
+                {isMobile ? (
+                    <div className="w-full flex justify-center px-4 overflow-hidden mt-8 mb-8">
+                        <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px]">
+                            <LineAd isLoaded={true}/>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="w-full flex justify-center mt-8 overflow-hidden mb-8">
+                        <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-4 mx-4">
+                            <FixedLineAd isLoaded={true}/>
+                        </div>
+                    </div>
+                )}
                 <InfomationComponent/>
                 <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 mx-auto mt-4">
                     <HistoryComponent 

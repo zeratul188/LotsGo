@@ -11,6 +11,12 @@ import clsx from "clsx";
 import { LoadingComponent } from "@/app/UtilsCompnents";
 import { AccessoriesComponent, ArkgridComponent, ArkpassiveComponent, CardComponent, EngravingComponent, EquipmentComponent, GemComponent, StatComponent } from "./ui/CharacterForm";
 import JobEmblemIcon from "@/Icons/JobEmblemIcon";
+import Script from "next/script";
+import dynamic from "next/dynamic";
+import { useMobileQuery } from "@/utiils/utils";
+const LineAd = dynamic(() => import("@/app/ad/LineAd"), { ssr: false });
+const FixedLineAd = dynamic(() => import("@/app/ad/FixedLineAd"), { ssr: false });
+const BoxAd = dynamic(() => import("@/app/ad/BoxAd"), { ssr: false });
 
 export default function CharacterListClient() {
     const characterName: string = useSelector((state: RootState) => state.login.user.character);
@@ -18,6 +24,7 @@ export default function CharacterListClient() {
     const [expeditionCharacters, setExpeditionCharacters] = useState<ExpeditionCharacter[]>([]);
     const [isLoading, setLoading] = useState(false);
     const [search, setSearch] = useState('');
+    const isMobile = useMobileQuery();
 
     const handleSearchCharacter = async () => {
         if (!search) return;
@@ -69,6 +76,19 @@ export default function CharacterListClient() {
                     </Button>
                 </div>
             </div>
+            {isMobile ? (
+                <div className="w-full flex justify-center px-4 overflow-hidden mt-8 mb-8">
+                    <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px]">
+                        <LineAd isLoaded={true}/>
+                    </div>
+                </div>
+            ) : (
+                <div className="w-full flex justify-center mt-8 overflow-hidden mb-8">
+                    <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-4 mx-4">
+                        <FixedLineAd isLoaded={true}/>
+                    </div>
+                </div>
+            )}
             {isLoading 
                 ? <LoadingComponent heightStyle="min-h-[calc(100vh-165px)]"/> 
                 : expeditionCharacters.length > 0 
@@ -124,6 +144,25 @@ export default function CharacterListClient() {
                         <p className="fadedtext text-lg">검색 결과가 없습니다.</p>
                     </div>
                 )}
+            {isMobile ? (
+                <div className="w-full flex justify-center px-4">
+                    <div className="w-full max-w-[360px] min-h-[100px] mt-4">
+                        <BoxAd isLoaded={true}/>
+                    </div>
+                </div>
+            ) : (
+                <div className="w-full flex justify-center px-4 overflow-hidden mt-8">
+                    <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-8">
+                        <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px]">
+                            <LineAd isLoaded={true}/>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <Script
+                async
+                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
+                crossOrigin="anonymous"/>
         </div>
     )
 }
