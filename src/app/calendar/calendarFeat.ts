@@ -570,7 +570,6 @@ export async function handleRemoveCalendar(
         const id = storedUser.id;
         const calendars: Calendar[] = works.map(item => ({...item}));
         const findIndex = calendars.findIndex(calendar => (calendar.name === selectCalendar.name) && (calendar.date.getTime() === selectCalendar.date.getTime()));
-        console.log(`finded index : ${findIndex}`);
         if (findIndex !== -1) {
             const newCalendars = calendars.filter((_, i) => i !== findIndex);
             const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));

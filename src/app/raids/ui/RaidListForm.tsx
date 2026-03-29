@@ -18,12 +18,14 @@ import { useEffect, useState } from "react";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
 import clsx from "clsx";
 import { handleAddRaid, handleJoinParty, handleJoinPrivateParty, isInvitedParty, joinPublicParty } from "../lib/raidListFeat";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/app/store/store";
 import { LoadingComponent } from "@/app/UtilsCompnents";
 import { Character } from "@/app/store/loginSlice";
 import LeaderIcon from "@/Icons/LeaderIcon";
 import LockerIcon from "@/Icons/LockerIcon";
+import dynamic from "next/dynamic";
+const FixedLineAd = dynamic(() => import("@/app/ad/FixedLineAd"), { ssr: false });
 
 // 파티 찾기 컴포넌트
 type FindComponentProps = {
@@ -114,7 +116,14 @@ export function FindComponent({ joinRaids, isLoadingData, dispatch }: FindCompon
                     </div>
                 </CardBody>
             </Card>
-            <div className="w-full overflow-x-auto scrollbar-hide mt-5">
+            {isMobile ? null : (
+                <div className="w-full flex justify-center mt-8 overflow-hidden mb-4">
+                    <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-4 mx-4">
+                        <FixedLineAd isLoaded={true}/>
+                    </div>
+                </div>
+            )}
+            <div className="w-full sm:min-h-[600px] overflow-x-auto scrollbar-hide mt-5">
                 {isLoadingData ? <LoadingComponent heightStyle={'h-[calc(100vh-105px)]'}/> : (
                     <div>
                         <div className="w-full grid min-[681px]:grid-cols-2 min-[1021px]:grid-cols-3 gap-3 p-2">
