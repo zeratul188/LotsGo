@@ -5,9 +5,11 @@ import { useState } from "react"
 import { useSelector } from "react-redux"
 import { getMemberBoxs, handleChangeLink, handleChangeManager, handleChangeName, handleChangePublicSetting, handleChangePwd, handleChangePwdSetting, handleDeleteRaid, handleLeaveRaid, isManagerByUserId } from "../lib/settingFeat"
 import { RaidMember } from "@/app/api/raids/members/route"
-import { copyToClipboard, SetStateFn } from "@/utiils/utils"
+import { copyToClipboard, SetStateFn, useMobileQuery } from "@/utiils/utils"
 import clsx from "clsx"
 import { decrypt } from "@/utiils/crypto"
+import dynamic from "next/dynamic";
+const FixedLineAd = dynamic(() => import("@/app/ad/FixedLineAd"), { ssr: false });
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
@@ -18,6 +20,7 @@ type PartySettingComponentProps = {
     dispatch: AppDispatch
 }
 export function PartySettingComponent({ raid, members, dispatch }: PartySettingComponentProps) {
+    const isMobile = useMobileQuery();
     // 파티명 변경
     const [changeName, setChangeName] = useState('');
     const [isLoadingChangeName, setLoadingChangeName] = useState(false);
@@ -57,6 +60,13 @@ export function PartySettingComponent({ raid, members, dispatch }: PartySettingC
 
     return (
         <div className="w-full pt-2">
+            {isMobile ? null : (
+                <div className="w-full flex justify-center overflow-hidden mt-8 mb-4">
+                    <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-4 mx-4">
+                        <FixedLineAd isLoaded={true}/>
+                    </div>
+                </div>
+            )}
             <div className="w-full flex flex-col sm:flex-row gap-3 sm:items-center">
                 <div className="grow">
                     <h3 className="font-bold text-xl">파티명 변경</h3>

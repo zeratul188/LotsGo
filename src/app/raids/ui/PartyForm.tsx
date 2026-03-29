@@ -44,6 +44,8 @@ import { ShieldSecurityIcon } from "@/Icons/ShieldSecurityIcon";
 import CheckIcon from "@/Icons/CheckIcon";
 import { useMobileQuery } from "@/utiils/utils";
 import JobEmblemIcon from "@/Icons/JobEmblemIcon";
+import dynamic from "next/dynamic";
+const FixedLineAd = dynamic(() => import("@/app/ad/FixedLineAd"), { ssr: false });
 
 const PAGE_SIZE = 10;
 
@@ -54,6 +56,7 @@ type ChecklistComponentProps = {
     party: Raid
 }
 function ChecklistComponent({ members, bosses, party }: ChecklistComponentProps) {
+    const isMobile = useMobileQuery();
     const [results, setResults] = useState<RaidMember[]>([]);
     const [search, setSearch] = useState('');
 
@@ -76,7 +79,14 @@ function ChecklistComponent({ members, bosses, party }: ChecklistComponentProps)
 
     return (
         <div className="w-full">
-            <div className="w-full flex gap-4 items-center">
+            {isMobile ? null : (
+                <div className="w-full flex justify-center overflow-hidden mb-4">
+                    <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-4 mx-4">
+                        <FixedLineAd isLoaded={true}/>
+                    </div>
+                </div>
+            )}
+            <div className="w-full flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                 <Input
                     radius="sm"
                     label="검색"

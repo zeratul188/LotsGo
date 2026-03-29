@@ -14,7 +14,6 @@ export function getGem(gems: ArkGridGem[], index: number): ArkGridGem | undefine
 export function getPower(options: string[]): number {
     const item = options.find(item => item.includes('의지력 효율'));
     if (item) {
-        console.log(item.split(' : ')[1]);
         return Number(item.split(' : ')[1].split('의지력 효율 ')[1].replaceAll(')', ""));
     }
     return 0;

@@ -39,6 +39,8 @@ import { EditIcon } from "@/Icons/EditIcon";
 import PersonIcon from "@/Icons/PersonIcon";
 import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 import SearchEmptyIcon from "@/Icons/SearchEmptyIcon";
+import dynamic from "next/dynamic";
+const FixedLineAd = dynamic(() => import("@/app/ad/FixedLineAd"), { ssr: false });
 
 // 파티 내 레이드 목록 컴포넌트
 type PartyRaidsComponentProps = {
@@ -137,6 +139,13 @@ export function PartyRaidsComponent({dispatch, members, bosses}: PartyRaidsCompo
                     파티 추가
                 </Button>
             </div>
+            {isMobile ? null : (
+                <div className="w-full flex justify-center overflow-hidden mt-8 mb-4">
+                    <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-4 mx-4">
+                        <FixedLineAd isLoaded={true}/>
+                    </div>
+                </div>
+            )}
             <div className={clsx(
                 `grid gap-4 min-[816px]:grid-cols-2 min-[1232px]:grid-cols-3 mt-4`,
                 selectedParty.party.filter(filterPartys(bosses, searchContent)).length > 0 ? '' : 'hidden'
@@ -452,7 +461,6 @@ function InvolvedModal({ dispatch, partyId, members, userId, bosses, selectedPar
                     const level = findBoss.difficulty.find(d => d.stage === s.stage && d.difficulty === s.difficulty)?.level;
                     return level !== undefined ? Math.max(max, level) : max;
                 }, 0) : 0;
-            console.log(members);
             const findMember = members.find(m => m.id === userId);
             if (findMember) {
                 switch(tab) {
