@@ -139,7 +139,6 @@ export async function login(
             })
         })
         .catch((error: any) => {
-            console.log(error.code);
             if (error.code === 'auth/wrong-password' && data.userData.password === 'null') {
                 addToast({
                     title: "비밀번호 미일치",

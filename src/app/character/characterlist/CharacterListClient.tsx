@@ -76,13 +76,7 @@ export default function CharacterListClient() {
                     </Button>
                 </div>
             </div>
-            {isMobile ? (
-                <div className="w-full flex justify-center px-4 overflow-hidden mt-8 mb-8">
-                    <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px]">
-                        <LineAd isLoaded={true}/>
-                    </div>
-                </div>
-            ) : (
+            {isMobile ? null : (
                 <div className="w-full flex justify-center mt-8 overflow-hidden mb-8">
                     <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-4 mx-4">
                         <FixedLineAd isLoaded={true}/>
