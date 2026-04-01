@@ -62,12 +62,14 @@ export async function loadChecklist(
     const id = storedUser ? storedUser.id : '';
 
     const dataRef = ref(database, '/checklist/biweekly'); // 원하는 경로
-    const snapshot = await get(dataRef);
+    const [snapshot, res, lifeRes] = await Promise.all([
+        get(dataRef),
+        fetch(`/api/checklist/list?id=${id}`),
+        fetch(`/api/checklist/life?id=${id}`)
+    ]);
     if (snapshot.exists()) {
         setBiweekly(Number(snapshot.val()));
     }
-
-    const res = await fetch(`/api/checklist/list?id=${id}`);
 
     if (!res.ok) {
         addToast({
@@ -78,7 +80,6 @@ export async function loadChecklist(
         return;
     }
 
-    const lifeRes = await fetch(`/api/checklist/life?id=${id}`);
     const lifeObj = await lifeRes.json();
 
     // 생기 관련 데이터
@@ -151,12 +152,13 @@ export async function loadChecklist(
         return 0;
     });
     checklist.sort((a, b) => a.position - b.position);
+    const bossMaxLevelMap = new Map(
+        bosses.map((boss) => [boss.name, Math.max(...boss.difficulty.map((difficulty) => difficulty.level))])
+    );
     for (const character of checklist) {
         const sortedChecklist = character.checklist.sort((a, b) => {
-            const aBoss = bosses.find(item => item.name === a.name) ? bosses.find(item => item.name === a.name) : null;
-            const aMax = aBoss ? Math.max(...aBoss.difficulty.map(d => d.level)) : 0;
-            const bBoss = bosses.find(item => item.name === b.name) ? bosses.find(item => item.name === b.name) : null;
-            const bMax = bBoss ? Math.max(...bBoss.difficulty.map(d => d.level)) : 0;
+            const aMax = bossMaxLevelMap.get(a.name) ?? 0;
+            const bMax = bossMaxLevelMap.get(b.name) ?? 0;
             if (!a.isGold && b.isGold) {
                 return 1;
             } else if (a.isGold && !b.isGold) {

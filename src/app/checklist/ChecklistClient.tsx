@@ -3,13 +3,12 @@ import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, Ch
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
 import { checkLogin, getBosses, getCubes, handleResetChecklist, loadChecklist, settingFilter } from "./lib/checklistFeat";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { CheckCharacter } from "../store/checklistSlice";
 import { Character, LoginUser } from "../store/loginSlice";
 import { addToast, Button, ButtonGroup, Spinner } from "@heroui/react";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
@@ -47,9 +46,19 @@ export default function ChecklistClient() {
     const checklist: CheckCharacter[] = useSelector((state: RootState) => state.checklist.checklist);
     const isMobile = useMobileQuery();
     const [isLoadingReset, setLoadingReset] = useState(false);
+    const lastFetchRef = useRef(Date.now());
     
     const [isOpenBosses, setOpenBosses] = useState(false);
     const onOpenChangeBosses = (isOpen: boolean) => setOpenBosses(isOpen);
+
+    useEffect(() => {
+        if (checklistForm.bosses.length === 0) {
+            checklistForm.setBosses(initialBosses);
+        }
+        if (checklistForm.cubes.length === 0) {
+            checklistForm.setCubes(initialCubes);
+        }
+    }, []);
     
     useEffect(() => {
         if (!expedition || expedition.length === 0) return;
@@ -68,8 +77,6 @@ export default function ChecklistClient() {
         checklistForm.setAccounts(results);
     }, [checklist]);
 
-    let lastFetch = Date.now(); // 최근 새로고침 시점
-
     useEffect(() => {
         if (typeof window === 'undefined') return;
 
@@ -80,8 +87,8 @@ export default function ChecklistClient() {
         const handleVisibility = () => {
             if (document.visibilityState === 'visible') {
                 const now = Date.now();
-                if (now - lastFetch > 20 * 60 * 1000) {
-                    lastFetch = now;
+                if (now - lastFetchRef.current > 20 * 60 * 1000) {
+                    lastFetchRef.current = now;
                     checklistForm.setLoading(true);
                     loadChecklist(checklistForm.setLoading, dispatch, expedition, checklistForm.bosses, checklistForm.setLife, checklistForm.setBlessing, checklistForm.setMax, checklistForm.setBiweekly);
                 }
@@ -93,25 +100,20 @@ export default function ChecklistClient() {
         return () => {
             document.removeEventListener('visibilitychange', handleVisibility);
         }
-    }, [loadChecklist]);
+    }, [checklistForm.bosses, dispatch, expedition]);
 
     useEffect(() => {
         if (!isCheckedToken) return;
-        const auth = getAuth();
-        onAuthStateChanged(auth, async (user) => {
-            const loadCubes = async () => {
-                const token = await user?.getIdToken();
-                if (token) {
-                    const cubeData = await getCubes();
-                    checklistForm.setCubes(cubeData);
-                    const bossData = await getBosses();
-                    checklistForm.setBosses(bossData);
-                }
-            }
-            loadCubes();
-        })
         if (checkLogin()) {
             checklistForm.setLogined(true);
+            Promise.all([getCubes(), getBosses()])
+                .then(([cubeData, bossData]) => {
+                    checklistForm.setCubes(cubeData);
+                    checklistForm.setBosses(bossData);
+                })
+                .catch(() => {
+                    // Keep local JSON fallback when remote sync fails.
+                });
         }
         const loadSettings = async () => {
             const settingLocal = localStorage.getItem('userSettings');
