@@ -150,6 +150,7 @@ import { ControlStage } from "../model/types";
 import CheckIcon from "@/Icons/CheckIcon";
 import CharacterIcon from "@/Icons/CharacterIcon";
 import BusIcon from "@/Icons/BusIcon";
+import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 
 // state 관리
 export type ModalData = {
@@ -1086,36 +1087,31 @@ export function ChecklistComponent({
                     )}>
                         <CardHeader>
                             <div className={clsx(
-                                "w-full flex items-center gap-2",
+                                "w-full flex items-center gap-1",
                                 isHideDayContent ? "flex-col" : "flex-col md960:flex-row"
                             )}>
-                                <div className="w-full grow flex gap-4 items-center">
-                                    <div className="flex flex-col gap-2 items-center">
-                                        <Avatar isBordered size="md" color={character.isGold ? 'warning' : 'default'} src={getImgByJob(character.job)}/>
-                                        <Chip size="sm" variant="flat" radius="sm" color="warning" className={clsx(
-                                            "text-[8pt] p-0.5",
-                                            character.isGold ? 'hidden sm:flex' : 'hidden'
-                                        )}>
-                                            골드 지정
-                                        </Chip>
+                                <Chip
+                                    radius="sm"
+                                    color="default"
+                                    variant="flat"
+                                    className={clsx(
+                                        "min-w-full",
+                                        isHideDayContent ? '' : 'hidden'
+                                    )}>
+                                    <div className="grid grid-cols-[4fr_1px_10fr_1px_5fr] gap-1 text-xs text-center">
+                                        <p className={clsx(
+                                            character.isGold ? 'text-yellow-600 dark:text-yellow-400' : 'fadedtext'
+                                        )}>골드 지정</p>
+                                        <Divider orientation="vertical" className="min-h-full"/>
+                                        <p>{character.account}</p>
+                                        <Divider orientation="vertical" className="min-h-full"/>
+                                        <p>{character.server}</p>
                                     </div>
+                                </Chip>
+                                <div className="w-full grow flex gap-2 items-center">
+                                    <JobEmblemIcon job={character.job} size={38}/>
                                     <div className="flex grow flex-row md960:flex-col items-center">
                                         <div className="grow-1 w-full">
-                                            <div className="flex gap-2">
-                                                <Chip 
-                                                    size="sm"
-                                                    variant="flat"
-                                                    radius="sm">
-                                                    {character.account}
-                                                </Chip>
-                                                <Chip 
-                                                    size="sm"
-                                                    variant="flat"
-                                                    radius="sm"
-                                                    color="primary">
-                                                    {character.server}
-                                                </Chip>
-                                            </div>
                                             <p className="fadedtext text-sm mt-1">{character.job} · Lv.{character.level}</p>
                                             <div className="flex gap-2 items-center">
                                                 <span className={clsx(
@@ -1144,9 +1140,35 @@ export function ChecklistComponent({
                                     </div>
                                 </div>
                                 <div className={clsx(
-                                    "w-full h-full md960:w-[330px] flex items-start",
-                                    isHideDayContent ? 'px-0 sm:px-4' : ''
+                                    "w-full h-full md960:w-[330px] flex",
+                                    isHideDayContent ? 'px-0 sm:px-4 items-start' : 'flex-col items-end gap-1'
                                 )}>
+                                    <div className={clsx(
+                                        "flex gap-2",
+                                        isHideDayContent ? 'hidden' : ''
+                                    )}>
+                                        <Chip size="sm" variant="flat" radius="sm" color="warning" className={clsx(
+                                            "text-[8pt] p-0.5",
+                                            character.isGold ? 'hidden sm:flex' : 'hidden'
+                                        )}>
+                                            골드 지정
+                                        </Chip>
+                                        <Chip 
+                                            size="sm"
+                                            variant="flat"
+                                            radius="sm"
+                                            className="text-[8pt]">
+                                            {character.account}
+                                        </Chip>
+                                        <Chip 
+                                            size="sm"
+                                            variant="flat"
+                                            radius="sm"
+                                            color="primary"
+                                            className="text-[8pt]">
+                                            {character.server}
+                                        </Chip>
+                                    </div>
                                     <Popover showArrow disableAnimation radius="sm">
                                         <PopoverTrigger>
                                             <Progress 
@@ -1690,7 +1712,8 @@ function SelectAccountModal({
                                     label="추가할 계정 이름"
                                     radius="sm"
                                     labelPlacement="outside"
-                                    placeholder="2~12글자"
+                                    placeholder="2~10글자"
+                                    maxLength={10}
                                     value={inputName}
                                     onValueChange={setInputName}/>
                                 <Button
