@@ -116,16 +116,18 @@ export function useClickUpdate(ui: UpdateUI, payload: UpdatePayload) {
                         });
                         
                         const info = getCharacterInfoByFile(file, combatPower);
-                        let cloneAttackPieces = structuredClone(Array.isArray(payload.attackPieces) ? payload.attackPieces : []);
-                        let cloneSupportorPieces = structuredClone(Array.isArray(payload.supportorPieces) ? payload.supportorPieces : []);
-                        cloneAttackPieces = cloneAttackPieces.length === 0 ? createCardPieces('attack') : cloneAttackPieces;
-                        cloneSupportorPieces = cloneSupportorPieces.length === 0 ? createCardPieces('supportor') : cloneSupportorPieces;
-                        const savedPieces = saveCardSet(info.card.sets, info.card.cards, info.profile.characterType, cloneAttackPieces, cloneSupportorPieces);
-                        if (info.profile.characterType === 'attack') {
-                            cloneAttackPieces = savedPieces;
-                        } else {
-                            cloneSupportorPieces = savedPieces;
-                        }
+                        const cloneAttackPieces = syncCardPieces(
+                            'attack',
+                            Array.isArray(payload.attackPieces) ? payload.attackPieces : [],
+                            info.profile.characterType === 'attack' ? info.card.sets : [],
+                            info.profile.characterType === 'attack' ? info.card.cards : []
+                        );
+                        const cloneSupportorPieces = syncCardPieces(
+                            'supportor',
+                            Array.isArray(payload.supportorPieces) ? payload.supportorPieces : [],
+                            info.profile.characterType === 'supportor' ? info.card.sets : [],
+                            info.profile.characterType === 'supportor' ? info.card.cards : []
+                        );
                         ui.setAttackPieces(cloneAttackPieces);
                         ui.setSupportorPieces(cloneSupportorPieces);
                         const inputRes = await fetch('/api/characters', {
@@ -232,8 +234,18 @@ export async function loadProfile(
         const data = await res.json();
         titles = data.titles;
         loadedExpeditions = data.expeditions;
-        attackPieces = Array.isArray(data.attackPieces) ? data.attackPieces : createCardPieces('attack');
-        supportorPieces = Array.isArray(data.supportorPieces) ? data.supportorPieces : createCardPieces('supportor');
+        attackPieces = syncCardPieces(
+            'attack',
+            Array.isArray(data.attackPieces) ? data.attackPieces : [],
+            data.character?.profile?.characterType === 'attack' ? data.character.card?.sets ?? [] : [],
+            data.character?.profile?.characterType === 'attack' ? data.character.card?.cards ?? [] : []
+        );
+        supportorPieces = syncCardPieces(
+            'supportor',
+            Array.isArray(data.supportorPieces) ? data.supportorPieces : [],
+            data.character?.profile?.characterType === 'supportor' ? data.character.card?.sets ?? [] : [],
+            data.character?.profile?.characterType === 'supportor' ? data.character.card?.cards ?? [] : []
+        );
         if (data.date && data.character) {
             const basedDate = new Date(data.date.seconds * 1000 + data.date.nanoseconds / 1_000_000);
             const threeDaysInMs = 3 * 24 * 60 * 60 * 1000;
@@ -250,9 +262,27 @@ export async function loadProfile(
                     date: today
                 }
                 ui.setCharacterInfo(data.character);
-                ui.setAttackPieces(Array.isArray(data.attackPieces) ? data.attackPieces : createCardPieces('attack'));
-                ui.setSupporterPieces(Array.isArray(data.supportorPieces) ? data.supportorPieces : createCardPieces('supportor'));
+                ui.setAttackPieces(attackPieces);
+                ui.setSupporterPieces(supportorPieces);
                 ui.setTitles(data.titles);
+
+                const isAttackPiecesChanged = !isSameCardPieces(attackPieces, Array.isArray(data.attackPieces) ? data.attackPieces : []);
+                const isSupportorPiecesChanged = !isSameCardPieces(supportorPieces, Array.isArray(data.supportorPieces) ? data.supportorPieces : []);
+                if (isAttackPiecesChanged || isSupportorPiecesChanged) {
+                    await fetch('/api/characters', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            nickname: nickname,
+                            characterInfo: data.character,
+                            expeditions: loadedExpeditions,
+                            titles: data.titles,
+                            attackPieces: attackPieces,
+                            supportorPieces: supportorPieces
+                        })
+                    });
+                }
+
                 saveHistory(history);
                 ui.setExpeditions(loadedExpeditions);
                 ui.setLoading(false);
@@ -346,14 +376,18 @@ export async function loadProfile(
             ui.setExpeditions(newExpeditions);
             const info = getCharacterInfoByFile(file, combatPower);
             ui.setCharacterInfo(info);
-            attackPieces = attackPieces.length === 0 ? createCardPieces('attack') : attackPieces;
-            supportorPieces = supportorPieces.length === 0 ? createCardPieces('supportor') : supportorPieces;
-            const savedPieces = saveCardSet(info.card.sets, info.card.cards, info.profile.characterType, attackPieces, supportorPieces);
-            if (info.profile.characterType === 'attack') {
-                attackPieces = savedPieces
-            } else {
-                supportorPieces = savedPieces;
-            }
+            attackPieces = syncCardPieces(
+                'attack',
+                attackPieces,
+                info.profile.characterType === 'attack' ? info.card.sets : [],
+                info.profile.characterType === 'attack' ? info.card.cards : []
+            );
+            supportorPieces = syncCardPieces(
+                'supportor',
+                supportorPieces,
+                info.profile.characterType === 'supportor' ? info.card.sets : [],
+                info.profile.characterType === 'supportor' ? info.card.cards : []
+            );
             ui.setAttackPieces(attackPieces);
             ui.setSupporterPieces(supportorPieces);
             const inputRes = await fetch('/api/characters', {
@@ -392,32 +426,47 @@ export async function loadProfile(
 }
 
 // 카드 값 저장
-function saveCardSet(
-    cardSets: CardSet[],
-    cards: CardData[],
+function syncCardPieces(
     type: string,
-    attackPieces: CardPiece[],
-    supportorPieces: CardPiece[]
+    savedPieces: CardPiece[],
+    cardSets: CardSet[],
+    cards: CardData[]
 ): CardPiece[] {
-    if (type === 'attack') {
-        cardSets.forEach(sets => {
-            const setsName = data.cardPieces.attack.find(d => d.name === sets.name)?.simeple ?? 'undefined';
-            const findIndex = attackPieces.findIndex(p => p.name === setsName);
-            if (findIndex > -1) {
-                attackPieces[findIndex].pieces = getCardGems(sets, cards);
-            }
-        });
-        return attackPieces;
-    } else {
-        cardSets.forEach(sets => {
-            const setsName = data.cardPieces.supportor.find(d => d.name === sets.name)?.simeple ?? 'undefined';
-            const findIndex = supportorPieces.findIndex(p => p.name === setsName);
-            if (findIndex > -1) {
-                supportorPieces[findIndex].pieces = getCardGems(sets, cards);
-            }
-        });
-        return supportorPieces;
+    const syncedPieces = createCardPieces(type).map((piece) => {
+        const savedPiece = savedPieces.find((saved) => saved.name === piece.name);
+        return savedPiece ? { ...piece, pieces: savedPiece.pieces } : piece;
+    });
+
+    cardSets.forEach((sets) => {
+        const setsName = getCardPieceSimpleName(type, sets.name);
+        if (!setsName) return;
+
+        const findIndex = syncedPieces.findIndex((piece) => piece.name === setsName);
+        if (findIndex > -1) {
+            syncedPieces[findIndex].pieces = getCardGems(sets, cards);
+        }
+    });
+
+    return syncedPieces;
+}
+
+function isSameCardPieces(first: CardPiece[], second: CardPiece[]): boolean {
+    if (first.length !== second.length) {
+        return false;
     }
+
+    return first.every((piece, index) => {
+        const comparePiece = second[index];
+        return comparePiece && piece.name === comparePiece.name && piece.pieces === comparePiece.pieces;
+    });
+}
+
+function getCardPieceSimpleName(type: string, setName: string): string | null {
+    if (type === 'attack') {
+        return data.cardPieces.attack.find((piece) => piece.name === setName)?.simeple ?? null;
+    }
+
+    return data.cardPieces.supportor.find((piece) => piece.name === setName)?.simeple ?? null;
 }
 
 // 기본 카드 세트 생성 함수
