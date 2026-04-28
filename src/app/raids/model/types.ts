@@ -33,7 +33,58 @@ export type Raid = {
     isPwd: boolean,
     pwd: string,
     members: string[],
-    party: Party[]
+    party: Party[],
+    weeklySchedule: WeeklyRaidSchedule[]
+}
+
+export type RaidScheduleWeekday =
+    | "monday"
+    | "tuesday"
+    | "wednesday"
+    | "thursday"
+    | "friday"
+    | "saturday"
+    | "sunday"
+
+export type WeeklyRaidScheduleMember = {
+    userId: string,
+    characterName: string,
+    level: number,
+    job: string
+}
+
+export type WeeklyRaidSchedule = {
+    id: string,
+    dayOfWeek: RaidScheduleWeekday,
+    raidName: string,
+    members: WeeklyRaidScheduleMember[]
+}
+
+export const DEFAULT_WEEKLY_SCHEDULE: WeeklyRaidSchedule[] = [];
+
+export function getDefaultWeeklySchedule(): WeeklyRaidSchedule[] {
+    return [];
+}
+
+type RaidSource = Partial<Raid> & {
+    id: string
+}
+
+export function normalizeRaid(raid: RaidSource): Raid {
+    return {
+        id: raid.id,
+        name: raid.name ?? "",
+        managerId: raid.managerId ?? "",
+        managerNickname: raid.managerNickname ?? "",
+        avgLevel: raid.avgLevel ?? 0,
+        link: raid.link ?? "",
+        isOpen: raid.isOpen ?? false,
+        isPwd: raid.isPwd ?? false,
+        pwd: raid.pwd ?? "",
+        members: raid.members ?? [],
+        party: raid.party ?? [],
+        weeklySchedule: raid.weeklySchedule ?? getDefaultWeeklySchedule()
+    };
 }
 
 export type ChangePartys = {
