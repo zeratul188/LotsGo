@@ -1,4 +1,4 @@
-import { Party, Raid, TeamCharacter } from "@/app/raids/model/types";
+import { normalizeRaid, Party, Raid, TeamCharacter } from "@/app/raids/model/types";
 import { EditBox } from "@/app/raids/ui/RaidsForm";
 import { firestore } from "@/utiils/firebase"
 import { addDoc, arrayUnion, collection, doc, documentId, getDoc, getDocs, limit, query, runTransaction, updateDoc, where } from "firebase/firestore"
@@ -11,19 +11,24 @@ export async function GET(req: NextRequest) {
 
     try {
         const snapshot = await getDocs(collection(firestore, 'raids'));
-        const raids: Raid[] = snapshot.docs.map((doc => ({
-            id: doc.id,
-            isOpen: doc.data().isOpen,
-            isPwd: doc.data().isPwd,
-            link: doc.data().link,
-            avgLevel: doc.data().avgLevel,
-            managerId: doc.data().managerId,
-            managerNickname: doc.data().managerNickname,
-            members: doc.data().members,
-            name: doc.data().name,
-            party: doc.data().party,
-            pwd: doc.data().pwd
-        })));
+        const raids: Raid[] = snapshot.docs.map((doc) =>
+            normalizeRaid({
+                id: doc.id,
+                isOpen: doc.data().isOpen,
+                isPwd: doc.data().isPwd,
+                link: doc.data().link,
+                avgLevel: doc.data().avgLevel,
+                managerId: doc.data().managerId,
+                managerNickname: doc.data().managerNickname,
+                members: doc.data().members,
+                name: doc.data().name,
+                party: doc.data().party,
+                pwd: doc.data().pwd,
+                weeklySchedule: doc.data().weeklySchedule,
+                weeklyScheduleMemberIds: doc.data().weeklyScheduleMemberIds,
+                scheduleTables: doc.data().scheduleTables
+            })
+        );
 
         let joinRaids: Raid[] = [];
 
@@ -93,7 +98,10 @@ const handlers: Record<ActionType, Handler> = {
             pwd: raid.pwd,
             members: raid.members,
             party: raid.party,
-            avgLevel: raid.avgLevel
+            avgLevel: raid.avgLevel,
+            weeklySchedule: raid.weeklySchedule ?? [],
+            weeklyScheduleMemberIds: raid.weeklyScheduleMemberIds ?? [],
+            scheduleTables: raid.scheduleTables ?? []
         }
 
         if (typeof id !== "string" || id.trim() === "") {

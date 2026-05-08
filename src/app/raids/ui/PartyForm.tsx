@@ -45,6 +45,7 @@ import CheckIcon from "@/Icons/CheckIcon";
 import { useMobileQuery } from "@/utiils/utils";
 import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 import dynamic from "next/dynamic";
+import { CalendarComponent } from "./CalendarForm";
 const FixedLineAd = dynamic(() => import("@/app/ad/FixedLineAd"), { ssr: false });
 
 const PAGE_SIZE = 10;
@@ -370,13 +371,16 @@ export function PartyComponent({ dispatch, bosses }: PartyComponentProps) {
         return (
             <div className="w-full mt-4">
                 <Tabs radius="sm" color="primary" size="lg">
-                    <Tab key="home" title="파티원 숙제">
+                    <Tab key="home" title="숙제">
                         <ChecklistComponent members={members} bosses={bosses} party={selectedParty}/>
                     </Tab>
-                    <Tab key="party" title="레이드 목록">
+                    <Tab key="party" title="파티 모집">
                         <PartyRaidsComponent dispatch={dispatch} members={members} bosses={bosses}/>
                     </Tab>
-                    <Tab key="setting" title="파티 설정">
+                    <Tab key="calendar" title="일정표">
+                        <CalendarComponent dispatch={dispatch} bosses={bosses}/>
+                    </Tab>
+                    <Tab key="setting" title="설정">
                         <PartySettingComponent raid={selectedParty} members={members} dispatch={dispatch}/>
                     </Tab>
                 </Tabs>
