@@ -44,6 +44,8 @@ type CalendarComponentProps = {
 }
 
 export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) {
+    type CharacterSourceTab = "expeditions" | "checklist";
+
     const router = useRouter();
     const selectedRaid = useSelector((state: RootState) => state.party.selectedRaid);
     const loadedMembers = useSelector((state: RootState) => state.party.members);
@@ -55,6 +57,7 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
     const [isAddMemberOpen, setAddMemberOpen] = useState(false);
     const [isAddScheduleOpen, setAddScheduleOpen] = useState(false);
     const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
+    const [characterSourceTab, setCharacterSourceTab] = useState<CharacterSourceTab>("expeditions");
     const [newTableName, setNewTableName] = useState("");
     const [newScheduleDay, setNewScheduleDay] = useState<RaidScheduleWeekday>("wednesday");
     const [newScheduleBossId, setNewScheduleBossId] = useState("");
@@ -69,6 +72,11 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
     const availableRaidMemberIds = useMemo(() => getAvailableRaidMemberIds(selectedRaid, visibleMemberIds), [selectedRaid, visibleMemberIds]);
     const editingSchedule = useMemo(() => getEditingSchedule(weeklySchedule, editingCell), [editingCell, weeklySchedule]);
     const editingMemberInfo = useMemo(() => getEditingMemberInfo(loadedMembers, editingCell), [editingCell, loadedMembers]);
+    const selectableCharacters = useMemo(() => {
+        if (!editingMemberInfo) return [];
+        const source = characterSourceTab === "expeditions" ? editingMemberInfo.expeditions : editingMemberInfo.checklist;
+        return source.slice().sort((a, b) => b.level - a.level);
+    }, [characterSourceTab, editingMemberInfo]);
     const tableMinWidth = useMemo(() => getTableMinWidth(visibleMemberIds), [visibleMemberIds]);
     const selectedScheduleBoss = useMemo(() => bosses.find((boss) => boss.id === newScheduleBossId), [bosses, newScheduleBossId]);
 
@@ -183,7 +191,7 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
                                                                 <div className="flex w-full items-center gap-2">
                                                                     <JobEmblemIcon job={value.job} size={28} className="shrink-0 text-black dark:text-white" />
                                                                     <div className="flex min-w-0 flex-col">
-                                                                        <span className="truncate text-sm font-medium text-primary-700 dark:text-primary-300">{value.characterName}</span>
+                                                                        <span className="truncate text-sm font-medium">{value.characterName}</span>
                                                                         <span className="truncate text-[11px] text-default-500 dark:text-default-400">{value.job} · Lv.{value.level.toLocaleString()}</span>
                                                                     </div>
                                                                 </div>
@@ -343,7 +351,7 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
                 </ModalContent>
             </Modal>
 
-            <Modal isOpen={editingCell !== null} onOpenChange={(open) => { if (!open) setEditingCell(null); }} radius="sm" scrollBehavior="inside">
+            <Modal isOpen={editingCell !== null} onOpenChange={(open) => { if (!open) { setEditingCell(null); setCharacterSourceTab("expeditions"); } }} radius="sm" scrollBehavior="inside">
                 <ModalContent>
                     {(onClose) => (
                         <>
@@ -358,12 +366,28 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
                                     {!editingMemberInfo ? (
                                         <div className="rounded-lg bg-default-100 px-3 py-4 text-sm text-default-500 dark:bg-default-100/10 dark:text-default-400">캐릭터 정보를 찾을 수 없습니다.</div>
                                     ) : (
-                                        editingMemberInfo.expeditions.slice().sort((a, b) => b.level - a.level).map((character) => (
-                                            <button key={`${character.server}-${character.nickname}`} type="button" onClick={() => void handleSelectCharacter({ dispatch, setScheduleTables, setSaving, router, setEditingCell }, { selectedRaid, scheduleTables, selectedTableId, editingCell, character: { userId: editingMemberInfo.id, characterName: character.nickname, level: character.level, job: character.job } })} disabled={isSaving} className="rounded-xl border border-default-200 px-3 py-3 text-left transition disabled:opacity-50 dark:border-default-100/20 dark:hover:bg-primary-500/10">
-                                                <div className="font-medium">{character.nickname}</div>
-                                                <div className="text-xs text-default-500 dark:text-default-400">{character.server} · {character.job} · Lv.{character.level.toLocaleString()}</div>
-                                            </button>
-                                        ))
+                                        <>
+                                            <Tabs
+                                                selectedKey={characterSourceTab}
+                                                onSelectionChange={(key) => setCharacterSourceTab(key.toString() as CharacterSourceTab)}
+                                                radius="sm"
+                                                color="primary"
+                                                fullWidth
+                                            >
+                                                <Tab key="expeditions" title="원정대" />
+                                                <Tab key="checklist" title="숙제" />
+                                            </Tabs>
+                                            {selectableCharacters.length === 0 ? (
+                                                <div className="rounded-lg bg-default-100 px-3 py-4 text-sm text-default-500 dark:bg-default-100/10 dark:text-default-400">
+                                                    {characterSourceTab === "expeditions" ? "원정대 캐릭터가 없습니다." : "숙제 캐릭터가 없습니다."}
+                                                </div>
+                                            ) : selectableCharacters.map((character) => (
+                                                <button key={`${character.server}-${character.nickname}`} type="button" onClick={() => void handleSelectCharacter({ dispatch, setScheduleTables, setSaving, router, setEditingCell }, { selectedRaid, scheduleTables, selectedTableId, editingCell, character: { userId: editingMemberInfo.id, characterName: character.nickname, level: character.level, job: character.job } })} disabled={isSaving} className="rounded-xl border border-default-200 px-3 py-3 text-left transition disabled:opacity-50 dark:border-default-100/20 dark:hover:bg-primary-500/10">
+                                                    <div className="font-medium">{character.nickname}</div>
+                                                    <div className="text-xs text-default-500 dark:text-default-400">{character.server} · {character.job} · Lv.{character.level.toLocaleString()}</div>
+                                                </button>
+                                            ))}
+                                        </>
                                     )}
                                 </div>
                             </ModalBody>
