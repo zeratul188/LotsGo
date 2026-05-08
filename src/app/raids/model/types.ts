@@ -34,7 +34,9 @@ export type Raid = {
     pwd: string,
     members: string[],
     party: Party[],
-    weeklySchedule: WeeklyRaidSchedule[]
+    weeklySchedule: WeeklyRaidSchedule[],
+    weeklyScheduleMemberIds?: string[],
+    scheduleTables: RaidScheduleTable[]
 }
 
 export type RaidScheduleWeekday =
@@ -57,7 +59,15 @@ export type WeeklyRaidSchedule = {
     id: string,
     dayOfWeek: RaidScheduleWeekday,
     raidName: string,
+    stages: ControlStage[],
     members: WeeklyRaidScheduleMember[]
+}
+
+export type RaidScheduleTable = {
+    id: string,
+    name: string,
+    weeklySchedule: WeeklyRaidSchedule[],
+    weeklyScheduleMemberIds: string[]
 }
 
 export const DEFAULT_WEEKLY_SCHEDULE: WeeklyRaidSchedule[] = [];
@@ -71,6 +81,16 @@ type RaidSource = Partial<Raid> & {
 }
 
 export function normalizeRaid(raid: RaidSource): Raid {
+    const scheduleTables = (raid.scheduleTables ?? []).map((table) => ({
+        id: table.id ?? "",
+        name: table.name ?? "",
+        weeklySchedule: (table.weeklySchedule ?? []).map((schedule) => ({
+            ...schedule,
+            stages: schedule.stages ?? []
+        })),
+        weeklyScheduleMemberIds: table.weeklyScheduleMemberIds ?? []
+    }));
+
     return {
         id: raid.id,
         name: raid.name ?? "",
@@ -83,7 +103,12 @@ export function normalizeRaid(raid: RaidSource): Raid {
         pwd: raid.pwd ?? "",
         members: raid.members ?? [],
         party: raid.party ?? [],
-        weeklySchedule: raid.weeklySchedule ?? getDefaultWeeklySchedule()
+        weeklySchedule: (raid.weeklySchedule ?? getDefaultWeeklySchedule()).map((schedule) => ({
+            ...schedule,
+            stages: schedule.stages ?? []
+        })),
+        weeklyScheduleMemberIds: raid.weeklyScheduleMemberIds ?? [],
+        scheduleTables
     };
 }
 

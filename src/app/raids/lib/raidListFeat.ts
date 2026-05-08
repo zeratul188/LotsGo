@@ -61,7 +61,9 @@ export async function handleAddRaid(
         members: [userId ?? 'null'],
         party: [],
         avgLevel: avgLevel,
-        weeklySchedule: getDefaultWeeklySchedule()
+        weeklySchedule: getDefaultWeeklySchedule(),
+        weeklyScheduleMemberIds: [],
+        scheduleTables: []
     }
     const res = await fetch(`/api/raids`, {
         method: 'POST',

@@ -24,7 +24,9 @@ export async function GET(req: NextRequest) {
                 name: doc.data().name,
                 party: doc.data().party,
                 pwd: doc.data().pwd,
-                weeklySchedule: doc.data().weeklySchedule
+                weeklySchedule: doc.data().weeklySchedule,
+                weeklyScheduleMemberIds: doc.data().weeklyScheduleMemberIds,
+                scheduleTables: doc.data().scheduleTables
             })
         );
 
@@ -97,7 +99,9 @@ const handlers: Record<ActionType, Handler> = {
             members: raid.members,
             party: raid.party,
             avgLevel: raid.avgLevel,
-            weeklySchedule: raid.weeklySchedule ?? []
+            weeklySchedule: raid.weeklySchedule ?? [],
+            weeklyScheduleMemberIds: raid.weeklyScheduleMemberIds ?? [],
+            scheduleTables: raid.scheduleTables ?? []
         }
 
         if (typeof id !== "string" || id.trim() === "") {
