@@ -1,4 +1,4 @@
-import { Raid } from "@/app/raids/model/types";
+import { normalizeRaid, Raid } from "@/app/raids/model/types";
 import { firestore } from "@/utiils/firebase";
 import { collection, documentId, getDocs, limit, query, where } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
@@ -16,10 +16,12 @@ export async function GET(req: NextRequest) {
         if (partyData.length === 0) return NextResponse.json([]);
         const queryRaids = query(collection(firestore, "raids"), where(documentId(), 'in', partyData), limit(5));
         const snapRaid = await getDocs(queryRaids);
-        const raids: Raid[] = snapRaid.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        })) as Raid[];
+        const raids: Raid[] = snapRaid.docs.map((doc) =>
+            normalizeRaid({
+                id: doc.id,
+                ...doc.data()
+            })
+        );
         const works: any[] = [];
         raids.forEach(raid => {
             raid.party.forEach(party => {

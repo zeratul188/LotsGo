@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     }
 }
 
-type ActionType = "changeName" | "changeManager" | "changeLink" | "settingPwd" | "changePwd" | "switchPublic" | "leaveParty" | "deleteParty";
+type ActionType = "changeName" | "changeManager" | "changeLink" | "settingPwd" | "changePwd" | "switchPublic" | "changeWeeklySchedule" | "changeScheduleTables" | "leaveParty" | "deleteParty";
 type Handler = (body: any) => Promise<NextResponse>;
 
 const handlers: Record<ActionType, Handler> = {
@@ -154,6 +154,54 @@ const handlers: Record<ActionType, Handler> = {
             }
             console.log(e);
             return NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
+        }
+    },
+    changeWeeklySchedule: async (body) => {
+        const raidId = body.raidId;
+        const weeklySchedule = body.weeklySchedule;
+        const weeklyScheduleMemberIds = body.weeklyScheduleMemberIds;
+        try {
+            const raidDoc = doc(firestore, "raids", raidId);
+            await runTransaction(firestore, async (tx) => {
+                const raidSnapshot = await tx.get(raidDoc);
+                if (!raidSnapshot.exists()) throw new Error('RAID_NOT_FOUND');
+
+                tx.update(raidDoc, {
+                    weeklySchedule: weeklySchedule ?? [],
+                    weeklyScheduleMemberIds: weeklyScheduleMemberIds ?? []
+                });
+            });
+            return NextResponse.json({ message: '주간 일정표가 변경되었습니다.' }, { status: 200 });
+        } catch (e: any) {
+            if (e.message === "RAID_NOT_FOUND") {
+                return NextResponse.json({ error: '해당 레이드 데이터를 찾을 수 없습니다.' }, { status: 400 });
+            }
+            console.log(e);
+            return NextResponse.json({ error: '데이터 처리 중 문제가 발생했습니다.' }, { status: 500 });
+        }
+    },
+    changeScheduleTables: async (body) => {
+        const raidId = body.raidId;
+        const scheduleTables = body.scheduleTables;
+        try {
+            const raidDoc = doc(firestore, "raids", raidId);
+            await runTransaction(firestore, async (tx) => {
+                const raidSnapshot = await tx.get(raidDoc);
+                if (!raidSnapshot.exists()) throw new Error('RAID_NOT_FOUND');
+
+                tx.update(raidDoc, {
+                    scheduleTables: scheduleTables ?? [],
+                    weeklySchedule: [],
+                    weeklyScheduleMemberIds: []
+                });
+            });
+            return NextResponse.json({ message: '일정표가 변경되었습니다.' }, { status: 200 });
+        } catch (e: any) {
+            if (e.message === "RAID_NOT_FOUND") {
+                return NextResponse.json({ error: '해당 레이드 데이터를 찾을 수 없습니다.' }, { status: 400 });
+            }
+            console.log(e);
+            return NextResponse.json({ error: '데이터 처리 중 문제가 발생했습니다.' }, { status: 500 });
         }
     },
     leaveParty: async (body) => {

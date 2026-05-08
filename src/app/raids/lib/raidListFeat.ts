@@ -1,5 +1,5 @@
 import { normalize, SetStateFn } from "@/utiils/utils";
-import { Party, PartyResponse, Raid, TeamCharacter } from "../model/types";
+import { getDefaultWeeklySchedule, Party, PartyResponse, Raid, TeamCharacter } from "../model/types";
 import { decrypt, encrypt } from "@/utiils/crypto";
 import { addToast } from "@heroui/react";
 import type { AppDispatch } from "../../store/store";
@@ -60,7 +60,10 @@ export async function handleAddRaid(
         pwd: pwd.trim() !== '' ? encrypt(pwd.trim(), secretKey) : 'null',
         members: [userId ?? 'null'],
         party: [],
-        avgLevel: avgLevel
+        avgLevel: avgLevel,
+        weeklySchedule: getDefaultWeeklySchedule(),
+        weeklyScheduleMemberIds: [],
+        scheduleTables: []
     }
     const res = await fetch(`/api/raids`, {
         method: 'POST',

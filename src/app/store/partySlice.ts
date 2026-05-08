@@ -81,10 +81,14 @@ const partySlice = createSlice({
         },
         updateRaidData(state, action: PayloadAction<Raid>) {
             const findIndex = state.raids.findIndex(r => r.id === action.payload.id);
-            const findIndexJoined = state.raids.findIndex(r => r.id === action.payload.id);
-            if (findIndexJoined > -1 && findIndex > -1 && state.selectedRaid) {
+            const findIndexJoined = state.joinRaids.findIndex(r => r.id === action.payload.id);
+            if (findIndex > -1) {
                 state.raids[findIndex] = action.payload;
+            }
+            if (state.selectedRaid?.id === action.payload.id) {
                 state.selectedRaid = action.payload;
+            }
+            if (findIndexJoined > -1) {
                 state.joinRaids[findIndexJoined] = action.payload;
             }
         },
