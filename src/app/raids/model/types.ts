@@ -55,11 +55,18 @@ export type WeeklyRaidScheduleMember = {
     job: string
 }
 
+export type WeeklyRaidScheduleRaid = {
+    bossId: string,
+    raidName: string,
+    stages: ControlStage[]
+}
+
 export type WeeklyRaidSchedule = {
     id: string,
     dayOfWeek: RaidScheduleWeekday,
-    raidName: string,
-    stages: ControlStage[],
+    raids: WeeklyRaidScheduleRaid[],
+    raidName?: string,
+    stages?: ControlStage[],
     members: WeeklyRaidScheduleMember[]
 }
 
@@ -86,6 +93,15 @@ export function normalizeRaid(raid: RaidSource): Raid {
         name: table.name ?? "",
         weeklySchedule: (table.weeklySchedule ?? []).map((schedule) => ({
             ...schedule,
+            raids: (schedule.raids ?? [{
+                bossId: "",
+                raidName: schedule.raidName ?? "",
+                stages: schedule.stages ?? []
+            }]).map((item) => ({
+                bossId: item.bossId ?? "",
+                raidName: item.raidName ?? "",
+                stages: item.stages ?? []
+            })),
             stages: schedule.stages ?? []
         })),
         weeklyScheduleMemberIds: table.weeklyScheduleMemberIds ?? []
@@ -105,6 +121,15 @@ export function normalizeRaid(raid: RaidSource): Raid {
         party: raid.party ?? [],
         weeklySchedule: (raid.weeklySchedule ?? getDefaultWeeklySchedule()).map((schedule) => ({
             ...schedule,
+            raids: (schedule.raids ?? [{
+                bossId: "",
+                raidName: schedule.raidName ?? "",
+                stages: schedule.stages ?? []
+            }]).map((item) => ({
+                bossId: item.bossId ?? "",
+                raidName: item.raidName ?? "",
+                stages: item.stages ?? []
+            })),
             stages: schedule.stages ?? []
         })),
         weeklyScheduleMemberIds: raid.weeklyScheduleMemberIds ?? [],

@@ -3,10 +3,10 @@ import DeleteIcon from "@/app/icons/DeleteIcon";
 import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 import SearchEmptyIcon from "@/Icons/SearchEmptyIcon";
 import { Boss } from "@/app/api/checklist/boss/route";
-import { EMPTY_STAGE_DIFFICULTY, createDefaultWeekStages, getDifficultyByStage, getTextColorByDifficulty, getWeekStages } from "@/app/checklist/lib/checklistFeat";
+import { EMPTY_STAGE_DIFFICULTY, createDefaultWeekStages, getBackgroundByStage, getDifficultyByStage, getWeekStages } from "@/app/checklist/lib/checklistFeat";
 import { ControlStage } from "@/app/checklist/model/types";
 import { AppDispatch, RootState } from "@/app/store/store";
-import { Button, Chip, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, SelectItem, Tab, Tabs } from "@heroui/react";
+import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Select, SelectItem, Tab, Tabs, Tooltip } from "@heroui/react";
 import clsx from "clsx";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
@@ -29,9 +29,12 @@ import {
     handleRemoveSchedule,
     handleRemoveVisibleMember,
     handleSelectCharacter,
+    handleUpdateSchedule,
+    hasSelectedScheduleRaidItems,
     hasSelectedScheduleStages,
     openCharacterModal,
     persistCalendar,
+    printScheduleRaidLabel,
     printScheduleStages,
     WEEK_LABELS
 } from "../lib/calendarFeat";
@@ -45,6 +48,7 @@ type CalendarComponentProps = {
 
 export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) {
     type CharacterSourceTab = "expeditions" | "checklist";
+    type ScheduleRaidFormItem = { bossId: string; stages: ControlStage[] };
 
     const router = useRouter();
     const selectedRaid = useSelector((state: RootState) => state.party.selectedRaid);
@@ -56,12 +60,12 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
     const [isAddTableOpen, setAddTableOpen] = useState(false);
     const [isAddMemberOpen, setAddMemberOpen] = useState(false);
     const [isAddScheduleOpen, setAddScheduleOpen] = useState(false);
+    const [editingScheduleId, setEditingScheduleId] = useState<string | null>(null);
     const [editingCell, setEditingCell] = useState<EditingCell | null>(null);
     const [characterSourceTab, setCharacterSourceTab] = useState<CharacterSourceTab>("expeditions");
     const [newTableName, setNewTableName] = useState("");
     const [newScheduleDay, setNewScheduleDay] = useState<RaidScheduleWeekday>("wednesday");
-    const [newScheduleBossId, setNewScheduleBossId] = useState("");
-    const [newScheduleStages, setNewScheduleStages] = useState<ControlStage[]>([]);
+    const [newScheduleRaids, setNewScheduleRaids] = useState<ScheduleRaidFormItem[]>([]);
     const [isSaving, setSaving] = useState(false);
     const isMobile = useMobileQuery();
 
@@ -78,7 +82,56 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
         return source.slice().sort((a, b) => b.level - a.level);
     }, [characterSourceTab, editingMemberInfo]);
     const tableMinWidth = useMemo(() => getTableMinWidth(visibleMemberIds), [visibleMemberIds]);
-    const selectedScheduleBoss = useMemo(() => bosses.find((boss) => boss.id === newScheduleBossId), [bosses, newScheduleBossId]);
+    const isValidNewSchedule = useMemo(() => hasSelectedScheduleRaidItems(newScheduleRaids), [newScheduleRaids]);
+    const isEditingSchedule = editingScheduleId !== null;
+
+    function addScheduleRaidItem() {
+        setNewScheduleRaids((prev) => prev.length >= 5 ? prev : [...prev, { bossId: "", stages: [] }]);
+    }
+
+    function updateScheduleRaidBoss(index: number, bossId: string) {
+        setNewScheduleRaids((prev) => prev.map((item, itemIndex) => itemIndex !== index ? item : {
+            bossId,
+            stages: bossId ? createDefaultWeekStages(bosses, bossId) : []
+        }));
+    }
+
+    function updateScheduleRaidStages(index: number, nextStages: ControlStage[]) {
+        setNewScheduleRaids((prev) => prev.map((item, itemIndex) => itemIndex !== index ? item : {
+            ...item,
+            stages: nextStages
+        }));
+    }
+
+    function removeScheduleRaidItem(index: number) {
+        setNewScheduleRaids((prev) => prev.filter((_, itemIndex) => itemIndex !== index));
+    }
+
+    function resetScheduleEditor() {
+        setNewScheduleDay("wednesday");
+        setNewScheduleRaids([]);
+        setEditingScheduleId(null);
+    }
+
+    function openAddScheduleModal() {
+        setEditingScheduleId(null);
+        setNewScheduleDay("wednesday");
+        setNewScheduleRaids([{ bossId: "", stages: [] }]);
+        setAddScheduleOpen(true);
+    }
+
+    function openEditScheduleModal(scheduleId: string) {
+        const schedule = weeklySchedule.find((item) => item.id === scheduleId);
+        if (!schedule) return;
+
+        setEditingScheduleId(scheduleId);
+        setNewScheduleDay(schedule.dayOfWeek);
+        setNewScheduleRaids(schedule.raids.map((raid) => ({
+            bossId: raid.bossId,
+            stages: structuredClone(raid.stages)
+        })));
+        setAddScheduleOpen(true);
+    }
 
     useEffect(() => {
         const { scheduleTables: nextScheduleTables, selectedTableId: nextSelectedTableId } = getCalendarStateFromRaid(selectedRaid);
@@ -123,11 +176,11 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
                         if (success) setSelectedTableId(nextScheduleTables[0]?.id ?? null);
                     }}>일정표 삭제</Button>
                     <div className="grow" />
-                    <Button radius="sm" color="primary" onPress={() => setAddScheduleOpen(true)} isDisabled={!selectedTable || isSaving}>일정 추가</Button>
+                    <Button radius="sm" color="primary" onPress={openAddScheduleModal} isDisabled={!selectedTable || isSaving}>일정 추가</Button>
                     <Button radius="sm" color="secondary" onPress={() => setAddMemberOpen(true)} isDisabled={!selectedTable || availableRaidMemberIds.length === 0 || isSaving}>인원 추가</Button>
                 </div>
                 {selectedTable ? (
-                    <div className="overflow-x-auto rounded-2xl border border-default-200 bg-white dark:border-default-100 dark:bg-[#1b1b1b]">
+                    <div className="overflow-x-auto rounded-2xl border border-default-200 bg-white dark:border-default-100/40 dark:bg-[#1b1b1b]">
                         <div className="min-w-full">
                             <table className="table-fixed border-collapse text-sm" style={{ width: `max(100%, ${tableMinWidth})` }}>
                                 <colgroup>
@@ -138,13 +191,13 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
                                 </colgroup>
                                 <thead>
                                     <tr className="bg-default-100 dark:bg-default-100/10">
-                                        <th className="whitespace-nowrap border-b border-r border-default-200 px-2 py-3 text-center font-semibold dark:border-default-100/20">요일</th>
-                                        <th className="whitespace-nowrap border-b border-r border-default-200 px-2 py-3 text-left font-semibold dark:border-default-100/20">레이드</th>
+                                        <th className="whitespace-nowrap border-b border-r border-default-200 px-2 py-3 text-center font-semibold dark:border-default-100/35">요일</th>
+                                        <th className="whitespace-nowrap border-b border-r border-default-200 px-2 py-3 text-left font-semibold dark:border-default-100/35">레이드</th>
                                         {visibleMemberIds.map((memberId) => {
                                             const memberInfo = loadedMembers.find((member) => member.id === memberId);
                                             const representativeName = memberInfo?.nickname ?? memberId;
                                             return (
-                                                <th key={memberId} className="border-b border-r border-default-200 px-3 py-3 text-left dark:border-default-100/20">
+                                                <th key={memberId} className="border-b border-r border-default-200 px-3 py-3 text-left dark:border-default-100/35">
                                                     <div className={clsx("flex flex-row items-center gap-1", memberId === userId ? "text-primary" : "") }>
                                                         <div className="grow flex flex-col items-start justify-between">
                                                             <p className="font-semibold">{representativeName}</p>
@@ -160,32 +213,46 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
                                                 </th>
                                             );
                                         })}
-                                        <th className="min-w-[100px] border-b border-default-200 px-3 py-3 dark:border-default-100/20" />
+                                        <th className="min-w-[100px] border-b border-default-200 px-3 py-3 dark:border-default-100/35" />
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {rows.map((row, index) => (
                                         <tr key={row.id} className={clsx(index % 2 === 0 ? "bg-white dark:bg-[#1b1b1b]" : "bg-default-50/70 dark:bg-default-100/5")}>
                                             {row.showDayCell ? (
-                                                <td rowSpan={row.dayRowSpan} className={clsx("whitespace-nowrap border-b border-r border-default-200 px-1 py-3 align-middle text-center font-medium dark:border-default-100/20", row.dayOfWeek === "saturday" || row.dayOfWeek === "sunday" ? "text-success-700 dark:text-success-300" : "text-foreground")}>
+                                                <td rowSpan={row.dayRowSpan} className={clsx("whitespace-nowrap border-b border-r border-default-200 px-1 py-3 align-middle text-center font-medium dark:border-default-100/35", row.dayOfWeek === "saturday" || row.dayOfWeek === "sunday" ? "text-success-700 dark:text-success-300" : "text-foreground")}>
                                                     <span className="block overflow-hidden text-ellipsis whitespace-nowrap">{row.dayTitle}</span>
                                                 </td>
                                             ) : null}
-                                            <td className="border-b border-r border-default-200 px-1 py-3 align-middle text-center font-medium dark:border-default-100/20">
+                                            <td className="border-b border-r border-default-200 px-1 py-3 align-middle text-center font-medium dark:border-default-100/35">
                                                 <div className="flex flex-col items-start gap-1 px-1">
-                                                    <span className="block overflow-hidden text-ellipsis whitespace-nowrap">{row.raidName || "-"}</span>
-                                                    {row.stages.length > 0 ? (
-                                                        <div className="flex flex-wrap justify-start gap-1">
-                                                            {row.stages.map((stage, stageIndex) => <Chip key={`${row.id}-stage-${stageIndex}`} color={getTextColorByDifficulty(stage.difficulty)} radius="sm" variant="flat" size="sm">{stage.difficulty} {stage.stage}관</Chip>)}
+                                                    {row.raids.length === 0 ? <span className="block overflow-hidden text-ellipsis whitespace-nowrap">-</span> : row.raids.map((raid, raidIndex) => (
+                                                        <div key={`${row.id}-raid-${raidIndex}`} className="flex w-full flex-col items-start gap-1 rounded-xl bg-default-100/50 px-2 py-2 dark:bg-default-100/10">
+                                                            <div className="flex w-full items-center gap-2">
+                                                                <span className="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap font-medium">{raid.raidName}</span>
+                                                                <div className="ml-auto flex shrink-0 flex-nowrap items-center gap-1">
+                                                                    {raid.stages.map((stage, stageIndex) => (
+                                                                        <Tooltip key={`${row.id}-raid-${raidIndex}-stage-${stageIndex}`} showArrow content={`${stage.difficulty} ${stage.stage}관`}>
+                                                                            <div
+                                                                            key={`${row.id}-raid-${raidIndex}-stage-${stageIndex}`}
+                                                                                className={clsx(
+                                                                                    "h-[10px] w-[10px] rounded-full opacity-75",
+                                                                                    getBackgroundByStage(stage.difficulty, false)
+                                                                                )}
+                                                                            />
+                                                                        </Tooltip>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    ) : null}
+                                                    ))}
                                                 </div>
                                             </td>
                                             {visibleMemberIds.map((memberId) => {
                                                 const value = row.memberMap[memberId];
                                                 const canEditCell = !row.id.startsWith("empty-");
                                                 return (
-                                                    <td key={`${row.id}-${memberId}`} className="border-b border-r border-default-200 px-2 py-2 dark:border-default-100/20">
+                                                    <td key={`${row.id}-${memberId}`} className="border-b border-r border-default-200 px-2 py-2 dark:border-default-100/35">
                                                         <button type="button" disabled={!canEditCell || isSaving} onClick={() => openCharacterModal(canEditCell, memberId, row.id, setEditingCell)} className={clsx("flex min-h-[44px] w-full items-center rounded-lg px-2 py-2 text-left transition", canEditCell ? value ? "bg-transparent hover:bg-default-100 dark:hover:bg-default-100/10" : "bg-primary-50 hover:bg-primary-100 dark:bg-primary-500/10 dark:hover:bg-primary-500/20" : "cursor-default bg-transparent", value ? "justify-start" : "justify-center")}>
                                                             {value ? (
                                                                 <div className="flex w-full items-center gap-2">
@@ -200,12 +267,15 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
                                                     </td>
                                                 );
                                             })}
-                                            <td className="min-w-[100px] border-b border-default-200 px-3 py-3 dark:border-default-100/20">
+                                            <td className="min-w-[100px] border-b border-default-200 px-3 py-3 dark:border-default-100/35">
                                                 {row.id.startsWith("empty-") ? null : (
-                                                    <Button size="sm" radius="sm" variant="flat" color="danger" isDisabled={isSaving} onPress={() => {
-                                                        if (!window.confirm("이 레이드 일정을 삭제할까요?")) return;
-                                                        void handleRemoveSchedule({ dispatch, setScheduleTables, setSaving, router }, { selectedRaid, scheduleTables, selectedTableId, scheduleId: row.id });
-                                                    }}>삭제</Button>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <Button size="sm" radius="sm" variant="flat" color="secondary" isDisabled={isSaving} onPress={() => openEditScheduleModal(row.id)}>수정</Button>
+                                                        <Button size="sm" radius="sm" variant="flat" color="danger" isDisabled={isSaving} onPress={() => {
+                                                            if (!window.confirm("이 레이드 일정을 삭제할까요?")) return;
+                                                            void handleRemoveSchedule({ dispatch, setScheduleTables, setSaving, router }, { selectedRaid, scheduleTables, selectedTableId, scheduleId: row.id });
+                                                        }}>삭제</Button>
+                                                    </div>
                                                 )}
                                             </td>
                                         </tr>
@@ -294,11 +364,14 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
                 </ModalContent>
             </Modal>
 
-            <Modal isOpen={isAddScheduleOpen} onOpenChange={setAddScheduleOpen} radius="sm">
+            <Modal isOpen={isAddScheduleOpen} onOpenChange={(open) => {
+                setAddScheduleOpen(open);
+                if (!open) resetScheduleEditor();
+            }} radius="sm">
                 <ModalContent>
                     {(onClose) => (
                         <>
-                            <ModalHeader>주간 레이드 일정 추가</ModalHeader>
+                            <ModalHeader>{isEditingSchedule ? "주간 레이드 일정 수정" : "주간 레이드 일정 추가"}</ModalHeader>
                             <ModalBody>
                                 <div className="flex flex-col gap-3">
                                     <Select label="요일" radius="sm" selectedKeys={new Set([newScheduleDay])} onSelectionChange={(keys) => {
@@ -307,44 +380,67 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
                                     }}>
                                         {WEEK_LABELS.map((week) => <SelectItem key={week.key}>{week.title}</SelectItem>)}
                                     </Select>
-                                    <Select label="레이드" radius="sm" selectedKeys={newScheduleBossId ? new Set([newScheduleBossId]) : new Set([])} onSelectionChange={(keys) => {
-                                        const value = Array.from(keys)[0] as string | undefined;
-                                        setNewScheduleBossId(value ?? "");
-                                        setNewScheduleStages(value ? createDefaultWeekStages(bosses, value) : []);
-                                    }}>
-                                        {bosses.map((boss) => <SelectItem key={boss.id}>{boss.name}</SelectItem>)}
-                                    </Select>
-                                    {selectedScheduleBoss ? (
-                                        <div className="flex flex-col gap-3">
-                                            {getWeekStages(bosses, selectedScheduleBoss.id).map((level, idx) => (
-                                                <div key={level}>
-                                                    <div className="mb-1 flex items-center justify-between">
-                                                        <h3 className="font-bold">{level}관문</h3>
-                                                        <span className="text-xs text-default-500 dark:text-default-400">{newScheduleStages[idx]?.difficulty !== EMPTY_STAGE_DIFFICULTY ? newScheduleStages[idx]?.difficulty : "난이도 선택"}</span>
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-sm font-medium text-default-700 dark:text-default-300">레이드 묶음</p>
+                                        <Button size="sm" radius="sm" variant="flat" color="secondary" isDisabled={newScheduleRaids.length >= 5} onPress={addScheduleRaidItem}>레이드 추가</Button>
+                                    </div>
+                                    <div className="flex flex-col gap-4">
+                                        {newScheduleRaids.map((raidItem, raidIndex) => {
+                                            const selectedBoss = bosses.find((boss) => boss.id === raidItem.bossId);
+                                            return (
+                                                <div key={`schedule-raid-item-${raidIndex}`} className="rounded-2xl border border-default-200 px-3 py-3 dark:border-default-100/20">
+                                                    <div className="mb-3 flex items-center gap-2">
+                                                        <p className="grow text-sm font-semibold">레이드 {raidIndex + 1}</p>
+                                                        <Button size="sm" radius="sm" variant="light" color="danger" isDisabled={newScheduleRaids.length <= 1} onPress={() => removeScheduleRaidItem(raidIndex)}>삭제</Button>
                                                     </div>
-                                                    <Tabs fullWidth radius="sm" color="primary" selectedKey={newScheduleStages.length > idx ? newScheduleStages[idx].difficulty : EMPTY_STAGE_DIFFICULTY} onSelectionChange={(key) => {
-                                                        const diff = key.toString();
-                                                        if (newScheduleStages.length <= idx) return;
-                                                        const cloneStages = structuredClone(newScheduleStages);
-                                                        if (idx > 0 && cloneStages[idx - 1].difficulty === EMPTY_STAGE_DIFFICULTY) return;
-                                                        cloneStages[idx].difficulty = diff;
-                                                        if (diff === EMPTY_STAGE_DIFFICULTY) {
-                                                            for (let i = idx; i < cloneStages.length; i++) cloneStages[i].difficulty = EMPTY_STAGE_DIFFICULTY;
-                                                        }
-                                                        setNewScheduleStages(cloneStages);
-                                                    }}>
-                                                        {getDifficultyByStage(bosses, selectedScheduleBoss.id, level).map((diff) => <Tab key={diff} title={diff} />)}
-                                                    </Tabs>
+                                                    <div className="flex flex-col gap-3">
+                                                        <Select label="레이드" radius="sm" selectedKeys={raidItem.bossId ? new Set([raidItem.bossId]) : new Set([])} onSelectionChange={(keys) => {
+                                                            const value = Array.from(keys)[0] as string | undefined;
+                                                            updateScheduleRaidBoss(raidIndex, value ?? "");
+                                                        }}>
+                                                            {bosses.map((boss) => <SelectItem key={boss.id}>{boss.name}</SelectItem>)}
+                                                        </Select>
+                                                        {selectedBoss ? (
+                                                            <div className="flex flex-col gap-3">
+                                                                {getWeekStages(bosses, selectedBoss.id).map((level, stageIndex) => (
+                                                                    <div key={`${selectedBoss.id}-${level}`}>
+                                                                        <div className="mb-1 flex items-center justify-between">
+                                                                            <h3 className="font-bold">{level}관문</h3>
+                                                                            <span className="text-xs text-default-500 dark:text-default-400">{raidItem.stages[stageIndex]?.difficulty !== EMPTY_STAGE_DIFFICULTY ? raidItem.stages[stageIndex]?.difficulty : "난이도 선택"}</span>
+                                                                        </div>
+                                                                        <Tabs fullWidth radius="sm" color="primary" selectedKey={raidItem.stages.length > stageIndex ? raidItem.stages[stageIndex].difficulty : EMPTY_STAGE_DIFFICULTY} onSelectionChange={(key) => {
+                                                                            const diff = key.toString();
+                                                                            if (raidItem.stages.length <= stageIndex) return;
+                                                                            const cloneStages = structuredClone(raidItem.stages);
+                                                                            if (stageIndex > 0 && cloneStages[stageIndex - 1].difficulty === EMPTY_STAGE_DIFFICULTY) return;
+                                                                            cloneStages[stageIndex].difficulty = diff;
+                                                                            if (diff === EMPTY_STAGE_DIFFICULTY) {
+                                                                                for (let i = stageIndex; i < cloneStages.length; i++) cloneStages[i].difficulty = EMPTY_STAGE_DIFFICULTY;
+                                                                            }
+                                                                            updateScheduleRaidStages(raidIndex, cloneStages);
+                                                                        }}>
+                                                                            {getDifficultyByStage(bosses, selectedBoss.id, level).map((diff) => <Tab key={diff} title={diff} />)}
+                                                                        </Tabs>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        ) : null}
+                                                    </div>
                                                 </div>
-                                            ))}
-                                            {hasSelectedScheduleStages(newScheduleStages) ? <div className="rounded-lg bg-default-100 px-3 py-2 text-sm dark:bg-default-100/10">{printScheduleStages(newScheduleStages)}</div> : null}
-                                        </div>
-                                    ) : null}
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </ModalBody>
                             <ModalFooter>
                                 <Button variant="light" onPress={onClose}>닫기</Button>
-                                <Button color="primary" isLoading={isSaving} isDisabled={!newScheduleBossId || !hasSelectedScheduleStages(newScheduleStages)} onPress={() => void handleAddSchedule({ dispatch, setScheduleTables, setSaving, router, setAddScheduleOpen, setNewScheduleDay, setNewScheduleBossId, setNewScheduleStages }, { selectedRaid, scheduleTables, selectedTableId, newScheduleDay, newScheduleBossId, newScheduleStages, bosses })}>추가</Button>
+                                <Button color="primary" isLoading={isSaving} isDisabled={!isValidNewSchedule} onPress={() => {
+                                    if (editingScheduleId) {
+                                        void handleUpdateSchedule({ dispatch, setScheduleTables, setSaving, router, setAddScheduleOpen, setNewScheduleDay, setNewScheduleRaids, setEditingScheduleId }, { selectedRaid, scheduleTables, selectedTableId, scheduleId: editingScheduleId, newScheduleDay, newScheduleRaids, bosses });
+                                        return;
+                                    }
+                                    void handleAddSchedule({ dispatch, setScheduleTables, setSaving, router, setAddScheduleOpen, setNewScheduleDay, setNewScheduleRaids, setEditingScheduleId }, { selectedRaid, scheduleTables, selectedTableId, newScheduleDay, newScheduleRaids, bosses });
+                                }}>{isEditingSchedule ? "저장" : "추가"}</Button>
                             </ModalFooter>
                         </>
                     )}
@@ -357,7 +453,7 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
                         <>
                             <ModalHeader>
                                 <div className="flex flex-col">
-                                    <span>{editingSchedule?.raidName ?? "레이드 참여 캐릭터 선택"}</span>
+                                    <span>{editingSchedule ? printScheduleRaidLabel(editingSchedule.raids) : "레이드 참여 캐릭터 선택"}</span>
                                     <span className="text-sm font-normal text-default-500 dark:text-default-400">{editingCell?.memberId ?? ""}</span>
                                 </div>
                             </ModalHeader>
