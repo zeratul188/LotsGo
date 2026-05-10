@@ -168,7 +168,7 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
                         setNewTableName(`일정표 ${scheduleTables.length + 1}`);
                         setAddTableOpen(true);
                     }}>일정표 추가</Button>
-                    <Button radius="sm" color="danger" variant="flat" isDisabled={!selectedTable || isSaving} onPress={async () => {
+                    <Button radius="sm" color="danger" isDisabled={!selectedTable || isSaving} onPress={async () => {
                         if (!selectedTable || !selectedRaid) return;
                         if (!window.confirm(`'${selectedTable.name}' 일정표를 삭제할까요?`)) return;
                         const nextScheduleTables = scheduleTables.filter((table) => table.id !== selectedTable.id);
@@ -269,8 +269,8 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
                                             })}
                                             <td className="min-w-[100px] border-b border-default-200 px-3 py-3 dark:border-default-100/35">
                                                 {row.id.startsWith("empty-") ? null : (
-                                                    <div className="flex items-center justify-end gap-2">
-                                                        <Button size="sm" radius="sm" variant="flat" color="secondary" isDisabled={isSaving} onPress={() => openEditScheduleModal(row.id)}>수정</Button>
+                                                    <div className="flex items-center justify-start gap-2">
+                                                        <Button size="sm" radius="sm" variant="flat" color="success" isDisabled={isSaving} onPress={() => openEditScheduleModal(row.id)}>수정</Button>
                                                         <Button size="sm" radius="sm" variant="flat" color="danger" isDisabled={isSaving} onPress={() => {
                                                             if (!window.confirm("이 레이드 일정을 삭제할까요?")) return;
                                                             void handleRemoveSchedule({ dispatch, setScheduleTables, setSaving, router }, { selectedRaid, scheduleTables, selectedTableId, scheduleId: row.id });
@@ -382,7 +382,7 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
                                     </Select>
                                     <div className="flex items-center justify-between">
                                         <p className="text-sm font-medium text-default-700 dark:text-default-300">레이드 묶음</p>
-                                        <Button size="sm" radius="sm" variant="flat" color="secondary" isDisabled={newScheduleRaids.length >= 5} onPress={addScheduleRaidItem}>레이드 추가</Button>
+                                        <Button size="sm" radius="sm" color="success" variant="flat" isDisabled={newScheduleRaids.length >= 5} onPress={addScheduleRaidItem}>레이드 추가</Button>
                                     </div>
                                     <div className="flex flex-col gap-4">
                                         {newScheduleRaids.map((raidItem, raidIndex) => {
@@ -433,8 +433,8 @@ export function CalendarComponent({ dispatch, bosses }: CalendarComponentProps) 
                                 </div>
                             </ModalBody>
                             <ModalFooter>
-                                <Button variant="light" onPress={onClose}>닫기</Button>
-                                <Button color="primary" isLoading={isSaving} isDisabled={!isValidNewSchedule} onPress={() => {
+                                <Button variant="light" radius="sm" onPress={onClose}>닫기</Button>
+                                <Button color="primary" radius="sm" isLoading={isSaving} isDisabled={!isValidNewSchedule} onPress={() => {
                                     if (editingScheduleId) {
                                         void handleUpdateSchedule({ dispatch, setScheduleTables, setSaving, router, setAddScheduleOpen, setNewScheduleDay, setNewScheduleRaids, setEditingScheduleId }, { selectedRaid, scheduleTables, selectedTableId, scheduleId: editingScheduleId, newScheduleDay, newScheduleRaids, bosses });
                                         return;
