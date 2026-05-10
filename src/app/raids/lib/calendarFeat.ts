@@ -6,7 +6,7 @@ import { updateRaidData } from "@/app/store/partySlice";
 import { AppDispatch } from "@/app/store/store";
 import { SetStateFn } from "@/utiils/utils";
 import { addToast } from "@heroui/react";
-import { Raid, RaidScheduleTable, RaidScheduleWeekday, WeeklyRaidSchedule, WeeklyRaidScheduleMember } from "../model/types";
+import { Raid, RaidScheduleTable, RaidScheduleWeekday, WeeklyRaidSchedule, WeeklyRaidScheduleMember, WeeklyRaidScheduleRaid } from "../model/types";
 
 type CalendarRouter = {
     refresh: () => void
@@ -47,6 +47,15 @@ export function normalizeScheduleTables(tables: RaidScheduleTable[]) {
         ...table,
         weeklySchedule: (table.weeklySchedule ?? []).map((schedule) => ({
             ...schedule,
+            raids: (schedule.raids ?? [{
+                bossId: "",
+                raidName: schedule.raidName ?? "",
+                stages: schedule.stages ?? []
+            }]).map((item) => ({
+                bossId: item.bossId ?? "",
+                raidName: item.raidName ?? "",
+                stages: item.stages ?? []
+            })),
             stages: schedule.stages ?? [],
             members: schedule.members ?? []
         })),
@@ -62,8 +71,7 @@ export function buildCalendarRows(weeklySchedule: WeeklyRaidSchedule[]): Calenda
             return [{
                 id: `empty-${week.key}`,
                 dayOfWeek: week.key,
-                raidName: "",
-                stages: [],
+                raids: [],
                 members: [],
                 dayTitle: week.title,
                 memberMap: {},
@@ -115,6 +123,11 @@ export function hasSelectedScheduleStages(stages: ControlStage[]) {
     return stages.some((stage) => stage.difficulty !== EMPTY_STAGE_DIFFICULTY);
 }
 
+export function hasSelectedScheduleRaidItems(raids: Array<{ bossId: string; stages: ControlStage[] }>) {
+    if (raids.length === 0 || raids.length > 5) return false;
+    return raids.every((raid) => raid.bossId && hasSelectedScheduleStages(raid.stages));
+}
+
 export function printScheduleStages(stages: ControlStage[]) {
     const selectedStages = stages.filter((stage) => stage.difficulty !== EMPTY_STAGE_DIFFICULTY);
     const prints: Array<{ difficulty: string; result: string }> = [];
@@ -130,6 +143,10 @@ export function printScheduleStages(stages: ControlStage[]) {
     }
 
     return prints.map((item) => `${item.difficulty}${item.result}`).join(" ");
+}
+
+export function printScheduleRaidLabel(raids: WeeklyRaidScheduleRaid[]) {
+    return raids.map((raid) => raid.raidName).join(" / ");
 }
 
 type PersistCalendarUI = {
@@ -253,8 +270,8 @@ export async function handleRemoveVisibleMember(ui: PersistCalendarUI, payload: 
 type AddScheduleUI = PersistCalendarUI & {
     setAddScheduleOpen: SetStateFn<boolean>,
     setNewScheduleDay: SetStateFn<RaidScheduleWeekday>,
-    setNewScheduleBossId: SetStateFn<string>,
-    setNewScheduleStages: SetStateFn<ControlStage[]>
+    setNewScheduleRaids: SetStateFn<Array<{ bossId: string; stages: ControlStage[] }>>,
+    setEditingScheduleId?: SetStateFn<string | null>
 }
 
 type AddSchedulePayload = {
@@ -262,19 +279,27 @@ type AddSchedulePayload = {
     scheduleTables: RaidScheduleTable[],
     selectedTableId: string | null,
     newScheduleDay: RaidScheduleWeekday,
-    newScheduleBossId: string,
-    newScheduleStages: ControlStage[],
+    newScheduleRaids: Array<{ bossId: string; stages: ControlStage[] }>,
     bosses: Boss[]
 }
 
 export async function handleAddSchedule(ui: AddScheduleUI, payload: AddSchedulePayload) {
-    const boss = payload.bosses.find((item) => item.id === payload.newScheduleBossId);
-    if (!boss) {
-        addToast({ title: "입력 필요", description: "레이드를 선택해 주세요.", color: "warning" });
+    if (!hasSelectedScheduleRaidItems(payload.newScheduleRaids)) {
+        addToast({ title: "입력 필요", description: "1~5개의 레이드와 관문 난이도를 모두 설정해 주세요.", color: "warning" });
         return;
     }
-    if (!hasSelectedScheduleStages(payload.newScheduleStages)) {
-        addToast({ title: "입력 필요", description: "관문 난이도를 1개 이상 선택해 주세요.", color: "warning" });
+
+    const raids = payload.newScheduleRaids.map((item) => {
+        const boss = payload.bosses.find((candidate) => candidate.id === item.bossId);
+        return {
+            bossId: item.bossId,
+            raidName: boss?.simple || boss?.name || "",
+            stages: item.stages.filter((stage) => stage.difficulty !== EMPTY_STAGE_DIFFICULTY)
+        };
+    }).filter((item) => item.raidName && item.stages.length > 0);
+
+    if (raids.length === 0) {
+        addToast({ title: "입력 필요", description: "레이드를 선택해 주세요.", color: "warning" });
         return;
     }
 
@@ -285,8 +310,7 @@ export async function handleAddSchedule(ui: AddScheduleUI, payload: AddScheduleP
             {
                 id: createScheduleId(payload.newScheduleDay),
                 dayOfWeek: payload.newScheduleDay,
-                raidName: boss.simple || boss.name,
-                stages: payload.newScheduleStages.filter((stage) => stage.difficulty !== EMPTY_STAGE_DIFFICULTY),
+                raids,
                 members: []
             }
         ]
@@ -299,8 +323,54 @@ export async function handleAddSchedule(ui: AddScheduleUI, payload: AddScheduleP
 
     if (success) {
         ui.setNewScheduleDay("wednesday");
-        ui.setNewScheduleBossId("");
-        ui.setNewScheduleStages([]);
+        ui.setNewScheduleRaids([]);
+        ui.setEditingScheduleId?.(null);
+        ui.setAddScheduleOpen(false);
+    }
+}
+
+type UpdateSchedulePayload = AddSchedulePayload & {
+    scheduleId: string
+}
+
+export async function handleUpdateSchedule(ui: AddScheduleUI, payload: UpdateSchedulePayload) {
+    if (!hasSelectedScheduleRaidItems(payload.newScheduleRaids)) {
+        addToast({ title: "입력 필요", description: "1~5개의 레이드와 관문 난이도를 모두 설정해 주세요.", color: "warning" });
+        return;
+    }
+
+    const raids = payload.newScheduleRaids.map((item) => {
+        const boss = payload.bosses.find((candidate) => candidate.id === item.bossId);
+        return {
+            bossId: item.bossId,
+            raidName: boss?.simple || boss?.name || "",
+            stages: item.stages.filter((stage) => stage.difficulty !== EMPTY_STAGE_DIFFICULTY)
+        };
+    }).filter((item) => item.raidName && item.stages.length > 0);
+
+    if (raids.length === 0) {
+        addToast({ title: "입력 필요", description: "레이드를 선택해 주세요.", color: "warning" });
+        return;
+    }
+
+    const nextScheduleTables = updateScheduleTable(payload.scheduleTables, payload.selectedTableId, (table) => ({
+        ...table,
+        weeklySchedule: table.weeklySchedule.map((schedule) => schedule.id !== payload.scheduleId ? schedule : {
+            ...schedule,
+            dayOfWeek: payload.newScheduleDay,
+            raids
+        })
+    }));
+
+    const success = await persistCalendar(ui, {
+        selectedRaid: payload.selectedRaid,
+        nextScheduleTables
+    });
+
+    if (success) {
+        ui.setNewScheduleDay("wednesday");
+        ui.setNewScheduleRaids([]);
+        ui.setEditingScheduleId?.(null);
         ui.setAddScheduleOpen(false);
     }
 }
