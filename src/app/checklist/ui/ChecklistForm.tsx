@@ -1517,7 +1517,8 @@ export function ChecklistComponent({
                                                                                 'w-7 h-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none cursor-pointer',
                                                                                 getBorderByStage(diff.difficulty, diff.isDisable),
                                                                                 diff.isDisable ? 'bg-gray-300/30 dark:bg-gray-600/30 fadedtext' : '',
-                                                                                diff.isCheck ? getBackground50ByStage(diff.difficulty, diff.isDisable) : ''
+                                                                                diff.isCheck ? getBackground50ByStage(diff.difficulty, diff.isDisable) : '',
+                                                                                diff.isBonus ? 'ring-2 ring-inset ring-yellow-500' : ''
                                                                             )} onClick={async (e) => {
                                                                                 e.preventDefault();
                                                                                 e.stopPropagation();
@@ -1529,16 +1530,6 @@ export function ChecklistComponent({
                                                                     </React.Fragment>
                                                                 ))}
                                                             </div>
-                                                            {!isBonusMode[character.nickname] ? (
-                                                                <div className="flex gap-2 mt-1">
-                                                                    {item.items.map((diff, ix) => (
-                                                                        <div key={ix} className={clsx(
-                                                                            "w-7 h-1 rounded-full",
-                                                                            diff.isBonus ? 'bg-yellow-500' : ''
-                                                                        )}/>
-                                                                    ))}
-                                                                </div>
-                                                            ) : null}
                                                         </div>
                                                     </div>
                                                 </Checkbox>
