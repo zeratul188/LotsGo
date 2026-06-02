@@ -445,9 +445,12 @@ function PositionModal({ isOpenModalPosition, onOpenChangePosition, checklist, d
                                                         {...prov.dragHandleProps}
                                                         className="p-2 mb-3 bg-gray-100 dark:bg-[#222222] rounded-md cursor-move border-gray-100 dark:border-[#222222] hover:border-blue-600 border-2"
                                                     >
-                                                        <div className="flex flex-col gap-1">
-                                                            <span className="fadedtext text-sm">@{char.server} · {char.job} · Lv.{char.level}</span>
-                                                            <span className="text-md">{char.nickname}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <JobEmblemIcon job={char.job} size={32}/>
+                                                            <div className="flex flex-col gap-0.5">
+                                                                <span className="fadedtext text-sm">@{char.server} · {char.job} · Lv.{char.level}</span>
+                                                                <span className="text-md leading-tight">{char.nickname}</span>
+                                                            </div>
                                                         </div>
                                                     </li>
                                                     )}
