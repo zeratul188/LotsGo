@@ -477,8 +477,33 @@ export function AbilityComponent({ info, titles, attackPieces, supportorPieces }
 function TitleComponent({titles}: { titles: string[] }) {
     const [page, setPage] = useState(1);
     const titlesPerPage = 7;
-    const totalPages = Math.max(1, Math.ceil(titles.length / titlesPerPage));
-    const paginatedTitles = titles.slice((page - 1) * titlesPerPage, page * titlesPerPage);
+    const titleGradeOrder: Record<string, number> = {
+        "에스더": 0,
+        "고대": 1,
+        "유물": 2,
+        "전설": 3,
+        "영웅": 4,
+        "희귀": 5
+    };
+    const sortedTitles = titles
+        .map((title, index) => ({
+            title,
+            index,
+            grade: getTitleData(title)?.grade ?? ""
+        }))
+        .sort((a, b) => {
+            const aOrder = titleGradeOrder[a.grade] ?? Number.MAX_SAFE_INTEGER;
+            const bOrder = titleGradeOrder[b.grade] ?? Number.MAX_SAFE_INTEGER;
+
+            if (aOrder !== bOrder) {
+                return aOrder - bOrder;
+            }
+
+            return a.index - b.index;
+        })
+        .map(({ title }) => title);
+    const totalPages = Math.max(1, Math.ceil(sortedTitles.length / titlesPerPage));
+    const paginatedTitles = sortedTitles.slice((page - 1) * titlesPerPage, page * titlesPerPage);
 
     useEffect(() => {
         setPage(1);
