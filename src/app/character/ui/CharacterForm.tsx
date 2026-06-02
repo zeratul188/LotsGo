@@ -339,7 +339,7 @@ export function ProfileComponent({ info, isBadge }: NewProfileComponentProps) {
                         <Chip color="warning" variant="solid" radius="sm">{info.profile.className}</Chip>
                         <Chip color="primary" variant="solid" radius="sm" className={clsx(info.profile.arkpassiveTitle ? 'flex' : 'hidden')}>{info.profile.arkpassiveTitle}</Chip>
                     </div>
-                    <p className="fadedtext mt-4">{info.profile.title ? getParsedText(info.profile.title) : '-'}{info.profile.guildName !== '-' ?` · ${info.profile.guildName} 길드` : ''}</p>
+                    <p className="mt-2">{info.profile.title ? getParsedText(info.profile.title) : '-'}{info.profile.guildName !== '-' ?` · ${info.profile.guildName} 길드` : ''}</p>
                     {isBadge ? (
                         <div className="flex gap-2 items-center">
                             <div className="tag-container">
@@ -354,17 +354,17 @@ export function ProfileComponent({ info, isBadge }: NewProfileComponentProps) {
                             <Tooltip showArrow content="후원자 뱃지"><div className="w-12 h-12"><VegaIcon/></div></Tooltip>
                         </div>
                     ) : <p className="text-2xl font-bold">{info.nickname}</p>}
-                    <div className="flex items-center gap-2 mt-2">
-                        <p className="fadedtext text-sm">전투 레벨</p>
-                        <p className="text-md">{info.profile.characterLevel.toLocaleString()}</p>
+                    <div className="mt-2 w-fit flex items-center rounded-full bg-white dark:bg-[#18181b] shadow-md">
+                        <p className="rounded-l-full h-full flex items-center bg-gradient-to-r from-orange-500 to-red-500 py-0.5 pl-2 pr-1.5 text-xs text-white">전투 레벨</p>
+                        <p className="py-0.5 pl-2.5 pr-3 text-sm">{info.profile.characterLevel.toLocaleString()}</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <p className="fadedtext text-sm">원정대 레벨</p>
-                        <p className="text-md">{info.profile.expeditionLevel}</p>
+                    <div className="mt-2 w-fit flex items-center rounded-full bg-white dark:bg-[#18181b] shadow-md">
+                        <p className="rounded-l-full h-full flex items-center bg-gradient-to-r from-pink-500 to-purple-500 py-0.5 pl-2 pr-1.5 text-xs text-white">원정대 레벨</p>
+                        <p className="py-0.5 pl-2.5 pr-3 text-sm">{info.profile.expeditionLevel}</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <p className="fadedtext text-sm">영지</p>
-                        <p className="text-md">Lv.{info.profile.townLevel} {info.profile.townName}</p>
+                    <div className="mt-2 w-fit flex items-center rounded-full bg-white dark:bg-[#18181b] shadow-md">
+                        <p className="rounded-l-full h-full flex items-center bg-gradient-to-r from-sky-500 to-blue-500 py-0.5 pl-2 pr-1.5 text-xs text-white">영지</p>
+                        <p className="py-0.5 pl-2.5 pr-3 text-sm">Lv.{info.profile.townLevel} {info.profile.townName}</p>
                     </div>
                     <div className="grow flex flex-row items-center gap-3 mt-5">
                         <Tooltip showArrow content="아이템 레벨">
