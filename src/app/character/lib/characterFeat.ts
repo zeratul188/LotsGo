@@ -211,6 +211,51 @@ export async function loadProfile(
     nickname: string,
     ui: LoadProfileUI
 ) {
+    const applyCachedCharacter = async (
+        cachedCharacter: CharacterInfo,
+        cachedTitles: string[],
+        cachedExpeditions: ExpeditionCharacterInfo[],
+        cachedAttackPieces: CardPiece[],
+        cachedSupportorPieces: CardPiece[],
+        originalAttackPieces: CardPiece[],
+        originalSupportorPieces: CardPiece[]
+    ) => {
+        const today = new Date();
+        const history: CharacterHistory = {
+            nickname: nickname,
+            job: cachedCharacter.profile.className,
+            level: cachedCharacter.profile.itemLevel,
+            server: cachedCharacter.profile.server,
+            date: today
+        }
+        ui.setCharacterInfo(cachedCharacter);
+        ui.setAttackPieces(cachedAttackPieces);
+        ui.setSupporterPieces(cachedSupportorPieces);
+        ui.setTitles(cachedTitles);
+
+        const isAttackPiecesChanged = !isSameCardPieces(cachedAttackPieces, originalAttackPieces);
+        const isSupportorPiecesChanged = !isSameCardPieces(cachedSupportorPieces, originalSupportorPieces);
+        if (isAttackPiecesChanged || isSupportorPiecesChanged) {
+            await fetch('/api/characters', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nickname: nickname,
+                    characterInfo: cachedCharacter,
+                    expeditions: cachedExpeditions,
+                    titles: cachedTitles,
+                    attackPieces: cachedAttackPieces,
+                    supportorPieces: cachedSupportorPieces
+                })
+            });
+        }
+
+        saveHistory(history);
+        ui.setExpeditions(cachedExpeditions);
+        ui.setLoading(false);
+        ui.setNothing(false);
+    };
+
     const badgeRes = await fetch('/api/administrator/badge');
     if (badgeRes.ok) {
         const badges: Badge[] = await badgeRes.json();
@@ -226,6 +271,9 @@ export async function loadProfile(
     let isPassed = false;
     let titles: string[] = [];
     let loadedExpeditions: ExpeditionCharacterInfo[] = [];
+    let cachedCharacter: CharacterInfo | null = null;
+    let originalAttackPieces: CardPiece[] = [];
+    let originalSupportorPieces: CardPiece[] = [];
     
     let attackPieces: CardPiece[] = createCardPieces('attack');
     let supportorPieces: CardPiece[] = createCardPieces('supportor');
@@ -234,15 +282,18 @@ export async function loadProfile(
         const data = await res.json();
         titles = data.titles;
         loadedExpeditions = data.expeditions;
+        cachedCharacter = data.character ?? null;
+        originalAttackPieces = Array.isArray(data.attackPieces) ? data.attackPieces : [];
+        originalSupportorPieces = Array.isArray(data.supportorPieces) ? data.supportorPieces : [];
         attackPieces = syncCardPieces(
             'attack',
-            Array.isArray(data.attackPieces) ? data.attackPieces : [],
+            originalAttackPieces,
             data.character?.profile?.characterType === 'attack' ? data.character.card?.sets ?? [] : [],
             data.character?.profile?.characterType === 'attack' ? data.character.card?.cards ?? [] : []
         );
         supportorPieces = syncCardPieces(
             'supportor',
-            Array.isArray(data.supportorPieces) ? data.supportorPieces : [],
+            originalSupportorPieces,
             data.character?.profile?.characterType === 'supportor' ? data.character.card?.sets ?? [] : [],
             data.character?.profile?.characterType === 'supportor' ? data.character.card?.cards ?? [] : []
         );
@@ -253,40 +304,15 @@ export async function loadProfile(
             const hasPassed3Days = (now.getTime() - basedDate.getTime()) >= threeDaysInMs;
 
             if (!hasPassed3Days) {
-                const today = new Date();
-                const history: CharacterHistory = {
-                    nickname: nickname,
-                    job: data.character.profile.className,
-                    level: data.character.profile.itemLevel,
-                    server: data.character.profile.server,
-                    date: today
-                }
-                ui.setCharacterInfo(data.character);
-                ui.setAttackPieces(attackPieces);
-                ui.setSupporterPieces(supportorPieces);
-                ui.setTitles(data.titles);
-
-                const isAttackPiecesChanged = !isSameCardPieces(attackPieces, Array.isArray(data.attackPieces) ? data.attackPieces : []);
-                const isSupportorPiecesChanged = !isSameCardPieces(supportorPieces, Array.isArray(data.supportorPieces) ? data.supportorPieces : []);
-                if (isAttackPiecesChanged || isSupportorPiecesChanged) {
-                    await fetch('/api/characters', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            nickname: nickname,
-                            characterInfo: data.character,
-                            expeditions: loadedExpeditions,
-                            titles: data.titles,
-                            attackPieces: attackPieces,
-                            supportorPieces: supportorPieces
-                        })
-                    });
-                }
-
-                saveHistory(history);
-                ui.setExpeditions(loadedExpeditions);
-                ui.setLoading(false);
-                ui.setNothing(false);
+                await applyCachedCharacter(
+                    data.character,
+                    data.titles,
+                    loadedExpeditions,
+                    attackPieces,
+                    supportorPieces,
+                    originalAttackPieces,
+                    originalSupportorPieces
+                );
                 return;
             } else {
                 isPassed = true;
@@ -303,6 +329,18 @@ export async function loadProfile(
     if (res.status === 401 || isPassed) {
         const lostarkRes = await fetch(`/api/lostark?value=${nickname}&code=5&key=${decryptedApiKey}`);
         if (!lostarkRes.ok) {
+            if (cachedCharacter) {
+                await applyCachedCharacter(
+                    cachedCharacter,
+                    titles,
+                    loadedExpeditions,
+                    attackPieces,
+                    supportorPieces,
+                    originalAttackPieces,
+                    originalSupportorPieces
+                );
+                return;
+            }
             addToast({
                 title: "불러오기 오류",
                 description: `입력한 캐릭터가 존재하지 않거나 로스트아크 점검 시간 등의 이유로 데이터를 불러오지 못했습니다.`,
@@ -316,7 +354,19 @@ export async function loadProfile(
         const data = await lostarkRes.json();
         if (data) {
             const expeditionRes = await fetch(`/api/lostark?value=${nickname}&code=0&key=${decryptedApiKey}`);
-            if (!lostarkRes.ok) {
+            if (!expeditionRes.ok) {
+                if (cachedCharacter) {
+                    await applyCachedCharacter(
+                        cachedCharacter,
+                        titles,
+                        loadedExpeditions,
+                        attackPieces,
+                        supportorPieces,
+                        originalAttackPieces,
+                        originalSupportorPieces
+                    );
+                    return;
+                }
                 addToast({
                     title: "불러오기 오류",
                     description: `입력한 캐릭터가 존재하지 않거나 로스트아크 점검 시간 등의 이유로 데이터를 불러오지 못했습니다.`,
