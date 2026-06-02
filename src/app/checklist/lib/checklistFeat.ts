@@ -1918,14 +1918,40 @@ export function useClickUpdatedCharacters(
     const prevChecklist = checklist.map(item => ({ ...item }));
     return async () => {
         setLoading(true);
-        for (const character of newChecklist) {
-            const lostarkRes = await fetch(`/api/lostark?value=${character.nickname}&code=1&key=${decryptedApiKey}`);
+        const updatedCharacters = new Set<string>();
+        while (updatedCharacters.size < newChecklist.length) {
+            const targetCharacter = newChecklist.find(character => !updatedCharacters.has(character.nickname));
+            if (!targetCharacter) break;
+
+            const lostarkRes = await fetch(`/api/lostark?value=${targetCharacter.nickname}&code=0&key=${decryptedApiKey}`);
             if (lostarkRes.ok) {
-                const data = await lostarkRes.json();
-                if (data !== null && data !== undefined) {
-                    character.server = data.ServerName;
-                    character.job = data.CharacterClassName;
-                    character.level = Number(data.ItemAvgLevel.replaceAll(',', ''));
+                const data: Array<any> = await lostarkRes.json();
+                const expeditionCharacterMap = new Map(
+                    data.map(item => [
+                        item.CharacterName,
+                        {
+                            server: item.ServerName,
+                            job: item.CharacterClassName,
+                            level: Number(item.ItemAvgLevel.replaceAll(',', ''))
+                        }
+                    ])
+                );
+
+                let updatedCount = 0;
+                for (const character of newChecklist) {
+                    const expeditionCharacter = expeditionCharacterMap.get(character.nickname);
+                    if (!expeditionCharacter) continue;
+
+                    character.server = expeditionCharacter.server;
+                    character.job = expeditionCharacter.job;
+                    character.level = expeditionCharacter.level;
+                    updatedCharacters.add(character.nickname);
+                    updatedCount++;
+                }
+
+                if (updatedCount === 0) {
+                    updatedCharacters.add(targetCharacter.nickname);
+                    console.log(`Unable to match ${targetCharacter.nickname}'s expedition data to checklist characters.`);
                 }
             } else {
                 if (lostarkRes.status === 503) {
@@ -1937,7 +1963,8 @@ export function useClickUpdatedCharacters(
                     setLoading(false);
                     return;
                 } else {
-                    console.log(`Unable to load ${character.nickname}'s character data. (Error Status : ${lostarkRes.status})`);
+                    updatedCharacters.add(targetCharacter.nickname);
+                    console.log(`Unable to load ${targetCharacter.nickname}'s expedition data. (Error Status : ${lostarkRes.status})`);
                 }
             }
         }

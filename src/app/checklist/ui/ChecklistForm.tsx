@@ -445,9 +445,12 @@ function PositionModal({ isOpenModalPosition, onOpenChangePosition, checklist, d
                                                         {...prov.dragHandleProps}
                                                         className="p-2 mb-3 bg-gray-100 dark:bg-[#222222] rounded-md cursor-move border-gray-100 dark:border-[#222222] hover:border-blue-600 border-2"
                                                     >
-                                                        <div className="flex flex-col gap-1">
-                                                            <span className="fadedtext text-sm">@{char.server} · {char.job} · Lv.{char.level}</span>
-                                                            <span className="text-md">{char.nickname}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <JobEmblemIcon job={char.job} size={32}/>
+                                                            <div className="flex flex-col gap-0.5">
+                                                                <span className="fadedtext text-sm">@{char.server} · {char.job} · Lv.{char.level}</span>
+                                                                <span className="text-md leading-tight">{char.nickname}</span>
+                                                            </div>
                                                         </div>
                                                     </li>
                                                     )}
@@ -1517,7 +1520,8 @@ export function ChecklistComponent({
                                                                                 'w-7 h-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none cursor-pointer',
                                                                                 getBorderByStage(diff.difficulty, diff.isDisable),
                                                                                 diff.isDisable ? 'bg-gray-300/30 dark:bg-gray-600/30 fadedtext' : '',
-                                                                                diff.isCheck ? getBackground50ByStage(diff.difficulty, diff.isDisable) : ''
+                                                                                diff.isCheck ? getBackground50ByStage(diff.difficulty, diff.isDisable) : '',
+                                                                                diff.isBonus ? 'ring-2 ring-inset ring-yellow-500' : ''
                                                                             )} onClick={async (e) => {
                                                                                 e.preventDefault();
                                                                                 e.stopPropagation();
@@ -1529,16 +1533,6 @@ export function ChecklistComponent({
                                                                     </React.Fragment>
                                                                 ))}
                                                             </div>
-                                                            {!isBonusMode[character.nickname] ? (
-                                                                <div className="flex gap-2 mt-1">
-                                                                    {item.items.map((diff, ix) => (
-                                                                        <div key={ix} className={clsx(
-                                                                            "w-7 h-1 rounded-full",
-                                                                            diff.isBonus ? 'bg-yellow-500' : ''
-                                                                        )}/>
-                                                                    ))}
-                                                                </div>
-                                                            ) : null}
                                                         </div>
                                                     </div>
                                                 </Checkbox>
