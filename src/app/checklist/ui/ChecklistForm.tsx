@@ -1521,7 +1521,7 @@ export function ChecklistComponent({
                                                                                 getBorderByStage(diff.difficulty, diff.isDisable),
                                                                                 diff.isDisable ? 'bg-gray-300/30 dark:bg-gray-600/30 fadedtext' : '',
                                                                                 diff.isCheck ? getBackground50ByStage(diff.difficulty, diff.isDisable) : '',
-                                                                                diff.isBonus ? 'ring-2 ring-inset ring-yellow-500' : ''
+                                                                                diff.isBonus ? 'ring-3 ring-inset ring-yellow-500' : ''
                                                                             )} onClick={async (e) => {
                                                                                 e.preventDefault();
                                                                                 e.stopPropagation();
