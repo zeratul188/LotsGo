@@ -7,7 +7,7 @@ import CalendarComponent, { ContentData } from "./home/ui/CalendarForm";
 import ChecklistComponent from "./home/ui/ChecklistForm";
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import { Island, IslandData, LostarkEvent, Notice } from "./home/lib/calendarFeat";
+import type { Island, IslandData, LostarkEvent, Notice } from "./home/model/types";
 import dayjs from "dayjs";
 import Script from "next/script";
 import { useSelector } from "react-redux";
