@@ -3,7 +3,8 @@ import { ContentData } from "../ui/CalendarForm";
 import dayjs, { Dayjs } from "dayjs";
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
-import { CalendarData, filterTodayIslands, getRewardItems, Island, IslandData, isSameDate, isToday, LostarkEvent, Notice, RewardItem } from "./calendarFeat";
+import type { CalendarData, Island, IslandData, LostarkEvent, Notice, RewardItem } from "../model/types";
+import { filterTodayIslands, getRewardItems, isSameDate, isToday } from "./calendarFeat";
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
