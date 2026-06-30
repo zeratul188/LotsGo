@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { filterIslandData, filterRewardItem, formatKoreanDate, formatTimeLeft, getNextIslandTime, initialWeek, isGoldIsland, isGoldIslands, isHaveGold, Island, IslandData, LostarkEvent, Notice } from "../lib/calendarFeat";
+import type { Island, IslandData, LostarkEvent, Notice } from "../model/types";
+import { filterIslandData, filterRewardItem, formatKoreanDate, formatTimeLeft, getNextIslandTime, initialWeek, isGoldIsland, isGoldIslands, isHaveGold } from "../lib/calendarFeat";
 import { 
     Accordion,
     AccordionItem,

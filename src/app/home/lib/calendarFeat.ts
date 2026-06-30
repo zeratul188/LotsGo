@@ -1,58 +1,10 @@
 import dayjs, { Dayjs } from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
-import { ContentData } from '../ui/CalendarForm';
+import type { Island, IslandData, IslandItem, RewardItem } from '../model/types';
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
-
-export type IslandItem = {
-    name: string,
-    icon: string,
-    grade: string
-}
-export type Island = {
-    name: string,
-    icon: string,
-    items: IslandItem[]
-}
-
-export type CalendarData = {
-    gate: ContentData | null,
-    boss: ContentData | null,
-    islands: Island[],
-    islandTime: Dayjs | null,
-    islandDatas: IslandData[],
-    isInspection: boolean
-}
-
-export type IslandData = {
-    name: string,
-    icon: string,
-    dates: string[],
-    rewards: RewardItem[]
-}
-
-export type RewardItem = {
-    name: string,
-    icon: string,
-    grade: string,
-    times: string[] | null
-}
-
-export type Notice = {
-    title: string,
-    date: string,
-    link: string
-}
-
-export type LostarkEvent = {
-    title: string,
-    thumbnail: string,
-    link: string,
-    startDate: string,
-    endDate: string
-}
 
 // 오늘의 모험섬인지 확인하는 필터
 export function filterTodayIslands(island: any): boolean {

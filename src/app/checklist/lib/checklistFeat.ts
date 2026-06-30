@@ -2895,7 +2895,7 @@ export function getSimpleBossName(bosses: Boss[], name: string): string {
 // 관문 별 체크 버튼 테두리 반환
 export function getBorderByStage(diff: string, isDisable: boolean): string {
     if (isDisable) return 'border-gray-400 dark:border-gray-600';
-    if (diff.includes('싱글')) return 'border-blue-400 dark:border-blue-600';
+    if (diff.includes('싱글') || diff.includes('매칭')) return 'border-blue-400 dark:border-blue-600';
     else if (diff.includes('노말') || diff.includes('1단계')) return 'border-green-600 dark:border-green-400';
     else if (diff.includes('하드') || diff.includes('2단계')) return 'border-red-600 dark:border-red-400';
     else if (diff.includes('더퍼스트') || diff.includes('나이트메어') || diff.includes('3단계')) return 'border-purple-600 dark:border-purple-400';
@@ -2905,7 +2905,7 @@ export function getBorderByStage(diff: string, isDisable: boolean): string {
 // 관문 별 체크 버튼 배경색 반환
 export function getBackgroundByStage(diff: string, isDisable: boolean): string {
     if (isDisable) return 'bg-gray-400 dark:bg-gray-600';
-    if (diff.includes('싱글')) return 'bg-blue-400 dark:bg-blue-600';
+    if (diff.includes('싱글') || diff.includes('매칭')) return 'bg-blue-400 dark:bg-blue-600';
     else if (diff.includes('노말') || diff.includes('1단계')) return 'bg-green-600 dark:bg-green-400';
     else if (diff.includes('하드') || diff.includes('2단계')) return 'bg-red-600 dark:bg-red-400';
     else if (diff.includes('더퍼스트') || diff.includes('나이트메어') || diff.includes('3단계')) return 'bg-purple-600 dark:bg-purple-400';
@@ -2915,7 +2915,7 @@ export function getBackgroundByStage(diff: string, isDisable: boolean): string {
 // 관문 별 체크 버튼 배경색 반환
 export function getBackground50ByStage(diff: string, isDisable: boolean): string {
     if (isDisable) return 'bg-gray-400/50 dark:bg-gray-600/50 fadedtext';
-    if (diff.includes('싱글')) return 'bg-blue-400/50 dark:bg-blue-600/50 text-white';
+    if (diff.includes('싱글') || diff.includes('매칭')) return 'bg-blue-400/50 dark:bg-blue-600/50 text-white';
     else if (diff.includes('노말') || diff.includes('1단계')) return 'bg-green-600/50 dark:bg-green-400/50 text-white';
     else if (diff.includes('하드') || diff.includes('2단계')) return 'bg-red-600/50 dark:bg-red-400/50 text-white';
     else if (diff.includes('더퍼스트') || diff.includes('나이트메어') || diff.includes('3단계')) return 'bg-purple-600/50 dark:bg-purple-400/50 text-white';
@@ -2924,7 +2924,7 @@ export function getBackground50ByStage(diff: string, isDisable: boolean): string
 
 // 난이도 관련 색상 반환
 export function getTextColorByDifficulty(diff: string): 'primary' | 'danger' | 'success' | 'secondary' | 'default' {
-    if (diff.includes('싱글')) return 'primary';
+    if (diff.includes('싱글') || diff.includes('매칭')) return 'primary';
     else if (diff.includes('노말') || diff.includes('1단계')) return 'success';
     else if (diff.includes('하드') || diff.includes('2단계')) return 'danger';
     else if (diff.includes('더퍼스트') || diff.includes('나이트메어') || diff.includes('3단계')) return 'secondary';
