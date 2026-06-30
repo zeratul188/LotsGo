@@ -1,10 +1,10 @@
 [
     {
-        "url": "/main/main9.webp",
-        "title": "카제로스 1막&2막 익스트림",
-        "sub": "카제로스 레이드",
-        "color": "#c2dbf0",
-        "isBlack": true
+        "url": "/main/main10.webp",
+        "title": "찰나의 지배자 : 차원술사",
+        "sub": "신규 클래스",
+        "color": "#316158",
+        "isBlack": false
     },
     {
         "url": "/main/main8.webp",
@@ -18,20 +18,6 @@
         "title": "고통의 마녀 : 세르카",
         "sub": "그림자 레이드",
         "color": "#1e2041",
-        "isBlack": false
-    },
-    {
-        "url": "/main/main6.webp",
-        "title": "분노의 복수자 : 가디언나이트",
-        "sub": "신규 클래스",
-        "color": "#a51e1e",
-        "isBlack": false
-    },
-    {
-        "url": "/main/main5.webp",
-        "title": "종막 : 카제로스",
-        "sub": "카제로스 레이드",
-        "color": "#a51e1e",
         "isBlack": false
     }
 ]
