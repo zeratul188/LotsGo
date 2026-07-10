@@ -144,6 +144,11 @@
             "job": "가디언나이트",
             "img": "/character/classimgs/class29.jpg",
             "type": "default"
+        },
+        {
+            "job": "차원술사",
+            "img": "/character/classimgs/class30.jpg",
+            "type": "default"
         }
     ]
 }
