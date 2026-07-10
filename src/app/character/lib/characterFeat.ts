@@ -1016,7 +1016,7 @@ export function getEngravingSrcByName(name: string): string {
     if (obj) {
         return obj.url;
     }
-    return '/character/classimgs/nothing.png';
+    return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23e5e7eb'/%3E%3Cpath d='M32 18c-5.5 0-10 3.7-10 8.8h6c0-1.9 1.7-3.4 4-3.4s4 1.4 4 3.2c0 1.7-1 2.7-3.7 4.4-3.5 2.1-6.3 4.5-6.3 9.5v1.5h6v-1c0-2.4 1-3.5 4.1-5.4 3.2-2 5.9-4.4 5.9-9 0-5.4-4.6-8.6-10-8.6Zm-3 29v6h6v-6h-6Z' fill='%236b7280'/%3E%3C/svg%3E";
 }
 
 // 각인서 레벨에 따른 보석 반복 메시지 반환
