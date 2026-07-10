@@ -1,4 +1,4 @@
-import { Image, NavbarItem, Link, NavbarMenuToggle, Tooltip, NavbarMenu, NavbarMenuItem, Button, Divider, Avatar, addToast } from "@heroui/react";
+import { Image, NavbarItem, Link, NavbarMenuToggle, Tooltip, NavbarMenu, NavbarMenuItem, Button, Divider, addToast } from "@heroui/react";
 import { 
     useSwitch, 
     VisuallyHidden, 
@@ -14,7 +14,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { useLogout, useOnActionProfile } from "./headerFeat";
 import { Character } from "../store/loginSlice";
-import { getImgByJob } from "../character/lib/expeditionFeat";
 import HomeworkIcon from "@/Icons/HomeworkIcon";
 import { SettingIcon } from "../icons/SettingIcon";
 import CalIcon from "@/Icons/CalIcon";
@@ -23,6 +22,7 @@ import AddonIcon from "@/Icons/AddonIcon";
 import RaidIcon from "@/Icons/RaidIcon";
 import { useEffect, useState } from "react";
 import { isAdministratorByToken } from "../administrator/lib/administratorFeat";
+import JobAvatar from "@/Icons/JobAvatar";
 import { usePathname, useRouter } from "next/navigation";
 import clsx from "clsx";
 
@@ -79,7 +79,7 @@ export function NavMenu() {
             {isLogined ? mainCharacter ? (
                 (
                     <div className="w-full flex gap-4 items-center mt-1">
-                        <Avatar isBordered size="md" src={getImgByJob(mainCharacter.job)}/>
+                        <JobAvatar size="md" job={mainCharacter.job}/>
                         <div className="grow">
                             <p className="truncate overflow-hidden whitespace-nowrap">{mainCharacter.nickname}</p>
                             <p className="fadedtext truncate overflow-hidden whitespace-nowrap text-[10pt]">Lv.{mainCharacter.level} · {mainCharacter.job}</p>
@@ -294,7 +294,7 @@ function ProfileButton() {
                         <Button variant="light">{id}</Button>
                     ) : (
                         <div className="flex gap-2 items-center cursor-pointer" role="button" tabIndex={0}>
-                            <Avatar isBordered size="md" src={getImgByJob(mainCharacter.job)}/>
+                            <JobAvatar size="md" job={mainCharacter.job}/>
                             <div className="h-[max-content]">
                                 <p className="truncate overflow-hidden whitespace-nowrap leading-none">{id}</p>
                                 <p className="fadedtext truncate overflow-hidden whitespace-nowrap text-[10pt] leading-none mt-1">{mainCharacter.nickname}</p>

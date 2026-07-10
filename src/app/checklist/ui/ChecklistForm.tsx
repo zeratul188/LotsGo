@@ -29,7 +29,6 @@ import {
     ModalFooter,
     Switch,
     Link,
-    Avatar,
     Pagination,
     addToast
 } from "@heroui/react";
@@ -144,13 +143,13 @@ import {
   Droppable,
   Draggable
 } from '@hello-pangea/dnd';
-import { getImgByJob } from "../../character/lib/expeditionFeat";
 import { ChecklistData } from "../../home/lib/checklistFeat";
 import { ControlStage } from "../model/types";
 import CheckIcon from "@/Icons/CheckIcon";
 import CharacterIcon from "@/Icons/CharacterIcon";
 import BusIcon from "@/Icons/BusIcon";
 import JobEmblemIcon from "@/Icons/JobEmblemIcon";
+import JobAvatar from "@/Icons/JobAvatar";
 
 // state 관리
 export type ModalData = {
@@ -3402,7 +3401,7 @@ export function RemainChecklistComponent({ checklist, bosses }: RemainChecklistC
                             )}>
                                 <CardBody>
                                     <div className="w-full flex gap-3 items-center justify-end">
-                                        <Avatar isBordered size="md" src={getImgByJob(data.job)}/>
+                                        <JobAvatar size="md" job={data.job}/>
                                         <div className="grow">
                                             <p>{data.nickname}</p>
                                             <p className="fadedtext text-[10pt]">{data.job} · Lv.{data.level.toLocaleString()}</p>
