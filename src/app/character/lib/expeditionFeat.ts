@@ -1,5 +1,5 @@
 import data from "@/data/characters/data.json";
-import jobs from '@/data/classimgs/data.json';
+
 import { ExpeditionCharacterInfo } from "../model/types";
 
 // 캐릭터 검색 함수
@@ -52,10 +52,4 @@ export function getBorderColorByLevel(level: number): string {
         }
     }
     return '';
-}
-
-// 해당 직업의 이미지 링크 반환 함수
-export function getImgByJob(job: string): string {
-    const obj = jobs.classImgs.find(item => item.job === job);
-    return obj ? obj.img : "/character/classimgs/nothing.png";
 }

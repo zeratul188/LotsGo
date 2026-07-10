@@ -4,7 +4,6 @@ import { SetStateFn, useMobileQuery } from "@/utiils/utils"
 import { 
     Accordion, AccordionItem, 
     addToast, 
-    Avatar, 
     Button, ButtonGroup, 
     Card, CardBody, CardFooter, CardHeader, 
     Checkbox, 
@@ -25,12 +24,12 @@ import { DayValue, getAllBoundGold, getAllContentGold, getAllContentOtherGold, g
 import { CubeDetailComponent, CubeStatueComponent, RemainChecklistComponent, SelectServer } from "./ChecklistForm";
 import clsx from "clsx";
 import { Cube } from "../../api/checklist/cube/route";
-import { getImgByJob } from "../../character/lib/expeditionFeat";
 import { SettingIcon } from "../../icons/SettingIcon";
 import DeleteIcon from "../../icons/DeleteIcon";
 import { handleControlCube, handleSetOtherGold, handleWeekContent, handleWeekStage, useOnClickCheckGold, useOnClickDayCheck } from "../lib/testFeat";
 import AddIcon from "../../icons/AddIcon";
 import React from "react";
+import JobAvatar from "@/Icons/JobAvatar";
 
 // 숙제 현황
 type ChecklistStatueProps = {
@@ -469,7 +468,7 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                             <div className="w-full flex flex-col md960:flex-row items-center gap-2">
                                 <div className="w-full grow flex gap-4 items-center">
                                     <div className="flex flex-col gap-2 items-center">
-                                        <Avatar isBordered size="md" color={character.isGold ? 'warning' : 'default'} src={getImgByJob(character.job)}/>
+                                        <JobAvatar size="md" job={character.job}/>
                                         <Chip size="sm" variant="flat" radius="sm" color="warning" className={clsx(
                                             "text-[8pt] p-0.5",
                                             character.isGold ? 'hidden sm:flex' : 'hidden'

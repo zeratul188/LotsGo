@@ -1,7 +1,6 @@
 import { 
     Accordion,
     AccordionItem,
-    Avatar, 
     Card, CardBody, CardFooter, CardHeader, 
     Chip, 
     Divider, 
@@ -12,7 +11,6 @@ import {
     SelectItem, 
     Tab, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Tabs,
     Tooltip,
-    User,
 } from "@heroui/react"
 import { Raid, RemainCharacter } from "../model/types";
 import React, { Key, useEffect, useMemo, useRef, useState } from "react"
@@ -32,7 +30,6 @@ import {
     loadPartyData 
 } from "../lib/partyFeat"
 import { Boss } from "@/app/api/checklist/boss/route"
-import { getImgByJob } from "@/app/character/lib/expeditionFeat"
 import LeaderIcon from "@/Icons/LeaderIcon"
 import clsx from "clsx"
 import { getBackgroundByStage, getSimpleBossName } from "@/app/checklist/lib/checklistFeat"
@@ -44,6 +41,7 @@ import { ShieldSecurityIcon } from "@/Icons/ShieldSecurityIcon";
 import CheckIcon from "@/Icons/CheckIcon";
 import { useMobileQuery } from "@/utiils/utils";
 import JobEmblemIcon from "@/Icons/JobEmblemIcon";
+import JobAvatar from "@/Icons/JobAvatar";
 import dynamic from "next/dynamic";
 import { CalendarComponent } from "./CalendarForm";
 const FixedLineAd = dynamic(() => import("@/app/ad/FixedLineAd"), { ssr: false });
@@ -198,7 +196,7 @@ function MemberComponent({ index, member, bosses, party }: MemberComponentProps)
                             <React.Fragment key={idx}>
                                 <div className="w-full flex flex-col sm:flex-row gap-2 sm:gap-5 px-3 py-2 items-center">
                                     <div className="min-w-full sm:min-w-[240px] flex gap-3 items-center">
-                                        <Avatar size="sm" isBordered color={item.isGold ? 'warning' : 'default'} src={getImgByJob(item.job)}/>
+                                        <JobAvatar size="sm" job={item.job}/>
                                         <div className="grow">
                                             <div className="flex gap-1 items-center">
                                                 <p className="text-[10pt]">{item.nickname}</p>
@@ -426,10 +424,13 @@ function RemainContent({ member, bosses }: { member: RaidMember, bosses: Boss[] 
         switch(columnKey) {
             case "character":
                 return (
-                    <User
-                        avatarProps={{src: getImgByJob(checklist.job)}}
-                        name={checklist.nickname}
-                        description={`Lv.${checklist.level} · ${checklist.job} · @${checklist.server}`}/>
+                    <div className="flex items-center gap-2">
+                        <JobAvatar size="sm" job={checklist.job}/>
+                        <div className="min-w-0">
+                            <p className="truncate">{checklist.nickname}</p>
+                            <p className="fadedtext truncate text-[10pt]">{`Lv.${checklist.level} · ${checklist.job} · @${checklist.server}`}</p>
+                        </div>
+                    </div>
                 )
             case "gold":
                 return (

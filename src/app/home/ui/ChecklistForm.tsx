@@ -14,7 +14,6 @@ import {
     getHaveGolds 
 } from "../../checklist/lib/checklistFeat";
 import { 
-    Avatar,
     Card,
     CardBody,
     CardHeader,
@@ -25,12 +24,12 @@ import {
     Tooltip
 } from "@heroui/react";
 import React from "react";
-import { getImgByJob } from "../../character/lib/expeditionFeat";
 import { ContentChip } from "../../raids/ui/PartyForm";
 import { useMobileQuery } from "@/utiils/utils";
 import CutCircularProgress from "../../components/ui/CutCircularProgress";
 import PersonIcon from "@/Icons/PersonIcon";
 import clsx from "clsx";
+import JobAvatar from "@/Icons/JobAvatar";
 
 // state 관리
 function useChecklistForm() {
@@ -240,7 +239,7 @@ export default function ChecklistComponent() {
                             <React.Fragment key={idx}>
                                 <div className="w-full flex flex-col sm:flex-row gap-2 sm:gap-5 px-3 py-2 items-center">
                                     <div className="min-w-full sm:min-w-[240px] flex gap-3 items-center">
-                                        <Avatar size="sm" isBordered color={item.isGold ? 'warning' : 'default'} src={getImgByJob(item.job)}/>
+                                        <JobAvatar size="sm" job={item.job}/>
                                         <div className="grow">
                                             <div className="flex gap-1 items-center">
                                                 <p className="text-[10pt]">{item.nickname}</p>
