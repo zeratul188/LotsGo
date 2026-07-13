@@ -1,5 +1,22 @@
 export const EQUIPMENTS = ["투구", "견갑", "상의", "하의", "장갑", "무기"] as const;
 export type Equipment = (typeof EQUIPMENTS)[number];
+export type TranscendenceGrade = 0 | 1 | 2 | 3;
+export type TranscendenceProgress = Record<Equipment, TranscendenceGrade[]>;
+
+export const createEmptyTranscendenceProgress = (): TranscendenceProgress =>
+    Object.fromEntries(EQUIPMENTS.map((equipment) => [equipment, Array<TranscendenceGrade>(7).fill(0)])) as TranscendenceProgress;
+
+export const normalizeTranscendenceProgress = (value: unknown): TranscendenceProgress => {
+    const source = value && typeof value === "object" ? value as Record<string, unknown> : {};
+    return Object.fromEntries(EQUIPMENTS.map((equipment) => {
+        const stages = Array.isArray(source[equipment]) ? source[equipment] : [];
+        const normalized = Array.from({ length: 7 }, (_, index) => {
+            const grade = Number(stages[index]);
+            return Number.isInteger(grade) && grade >= 0 && grade <= 3 ? grade as TranscendenceGrade : 0;
+        });
+        return [equipment, normalized];
+    })) as TranscendenceProgress;
+};
 
 export const DEFAULT_SPIRITS = [
     "업화", "대폭발", "벼락", "낙뢰", "용오름",

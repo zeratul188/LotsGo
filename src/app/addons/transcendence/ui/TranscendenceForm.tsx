@@ -3,8 +3,10 @@
 import { addToast, Button, Card, CardBody, Chip, Select, SelectItem, Tooltip } from "@heroui/react";
 import clsx from "clsx";
 import { useEffect, useMemo, useState } from "react";
+import { useSelector } from "react-redux";
 import TranscendenceIcon from "@/Icons/TranscendenceIcon";
 import { useMobileQuery } from "@/utiils/utils";
+import { RootState } from "@/app/store/store";
 import presetData from "../data/transcendence.json";
 import {
     canTargetDistorted,
@@ -18,15 +20,20 @@ import {
     EQUIPMENTS,
     Equipment,
     EquipmentPreset,
+    createEmptyTranscendenceProgress,
     GameState,
+    normalizeTranscendenceProgress,
     Position,
     PreviewCell,
     SpiritCard,
+    TranscendenceGrade,
+    TranscendenceProgress,
 } from "../model/types";
 import "./transcendence.css";
 
 const presets = presetData.preset as EquipmentPreset[];
 const levels = [1, 2, 3, 4, 5, 6, 7];
+const LOCAL_PROGRESS_KEY = "lostark-transcendence-progress";
 
 const SPIRIT_STYLE: Record<string, string> = {
     "업화": "from-orange-600 to-red-950",
@@ -273,8 +280,107 @@ function Board({ game, hovered, destroyingKeys, enableHoverPreview, onHover, onL
     );
 }
 
+type ProgressStatus = "loading" | "idle" | "saving" | "error";
+
+function TranscendenceProgressTable({ progress, status, isLogined, currentEquipment, currentStage }: {
+    progress: TranscendenceProgress;
+    status: ProgressStatus;
+    isLogined: boolean;
+    currentEquipment: Equipment;
+    currentStage: number;
+}) {
+    const totalGrade = EQUIPMENTS.reduce(
+        (total, equipment) => total + progress[equipment].reduce<number>((sum, grade) => sum + grade, 0),
+        0,
+    );
+    const statusText = status === "loading"
+        ? "불러오는 중"
+        : status === "saving"
+        ? "저장 중"
+        : status === "error"
+        ? "저장 오류"
+        : isLogined
+        ? "계정에 자동 저장"
+        : "이 기기에 자동 저장";
+
+    return (
+        <section className="mt-8 overflow-hidden rounded-3xl border border-default-200 bg-content1/80 shadow-lg">
+            <div className="flex flex-col gap-2 border-b border-default-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p className="text-xs font-semibold uppercase tracking-[.16em] text-primary">Achievement</p>
+                    <h2 className="mt-1 text-lg font-bold">부위별 초월 달성 기록</h2>
+                    <p className="mt-1 text-xs text-default-500">각 부위와 단계에서 달성한 최고 등급만 기록됩니다.</p>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-2 self-end sm:self-auto">
+                    <div className="flex items-center gap-2 rounded-2xl border border-warning-300/40 bg-warning-50/70 px-3 py-2 dark:bg-warning-950/20">
+                        <TranscendenceIcon className="h-5 w-5 text-amber-500"/>
+                        <span className="text-xs font-semibold text-default-500">총 초월</span>
+                        <strong className="text-lg tabular-nums text-amber-500">{totalGrade}</strong>
+                    </div>
+                    <Chip
+                        size="sm"
+                        variant="flat"
+                        color={status === "error" ? "danger" : status === "saving" ? "warning" : "success"}>
+                        {statusText}
+                    </Chip>
+                </div>
+            </div>
+            <div className={clsx("overflow-x-auto p-3 sm:p-5", status === "loading" && "animate-pulse opacity-55")}>
+                <table className="w-full min-w-[620px] table-fixed border-separate border-spacing-1 text-center">
+                    <colgroup>
+                        <col className="w-24"/>
+                        {levels.map((level) => <col key={level}/>)}
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th className="px-2 py-2 text-center text-xs font-semibold text-default-500">장비 부위</th>
+                            {levels.map((level) => (
+                                <th key={level} className="px-2 py-2 text-xs font-semibold text-default-500">{level}단계</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {EQUIPMENTS.map((item) => (
+                            <tr key={item}>
+                                <th className="rounded-xl bg-default-100 px-2 py-2.5 text-center text-sm font-bold">{item}</th>
+                                {progress[item].map((grade, index) => {
+                                    const isCurrent = item === currentEquipment && index + 1 === currentStage;
+                                    return (
+                                        <td
+                                            key={index}
+                                            className={clsx(
+                                                "rounded-xl border px-1 py-2.5",
+                                                isCurrent
+                                                    ? "border-primary-400 bg-primary-50/70 dark:bg-primary-950/20"
+                                                    : "border-default-200 bg-default-50/65",
+                                            )}>
+                                            <span
+                                                className={clsx(
+                                                    "flex min-h-4 items-center justify-center gap-px whitespace-nowrap",
+                                                    grade > 0 ? "text-amber-500" : "text-default-300",
+                                                )}
+                                                aria-label={`${item} ${index + 1}단계 ${grade > 0 ? `${grade}성` : "1성 미달"}`}>
+                                                {Array.from({ length: grade || 1 }, (_, iconIndex) => (
+                                                    <TranscendenceIcon key={iconIndex} className="h-3.5 w-3.5 shrink-0"/>
+                                                ))}
+                                            </span>
+                                        </td>
+                                    );
+                                })}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    );
+}
+
 export default function TranscendenceForm() {
     const isMobile = useMobileQuery();
+    const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
+    const isLogined = useSelector((state: RootState) => state.login.isLogined);
+    const userId = useSelector((state: RootState) => state.login.user.id);
     const [equipment, setEquipment] = useState<Equipment>("투구");
     const [stage, setStage] = useState(1);
     const getPreset = (nextEquipment = equipment, nextStage = stage) =>
@@ -282,6 +388,51 @@ export default function TranscendenceForm() {
     const [game, setGame] = useState(() => createGame(equipment, stage, getPreset()));
     const [hovered, setHovered] = useState<Position | null>(null);
     const [destroyingKeys, setDestroyingKeys] = useState<Set<string>>(() => new Set());
+    const [progress, setProgress] = useState<TranscendenceProgress>(() => createEmptyTranscendenceProgress());
+    const [progressStatus, setProgressStatus] = useState<ProgressStatus>("loading");
+
+    useEffect(() => {
+        if (!isCheckedToken) return;
+
+        let cancelled = false;
+        const loadProgress = async () => {
+            setProgressStatus("loading");
+            try {
+                if (isLogined) {
+                    const token = sessionStorage.getItem("token");
+                    if (!token) throw new Error("TOKEN_NOT_FOUND");
+
+                    const response = await fetch("/api/addons/transcendence", {
+                        headers: { authorization: `Bearer ${token}` },
+                    });
+                    if (!response.ok) throw new Error("LOAD_FAILED");
+
+                    const data = await response.json();
+                    if (!cancelled) setProgress(normalizeTranscendenceProgress(data.progress));
+                } else {
+                    const stored = localStorage.getItem(LOCAL_PROGRESS_KEY);
+                    const parsed = stored ? JSON.parse(stored) : null;
+                    if (!cancelled) setProgress(normalizeTranscendenceProgress(parsed));
+                }
+
+                if (!cancelled) setProgressStatus("idle");
+            } catch {
+                if (cancelled) return;
+                setProgress(createEmptyTranscendenceProgress());
+                setProgressStatus("error");
+                addToast({
+                    title: "초월 기록 불러오기 실패",
+                    description: "저장된 초월 달성 기록을 불러오지 못했습니다.",
+                    color: "danger",
+                });
+            }
+        };
+
+        void loadProgress();
+        return () => {
+            cancelled = true;
+        };
+    }, [isCheckedToken, isLogined, userId]);
 
     useEffect(() => {
         if (destroyingKeys.size === 0) return;
@@ -312,6 +463,56 @@ export default function TranscendenceForm() {
         setHovered(null);
     };
 
+    const saveCompletion = async (
+        targetEquipment: Equipment,
+        targetStage: number,
+        grade: TranscendenceGrade,
+    ) => {
+        const previous = progress;
+        const next = normalizeTranscendenceProgress(previous);
+        next[targetEquipment][targetStage - 1] = Math.max(
+            next[targetEquipment][targetStage - 1],
+            grade,
+        ) as TranscendenceGrade;
+
+        setProgress(next);
+        setProgressStatus("saving");
+        try {
+            if (isLogined) {
+                const token = sessionStorage.getItem("token");
+                if (!token) throw new Error("TOKEN_NOT_FOUND");
+
+                const response = await fetch("/api/addons/transcendence", {
+                    method: "PUT",
+                    headers: {
+                        authorization: `Bearer ${token}`,
+                        "content-type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        equipment: targetEquipment,
+                        stage: targetStage,
+                        grade,
+                    }),
+                });
+                if (!response.ok) throw new Error("SAVE_FAILED");
+
+                const data = await response.json();
+                setProgress(normalizeTranscendenceProgress(data.progress));
+            } else {
+                localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify(next));
+            }
+            setProgressStatus("idle");
+        } catch {
+            setProgress(previous);
+            setProgressStatus("error");
+            addToast({
+                title: "초월 기록 저장 실패",
+                description: "완료 기록을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+                color: "danger",
+            });
+        }
+    };
+
     const attackTile = (position: Position) => {
         if (isMobile && (!hovered || keyOf(hovered) !== keyOf(position))) {
             setHovered(position);
@@ -324,6 +525,9 @@ export default function TranscendenceForm() {
             description: notice.description,
             color: notice.kind === "spawn" ? "danger" : "success",
         }));
+        if (game.completedGrade === null && result.game.completedGrade !== null) {
+            void saveCompletion(result.game.equipment, result.game.stage, result.game.completedGrade);
+        }
         setDestroyingKeys(new Set(result.destroyedPositions.map(keyOf)));
         setGame(result.game);
         setHovered(null);
@@ -526,6 +730,12 @@ export default function TranscendenceForm() {
                     </div>
                 </aside>}
             </div>
+            <TranscendenceProgressTable
+                progress={progress}
+                status={progressStatus}
+                isLogined={isLogined}
+                currentEquipment={equipment}
+                currentStage={stage}/>
             {isMobile && (
                 <div className="fixed inset-x-2 bottom-2 z-[100] mx-auto max-w-md rounded-2xl border border-default-200 bg-content1/95 p-2 shadow-2xl backdrop-blur-md [padding-bottom:max(.5rem,env(safe-area-inset-bottom))]">
                     <div className="mb-2 flex items-center justify-between gap-2">
