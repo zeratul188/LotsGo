@@ -1,4 +1,10 @@
-import { EQUIPMENTS, Equipment, normalizeTranscendenceProgress, TranscendenceGrade } from "@/app/addons/transcendence/model/types";
+import {
+    createEmptyTranscendenceProgress,
+    EQUIPMENTS,
+    Equipment,
+    normalizeTranscendenceProgress,
+    TranscendenceGrade,
+} from "@/app/addons/transcendence/model/types";
 import { firestore } from "@/utiils/firebase";
 import { collection, doc, getDoc, getDocs, limit, query, updateDoc, where } from "firebase/firestore";
 import jwt from "jsonwebtoken";
@@ -64,6 +70,14 @@ export async function PUT(req: NextRequest) {
     try {
         const userId = await getAuthenticatedUserId(req);
         const body = await req.json();
+        const memberDocument = await getMemberDocument(userId);
+
+        if (body.reset === true) {
+            const progress = createEmptyTranscendenceProgress();
+            await updateDoc(memberDocument.ref, { transcendence: progress });
+            return NextResponse.json({ progress });
+        }
+
         const equipment = body.equipment as Equipment;
         const stage = Number(body.stage);
         const grade = Number(body.grade) as TranscendenceGrade;
@@ -72,7 +86,6 @@ export async function PUT(req: NextRequest) {
             return NextResponse.json({ error: "올바르지 않은 초월 기록입니다." }, { status: 400 });
         }
 
-        const memberDocument = await getMemberDocument(userId);
         const progress = normalizeTranscendenceProgress(memberDocument.data().transcendence);
         progress[equipment][stage - 1] = Math.max(
             progress[equipment][stage - 1],

@@ -150,11 +150,12 @@ function SpiritCardView({ card, selected, small, mini, onClick }: {
             className={clsx(
                 "relative overflow-hidden rounded-xl border text-left text-white shadow-md transition",
                 "bg-gradient-to-br", SPIRIT_STYLE[card.name],
+                onClick ? "cursor-pointer" : "cursor-default",
                 mini
-                    ? "h-14 w-10 cursor-default rounded-lg sm:h-16 sm:w-12"
+                    ? "h-14 w-10 rounded-lg sm:h-16 sm:w-12"
                     : small
-                    ? ["h-20 w-16 sm:h-24 sm:w-20", onClick ? "cursor-pointer hover:-translate-y-0.5" : "cursor-default"]
-                    : "h-44 w-36 hover:-translate-y-1",
+                    ? ["h-20 w-16 sm:h-24 sm:w-20", onClick && "hover:-translate-y-0.5"]
+                    : ["h-44 w-36", onClick && "hover:-translate-y-1"],
                 selected ? "border-amber-400 ring-4 ring-amber-400/30" : "border-white/20",
             )}>
             {artwork && (
@@ -220,19 +221,21 @@ function Board({ game, hovered, destroyingKeys, enableHoverPreview, onHover, onL
                 const isDestroying = destroyingKeys.has(keyOf(position));
                 const targetable = tile?.base === "normal"
                     || tile?.base === "distorted" && selectedCard !== null && canTargetDistorted(selectedCard.name);
+                const clickable = targetable && selectedCard !== null && game.completedGrade === null;
                 const tileButton = (
                     <button
                         type="button"
                         aria-label={tile ? `${tile.special ?? (tile.base === "distorted" ? "왜곡" : "일반")} 석판` : "빈 발판"}
-                        disabled={initial === 0 || !targetable}
-                        onMouseEnter={() => enableHoverPreview && targetable && onHover(position)}
-                        onFocus={() => enableHoverPreview && targetable && onHover(position)}
-                        onClick={() => targetable && onClick(position)}
+                        disabled={initial === 0 || !clickable}
+                        onMouseEnter={() => enableHoverPreview && clickable && onHover(position)}
+                        onFocus={() => enableHoverPreview && clickable && onHover(position)}
+                        onClick={() => clickable && onClick(position)}
                         className={clsx(
                             "relative aspect-square rounded-md border transition",
                             initial === 0 && "invisible",
                             initial !== 0 && !tile && "border-dashed border-default-300 bg-default-50",
                             tile && "transcendence-stone",
+                            clickable && "cursor-pointer",
                             tile?.base === "distorted" && "transcendence-stone--distorted",
                             tile?.base === "distorted" && !targetable && "cursor-not-allowed",
                             tile?.special && ["transcendence-stone--special", SPECIAL_TILE_CLASS[tile.special]],
@@ -282,12 +285,13 @@ function Board({ game, hovered, destroyingKeys, enableHoverPreview, onHover, onL
 
 type ProgressStatus = "loading" | "idle" | "saving" | "error";
 
-function TranscendenceProgressTable({ progress, status, isLogined, currentEquipment, currentStage }: {
+function TranscendenceProgressTable({ progress, status, isLogined, currentEquipment, currentStage, onReset }: {
     progress: TranscendenceProgress;
     status: ProgressStatus;
     isLogined: boolean;
     currentEquipment: Equipment;
     currentStage: number;
+    onReset: () => void;
 }) {
     const totalGrade = EQUIPMENTS.reduce(
         (total, equipment) => total + progress[equipment].reduce<number>((sum, grade) => sum + grade, 0),
@@ -317,12 +321,22 @@ function TranscendenceProgressTable({ progress, status, isLogined, currentEquipm
                         <span className="text-xs font-semibold text-default-500">총 초월</span>
                         <strong className="text-lg tabular-nums text-amber-500">{totalGrade}</strong>
                     </div>
-                    <Chip
-                        size="sm"
-                        variant="flat"
-                        color={status === "error" ? "danger" : status === "saving" ? "warning" : "success"}>
-                        {statusText}
-                    </Chip>
+                    <div className="flex items-center gap-2">
+                        <Chip
+                            size="sm"
+                            variant="flat"
+                            color={status === "error" ? "danger" : status === "saving" ? "warning" : "success"}>
+                            {statusText}
+                        </Chip>
+                        <Button
+                            size="sm"
+                            color="danger"
+                            variant="flat"
+                            isDisabled={status === "loading" || status === "saving"}
+                            onPress={onReset}>
+                            기록 초기화
+                        </Button>
+                    </div>
                 </div>
             </div>
             <div className={clsx("overflow-x-auto p-3 sm:p-5", status === "loading" && "animate-pulse opacity-55")}>
@@ -330,6 +344,7 @@ function TranscendenceProgressTable({ progress, status, isLogined, currentEquipm
                     <colgroup>
                         <col className="w-24"/>
                         {levels.map((level) => <col key={level}/>)}
+                        <col className="w-16"/>
                     </colgroup>
                     <thead>
                         <tr>
@@ -337,6 +352,7 @@ function TranscendenceProgressTable({ progress, status, isLogined, currentEquipm
                             {levels.map((level) => (
                                 <th key={level} className="px-2 py-2 text-xs font-semibold text-default-500">{level}단계</th>
                             ))}
+                            <th className="px-1 py-2 text-xs font-semibold text-default-500">합계</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -367,6 +383,12 @@ function TranscendenceProgressTable({ progress, status, isLogined, currentEquipm
                                         </td>
                                     );
                                 })}
+                                <td className="rounded-xl border border-warning-300/40 bg-warning-50/70 px-1 py-2.5 dark:bg-warning-950/20">
+                                    <span className="flex items-center justify-center gap-1 font-bold tabular-nums text-amber-500">
+                                        <TranscendenceIcon className="h-3.5 w-3.5 shrink-0"/>
+                                        {progress[item].reduce<number>((sum, grade) => sum + grade, 0)}
+                                    </span>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
@@ -513,6 +535,49 @@ export default function TranscendenceForm() {
         }
     };
 
+    const resetProgress = async () => {
+        if (!window.confirm("모든 부위의 초월 달성 기록을 초기화하시겠습니까?\n초기화한 기록은 복구할 수 없습니다.")) {
+            return;
+        }
+
+        setProgressStatus("saving");
+        try {
+            if (isLogined) {
+                const token = sessionStorage.getItem("token");
+                if (!token) throw new Error("TOKEN_NOT_FOUND");
+
+                const response = await fetch("/api/addons/transcendence", {
+                    method: "PUT",
+                    headers: {
+                        authorization: `Bearer ${token}`,
+                        "content-type": "application/json",
+                    },
+                    body: JSON.stringify({ reset: true }),
+                });
+                if (!response.ok) throw new Error("RESET_FAILED");
+
+                const data = await response.json();
+                setProgress(normalizeTranscendenceProgress(data.progress));
+            } else {
+                localStorage.removeItem(LOCAL_PROGRESS_KEY);
+                setProgress(createEmptyTranscendenceProgress());
+            }
+            setProgressStatus("idle");
+            addToast({
+                title: "초월 기록 초기화 완료",
+                description: "모든 부위의 초월 달성 기록을 초기화했습니다.",
+                color: "success",
+            });
+        } catch {
+            setProgressStatus("error");
+            addToast({
+                title: "초월 기록 초기화 실패",
+                description: "기록을 초기화하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+                color: "danger",
+            });
+        }
+    };
+
     const attackTile = (position: Position) => {
         if (isMobile && (!hovered || keyOf(hovered) !== keyOf(position))) {
             setHovered(position);
@@ -591,7 +656,7 @@ export default function TranscendenceForm() {
                             </SelectItem>
                         ))}
                     </Select>
-                    <Button color="danger" variant="flat" className="h-14" onPress={confirmRestart}>초기화</Button>
+                    <Button color="danger" variant="solid" className="h-14" onPress={confirmRestart}>초기화</Button>
                 </div>
             </div>
 
@@ -735,7 +800,8 @@ export default function TranscendenceForm() {
                 status={progressStatus}
                 isLogined={isLogined}
                 currentEquipment={equipment}
-                currentStage={stage}/>
+                currentStage={stage}
+                onReset={() => void resetProgress()}/>
             {isMobile && (
                 <div className="fixed inset-x-2 bottom-2 z-[100] mx-auto max-w-md rounded-2xl border border-default-200 bg-content1/95 p-2 shadow-2xl backdrop-blur-md [padding-bottom:max(.5rem,env(safe-area-inset-bottom))]">
                     <div className="mb-2 flex items-center justify-between gap-2">
