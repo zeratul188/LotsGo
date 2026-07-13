@@ -19,6 +19,11 @@ const tabs = [
         key: 'bus',
         label: '버스 계산기',
         path: '/addons/bus'
+    },
+    {
+        key: 'transcendence',
+        label: '초월 시뮬레이터',
+        path: '/addons/transcendence'
     }
 ]
 
