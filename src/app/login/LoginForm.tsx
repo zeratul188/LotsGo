@@ -30,16 +30,19 @@ export function useLoginForm() {
 }
 
 // 로고 이미지 컴포넌트
-export function LogoComponent() {
+type LogoComponentProps = {
+    className?: string
+}
+export function LogoComponent({ className = "w-[220px]" }: LogoComponentProps) {
     return (
         <>
-            <img 
-                src="title(L).png" 
-                className="w-[340px] dark:hidden cursor-pointer"
+            <img
+                src="/title(L).png"
+                className={`${className} dark:hidden`}
                 alt="로츠고 로고 이미지"/>
-            <img 
-                src="title(D).png" 
-                className="w-[340px] hidden dark:block cursor-pointer"
+            <img
+                src="/title(D).png"
+                className={`${className} hidden dark:block`}
                 alt="로츠고 로고 이미지"/>
         </>
     )
@@ -75,57 +78,74 @@ export function InputsComponent({
 
     return (
         <>
-            <Input
-                fullWidth
-                label="아이디"
-                size="lg"
-                radius="sm"
-                value={user.id}
-                onValueChange={onValueChangeID}
-                isInvalid={isIdDuplicated}
-                errorMessage="해당 아이디를 가진 회원정보를 찾을 수 없습니다."
-                variant="flat"/>
-            <Input
-                fullWidth
-                className="mt-5"
-                type="password"
-                label="비밀번호"
-                size="lg" 
-                radius="sm"
-                value={user.password}
-                onValueChange={onValueChangePassword}
-                isInvalid={isPasswordNotMatch}
-                errorMessage="비밀번호가 일치하지 않습니다."
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                        login(user, setLoading, setIdDuplicated, setPasswordNotMatch, router, dispatch);
-                    }
-                }}
-                variant="flat"/>
-            <Divider className="mt-8 mb-8"/>
+            <div className="flex flex-col gap-6">
+                <Input
+                    fullWidth
+                    label="아이디"
+                    labelPlacement="outside"
+                    placeholder="아이디를 입력해 주세요"
+                    size="lg"
+                    radius="sm"
+                    value={user.id}
+                    onValueChange={onValueChangeID}
+                    isInvalid={isIdDuplicated}
+                    errorMessage="해당 아이디를 가진 회원정보를 찾을 수 없습니다."
+                    variant="bordered"
+                    classNames={{
+                        label: "mb-1.5 font-medium",
+                        inputWrapper: "border-gray-200 bg-gray-50/50 transition-colors hover:border-primary/50 dark:border-white/10 dark:bg-white/[0.03]"
+                    }}/>
+                <Input
+                    fullWidth
+                    type="password"
+                    label="비밀번호"
+                    labelPlacement="outside"
+                    placeholder="비밀번호를 입력해 주세요"
+                    size="lg"
+                    radius="sm"
+                    value={user.password}
+                    onValueChange={onValueChangePassword}
+                    isInvalid={isPasswordNotMatch}
+                    errorMessage="비밀번호가 일치하지 않습니다."
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            login(user, setLoading, setIdDuplicated, setPasswordNotMatch, router, dispatch);
+                        }
+                    }}
+                    variant="bordered"
+                    classNames={{
+                        label: "mb-1.5 font-medium",
+                        inputWrapper: "border-gray-200 bg-gray-50/50 transition-colors hover:border-primary/50 dark:border-white/10 dark:bg-white/[0.03]"
+                    }}/>
+            </div>
             <Button
                 fullWidth
                 isLoading={isLoading}
                 color="primary"
                 size="lg"
                 radius="sm"
+                className="mt-8 font-semibold shadow-sm"
                 onPress={onClickLogin}>
                 로그인
             </Button>
+            <div className="my-6 flex items-center gap-3">
+                <Divider className="w-auto flex-1"/>
+                <span className="shrink-0 text-xs fadedtext">아직 계정이 없으신가요?</span>
+                <Divider className="w-auto flex-1"/>
+            </div>
             <Button
                 fullWidth
                 size="lg"
                 as={Link}
                 href="/signup"
                 radius="sm"
-                color="default"
-                className="mt-5">
+                variant="bordered"
+                className="border-gray-200 font-semibold dark:border-white/10">
                 회원가입
             </Button>
             <Link
-                color="foreground"
-                underline="always"
-                className="mt-4 cursor-pointer"
+                color="primary"
+                className="mx-auto mt-5 flex w-max cursor-pointer text-sm font-medium"
                 onPress={onOpen}>
                 비밀번호 찾기
             </Link>
@@ -148,17 +168,25 @@ export function FindPasswordModal({ isOpen, onOpenChange }: FindPasswordModalPro
         <Modal
             isDismissable={false}
             isKeyboardDismissDisabled={true}
+            size="md"
+            radius="lg"
             isOpen={isOpen}
             onOpenChange={onOpenChange}
             onClose={() => {
                 setEmail('');
                 setID('');
             }}>
-            <ModalContent>
+            <ModalContent className="border border-gray-200/80 dark:border-white/10">
                 {(onClose) => (
                     <>
-                        <ModalHeader>비밀번호 변경</ModalHeader>
-                        <ModalBody>
+                        <ModalHeader className="flex flex-col gap-1 border-b border-gray-200/80 px-6 py-5 dark:border-white/10">
+                            <div className="flex items-center gap-2">
+                                <span className="h-5 w-1 rounded-full bg-primary"/>
+                                <p className="text-xl font-semibold">비밀번호 재설정</p>
+                            </div>
+                            <p className="pl-3 text-sm font-normal fadedtext">가입 시 등록한 계정 정보를 입력해 주세요.</p>
+                        </ModalHeader>
+                        <ModalBody className="gap-5 px-6 py-6">
                             <Input
                                 fullWidth
                                 label="아이디"
@@ -167,22 +195,25 @@ export function FindPasswordModal({ isOpen, onOpenChange }: FindPasswordModalPro
                                 onValueChange={setID}
                                 isInvalid={isIdDuplicated}
                                 errorMessage="해당 아이디를 가진 회원정보를 찾을 수 없습니다."
-                                variant="flat"
-                                className="mb-2"/>
+                                variant="bordered"
+                                classNames={{ label: "mb-1.5 font-medium" }}/>
                             <Input
                                 fullWidth
                                 label="이메일"
                                 value={email}
                                 radius="sm"
                                 onValueChange={setEmail}
-                                variant="flat"/>
-                            <p className="mt-4 font-bold">비밀번호 변경 시 주의사항</p>
-                            <ul className="list-disc ml-5">
+                                variant="bordered"
+                                classNames={{ label: "mb-1.5 font-medium" }}/>
+                            <div className="rounded-xl bg-warning/10 p-4 text-sm">
+                                <p className="font-semibold text-warning-700 dark:text-warning">비밀번호 재설정 안내</p>
+                                <ul className="ml-5 mt-2 list-disc space-y-1 leading-5 fadedtext">
                                 <li>이메일로 비밀번호 재설정을 보내면 기존에 존재하던 비밀번호는 사용하실 수 없습니다.</li>
                                 <li>이메일로 보내진 비밀번호 재설정 이후 로그인을 마치면 정상적으로 비밀번호가 재설정됩니다.</li>
-                            </ul>
+                                </ul>
+                            </div>
                         </ModalBody>
-                        <ModalFooter>
+                        <ModalFooter className="px-6 pb-6 pt-0">
                             <Button
                                 fullWidth
                                 color="primary"
