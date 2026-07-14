@@ -150,6 +150,7 @@ import CharacterIcon from "@/Icons/CharacterIcon";
 import BusIcon from "@/Icons/BusIcon";
 import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 import JobAvatar from "@/Icons/JobAvatar";
+import { EditIcon } from "@/Icons/EditIcon";
 
 // state 관리
 export type ModalData = {
@@ -1071,9 +1072,9 @@ function CustomRadio(props: RadioProps) {
             {...otherProps}
             classNames={{
                 base: cn(
-                    "inline-flex m-0 items-center justify-between bg-gray-100/80 hover:bg-gray-200/70 dark:bg-gray-900 dark:hover:bg-gray-800",
+                    "inline-flex m-0 items-center justify-between bg-gray-100/80 hover:bg-gray-200/70 dark:bg-white/[0.04] dark:hover:bg-white/[0.08]",
                     "flex-row-reverse max-w-none cursor-pointer rounded-lg gap-3 border border-transparent px-3 py-2",
-                    "data-[selected=true]:border-primary data-[selected=true]:bg-primary-50 dark:data-[selected=true]:bg-primary-950/30",
+                    "data-[selected=true]:border-primary data-[selected=true]:bg-primary-50 dark:data-[selected=true]:bg-white/[0.08]",
                 ),
             }}>
             {children}
@@ -1134,24 +1135,24 @@ export function ChecklistComponent({
                 .filter((character) => (character.server === server || server === '전체') && filterChecklist(character, filterContent, bosses, checklist, isRemainHomework, isShowGoldCharacter, filterAccount)).length > 0 ? checklist
                 .filter((character) => (character.server === server || server === '전체') && filterChecklist(character, filterContent, bosses, checklist, isRemainHomework, isShowGoldCharacter, filterAccount))
                 .map((character, index) => (
-                    <Card key={index} fullWidth radius="sm" className={clsx(
-                        "w-full",
+                    <Card key={index} fullWidth radius="lg" shadow="none" className={clsx(
+                        "w-full overflow-hidden border border-gray-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]",
                         isHideDayContent ? isMobile ? "" : "min-[331px]:w-[330px]" : "min-[561px]:w-[560px]"
                     )}>
-                        <CardHeader>
+                        <CardHeader className="p-4 pb-3">
                             <div className={clsx(
                                 "w-full flex items-center gap-1",
                                 isHideDayContent ? "flex-col" : "flex-col md960:flex-row"
                             )}>
                                 <Chip
-                                    radius="sm"
+                                    radius="md"
                                     color="default"
                                     variant="flat"
                                     className={clsx(
-                                        "min-w-full",
+                                        "min-w-full bg-gray-100/80 dark:bg-white/[0.05]",
                                         isHideDayContent ? '' : 'hidden'
                                     )}>
-                                    <div className="grid grid-cols-[4fr_1px_10fr_1px_5fr] gap-1 text-xs text-center">
+                                    <div className="grid grid-cols-[4fr_1px_10fr_1px_5fr] gap-1 text-center text-xs">
                                         <p className={clsx(
                                             character.isGold ? 'text-yellow-600 dark:text-yellow-400' : 'fadedtext'
                                         )}>골드 지정</p>
@@ -1165,7 +1166,7 @@ export function ChecklistComponent({
                                     <JobEmblemIcon job={character.job} size={38}/>
                                     <div className="flex grow flex-row md960:flex-col items-center">
                                         <div className="grow-1 w-full">
-                                            <p className="fadedtext text-sm mt-1">{character.job} · Lv.{character.level}</p>
+                                            <p className="mt-1 text-xs fadedtext">{character.job} · Lv.{character.level}</p>
                                             <div className="flex gap-2 items-center">
                                                 <span className={clsx(
                                                     isHideDayContent ? isMobile ? "text-xl" : "text-lg" : "text-xl"
@@ -1222,7 +1223,7 @@ export function ChecklistComponent({
                                             {character.server}
                                         </Chip>
                                     </div>
-                                    <Popover showArrow disableAnimation radius="sm">
+                                    <Popover showArrow disableAnimation radius="md">
                                         <PopoverTrigger>
                                             <Progress 
                                                 aria-label="all-gold"
@@ -1238,14 +1239,18 @@ export function ChecklistComponent({
                                                     </div>
                                                 )}
                                                 showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
-                                                radius="sm"
+                                                radius="md"
                                                 value={getCompleteGoldCharacter(bosses, character)+character.otherGold}
                                                 maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
-                                                className="w-full cursor-pointer"/>
+                                                className="w-full cursor-pointer [&_[data-slot=label]]:mb-1"/>
                                         </PopoverTrigger>
-                                        <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
-                                            <div className="w-[230px] p-1">
-                                                <div className="w-full flex gap-1 items-center">
+                                        <PopoverContent className="border border-gray-200/80 bg-white/95 p-0 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#171717]/95">
+                                            <div className="w-[250px] p-4">
+                                                <div className="mb-3">
+                                                    <p className="font-semibold">골드 획득 상세</p>
+                                                    <p className="mt-0.5 text-xs fadedtext">완료한 콘텐츠 기준 획득량입니다.</p>
+                                                </div>
+                                                <div className="flex w-full items-center gap-2 rounded-lg bg-gray-100/70 px-3 py-2 dark:bg-white/[0.05]">
                                                     <div className="w-[9px] h-[9px] rounded-full bg-green-500"/>
                                                     <p className="grow">콘텐츠</p>
                                                     <div className="flex items-center">
@@ -1256,7 +1261,7 @@ export function ChecklistComponent({
                                                         <span className="ml-1 text-md">{getCompleteSharedGoldCharacter(bosses, character).toLocaleString()}</span>
                                                     </div>
                                                 </div>
-                                                <div className="w-full flex gap-1 items-center mt-1">
+                                                <div className="mt-2 flex w-full items-center gap-2 rounded-lg bg-gray-100/70 px-3 py-2 dark:bg-white/[0.05]">
                                                     <div className="w-[9px] h-[9px] rounded-full bg-yellow-500"/>
                                                     <p className="grow">귀속 골드</p>
                                                     <div className="flex items-center">
@@ -1267,7 +1272,7 @@ export function ChecklistComponent({
                                                         <span className="ml-1 text-md">{getCompleteBoundGoldCharacter(bosses, character).toLocaleString()}</span>
                                                     </div>
                                                 </div>
-                                                <div className="w-full flex gap-1 items-center mt-1">
+                                                <div className="mt-2 flex w-full items-center gap-2 rounded-lg bg-gray-100/70 px-3 py-2 dark:bg-white/[0.05]">
                                                     <div className="w-[9px] h-[9px] rounded-full bg-purple-600"/>
                                                     <p className="grow">부수입</p>
                                                     <div className="flex items-center">
@@ -1278,7 +1283,7 @@ export function ChecklistComponent({
                                                         <span className="ml-1 text-md">{character.otherGold.toLocaleString()}</span>
                                                     </div>
                                                 </div>
-                                                <div className="w-full h-2 bg-gray-200 rounded-full relative overflow-hidden mt-2">
+                                                <div className="relative mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-200">
                                                     <div className="absolute top-0 left-0 h-full bg-[#dddddd] dark:bg-[#444444]" style={{ width: '100%' }}></div>
                                                     <div className="absolute top-0 left-0 h-full bg-purple-600" style={{ width: `${getAllGoldCharacter(bosses, character)+character.otherGold !== 0 ? Math.round(getCompleteSharedGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 + Math.round(getCompleteBoundGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 + Math.round(character.otherGold / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 : 0}%` }}></div>
                                                     <div className="absolute top-0 left-0 h-full bg-yellow-500" style={{ width: `${getAllGoldCharacter(bosses, character)+character.otherGold !== 0 ? Math.round(getCompleteSharedGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 + Math.round(getCompleteBoundGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 : 0}%` }}></div>
@@ -1291,33 +1296,33 @@ export function ChecklistComponent({
                             </div>
                         </CardHeader>
                         <Divider/>
-                        <CardBody>
-                            <div className="w-full flex flex-col md960:flex-row gap-2">
+                        <CardBody className="p-4 pt-3">
+                            <div className="flex w-full flex-col gap-3 md960:flex-row">
                                 <div className={clsx(
-                                    "grow",
+                                    "min-w-0 grow",
                                     isHideDayContent ? 'hidden' : 'block'
                                 )}>
-                                    <Chip 
-                                        color="success" 
-                                        size="sm" 
-                                        variant="flat" 
-                                        radius="sm"
-                                        className="min-w-full text-center">일일 콘텐츠</Chip>
+                                    <div className="mb-2 flex items-center justify-between gap-2 border-b border-success-200/70 pb-2 dark:border-success-900/50">
+                                        <div>
+                                            <p className="text-sm font-semibold text-success-700 dark:text-success-400">일일 콘텐츠</p>
+                                            <p className="text-[11px] fadedtext">매일 초기화되는 숙제</p>
+                                        </div>
+                                        <Chip color="success" size="sm" variant="flat" radius="md">{character.daylist.length + 2}개</Chip>
+                                    </div>
                                     <RestCheckButton checklist={checklist} character={character} type="전선" dispatch={dispatch}/>
                                     <RestCheckButton checklist={checklist} character={character} type="가디언" dispatch={dispatch}/>
-                                    <div className="w-full pl-2.5">
+                                    <div className="w-full">
                                         {character.daylist.map((item, idx) => (
                                             <div key={idx}>
                                                 <Checkbox
-                                                    lineThrough
                                                     aria-label={`checklist-${item.name}-${idx}`}
                                                     size="sm"
                                                     color="secondary"
                                                     radius="full"
                                                     isSelected={item.isCheck}
                                                     className={clsx(
-                                                        "max-w-full w-full mt-3 box-border p-1.5",
-                                                        item.isCheck ? 'outline-2 outline-purple-400 dark:outline-purple-700 rounded-md bg-purple-400/20 dark:bg-purple-700/20' : ''
+                                                        "mt-2 box-border w-full max-w-full rounded-lg border border-transparent px-2 py-1.5",
+                                                        item.isCheck ? 'border-secondary-200 bg-secondary-50/70 dark:border-secondary-900 dark:bg-secondary-950/20' : 'hover:bg-gray-100/70 dark:hover:bg-gray-900/70'
                                                     )}
                                                     onChange={async () => await handleDayListCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                     {item.name}</Checkbox>
@@ -1325,12 +1330,13 @@ export function ChecklistComponent({
                                         ))}
                                     </div>
                                     <Button 
-                                        color="primary" 
-                                        variant="light" 
+                                        color="success"
+                                        variant="flat"
                                         fullWidth 
                                         size="sm" 
                                         startContent={<AddIcon size={16}/>}
-                                        className="mt-4"
+                                        radius="md"
+                                        className="mt-3 font-medium"
                                         onPress={() => {
                                             setModalData({
                                                 characterIndex: getIndexByNickname(checklist, character.nickname),
@@ -1339,21 +1345,14 @@ export function ChecklistComponent({
                                             onOpen();
                                         }}>추가 및 휴식 게이지 관리</Button>
                                 </div>
-                                <Divider className={clsx(
-                                    isHideDayContent ? 'hidden' : "block md960:hidden"
-                                )}/>
-                                <Divider orientation="vertical" className={clsx(
-                                    isHideDayContent ? 'hidden' : "hidden md960:block"
-                                )}/>
-                                <div className="grow-2">
-                                    <div className="w-full flex items-center gap-2">
+                                <div className={clsx(
+                                    "min-w-0 grow-2",
+                                    isHideDayContent ? "" : "border-t border-gray-200/80 pt-3 dark:border-white/10 md960:border-l md960:border-t-0 md960:pl-4 md960:pt-0"
+                                )}>
+                                    <div className="flex w-full items-center gap-2 border-b border-secondary-200/70 pb-2 dark:border-secondary-900/50">
                                         <div className="grow">
-                                            <Chip 
-                                                color="secondary" 
-                                                size="sm" 
-                                                variant="flat" 
-                                                radius="sm"
-                                                className="min-w-full text-center">주간 콘텐츠</Chip>
+                                            <p className="text-sm font-semibold text-secondary-700 dark:text-secondary-400">주간 콘텐츠</p>
+                                            <p className="text-[11px] fadedtext">주간 초기화되는 숙제</p>
                                         </div>
                                         <Tooltip showArrow content="더보기 관리 모드">
                                             <Switch 
@@ -1369,7 +1368,7 @@ export function ChecklistComponent({
                                                 )}/>
                                         </Tooltip>
                                     </div>
-                                    <div className="pl-2.5">
+                                    <div className="px-1.5 py-1 sm:px-2">
                                         {character.checklist.length === 0 ? (
                                             <div className="w-full h-[140px] flex items-center justify-center">
                                                 <p className="fadedtext">등록된 숙제가 없습니다.</p>
@@ -1393,6 +1392,8 @@ export function ChecklistComponent({
                                         ) : null}
                                         {character.checklist.map((item, idx) => (
                                             <div key={idx} className={clsx(
+                                                "mt-2 w-full rounded-lg border py-1",
+                                                isCheckHomework(item) ? 'border-primary-200 bg-primary-50/70 dark:border-primary-700/60 dark:bg-primary-500/10' : 'border-transparent hover:bg-gray-100/70 dark:hover:bg-white/[0.04]',
                                                 isHideCompleteContent ? isCheckHomework(item) ? 'hidden' : '' : ''
                                             )}>
                                                 <Checkbox
@@ -1400,10 +1401,8 @@ export function ChecklistComponent({
                                                     size="sm"
                                                     radius="full"
                                                     isSelected={isCheckHomework(item)}
-                                                    className={clsx(
-                                                        "max-w-full w-full mt-3 box-border p-1.5 [&_span:nth-of-type(2)]:w-full",
-                                                        isCheckHomework(item) ? 'outline-2 outline-blue-400 dark:outline-blue-800 rounded-md bg-blue-400/20 dark:bg-blue-800/20' : ''
-                                                    )}
+                                                    classNames={{base: "w-full max-w-none", label: "flex min-w-0 flex-1 items-center justify-start text-left"}}
+                                                    className="box-border w-full max-w-none py-1.5 pl-4 pr-2.5"
                                                     onValueChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                     <div className="w-full flex items-center gap-1">
                                                         <div>
@@ -1415,25 +1414,31 @@ export function ChecklistComponent({
                                                                     src="/icons/gold.png" 
                                                                     alt="goldicon"
                                                                     className="w-[14px] h-[14px]"/> : <></>}
-                                                                <Popover showArrow>
+                                                                <Popover showArrow placement="bottom-start">
                                                                     <PopoverTrigger>
                                                                         <button 
                                                                             type="button"
                                                                             onPointerDown={(e) => e.stopPropagation()}
                                                                             onClick={(e) => e.stopPropagation()}
                                                                             onKeyDown={(e) => e.stopPropagation()}
-                                                                            className="w-4 h-4 cursor-pointer">
+                                                                            aria-label="버스비 설정"
+                                                                            className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md hover:bg-gray-200/70 dark:hover:bg-gray-800">
                                                                             <BusIcon size={16} className={clsx(
                                                                                 item.busGold > 0 ? 'text-green-600 dark:text-green-400' : item.busGold < 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-500/70'
                                                                             )}/>
                                                                         </button>
                                                                     </PopoverTrigger>
-                                                                    <PopoverContent>
-                                                                        <div className="pb-2 pt-1 max-w-[200px]"> 
+                                                                    <PopoverContent className="border border-gray-200/80 p-0 shadow-xl dark:border-gray-800">
+                                                                        <div className="w-[250px] p-4">
+                                                                            <div className="mb-3">
+                                                                                <p className="font-semibold">버스비 설정</p>
+                                                                                <p className="mt-0.5 text-xs fadedtext">수익은 양수, 지출은 음수로 입력하세요.</p>
+                                                                            </div>
                                                                             <NumberInput
-                                                                                label="버스비 설정"
+                                                                                label="금액"
                                                                                 placeholder="0~99999999"
-                                                                                size="sm"
+                                                                                radius="md"
+                                                                                variant="bordered"
                                                                                 hideStepper
                                                                                 color={item.busGold > 0 ? 'success' : item.busGold < 0 ? 'danger' : 'default'}
                                                                                 value={item.busGold}
@@ -1442,7 +1447,7 @@ export function ChecklistComponent({
                                                                                 onValueChange={async (value: number) => {
                                                                                     await handleEditBusGold(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch, value);
                                                                                 }}/>
-                                                                            <p className="fadedtext text-[8pt] mt-2">버스를 손님으로 참여할 경우 음수(마이너스)로 표현하면 됩니다. (ex. -10000)</p>
+                                                                            <div className="mt-3 rounded-lg bg-gray-100/70 px-3 py-2 text-xs fadedtext dark:bg-gray-900">예: 손님으로 10,000 골드를 지출했다면 -10000</div>
                                                                         </div>
                                                                     </PopoverContent>
                                                                 </Popover>
@@ -1459,8 +1464,9 @@ export function ChecklistComponent({
                                                                 isBonusMode[character.nickname] ?? false ? 'gap-2' : ''
                                                             )}>
                                                                 {isBonusMode[character.nickname] ?? false ? item.items.map((diff, ix) => (
-                                                                    <Tooltip key={ix} showArrow delay={1000} content={
-                                                                        <div className="min-w-[180px] px-2 py-1">
+                                                                    <Tooltip key={ix} showArrow delay={500} content={
+                                                                        <div className="min-w-[200px] p-2">
+                                                                            <p className="mb-2 text-sm font-semibold">{diff.stage}관문 더보기</p>
                                                                             <div className="flex gap-1 items-center">
                                                                                 <p className="grow fadedtext">더보기 골드</p>
                                                                                 <img 
@@ -1470,7 +1476,7 @@ export function ChecklistComponent({
                                                                                 <p>{getBossGoldByContent(bosses, item.name, diff.stage, diff.difficulty).bonus.toLocaleString()}</p>
                                                                             </div>
                                                                             <p className={clsx(
-                                                                                "mt-1 text-[10pt]",
+                                                                                "mt-2 rounded-md bg-danger-50 px-2 py-1 text-xs dark:bg-danger-950/30",
                                                                                 !diff.isDisable ? "hidden" : "text-red-400 dark:text-red-600"
                                                                             )}>더보기 불가능</p>
                                                                         </div>
@@ -1496,9 +1502,9 @@ export function ChecklistComponent({
                                                                                 getBackgroundByStage(diff.difficulty, diff.isDisable)
                                                                             )} />
                                                                         )}
-                                                                        <Tooltip showArrow delay={1000} content={
-                                                                            <div className="w-full min-[251px]:w-[250px]">
-                                                                                <h1 className="w-full text-center font-bold p-1.5">{item.name}</h1>
+                                                                        <Tooltip showArrow delay={500} content={
+                                                                            <div className="w-full min-[281px]:w-[280px] p-2">
+                                                                                <h3 className="mb-3 font-semibold">{item.name}</h3>
                                                                                 <div className="w-full flex gap-2 items-center mb-1.5">
                                                                                     <Chip
                                                                                         radius="sm"
@@ -1516,7 +1522,7 @@ export function ChecklistComponent({
                                                                                     </Chip>
                                                                                 </div>
                                                                                 <Divider/>
-                                                                                <div className="w-full mt-1.5 mb-1">
+                                                                                <div className="my-2 w-full rounded-lg bg-gray-100/70 p-3 dark:bg-gray-900">
                                                                                     <div className="w-full flex gap-2 mb-1 items-center">
                                                                                         <p className="fadedtext">골드</p>
                                                                                         <div className="grow flex gap-1 items-center justify-end">
@@ -1590,38 +1596,43 @@ export function ChecklistComponent({
                                         ))}
                                         {character.weeklist.map((item, idx) => (
                                             <div key={idx} className={clsx(
+                                                "mt-2 w-full cursor-pointer rounded-lg border",
+                                                item.isCheck ? 'border-secondary-200 bg-secondary-50/70 dark:border-[#3a3342] dark:bg-secondary-400/[0.06]' : 'border-transparent hover:bg-gray-100/70 dark:hover:bg-white/[0.04]',
                                                 isHideCompleteContent ? item.isCheck ? 'hidden' : '' : ''
                                             )}>
-                                                <Checkbox
-                                                    lineThrough
+                                                <button
+                                                    type="button"
+                                                    role="checkbox"
+                                                    aria-checked={item.isCheck}
                                                     aria-label={`checklist-${item.name}-${idx}`}
-                                                    size="sm"
-                                                    color="secondary"
-                                                    radius="full"
-                                                    isSelected={item.isCheck}
-                                                    className={clsx(
-                                                        "max-w-full w-full mt-3 box-border p-1.5",
-                                                        item.isCheck ? 'outline-2 outline-purple-400 dark:outline-purple-700 rounded-md bg-purple-400/20 dark:bg-purple-700/20' : ''
-                                                    )}
-                                                    onChange={async () => await handleWeekListCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
-                                                    {item.name}</Checkbox>
+                                                    className="flex w-full cursor-pointer items-center gap-2 px-2.5 py-1.5 text-left text-sm"
+                                                    onClick={async () => await handleWeekListCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
+                                                    <span className={clsx(
+                                                        "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
+                                                        item.isCheck ? "border-secondary bg-secondary text-white" : "border-gray-400 dark:border-gray-600"
+                                                    )}>
+                                                        {item.isCheck ? <CheckIcon size={10}/> : null}
+                                                    </span>
+                                                    <span className={item.isCheck ? "line-through fadedtext" : ""}>{item.name}</span>
+                                                </button>
                                             </div>
                                         ))}
                                     </div>
                                     <Button 
-                                        color="primary" 
-                                        variant="light" 
+                                        color="secondary"
+                                        variant="flat"
                                         fullWidth 
                                         size="sm" 
                                         startContent={<AddIcon size={16}/>}
-                                        className="mt-4"
+                                        radius="md"
+                                        className="mt-3 font-medium"
                                         onPress={() => {
                                             setModalData({
                                                 characterIndex: getIndexByNickname(checklist, character.nickname),
                                                 type: 'week'
                                             });
                                             onOpen();
-                                        }}>추가</Button>
+                                        }}>주간 콘텐츠 관리</Button>
                                 </div>
                             </div>
                         </CardBody>
@@ -1737,25 +1748,40 @@ function SelectAccountModal({
 
     return (
         <Modal
-            radius="sm"
+            radius="lg"
+            size="md"
+            scrollBehavior="inside"
             isDismissable={false}
             isOpen={isOpenAccount}
             onOpenChange={onOpenAccount}>
-            <ModalContent>
+            <ModalContent className="border border-gray-200/80 bg-white dark:border-gray-800 dark:bg-gray-950">
                 {(onClose) => (
                     <>
-                        <ModalHeader>계정 선택</ModalHeader>
-                        <ModalBody>
-                            <div className="max-h-[400px] sm600:max-h-[600px] overflow-y-auto">
-                                <RadioGroup label="계정 선택" value={selected} onValueChange={setSelected} className="mb-8">
+                        <ModalHeader className="flex flex-col gap-1 border-b border-gray-200/80 px-6 py-5 dark:border-gray-800">
+                            <div className="flex items-center gap-2">
+                                <span className="h-5 w-1 rounded-full bg-primary"/>
+                                <p className="text-xl font-semibold">계정 선택</p>
+                            </div>
+                            <p className="pl-3 text-sm font-normal fadedtext">{checklist[characterIndex].nickname} 캐릭터를 분류할 계정을 선택하세요.</p>
+                        </ModalHeader>
+                        <ModalBody className="gap-5 px-6 py-5">
+                            <div>
+                                <RadioGroup
+                                    label="등록된 계정"
+                                    value={selected}
+                                    onValueChange={setSelected}
+                                    classNames={{label: "text-sm font-semibold", wrapper: "mt-2 gap-2"}}>
                                     {accounts.length > 0 ? accounts.map((account, index) => (
-                                        <Radio key={index} value={account}>{account}</Radio>
-                                    )) : <Radio value="본계정">본계정</Radio>}
+                                        <Radio key={index} value={account} classNames={{base: "m-0 max-w-full rounded-xl border border-gray-200/80 px-3 py-2.5 hover:bg-gray-100/70 data-[selected=true]:border-primary data-[selected=true]:bg-primary-50/70 dark:border-gray-800 dark:hover:bg-gray-900 dark:data-[selected=true]:bg-primary-950/20"}}>{account}</Radio>
+                                    )) : <Radio value="본계정" classNames={{base: "m-0 max-w-full rounded-xl border border-gray-200/80 px-3 py-2.5 data-[selected=true]:border-primary dark:border-gray-800"}}>본계정</Radio>}
                                 </RadioGroup>
+                            </div>
+                            <div className="rounded-xl border border-gray-200/80 bg-gray-50/60 p-4 dark:border-gray-800 dark:bg-gray-900/50">
+                                <p className="mb-3 text-sm font-semibold">새 계정 추가</p>
                                 <Input
                                     label="추가할 계정 이름"
-                                    radius="sm"
-                                    labelPlacement="outside"
+                                    radius="md"
+                                    variant="bordered"
                                     placeholder="2~10글자"
                                     maxLength={10}
                                     value={inputName}
@@ -1763,28 +1789,29 @@ function SelectAccountModal({
                                 <Button
                                     fullWidth
                                     size="sm"
-                                    radius="sm"
+                                    radius="md"
                                     variant="flat"
                                     color="success"
                                     isDisabled={inputName === ''}
-                                    className="mt-2"
+                                    className="mt-2 font-medium"
                                     onPress={onClickAddAccount}>
                                     계정 추가
                                 </Button>
-                                <p className="mt-1 text-sm fadedtext">다른 계정을 추가할려면 위 입력란에 새로운 계정 이름을 입력하세요.</p>
-                                <Button
-                                    fullWidth
-                                    radius="sm"
-                                    color="primary"
-                                    isLoading={isLoadingButton}
-                                    onPress={async () => {
-                                        await handleSelectAccount(selected, characterIndex, dispatch, onClose, setLoadingButton, checklist);
-                                    }}
-                                    className="mt-6 mb-4">
-                                    계정 선택
-                                </Button>
+                                <p className="mt-2 text-xs fadedtext">목록에 없는 계정 이름을 먼저 추가할 수 있습니다.</p>
                             </div>
                         </ModalBody>
+                        <ModalFooter className="border-t border-gray-200/80 px-6 py-4 dark:border-gray-800">
+                            <Button radius="md" variant="light" onPress={onClose}>취소</Button>
+                            <Button
+                                radius="md"
+                                color="primary"
+                                isLoading={isLoadingButton}
+                                onPress={async () => {
+                                    await handleSelectAccount(selected, characterIndex, dispatch, onClose, setLoadingButton, checklist);
+                                }}>
+                                선택 완료
+                            </Button>
+                        </ModalFooter>
                     </>
                 )}
             </ModalContent>
@@ -1806,11 +1833,11 @@ function SettingButton({ size, checklist, characterIndex, dispatch, accounts, se
     const onOpenChangeAccount = (isOpen: boolean) => setOpenAccount(isOpen);
     return (
         <>
-            <Dropdown>
+            <Dropdown placement="bottom-end">
                 <DropdownTrigger>
-                    <Button isIconOnly variant="light" size="sm"><SettingIcon size={size} className="text-gray-500 hover:text-gray-800 cursor-pointer" /></Button>
+                    <Button isIconOnly variant="light" size="sm" radius="full" aria-label="캐릭터 설정"><SettingIcon size={size} className="cursor-pointer text-gray-500" /></Button>
                 </DropdownTrigger>
-                <DropdownMenu>
+                <DropdownMenu aria-label="캐릭터 설정 메뉴" variant="flat" className="min-w-[190px] p-1">
                     <DropdownItem 
                         key="gold"
                         startContent={
@@ -1882,8 +1909,8 @@ function RestCheckButton({ checklist, character, type, dispatch }: RestCheckButt
     return (
         <div 
             className={clsx(
-                "max-w-full w-full mt-2 box-border p-1.5 pt-0.5",
-                type === '에포나' ? dayValue.value === 3 ? 'outline-2 outline-yellow-400 dark:outline-yellow-700 rounded-md bg-yellow-400/20 dark:bg-yellow-700/20' : '' : dayValue.value === 1 ? 'outline-2 outline-yellow-400 dark:outline-yellow-700 rounded-md bg-yellow-400/20 dark:bg-yellow-700/20' : ''
+                "mt-2 box-border w-full max-w-full rounded-lg border border-transparent px-2 py-1.5",
+                type === '에포나' ? dayValue.value === 3 ? 'border-warning-200 bg-warning-50/70 dark:border-warning-900 dark:bg-warning-950/20' : 'hover:bg-gray-100/70 dark:hover:bg-gray-900/70' : dayValue.value === 1 ? 'border-warning-200 bg-warning-50/70 dark:border-warning-900 dark:bg-warning-950/20' : 'hover:bg-gray-100/70 dark:hover:bg-gray-900/70'
             )}>
             <Checkbox
                 aria-label={`${character.nickname}'s ${type}`}
@@ -1892,7 +1919,7 @@ function RestCheckButton({ checklist, character, type, dispatch }: RestCheckButt
                 lineThrough
                 radius="full"
                 isSelected={type === '에포나' ? dayValue.value === 3 : dayValue.value === 1}
-                className="p-0 pl-2"
+                className="p-0"
                 onChange={onClickDayCheck}>
                 {getDayName(type, character.level)} ({dayValue.value}/{type === '에포나' ? 3 : 1})
             </Checkbox>
@@ -1950,18 +1977,24 @@ export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dis
     if (modalData.characterIndex !== -1) {
         return (
             <Modal
-                radius="sm"
+                radius="lg"
+                size="2xl"
+                scrollBehavior="inside"
                 isDismissable={false}
                 isOpen={isOpen}
                 onOpenChange={onOpenChange}>
-                <ModalContent>
+                <ModalContent className="border border-gray-200/80 bg-white dark:border-gray-800 dark:bg-gray-950">
                     {(onClose) => (
                         <>
-                            <ModalHeader>
-                                <span>{checklist[modalData.characterIndex].nickname} 콘텐츠 관리</span>
+                            <ModalHeader className="flex flex-col gap-1 border-b border-gray-200/80 px-6 py-5 dark:border-gray-800">
+                                <div className="flex items-center gap-2">
+                                    <span className={clsx("h-5 w-1 rounded-full", modalData.type === 'day' ? "bg-success" : "bg-secondary")}/>
+                                    <p className="text-xl font-semibold">{checklist[modalData.characterIndex].nickname} 콘텐츠 관리</p>
+                                </div>
+                                <p className="pl-3 text-sm font-normal fadedtext">{modalData.type === 'day' ? '휴식 게이지와 일일 기타 숙제를 관리합니다.' : '레이드 및 주간 기타 숙제를 관리합니다.'}</p>
                             </ModalHeader>
-                            <ModalBody>
-                                <div className="w-full max-h-[600px] min-[601px]:max-h-[800px] overflow-y-auto scroll-auto">
+                            <ModalBody className="px-6 py-5">
+                                <div className="w-full">
                                     {modalData.type === 'day' ? 
                                         <DayModalContent
                                             checklist={checklist}
@@ -1996,7 +2029,7 @@ type DayModalContentProps = {
 function DayModalContent({ checklist, index, dispatch, onClose }: DayModalContentProps) {
     return (
         <div className="w-full">
-            <Tabs aria-label="day-tab" fullWidth>
+            <Tabs aria-label="day-tab" fullWidth color="success" variant="underlined" classNames={{tabList: "gap-5", panel: "px-0 pb-1 pt-5"}}>
                 <Tab key="rest" title="휴식 게이지">
                     <RestStatueComponent
                         checklist={checklist}
@@ -2032,10 +2065,14 @@ function DayListComponent({ checklist, index, dispatch, onClose }: DayListCompon
     }
     const onClickAddDayList = useOnClickAddDayList(checklist, index, dispatch, otherItem, setLoadingAdd, setInputValue);
     return (
-        <>
+        <div className="space-y-4">
+            <div className="rounded-xl border border-gray-200/80 bg-gray-50/60 p-4 dark:border-gray-800 dark:bg-gray-900/50">
+                <p className="mb-3 text-sm font-semibold">기타 일일 숙제 추가</p>
             <Input
                 fullWidth
                 isRequired
+                radius="md"
+                variant="bordered"
                 label="숙제"
                 placeholder="2~15자 안으로 작성하세요."
                 maxLength={15}
@@ -2046,10 +2083,12 @@ function DayListComponent({ checklist, index, dispatch, onClose }: DayListCompon
                 isLoading={isLoadingAdd}
                 isDisabled={inputValue.trim() === ''}
                 color="primary"
-                className="mt-4"
+                radius="md"
+                className="mt-3 font-medium"
                 onPress={onClickAddDayList}>추가</Button>
-            <Divider className="mt-6"/>
-            <Table aria-label="week-list-table" removeWrapper className="mt-6">
+            </div>
+            <div className="overflow-hidden rounded-xl border border-gray-200/80 dark:border-gray-800">
+            <Table aria-label="day-list-table" removeWrapper>
                 <TableHeader>
                     <TableColumn>숙제명</TableColumn>
                     <TableColumn>삭제</TableColumn>
@@ -2059,16 +2098,17 @@ function DayListComponent({ checklist, index, dispatch, onClose }: DayListCompon
                         <TableRow key={idx}>
                             <TableCell>{item.name}</TableCell>
                             <TableCell>
-                                <button className="underline redbutton" onClick={async () => {
+                                <Button size="sm" radius="md" color="danger" variant="light" onPress={async () => {
                                     if (confirm('해당 숙제를 삭제하시겠습니까? 삭제 후 되돌릴 수 없습니다.')) {
                                         await handleRemoveDayList(checklist, index, idx, dispatch);
                                     }
-                                }}>삭제</button></TableCell>
+                                }}>삭제</Button></TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
             </Table>
-        </>
+            </div>
+        </div>
     )
 }
 
@@ -2090,16 +2130,19 @@ function RestStatueComponent({ checklist, dispatch, index, onClose }: RestStatue
     const [isLoadingSave, setLoadingSave] = useState(false);
     const onClickSaveRest = useOnClickSaveRestValue(checklist, index, dispatch, setLoadingSave, dungeon, boss, onClose);
     return (
-        <div className="w-full">
+        <div className="w-full space-y-4">
+            <div className="rounded-xl border border-success-200/70 bg-success-50/30 p-4 dark:border-success-900/50 dark:bg-success-950/10">
             <Progress
                 color="success"
-                radius="sm"
+                radius="md"
                 value={dungeon}
                 maxValue={getMaxRestValue('전선')}
                 label={<RestLabel value={dungeon} maxValue={getMaxRestValue('전선')} title={getDayName('전선', checklist[index].level)}/>}/>
-            <div className="w-full gap-4 flex mt-4">
+            <div className="mt-3 flex w-full gap-2">
                 <Button
                     color="danger"
+                    variant="flat"
+                    radius="md"
                     size="sm"
                     isDisabled={dungeon <= 0}
                     className="grow"
@@ -2111,6 +2154,8 @@ function RestStatueComponent({ checklist, dispatch, index, onClose }: RestStatue
                     }}>감소</Button>
                 <Button
                     color="success"
+                    variant="flat"
+                    radius="md"
                     size="sm"
                     isDisabled={dungeon >= getMaxRestValue('전선')}
                     className="grow"
@@ -2120,17 +2165,19 @@ function RestStatueComponent({ checklist, dispatch, index, onClose }: RestStatue
                         if (value > max) value = max;
                         setDungeon(value);
                     }}>증가</Button>
-            </div>
+            </div></div>
+            <div className="rounded-xl border border-success-200/70 bg-success-50/30 p-4 dark:border-success-900/50 dark:bg-success-950/10">
             <Progress
                 color="success"
-                radius="sm"
+                radius="md"
                 value={boss}
                 maxValue={getMaxRestValue('가디언')}
-                className="mt-6"
                 label={<RestLabel value={boss} maxValue={getMaxRestValue('가디언')} title="가디언 토벌"/>}/>
-            <div className="w-full gap-4 flex mt-4">
+            <div className="mt-3 flex w-full gap-2">
                 <Button
                     color="danger"
+                    variant="flat"
+                    radius="md"
                     size="sm"
                     isDisabled={boss <= 0}
                     className="grow"
@@ -2142,6 +2189,8 @@ function RestStatueComponent({ checklist, dispatch, index, onClose }: RestStatue
                     }}>감소</Button>
                 <Button
                     color="success"
+                    variant="flat"
+                    radius="md"
                     size="sm"
                     isDisabled={boss >= getMaxRestValue('가디언')}
                     className="grow"
@@ -2151,15 +2200,17 @@ function RestStatueComponent({ checklist, dispatch, index, onClose }: RestStatue
                         if (value > max) value = max;
                         setBoss(value);
                     }}>증가</Button>
+            </div></div>
+            <div className="rounded-xl border border-warning-200/70 bg-warning-50/50 p-4 text-sm dark:border-warning-900/50 dark:bg-warning-950/20">
+                <p className="font-semibold text-warning-700 dark:text-warning-400">저장 전 확인</p>
+                <p className="mt-1 fadedtext">휴식 게이지를 저장하면 사용된 게이지가 초기화됩니다. 체크를 해제한 경우에는 사용된 게이지를 환급받지 못합니다.</p>
             </div>
-            <Divider className="mt-6"/>
-            <div className="font-bold mb-1 mt-6">주의사항</div>
-            <p>휴식 게이지를 저장할 경우 사용된 휴식 게이지는 초기화됩니다. 체크 해제 시 사용된 휴식 게이지는 초기화되어 환급을 받지 못합니다.</p>
             <Button
                 fullWidth
                 color="primary"
+                radius="md"
                 isLoading={isLoadingSave}
-                className="mt-4"
+                className="font-medium"
                 onPress={onClickSaveRest}>저장</Button>
         </div>
     )
@@ -2224,7 +2275,7 @@ function WeekModalContent({ checklist, index, dispatch, bosses, onClose }: WeekM
 
     return (
         <div className="w-full">
-            <Tabs fullWidth aria-label="week-modal">
+            <Tabs fullWidth aria-label="week-modal" color="secondary" variant="underlined" classNames={{tabList: "gap-5", panel: "px-0 pb-1 pt-5"}}>
                 <Tab key="content" title="콘텐츠">
                     <WeekContentComponent
                         checklist={checklist}
@@ -2267,11 +2318,14 @@ function WeekListComponent({ checklist, index, dispatch, onClose }: WeekListComp
     }
     const onClickAddItem = useOnClickAddWeekList(checklist, index, dispatch, otherItem, setLoadingAdd, setInputValue);
     return (
-        <>
+        <div className="space-y-4">
+            <div className="rounded-xl border border-gray-200/80 bg-gray-50/60 p-4 dark:border-gray-800 dark:bg-gray-900/50">
+                <p className="mb-3 text-sm font-semibold">기타 주간 숙제 추가</p>
             <Input
                 fullWidth
                 isRequired
-                radius="sm"
+                radius="md"
+                variant="bordered"
                 label="숙제"
                 placeholder="2~15자 안으로 작성하세요."
                 maxLength={15}
@@ -2279,14 +2333,15 @@ function WeekListComponent({ checklist, index, dispatch, onClose }: WeekListComp
                 onValueChange={setInputValue}/>
             <Button
                 fullWidth
-                radius="sm"
+                radius="md"
                 isLoading={isLoadingAdd}
                 isDisabled={inputValue.trim() === ''}
                 color="primary"
-                className="mt-4"
+                className="mt-3 font-medium"
                 onPress={onClickAddItem}>추가</Button>
-            <Divider className="mt-6"/>
-            <Table aria-label="week-list-table" removeWrapper className="mt-6">
+            </div>
+            <div className="overflow-hidden rounded-xl border border-gray-200/80 dark:border-gray-800">
+            <Table aria-label="week-list-table" removeWrapper>
                 <TableHeader>
                     <TableColumn>숙제명</TableColumn>
                     <TableColumn>삭제</TableColumn>
@@ -2296,16 +2351,17 @@ function WeekListComponent({ checklist, index, dispatch, onClose }: WeekListComp
                         <TableRow key={idx}>
                             <TableCell>{item.name}</TableCell>
                             <TableCell>
-                                <button className="underline redbutton" onClick={async () => {
+                                <Button size="sm" radius="md" color="danger" variant="light" onPress={async () => {
                                     if (confirm('해당 숙제를 삭제하시겠습니까? 삭제 후 되돌릴 수 없습니다.')) {
                                         await handleRemoveWeekList(checklist, index, idx, dispatch);
                                     }
-                                }}>삭제</button></TableCell>
+                                }}>삭제</Button></TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
             </Table>
-        </>
+            </div>
+        </div>
     )
 }
 
@@ -2336,12 +2392,14 @@ function WeekStageEditor({ bosses, contentKey, stages, setStages }: WeekStageEdi
     return (
         <>
             {getWeekStages(bosses, contentKey).map((level, idx) => (
-                <div key={idx} className="mt-2">
-                    <h3 className="font-bold mb-1">{level}관문</h3>
+                <div key={idx} className="mt-3 rounded-xl border border-gray-200/80 bg-gray-50/60 p-3 dark:border-gray-800 dark:bg-gray-900/50">
+                    <h3 className="mb-2 text-sm font-semibold">{level}관문 난이도</h3>
                     <Tabs
                         fullWidth
-                        radius="sm"
+                        radius="md"
+                        size="sm"
                         color="primary"
+                        variant="light"
                         selectedKey={stages.length > idx ? stages[idx].difficulty : EMPTY_STAGE_DIFFICULTY}
                         onSelectionChange={(key) => {
                             const diff = key.toString();
@@ -2421,10 +2479,13 @@ function WeekContentComponent({
 
     return (
         <>
-            <div className="w-full flex flex-col gap-2">
+            <div className="flex w-full flex-col gap-2">
                 {checklist[index].checklist.map((item, idx) => (
-                    <div key={idx} className="w-full flex gap-2 items-center">
-                        <p className="grow text-xs">{item.name}</p>
+                    <div key={idx} className="flex w-full items-center gap-2 rounded-xl border border-gray-200/80 bg-gray-50/60 p-3 dark:border-gray-800 dark:bg-gray-900/50">
+                        <div className="grow">
+                            <p className="text-sm font-medium">{item.name}</p>
+                            <p className="mt-0.5 text-xs fadedtext">{printDifficulty(item.items)}</p>
+                        </div>
                         <Switch
                             size="sm"
                             color="primary"
@@ -2438,45 +2499,65 @@ function WeekContentComponent({
                             onValueChange={async (isSelected) => {
                                 await handleCheckGolds(checklist, index, idx, dispatch, isSelected, bosses);
                             }}/>
-                        <Button
-                            size="sm"
-                            variant="flat"
-                            radius="sm"
-                            onPress={() => handleOpenEdit(idx)}>
-                            수정
-                        </Button>
-                        <Button
-                            size="sm"
-                            variant="flat"
-                            radius="sm"
-                            color="danger"
-                            onPress={async () => {
-                                if (confirm('해당 콘텐츠를 삭제하시겠습니까? 삭제 후 되돌릴 수 없습니다.')) {
-                                    await useOnClickRemoveItem(checklist, index, idx, dispatch);
-                                }
-                            }}>
-                            삭제
-                        </Button>
+                        <div className="flex items-center gap-1">
+                            <Tooltip showArrow content="콘텐츠 수정">
+                                <Button
+                                    isIconOnly
+                                    size="sm"
+                                    variant="flat"
+                                    radius="full"
+                                    aria-label={`${item.name} 수정`}
+                                    className="h-8 min-h-8 w-8 min-w-8"
+                                    onPress={() => handleOpenEdit(idx)}>
+                                    <EditIcon title="수정" className="h-4 w-4"/>
+                                </Button>
+                            </Tooltip>
+                            <Tooltip showArrow color="danger" content="콘텐츠 삭제">
+                                <Button
+                                    isIconOnly
+                                    size="sm"
+                                    variant="flat"
+                                    radius="full"
+                                    color="danger"
+                                    aria-label={`${item.name} 삭제`}
+                                    className="h-8 min-h-8 w-8 min-w-8"
+                                    onPress={async () => {
+                                        if (confirm('해당 콘텐츠를 삭제하시겠습니까? 삭제 후 되돌릴 수 없습니다.')) {
+                                            await useOnClickRemoveItem(checklist, index, idx, dispatch);
+                                        }
+                                    }}>
+                                    <DeleteIcon className="h-4 w-4"/>
+                                </Button>
+                            </Tooltip>
+                        </div>
                     </div>
                 ))}
             </div>
             <Modal
-                radius="sm"
+                radius="lg"
+                size="lg"
+                scrollBehavior="inside"
                 isOpen={isEditOpen}
                 onOpenChange={(open) => {
                     if (!open) {
                         closeEditModal();
                     }
                 }}>
-                <ModalContent>
+                <ModalContent className="border border-gray-200/80 bg-white dark:border-gray-800 dark:bg-gray-950">
                     {() => {
                         const editingChecklist = editingIndex > -1 ? checklist[index].checklist[editingIndex] : null;
                         const editingBoss = editingChecklist ? bosses.find((boss) => boss.name === editingChecklist.name) : null;
 
                         return (
                             <>
-                                <ModalHeader>{editingChecklist ? `${editingChecklist.name} 수정` : '주간 콘텐츠 수정'}</ModalHeader>
-                                <ModalBody>
+                                <ModalHeader className="flex flex-col gap-1 border-b border-gray-200/80 px-6 py-5 dark:border-gray-800">
+                                    <div className="flex items-center gap-2">
+                                        <span className="h-5 w-1 rounded-full bg-secondary"/>
+                                        <p className="text-xl font-semibold">{editingChecklist ? `${editingChecklist.name} 수정` : '주간 콘텐츠 수정'}</p>
+                                    </div>
+                                    <p className="pl-3 text-sm font-normal fadedtext">관문별 난이도 설정을 변경합니다.</p>
+                                </ModalHeader>
+                                <ModalBody className="px-6 py-5">
                                     {editingChecklist && editingBoss ? (
                                         <div className="pb-2">
                                             <WeekStageEditor
@@ -2489,17 +2570,17 @@ function WeekContentComponent({
                                         <p className="text-sm fadedtext">수정할 콘텐츠 정보를 불러올 수 없습니다.</p>
                                     )}
                                 </ModalBody>
-                                <ModalFooter>
+                                <ModalFooter className="border-t border-gray-200/80 px-6 py-4 dark:border-gray-800">
                                     <Button
                                         variant="light"
-                                        radius="sm"
+                                        radius="md"
                                         onPress={closeEditModal}>
                                         취소
                                     </Button>
                                     <Button
                                         color="primary"
                                         isLoading={isLoadingEdit}
-                                        radius="sm"
+                                        radius="md"
                                         isDisabled={editStages.length === 0 || editStages[0]?.difficulty === EMPTY_STAGE_DIFFICULTY}
                                         onPress={async () => {
                                             if (editingIndex < 0) {
@@ -2539,25 +2620,27 @@ function WeekContentComponent({
                     }}
                 </ModalContent>
             </Modal>
-            <Divider className="mt-4"/>
-            <div className="mt-4 pb-4">
+            <div className="mt-5 rounded-xl border border-gray-200/80 bg-gray-50/60 p-4 dark:border-gray-800 dark:bg-gray-900/50">
                 <div className="flex gap-1 items-center">
-                    <span className="grow text-xl">콘텐츠 추가</span>
-                    <Tooltip showArrow content="골드를 획득하는 콘텐츠는 총 3회까지만 인정됩니다. 단, 격주로 가능한 4관같은 경우에는 인정됩니다.">
-                        <img 
-                            src="/icons/gold.png" 
-                            alt="goldicon"
-                            className="w-[18px] h-[18px]"/>
+                    <div className="grow">
+                        <p className="font-semibold">레이드 콘텐츠 추가</p>
+                        <p className="mt-0.5 text-xs fadedtext">콘텐츠와 관문별 난이도를 선택하세요.</p>
+                    </div>
+                    <Tooltip showArrow content={<div className="w-[240px] p-2"><p className="font-semibold">골드 획득 횟수</p><p className="mt-1 text-xs">골드 콘텐츠는 기본 3회까지 인정되며, 격주 관문은 별도로 반영됩니다.</p></div>}>
+                        <div className="flex items-center gap-1 rounded-lg bg-warning-50 px-2.5 py-1.5 text-sm font-medium text-warning-700 dark:bg-warning-950/30 dark:text-warning-400">
+                            <img src="/icons/gold.png" alt="goldicon" className="h-4 w-4"/>
+                            {getTakeGold(checklist[index].checklist)}/3
+                        </div>
                     </Tooltip>
-                    <span className="text-md">({getTakeGold(checklist[index].checklist)}/3)</span>
                 </div>
                 <Select
                     placeholder="주간 콘텐츠 선택"
                     label="주간 콘텐츠"
-                    variant="underlined"
+                    variant="bordered"
+                    radius="md"
                     selectedKeys={content}
                     onSelectionChange={setContent}
-                    className="mt-2">
+                    className="mt-4">
                     {getWeekContents(bosses, checklist, index).map((item) => (
                         <SelectItem key={item.key}>{item.name}</SelectItem>
                     ))}
@@ -2573,12 +2656,13 @@ function WeekContentComponent({
                 )}>
                     <Checkbox
                         color="warning"
+                        className="rounded-lg bg-warning-50/70 px-2 py-1.5 dark:bg-warning-950/20"
                         isSelected={isGold}
                         onValueChange={setGold}>골드 체크</Checkbox>
                 </div>
                 <Button 
                     fullWidth
-                    radius="sm"
+                    radius="md"
                     color="primary"
                     isLoading={isLoadingAdd}
                     isDisabled={stages.length > 0 ? stages[0].difficulty === EMPTY_STAGE_DIFFICULTY : true}
@@ -2599,7 +2683,7 @@ function WeekContentComponent({
                         }
                     }}
                     className={clsx(
-                        "mt-4",
+                        "mt-4 font-medium",
                         Array.from(content)[0] ? 'block' : "hidden"
                     )}>추가</Button>
             </div>
@@ -3160,25 +3244,25 @@ export function NotLoginedComponent() {
                                     className="min-w-full text-center">주간 콘텐츠</Chip>
                                 <div className="pl-2.5">
                                     {samples.map((item, idx) => (
-                                        <div key={idx}>
-                                            <Checkbox
-                                                lineThrough
-                                                size="sm"
-                                                radius="full"
-                                                isSelected={item.isSelected}
-                                                className={clsx(
-                                                    "max-w-full w-full mt-3 box-border p-1.5",
-                                                    item.isSelected ? 'outline-2 outline-blue-400 dark:outline-blue-800 rounded-md bg-blue-400/20 dark:bg-blue-800/20' : ''
-                                                )}
-                                                onValueChange={(isSelected) => {
+                                        <div key={idx} className={clsx(
+                                            "mt-2 w-full cursor-pointer rounded-lg border",
+                                            item.isSelected ? "border-primary-200 bg-primary-50/70 dark:border-primary-700/60 dark:bg-primary-500/10" : "border-transparent"
+                                        )}>
+                                            <button
+                                                type="button"
+                                                role="checkbox"
+                                                aria-checked={item.isSelected}
+                                                className="flex w-full cursor-pointer items-center gap-2 px-2.5 py-1.5 text-left text-sm"
+                                                onClick={() => {
                                                     const copyArray = structuredClone(samples);
-                                                    copyArray[idx].isSelected = isSelected;
+                                                    copyArray[idx].isSelected = !copyArray[idx].isSelected;
                                                     setSamples(copyArray);
                                                 }}>
-                                                <span className="flex items-center gap-1">
-                                                    <span>{item.name}</span>
+                                                <span className={clsx("flex h-4 w-4 shrink-0 items-center justify-center rounded-full border", item.isSelected ? "border-primary bg-primary text-white" : "border-gray-400 dark:border-gray-600")}>
+                                                    {item.isSelected ? <CheckIcon size={10}/> : null}
                                                 </span>
-                                            </Checkbox>
+                                                <span className={item.isSelected ? "line-through fadedtext" : ""}>{item.name}</span>
+                                            </button>
                                         </div>
                                     ))}
                                 </div>
@@ -3309,7 +3393,7 @@ export function FilterComponent({
                                 <p className="mt-0.5 text-xs fadedtext">캐릭터와 콘텐츠 표시 조건을 설정합니다.</p>
                             </div>
                             <div className="flex w-full flex-col gap-2">
-                                <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-gray-900">
+                                <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-white/[0.05]">
                                 <p className="cursor-pointer text-sm" onClick={() => {
                                     localStorage.setItem('isRemainHomework', String(!isRemainHomework));
                                     setRemainHomework(!isRemainHomework);
@@ -3322,7 +3406,7 @@ export function FilterComponent({
                                         setRemainHomework(isSelected);
                                     }}/>
                                 </div>
-                                <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-gray-900">
+                                <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-white/[0.05]">
                                 <p className="cursor-pointer text-sm" onClick={() => {
                                     localStorage.setItem('isShowGoldCharacter', String(!isShowGoldCharacter));
                                     setShowGoldCharacter(!isShowGoldCharacter);
@@ -3335,7 +3419,7 @@ export function FilterComponent({
                                         setShowGoldCharacter(isSelected);
                                     }}/>
                                 </div>
-                                <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-gray-900">
+                                <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-white/[0.05]">
                                 <p className="cursor-pointer text-sm" onClick={() => {
                                     localStorage.setItem('isHideCompleteContent', String(!isHideCompleteContent));
                                     setHideCompleteContent(!isHideCompleteContent);

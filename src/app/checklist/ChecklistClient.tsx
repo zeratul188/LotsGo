@@ -206,8 +206,8 @@ export default function ChecklistClient() {
             {checklistForm.isLoading ? <LoadingComponent heightStyle="min-h-[calc(100vh-65px)]"/> : (
                 <div>
                     <div className="w-full max-w-[1280px] mx-auto">
-                        <section className="mt-5 overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950/60">
-                            <div className="flex flex-col gap-1 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-gray-800">
+                        <section className="mt-5 overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]">
+                            <div className="flex flex-col gap-1 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-white/10">
                                 <h2 className="text-lg font-semibold">숙제 조회 설정</h2>
                                 <p className="text-sm fadedtext">서버와 필터를 선택하고 필요한 현황을 빠르게 확인하세요.</p>
                             </div>
@@ -217,7 +217,7 @@ export default function ChecklistClient() {
                                     server={checklistForm.server}
                                     setServer={checklistForm.setServer}/>
                             </div>
-                            <div className="flex flex-col gap-3 border-t border-gray-200/80 bg-gray-50/50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/30 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                            <div className="flex flex-col gap-3 border-t border-gray-200/80 bg-gray-50/50 px-4 py-3 dark:border-white/10 dark:bg-white/[0.025] sm:flex-row sm:items-center sm:justify-between sm:px-5">
                                 <div className="shrink-0">
                                     <p className="text-sm font-semibold">정보 및 현황</p>
                                     <p className="text-xs fadedtext">필요한 상세 정보를 별도로 열어봅니다.</p>
@@ -257,7 +257,7 @@ export default function ChecklistClient() {
                                 </Button>
                                 </div>
                             </div>
-                            <div className="border-t border-gray-200/80 px-4 pb-4 sm:px-5 sm:pb-5 dark:border-gray-800">
+                            <div className="border-t border-gray-200/80 px-4 pb-4 sm:px-5 sm:pb-5 dark:border-white/10">
                                 <FilterComponent
                             filterContent={checklistForm.filterContent}
                             setFilterContent={checklistForm.setFilterContent}

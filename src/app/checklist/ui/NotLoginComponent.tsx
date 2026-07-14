@@ -294,11 +294,11 @@ type SettingButtonProps = {
 function SettingButton({ size, checklist, setChecklist, characterIndex}: SettingButtonProps) {
     const onClickCheckGold = useOnClickCheckGold(characterIndex, checklist, setChecklist);
     return (
-        <Dropdown>
+        <Dropdown placement="bottom-end">
             <DropdownTrigger>
-                <Button isIconOnly variant="light"><SettingIcon size={size} className="text-gray-500 hover:text-gray-800 cursor-pointer" /></Button>
+                <Button isIconOnly variant="light" size="sm" radius="full" aria-label="캐릭터 설정"><SettingIcon size={size} className="cursor-pointer text-gray-500" /></Button>
             </DropdownTrigger>
-            <DropdownMenu>
+            <DropdownMenu aria-label="캐릭터 설정 메뉴" variant="flat" className="min-w-[190px] p-1">
                 <DropdownItem 
                     key="gold"
                     startContent={
@@ -356,8 +356,8 @@ function RestCheckButton({ checklist, character, setChecklist, index, type }: Re
     return (
         <div 
             className={clsx(
-                "max-w-full w-full mt-2 box-border p-1.5 pt-0.5",
-                type === '에포나' ? dayValue.value === 3 ? 'outline-2 outline-yellow-400 dark:outline-yellow-700 rounded-md bg-yellow-400/20 dark:bg-yellow-700/20' : '' : dayValue.value === 1 ? 'outline-2 outline-yellow-400 dark:outline-yellow-700 rounded-md bg-yellow-400/20 dark:bg-yellow-700/20' : ''
+                "mt-2 box-border w-full max-w-full rounded-lg border border-transparent px-2 py-1.5",
+                type === '에포나' ? dayValue.value === 3 ? 'border-warning-200 bg-warning-50/70 dark:border-warning-900 dark:bg-warning-950/20' : 'hover:bg-gray-100/70 dark:hover:bg-gray-900/70' : dayValue.value === 1 ? 'border-warning-200 bg-warning-50/70 dark:border-warning-900 dark:bg-warning-950/20' : 'hover:bg-gray-100/70 dark:hover:bg-gray-900/70'
             )}>
             <Checkbox
                 aria-label={`${character.nickname}'s ${type}`}
@@ -366,7 +366,7 @@ function RestCheckButton({ checklist, character, setChecklist, index, type }: Re
                 lineThrough
                 radius="full"
                 isSelected={type === '에포나' ? dayValue.value === 3 : dayValue.value === 1}
-                className="p-0 pl-2"
+                className="p-0"
                 onChange={onClickDayCheck}>
                 {getDayName(type, character.level)} ({dayValue.value}/{type === '에포나' ? 3 : 1})
             </Checkbox>
@@ -475,8 +475,8 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
             {checklist
                 .filter((character) => character.server === server || server === '전체')
                 .map((character, index) => (
-                    <Card key={index} fullWidth radius="sm" className="w-full min-[561px]:w-[560px]">
-                        <CardHeader>
+                    <Card key={index} fullWidth radius="lg" shadow="none" className="w-full min-[561px]:w-[560px] overflow-hidden border border-gray-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]">
+                        <CardHeader className="p-4 pb-3">
                             <div className="w-full flex flex-col md960:flex-row items-center gap-2">
                                 <div className="w-full grow flex gap-4 items-center">
                                     <div className="flex flex-col gap-2 items-center">
@@ -512,7 +512,7 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                     </div>
                                 </div>
                                 <div className="w-full md960:w-[330px]">
-                                    <Popover showArrow disableAnimation radius="sm">
+                                    <Popover showArrow disableAnimation radius="md">
                                         <PopoverTrigger>
                                             <Progress 
                                                 aria-label="all-gold"
@@ -528,14 +528,15 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                                     </div>
                                                 )}
                                                 showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
-                                                radius="sm"
+                                                radius="md"
                                                 value={getCompleteGoldCharacter(bosses, character)+character.otherGold}
                                                 maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
                                                 className="w-full cursor-pointer"/>
                                         </PopoverTrigger>
-                                        <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
-                                            <div className="w-[200px] p-1">
-                                                <div className="w-full flex gap-1 items-center">
+                                        <PopoverContent className="border border-gray-200/80 bg-white/95 p-0 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#171717]/95">
+                                            <div className="w-[250px] p-4">
+                                                <div className="mb-3"><p className="font-semibold">골드 획득 상세</p><p className="mt-0.5 text-xs fadedtext">완료한 콘텐츠 기준 획득량입니다.</p></div>
+                                                <div className="flex w-full items-center gap-2 rounded-lg bg-gray-100/70 px-3 py-2 dark:bg-white/[0.05]">
                                                     <div className="w-[9px] h-[9px] rounded-full bg-green-500"/>
                                                     <p className="grow">콘텐츠</p>
                                                     <div className="flex items-center">
@@ -546,7 +547,7 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                                         <span className="ml-1 text-md">{getCompleteSharedGoldCharacter(bosses, character).toLocaleString()}</span>
                                                     </div>
                                                 </div>
-                                                <div className="w-full flex gap-1 items-center mt-1">
+                                                <div className="mt-2 flex w-full items-center gap-2 rounded-lg bg-gray-100/70 px-3 py-2 dark:bg-white/[0.05]">
                                                     <div className="w-[9px] h-[9px] rounded-full bg-yellow-500"/>
                                                     <p className="grow">귀속 골드</p>
                                                     <div className="flex items-center">
@@ -557,7 +558,7 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                                         <span className="ml-1 text-md">{getCompleteBoundGoldCharacter(bosses, character).toLocaleString()}</span>
                                                     </div>
                                                 </div>
-                                                <div className="w-full flex gap-1 items-center mt-1">
+                                                <div className="mt-2 flex w-full items-center gap-2 rounded-lg bg-gray-100/70 px-3 py-2 dark:bg-white/[0.05]">
                                                     <div className="w-[9px] h-[9px] rounded-full bg-purple-600"/>
                                                     <p className="grow">부수입</p>
                                                     <div className="flex items-center">
@@ -581,54 +582,44 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                             </div>
                         </CardHeader>
                         <Divider/>
-                        <CardBody>
-                            <div className="w-full flex flex-col md960:flex-row gap-2">
-                                <div className="grow">
-                                    <Chip 
-                                        color="success" 
-                                        size="sm" 
-                                        variant="flat" 
-                                        radius="sm"
-                                        className="min-w-full text-center">일일 콘텐츠</Chip>
+                        <CardBody className="p-4 pt-3">
+                            <div className="flex w-full flex-col gap-3 md960:flex-row">
+                                <div className="min-w-0 grow">
+                                    <div className="mb-2 flex items-center justify-between gap-2 border-b border-success-200/70 pb-2 dark:border-success-900/50"><div><p className="text-sm font-semibold text-success-700 dark:text-success-400">일일 콘텐츠</p><p className="text-[11px] fadedtext">매일 초기화되는 숙제</p></div><Chip color="success" size="sm" variant="flat" radius="md">3개</Chip></div>
                                     <RestCheckButton checklist={checklist} setChecklist={setChecklist} character={character} index={index} type="전선"/>
                                     <RestCheckButton checklist={checklist} setChecklist={setChecklist} character={character} index={index} type="가디언"/>
                                     <RestCheckButton checklist={checklist} setChecklist={setChecklist} character={character} index={index} type="에포나"/>
                                     <Button 
-                                        color="primary" 
-                                        variant="light" 
+                                        color="success"
+                                        variant="flat"
                                         fullWidth 
                                         size="sm" 
                                         startContent={<AddIcon size={16}/>}
-                                        className="mt-4"
+                                        radius="md"
+                                        className="mt-3 font-medium"
                                         onPress={() => {
                                             addToast({
                                                 title: "이용 불가",
                                                 description: `테스트 계정에서는 이용할 수 없습니다.`,
                                                 color: "warning"
                                             });
-                                        }}>추가</Button>
+                                        }}>일일 콘텐츠 관리</Button>
                                 </div>
-                                <Divider className="block md960:hidden"/>
-                                <Divider orientation="vertical" className="hidden md960:block"/>
-                                <div className="grow-2">
-                                    <Chip 
-                                        color="secondary" 
-                                        size="sm" 
-                                        variant="flat" 
-                                        radius="sm"
-                                        className="min-w-full text-center">주간 콘텐츠</Chip>
-                                    <div className="pl-2.5">
+                                <div className="min-w-0 grow-2 border-t border-gray-200/80 pt-3 dark:border-white/10 md960:border-l md960:border-t-0 md960:pl-4 md960:pt-0">
+                                    <div className="mb-1 border-b border-secondary-200/70 pb-2 dark:border-secondary-900/50"><p className="text-sm font-semibold text-secondary-700 dark:text-secondary-400">주간 콘텐츠</p><p className="text-[11px] fadedtext">주간 초기화되는 숙제</p></div>
+                                    <div className="px-1.5 sm:px-2">
                                         {character.checklist.map((item, idx) => (
-                                            <div key={idx}>
+                                            <div key={idx} className={clsx(
+                                                "mt-2 w-full rounded-lg border",
+                                                isCheckHomework(item) ? 'border-primary-200 bg-primary-50/70 dark:border-primary-700/60 dark:bg-primary-500/10' : 'border-transparent hover:bg-gray-100/70 dark:hover:bg-white/[0.04]'
+                                            )}>
                                                 <Checkbox
                                                     aria-label={`checklist-${item.name}-${idx}`}
                                                     size="sm"
                                                     radius="full"
                                                     isSelected={isCheckHomework(item)}
-                                                    className={clsx(
-                                                        "max-w-full w-full mt-3 box-border p-1.5 [&_span:nth-of-type(2)]:w-full",
-                                                        isCheckHomework(item) ? 'outline-2 outline-blue-400 dark:outline-blue-800 rounded-md bg-blue-400/20 dark:bg-blue-800/20' : ''
-                                                    )}
+                                                    classNames={{base: "w-full max-w-none", label: "w-full"}}
+                                                    className="box-border w-full max-w-none px-2.5 py-1.5"
                                                     onChange={() => handleWeekContent(checklist, setChecklist, index, idx)}>
                                                     <div className="w-full flex items-center gap-1">
                                                         <div>
@@ -678,19 +669,20 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                         ))}
                                     </div>
                                     <Button 
-                                        color="primary" 
-                                        variant="light" 
+                                        color="secondary"
+                                        variant="flat"
                                         fullWidth 
                                         size="sm" 
                                         startContent={<AddIcon size={16}/>}
-                                        className="mt-4"
+                                        radius="md"
+                                        className="mt-3 font-medium"
                                         onPress={() => {
                                             addToast({
                                                 title: "이용 불가",
                                                 description: `테스트 계정에서는 이용할 수 없습니다.`,
                                                 color: "warning"
                                             });
-                                        }}>추가</Button>
+                                        }}>주간 콘텐츠 관리</Button>
                                 </div>
                             </div>
                         </CardBody>
@@ -779,8 +771,8 @@ export default function NotLoginedComponent({ initialChecklist, initialBosses, i
             </div>
             <div className="md960:mt-[220px]">
                 <div className="w-full max-w-[1280px] mx-auto">
-                    <section className="mt-5 overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950/60">
-                        <div className="flex flex-col gap-1 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-gray-800">
+                    <section className="mt-5 overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]">
+                        <div className="flex flex-col gap-1 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-white/10">
                             <h2 className="text-lg font-semibold">숙제 조회 설정</h2>
                             <p className="text-sm fadedtext">테스트 데이터의 서버와 큐브 현황을 확인하세요.</p>
                         </div>
@@ -790,7 +782,7 @@ export default function NotLoginedComponent({ initialChecklist, initialBosses, i
                                 server={server}
                                 setServer={setServer}/>
                         </div>
-                        <div className="flex flex-col gap-3 border-t border-gray-200/80 bg-gray-50/50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/30 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                        <div className="flex flex-col gap-3 border-t border-gray-200/80 bg-gray-50/50 px-4 py-3 dark:border-white/10 dark:bg-white/[0.025] sm:flex-row sm:items-center sm:justify-between sm:px-5">
                             <div>
                                 <p className="text-sm font-semibold">정보 및 현황</p>
                                 <p className="text-xs fadedtext">테스트 계정에서 제공되는 현황을 확인합니다.</p>
