@@ -3,8 +3,14 @@ import { Divider } from "@heroui/react"
 
 export default function TermsClient() {
     return (
-        <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
-            <h1 className="text-3xl font-bold mt-4 mb-12">로츠고(LOT'S GO) 이용약관</h1>
+        <div className="min-h-[calc(100vh-65px)] w-full bg-default-50/40 px-4 py-6 sm:px-6 sm:py-10 dark:bg-background">
+            <div className="mx-auto w-full max-w-5xl">
+                <header className="rounded-2xl border border-default-200/80 bg-content1 px-5 py-6 shadow-sm sm:px-8 sm:py-7 dark:border-white/10 dark:bg-[#18181b]">
+                    <div className="mb-3 inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">서비스 약관</div>
+                    <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">로츠고(LOT'S GO) 이용약관</h1>
+                    <p className="mt-2 text-sm text-default-500">로츠고 서비스를 이용하기 전에 이용 조건과 책임 사항을 확인하세요.</p>
+                </header>
+                <article className="mt-4 rounded-2xl border border-default-200/80 bg-content1 px-5 py-6 text-default-700 shadow-sm sm:px-8 sm:py-9 dark:border-white/10 dark:bg-[#18181b] dark:text-default-300 [&_h2]:!mt-10 [&_h2]:!mb-3 [&_h2]:!border-b [&_h2]:!border-default-100 [&_h2]:!pb-3 [&_h2]:!text-xl [&_h2]:!font-bold [&_h2]:!text-foreground [&_li]:leading-7 [&_ol]:mt-2 [&_ol]:space-y-1 [&_p]:text-sm [&_p]:leading-7 [&_ul]:space-y-1 [&_ul]:text-sm [&_hr]:my-3">
             <h2 className="mt-4 mb-2 text-2xl font-bold">제 1 조 목적</h2>
             <Divider/>
             <p className="mt-2">
@@ -260,6 +266,8 @@ export default function TermsClient() {
             </ul>
             <p className="mt-8">게시일 : 2025년 6월 14일</p>
             <p>적용일 : 2025년 6월 29일</p>
+                </article>
+            </div>
         </div>
     )
 }

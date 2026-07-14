@@ -3,8 +3,14 @@ import { Divider, Table, TableBody, TableCell, TableColumn, TableHeader, TableRo
 
 export default function PolicyClient() {
     return (
-        <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
-            <h1 className="text-3xl font-bold mt-4 mb-12">로츠고(LOT'S GO) 개인정보 처리방침</h1>
+        <div className="min-h-[calc(100vh-65px)] w-full bg-default-50/40 px-4 py-6 sm:px-6 sm:py-10 dark:bg-background">
+            <div className="mx-auto w-full max-w-5xl">
+                <header className="rounded-2xl border border-default-200/80 bg-content1 px-5 py-6 shadow-sm sm:px-8 sm:py-7 dark:border-white/10 dark:bg-[#18181b]">
+                    <div className="mb-3 inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">정책 문서</div>
+                    <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">로츠고(LOT'S GO) 개인정보 처리방침</h1>
+                    <p className="mt-2 text-sm text-default-500">로츠고 서비스에서 개인정보가 안전하게 처리되는 기준을 안내합니다.</p>
+                </header>
+                <article className="mt-4 rounded-2xl border border-default-200/80 bg-content1 px-5 py-6 text-default-700 shadow-sm sm:px-8 sm:py-9 dark:border-white/10 dark:bg-[#18181b] dark:text-default-300 [&_h2]:!mt-10 [&_h2]:!mb-3 [&_h2]:!border-b [&_h2]:!border-default-100 [&_h2]:!pb-3 [&_h2]:!text-xl [&_h2]:!font-bold [&_h2]:!text-foreground [&_li]:leading-7 [&_ol]:mt-2 [&_ol]:space-y-1 [&_p]:text-sm [&_p]:leading-7 [&_ul]:space-y-1 [&_ul]:text-sm [&_hr]:my-3">
             <p>
                 로츠고(이하 "회사"라고 합니다)은 개인정보 보호를 매우 중요시하며, 「정보통신망 이용촉진 및 정보보호 등에 관한 법률」(이하 “정보통신망법”), 「개인정보 보호법」 등 관련된 법령상의 개인정보 보호규정을 준수하고 있습니다. 
                 회사는 위 관련 법령에 따라 이용자의 개인정보를 보호하고 개인정보 보호를 위하여 아래와 같이 개인정보 처리방침을 명시하며, 이용자의 권익 보호에 최선을 다하겠습니다.
@@ -191,6 +197,8 @@ export default function PolicyClient() {
             </p>
             <p className="mt-8">게시일 : 2025년 6월 14일</p>
             <p>적용일 : 2025년 6월 29일</p>
+                </article>
+            </div>
         </div>
     )
 }
