@@ -8,7 +8,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { CheckCharacter } from "../store/checklistSlice";
 import { Character, LoginUser } from "../store/loginSlice";
-import { addToast, Button, ButtonGroup, Spinner } from "@heroui/react";
+import { addToast, Button, Spinner } from "@heroui/react";
 import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
@@ -197,7 +197,7 @@ export default function ChecklistClient() {
                     </div>
                 </div>
             ) : (
-                <div className="w-full flex justify-center overflow-hidden md960:mt-[140px]">
+                <div className="w-full flex justify-center overflow-hidden md960:mt-[220px]">
                     <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-4">
                         <FixedLineAd isLoaded={!checklistForm.isLoading}/>
                     </div>
@@ -206,51 +206,59 @@ export default function ChecklistClient() {
             {checklistForm.isLoading ? <LoadingComponent heightStyle="min-h-[calc(100vh-65px)]"/> : (
                 <div>
                     <div className="w-full max-w-[1280px] mx-auto">
-                        <div className="w-full flex flex-col sm:flex-row gap-3 sm:items-center">
-                            <div className="grow">
+                        <section className="mt-5 overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950/60">
+                            <div className="flex flex-col gap-1 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-gray-800">
+                                <h2 className="text-lg font-semibold">숙제 조회 설정</h2>
+                                <p className="text-sm fadedtext">서버와 필터를 선택하고 필요한 현황을 빠르게 확인하세요.</p>
+                            </div>
+                            <div className="p-4 sm:p-5">
                                 <SelectServer 
                                     checklist={checklist} 
                                     server={checklistForm.server}
                                     setServer={checklistForm.setServer}/>
                             </div>
-                            <ButtonGroup fullWidth={isMobile}>
+                            <div className="flex flex-col gap-3 border-t border-gray-200/80 bg-gray-50/50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/30 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                                <div className="shrink-0">
+                                    <p className="text-sm font-semibold">정보 및 현황</p>
+                                    <p className="text-xs fadedtext">필요한 상세 정보를 별도로 열어봅니다.</p>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
                                 <Button
-                                    radius="sm"
-                                    color="secondary"
+                                    size="sm"
+                                    radius="md"
+                                    variant="bordered"
+                                    className="grow font-medium sm:grow-0"
                                     onPress={() => {
                                         setOpenBosses(true);
                                     }}>
                                     콘텐츠 정보
                                 </Button>
                                 <Button
-                                    radius="sm"
-                                    color={checklistForm.isShowList ? 'default' : 'primary'}
+                                    size="sm"
+                                    radius="md"
+                                    color="primary"
+                                    variant={checklistForm.isShowList ? 'flat' : 'bordered'}
+                                    className="grow font-medium sm:grow-0"
                                     onPress={() => {
                                         checklistForm.setShowList(!checklistForm.isShowList);
                                     }}>
                                     남은 숙제 현황 {checklistForm.isShowList ? '닫기' : "보기"}
                                 </Button>
                                 <Button
-                                    radius="sm"
-                                    color={checklistForm.isShowCubeDetail ? 'default' : 'primary'}
+                                    size="sm"
+                                    radius="md"
+                                    color="primary"
+                                    variant={checklistForm.isShowCubeDetail ? 'flat' : 'bordered'}
+                                    className="grow font-medium sm:grow-0"
                                     onPress={() => {
                                         checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail);
                                     }}>
                                     큐브 현황 {checklistForm.isShowCubeDetail ? '닫기' : "보기"}
                                 </Button>
-                            </ButtonGroup>
-                        </div>
-                        <div className={clsx(
-                            checklistForm.isShowList ? 'block' : 'hidden'
-                        )}>
-                            <RemainChecklistComponent checklist={checklist} bosses={checklistForm.bosses}/>
-                        </div>
-                        <div className={clsx(
-                            checklistForm.isShowCubeDetail ? 'block' : 'hidden'
-                        )}>
-                            <CubeDetailComponent checklist={checklist} cubes={checklistForm.cubes}/>
-                        </div>
-                        <FilterComponent
+                                </div>
+                            </div>
+                            <div className="border-t border-gray-200/80 px-4 pb-4 sm:px-5 sm:pb-5 dark:border-gray-800">
+                                <FilterComponent
                             filterContent={checklistForm.filterContent}
                             setFilterContent={checklistForm.setFilterContent}
                             bosses={checklistForm.bosses}
@@ -265,6 +273,18 @@ export default function ChecklistClient() {
                             setHideCompleteContent={checklistForm.setHideCompleteContent}
                             isHideDayContent={checklistForm.isHideDayContent}
                             setHideDayContent={checklistForm.setHideDayContent}/>
+                            </div>
+                        </section>
+                        <div className={clsx(
+                            checklistForm.isShowList ? 'block' : 'hidden'
+                        )}>
+                            <RemainChecklistComponent checklist={checklist} bosses={checklistForm.bosses}/>
+                        </div>
+                        <div className={clsx(
+                            checklistForm.isShowCubeDetail ? 'block' : 'hidden'
+                        )}>
+                            <CubeDetailComponent checklist={checklist} cubes={checklistForm.cubes}/>
+                        </div>
                     </div>
                     <ChecklistComponent 
                         checklist={checklist} 

@@ -268,22 +268,30 @@ export function BossInfoModal({ isOpenBosses, onOpenBosses, bosses }: BossInfoMo
 
     return (
         <Modal
-            radius="sm"
+            radius="lg"
+            size="2xl"
+            scrollBehavior="inside"
             isOpen={isOpenBosses}
             onOpenChange={onOpenBosses}>
-            <ModalContent>
+            <ModalContent className="border border-gray-200/80 bg-white dark:border-gray-800 dark:bg-gray-950">
                 {(onClose) => (
                     <>
-                        <ModalHeader>콘텐츠 정보</ModalHeader>
-                        <ModalBody>
-                            <div className="w-full max-h-[500px] sm:max-h-[800px] overflow-y-auto scroll-auto">
+                        <ModalHeader className="flex flex-col gap-1 border-b border-gray-200/80 px-6 py-5 dark:border-gray-800">
+                            <div className="flex items-center gap-2">
+                                <span className="h-5 w-1 rounded-full bg-secondary"/>
+                                <p className="text-xl font-semibold">콘텐츠 정보</p>
+                            </div>
+                            <p className="pl-3 text-sm font-normal fadedtext">레이드별 관문 보상과 획득 골드를 확인하세요.</p>
+                        </ModalHeader>
+                        <ModalBody className="gap-4 px-6 py-5">
+                            <div className="w-full">
                                 <Select
                                     fullWidth
                                     label="콘텐츠 선택"
                                     placeholder="콘텐츠를 선택하세요."
                                     selectedKeys={value}
-                                    radius="sm"
-                                    size="sm"
+                                    radius="md"
+                                    variant="bordered"
                                     defaultSelectedKeys={'0'}
                                     onSelectionChange={setValue}>
                                     {bosses.sort((a, b) => {
@@ -301,23 +309,24 @@ export function BossInfoModal({ isOpenBosses, onOpenBosses, bosses }: BossInfoMo
                                         <SelectItem key={index}>{boss}</SelectItem>
                                     ))}
                                 </Select>
-                                <div className="w-full mb-3 mt-3">
-                                    <h1 className="font-bold text-lg">{boss.name}</h1>
+                                <div className="mt-5 w-full">
+                                    <h3 className="text-lg font-semibold">{boss.name}</h3>
                                     {getDifficultyByBosses(boss).map((diff, idx) => (
-                                        <React.Fragment key={idx}>
-                                            <Chip
+                                        <div key={idx} className="mt-3 rounded-xl border border-gray-200/80 bg-gray-50/60 p-3 dark:border-gray-800 dark:bg-gray-900/50 sm:p-4">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <p className="text-sm font-medium fadedtext">난이도</p>
+                                                <Chip
                                                 variant="flat"
-                                                radius="sm"
+                                                radius="md"
                                                 color={getTextColorByDifficulty(diff)}
-                                                className="min-w-full text-center mt-2">
+                                                className="font-medium">
                                                 {diff}
                                             </Chip>
-                                            <Card radius="sm" shadow="sm" className="mt-2 mb-1 mx-1">
-                                                <CardBody>
-                                                    <div className="w-full grid grid-cols-3 gap-1">
-                                                        <div>
+                                            </div>
+                                            <div className="mt-3 grid grid-cols-1 gap-2 min-[420px]:grid-cols-3">
+                                                        <div className="rounded-lg bg-white p-3 dark:bg-gray-950/70">
                                                             <p className="fadedtext text-sm">총 골드량</p>
-                                                            <div className="flex gap-1 items-center">
+                                                            <div className="mt-1 flex items-center gap-1.5 font-semibold">
                                                                 <img
                                                                     src="/icons/gold.png" 
                                                                     alt="goldicon"
@@ -325,9 +334,9 @@ export function BossInfoModal({ isOpenBosses, onOpenBosses, bosses }: BossInfoMo
                                                                 <p>{getSumGoldByDifficulty(boss, diff).toLocaleString()}</p>
                                                             </div>
                                                         </div>
-                                                        <div>
+                                                        <div className="rounded-lg bg-white p-3 dark:bg-gray-950/70">
                                                             <p className="fadedtext text-sm">골드량</p>
-                                                            <div className="flex gap-1 items-center">
+                                                            <div className="mt-1 flex items-center gap-1.5 font-semibold">
                                                                 <img
                                                                     src="/icons/gold.png" 
                                                                     alt="goldicon"
@@ -335,9 +344,9 @@ export function BossInfoModal({ isOpenBosses, onOpenBosses, bosses }: BossInfoMo
                                                                 <p>{getGoldByDifficulty(boss, diff).toLocaleString()}</p>
                                                             </div>
                                                         </div>
-                                                        <div>
+                                                        <div className="rounded-lg bg-white p-3 dark:bg-gray-950/70">
                                                             <p className="fadedtext text-sm">귀속 골드</p>
-                                                            <div className="flex gap-1 items-center">
+                                                            <div className="mt-1 flex items-center gap-1.5 font-semibold">
                                                                 <img
                                                                     src="/icons/gold.png" 
                                                                     alt="goldicon"
@@ -345,10 +354,9 @@ export function BossInfoModal({ isOpenBosses, onOpenBosses, bosses }: BossInfoMo
                                                                 <p>{getBoundGoldByDifficulty(boss, diff).toLocaleString()}</p>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </CardBody>
-                                            </Card>
-                                            <Table removeWrapper className="mt-2">
+                                            </div>
+                                            <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200/80 bg-white dark:border-gray-800 dark:bg-gray-950/70">
+                                            <Table removeWrapper aria-label={`${boss.name} ${diff} 골드 정보`} className="min-w-[480px]">
                                                 <TableHeader>
                                                     <TableColumn>관문</TableColumn>
                                                     <TableColumn>골드</TableColumn>
@@ -390,11 +398,15 @@ export function BossInfoModal({ isOpenBosses, onOpenBosses, bosses }: BossInfoMo
                                                     ))}
                                                 </TableBody>
                                             </Table>
-                                        </React.Fragment>
+                                            </div>
+                                        </div>
                                     ))}
                                 </div>
                             </div>
                         </ModalBody>
+                        <ModalFooter className="border-t border-gray-200/80 px-6 py-4 dark:border-gray-800">
+                            <Button radius="md" variant="flat" onPress={onClose}>닫기</Button>
+                        </ModalFooter>
                     </>
                 )}
             </ModalContent>
@@ -421,16 +433,24 @@ function PositionModal({ isOpenModalPosition, onOpenChangePosition, checklist, d
 
     return (
         <Modal
-            radius="sm"
+            radius="lg"
+            size="md"
+            scrollBehavior="inside"
             isDismissable={false}
             isOpen={isOpenModalPosition}
             onOpenChange={onOpenChangePosition}>
-            <ModalContent>
+            <ModalContent className="border border-gray-200/80 dark:border-white/10">
                 {(onClose) => (
                     <>
-                        <ModalHeader>캐릭터 순서 변경</ModalHeader>
-                        <ModalBody>
-                            <div className="h-[400px] sm600:h-[600px] overflow-y-auto pr-3">
+                        <ModalHeader className="flex flex-col gap-1 border-b border-gray-200/80 px-6 py-5 dark:border-white/10">
+                            <div className="flex items-center gap-2">
+                                <span className="h-5 w-1 rounded-full bg-primary"/>
+                                <p className="text-xl font-semibold">캐릭터 순서 변경</p>
+                            </div>
+                            <p className="pl-3 text-sm font-normal fadedtext">캐릭터를 끌어서 원하는 순서로 이동하세요.</p>
+                        </ModalHeader>
+                        <ModalBody className="px-5 py-5">
+                            <div className="max-h-[60vh] overflow-y-auto pr-1">
                                 <DragDropContext onDragEnd={onDragEnd}>
                                     <Droppable droppableId="positions">
                                         {(provided) => (
@@ -442,7 +462,7 @@ function PositionModal({ isOpenModalPosition, onOpenChangePosition, checklist, d
                                                         ref={prov.innerRef}
                                                         {...prov.draggableProps}
                                                         {...prov.dragHandleProps}
-                                                        className="p-2 mb-3 bg-gray-100 dark:bg-[#222222] rounded-md cursor-move border-gray-100 dark:border-[#222222] hover:border-blue-600 border-2"
+                                                        className="mb-2 cursor-move rounded-xl border border-gray-200/80 bg-gray-50/80 p-3 transition-colors hover:border-primary/60 hover:bg-primary/[0.04] dark:border-white/10 dark:bg-white/[0.035]"
                                                     >
                                                         <div className="flex items-center gap-2">
                                                             <JobEmblemIcon job={char.job} size={32}/>
@@ -462,11 +482,13 @@ function PositionModal({ isOpenModalPosition, onOpenChangePosition, checklist, d
                                 </DragDropContext>
                             </div>
                         </ModalBody>
-                        <ModalFooter>
+                        <ModalFooter className="border-t border-gray-200/80 px-6 py-4 dark:border-white/10">
                             <Button
                                 fullWidth
                                 color="primary"
                                 radius="sm"
+                                size="lg"
+                                className="font-semibold"
                                 isLoading={isLoading}
                                 onPress={async () => {
                                     await handleApplyPositions(positions, onClose, setLoading, dispatch);
@@ -518,7 +540,6 @@ export function ChecklistStatue({
     setAccounts,
     isLoadingData
  }: ChecklistStatueProps) {
-    const isMobile = useMobileQuery();
     const [isLoading, setLoading] = useState(false);
     const [inputValue, setInputValue] = useState('');
     const [result, setResult] = useState<SearchCharacter[]>([]);
@@ -585,15 +606,16 @@ export function ChecklistStatue({
         <>
             <Card 
                 fullWidth 
-                radius="sm"
-                className="md960:w-[calc(100vw-40px)] lg1280:w-[1240px] md960:fixed md960:top-[80px] md960:left-1/2 md960:-translate-x-1/2 md960:z-50">
-                <CardBody>
-                    <div className="w-full grid grid-cols-1 md960:grid-cols-[4fr_1px_3fr_1px_3fr] gap-2">
-                        <div className="w-full flex flex-col sm:flex-row items-center gap-2">
-                             <div className="w-full grow">
+                radius="lg"
+                shadow="none"
+                className="overflow-hidden border border-gray-200/80 bg-white/95 shadow-[0_10px_35px_rgba(15,23,42,0.08)] md960:fixed md960:left-1/2 md960:top-[80px] md960:z-50 md960:w-[calc(100vw-40px)] md960:-translate-x-1/2 lg1280:w-[1240px] dark:border-white/10 dark:bg-[#171717]/95 dark:shadow-none">
+                <CardBody className="p-3">
+                    <div className="grid w-full grid-cols-1 gap-2 md960:grid-cols-[1.2fr_1fr_1fr]">
+                        <div className="flex w-full flex-col gap-2 rounded-xl border border-warning/20 bg-warning/[0.045] p-3 dark:bg-warning/[0.06]">
+                             <div className="w-full min-w-0 grow">
                                 <Progress 
                                     aria-label="all-gold"
-                                    size="md"
+                                    size="sm"
                                     color="warning"
                                     label={(
                                         <div className="flex items-center">
@@ -608,31 +630,34 @@ export function ChecklistStatue({
                                     radius="sm"
                                     value={getHaveGolds(bosses, filteredChecklist)}
                                     maxValue={getAllGolds(bosses, filteredChecklist)}/>
-                                <div className="flex items-center gap-1 fadedtext text-[10pt] mt-1">
-                                    <p>이번 주에 </p>
-                                    <img 
-                                        src="/icons/gold.png" 
-                                        alt="goldicon"
-                                        className="w-[16px] h-[16px]"/>
-                                    <p className="font-bold text-black dark:text-white">{(getAllGolds(bosses, filteredChecklist) - getHaveGolds(bosses, filteredChecklist)).toLocaleString()}</p>
-                                    <p>를 더 획득하실 수 있습니다.</p>
-                                </div>
                              </div>
-                            <Popover showArrow disableAnimation>
-                                <PopoverTrigger>
-                                    <Button
-                                        size="sm"
-                                        variant="flat"
-                                        color="warning"
-                                        radius="sm"
-                                        className="h-[30px] sm:h-full w-full sm:w-[max-content]">
-                                        자세히
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
-                                    <div className="w-[calc(100vw-60px)] min-[501px]:max-w-[500px] pl-1 pr-1 pt-3 pb-2">
-                                        <div className="w-full overflow-x-auto scrollbar-hide">
-                                            <div className="w-[400px] min-[501px]:w-full max-h-[400px] overflow-y-auto">
+                            <div className="flex w-full items-center gap-2">
+                                <p className="min-w-0 grow text-[10pt] leading-5 fadedtext">
+                                    이번 주에 <img src="/icons/gold.png" alt="goldicon" className="mx-0.5 inline-block h-[14px] w-[14px]"/>
+                                    <strong className="text-black dark:text-white">{(getAllGolds(bosses, filteredChecklist) - getHaveGolds(bosses, filteredChecklist)).toLocaleString()}</strong>를 더 획득하실 수 있습니다.
+                                </p>
+                                <Popover showArrow disableAnimation placement="bottom-end">
+                                    <PopoverTrigger>
+                                        <Button
+                                            size="sm"
+                                            variant="flat"
+                                            color="warning"
+                                            radius="sm"
+                                            className="h-8 min-w-[84px] shrink-0 font-medium">
+                                            자세히
+                                        </Button>
+                                    </PopoverTrigger>
+                                <PopoverContent className="border border-gray-200/80 bg-white/95 p-0 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#171717]/95">
+                                    <div className="w-[calc(100vw-40px)] p-4 min-[501px]:max-w-[520px]">
+                                        <div className="mb-3 flex items-start justify-between gap-3 border-b border-gray-200/80 pb-3 dark:border-white/10">
+                                            <div>
+                                                <p className="font-semibold">주간 골드 상세</p>
+                                                <p className="mt-1 text-xs fadedtext">캐릭터별 획득 골드와 부수입을 확인하세요.</p>
+                                            </div>
+                                            <Chip size="sm" radius="sm" color="warning" variant="flat">{filteredChecklist.length}명</Chip>
+                                        </div>
+                                        <div className="w-full overflow-x-auto rounded-xl border border-gray-200/80 dark:border-white/10 scrollbar-hide">
+                                            <div className="max-h-[360px] w-[440px] overflow-y-auto min-[501px]:w-full">
                                                 <Table removeWrapper>
                                                     <TableHeader>
                                                         <TableColumn>캐릭터명</TableColumn>
@@ -653,8 +678,7 @@ export function ChecklistStatue({
                                                 </Table>
                                             </div>
                                         </div>
-                                        <Divider className="mt-1 mb-2"/>
-                                        <div className="flex items-center fadedtext text-[10pt] mb-1">
+                                        <div className="mb-2 mt-3 flex items-center text-[10pt] fadedtext">
                                             <p>더보기로 빠진 골드는</p>
                                             <img 
                                                 src="/icons/gold.png" 
@@ -665,7 +689,7 @@ export function ChecklistStatue({
                                             </p>
                                             <p>입니다.</p>
                                         </div>
-                                        <div className="w-full grid grid-cols-1 min-[501px]:grid-cols-3 gap-x-2 gap-y-1 p-1 items-center">
+                                        <div className="grid w-full grid-cols-1 items-center gap-x-3 gap-y-2 rounded-xl bg-gray-50/80 p-3 min-[501px]:grid-cols-3 dark:bg-white/[0.04]">
                                             <div className="w-full flex items-center gap-1">
                                                 <p className="grow text-[9pt] fadedtext">총 콘텐츠</p>
                                                 <img
@@ -707,7 +731,7 @@ export function ChecklistStatue({
                                             </div>
                                         </div>
                                         {bosses.length && filteredChecklist.length ? (
-                                            <div className="w-full h-2 bg-gray-200 rounded-full relative overflow-hidden mt-2">
+                                            <div className="relative mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-white/10">
                                                 <div className="absolute top-0 left-0 h-full bg-purple-600" style={{ width: '100%' }}></div>
                                                 <div className="absolute top-0 left-0 h-full bg-yellow-500" style={{ width: `${getHaveGolds(bosses, filteredChecklist) !== 0 ? Math.round(getAllContentGold(bosses, filteredChecklist) / getHaveGolds(bosses, filteredChecklist) * 1000) / 10 + Math.round(getAllBoundGold(bosses, filteredChecklist) / getHaveGolds(bosses, filteredChecklist) * 1000) / 10 : 0}%` }}></div>
                                                 <div className="absolute top-0 left-0 h-full bg-green-500" style={{ width: `${getHaveGolds(bosses, filteredChecklist) !== 0 ? Math.round(getAllContentGold(bosses, filteredChecklist) / getHaveGolds(bosses, filteredChecklist) * 1000) / 10 : 0}%` }}></div>
@@ -715,13 +739,13 @@ export function ChecklistStatue({
                                         ) : <></>}
                                     </div>
                                 </PopoverContent>
-                            </Popover>
+                                </Popover>
+                            </div>
                         </div>
-                        <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
-                        <div className="w-full">
+                        <div className="flex w-full flex-col rounded-xl border border-secondary/20 bg-secondary/[0.04] p-3 dark:bg-secondary/[0.06]">
                             <Progress 
                                 aria-label="all-gold"
-                                size="md"
+                                size="sm"
                                 color="secondary"
                                 label={
                                     <div className="flex gap-1 items-center">
@@ -740,13 +764,12 @@ export function ChecklistStatue({
                                 <p>개 남았습니다.</p>
                             </div>
                         </div>
-                        <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
-                        <div className="w-full flex flex-col md960:flex-row gap-2 items-center flex-shrink-0">
-                            <div className="w-full sm:w-fit grow">
+                        <div className="flex w-full flex-shrink-0 flex-col items-stretch gap-2 rounded-xl border border-success/20 bg-success/[0.04] p-3 md960:flex-row md960:items-start dark:bg-success/[0.06]">
+                            <div className="w-full min-w-0 grow sm:w-fit">
                                 <Tooltip showArrow content="생명의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.">
                                     <Progress 
                                         aria-label="all-gold"
-                                        size="md"
+                                        size="sm"
                                         color="success"
                                         label={`🍃 생명의 기운 : ${Math.floor(life).toLocaleString()} / ${max.toLocaleString()}`}
                                         radius="sm"
@@ -761,7 +784,7 @@ export function ChecklistStatue({
                                 </div>
                             </div>
                             <p className="block md960:hidden fadedtext text-[9pt] w-full text-left">생명의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.</p>
-                            <div className="w-full md960:w-[max-content] flex shrink-0 min-w-fit flex-row md960:flex-col gap-2 md960:gap-0 items-center">
+                            <div className="flex w-full min-w-fit shrink-0 flex-row items-center gap-2 md960:w-auto md960:flex-col md960:gap-1">
                                 <Tooltip showArrow content={<div className="w-[240px]">
                                     <h3 className="text-lg font-bold">베아트리스의 축복</h3>
                                     <Divider className="mb-1 mt-0.5"/>
@@ -784,27 +807,34 @@ export function ChecklistStatue({
                                             <Button
                                                 size="sm"
                                                 color="primary"
+                                                variant="flat"
                                                 radius="sm"
-                                                className="w-[100px] md960:w-[max-content]">
+                                                className="w-[100px] font-medium md960:w-auto">
                                                 수정
                                             </Button>
                                         </PopoverTrigger>
-                                        <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
-                                            <div className="w-[240px] p-2">
-                                                <p className="mb-2">생명의 기운 조정</p>
+                                        <PopoverContent className="border border-gray-200/80 bg-white/95 p-0 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#171717]/95">
+                                            <div className="w-[280px] p-4">
+                                                <div className="mb-4 border-b border-gray-200/80 pb-3 dark:border-white/10">
+                                                    <p className="font-semibold">생명의 기운 수정</p>
+                                                    <p className="mt-1 text-xs fadedtext">현재 수치와 최대치를 직접 조정합니다.</p>
+                                                </div>
+                                                <p className="mb-2 text-sm font-medium">생명의 기운</p>
                                                 <NumberInput
                                                     fullWidth
                                                     radius="sm"
-                                                    size="sm"
+                                                    size="md"
+                                                    variant="bordered"
                                                     placeholder={`0 ~ ${newMax}`}
                                                     maxValue={newMax}
                                                     value={newLife}
                                                     onValueChange={setNewLife}/>
-                                                <p className="mb-2 mt-2">생명의 기운 최대치</p>
+                                                <p className="mb-2 mt-4 text-sm font-medium">최대치</p>
                                                 <NumberInput
                                                     fullWidth
                                                     radius="sm"
-                                                    size="sm"
+                                                    size="md"
+                                                    variant="bordered"
                                                     placeholder="0 ~ 99999"
                                                     maxValue={99999}
                                                     value={newMax}
@@ -813,7 +843,7 @@ export function ChecklistStatue({
                                                     fullWidth
                                                     radius="sm"
                                                     color="primary"
-                                                    className="mt-3"
+                                                    className="mt-5 font-semibold"
                                                     isDisabled={isLoadingData}
                                                     onPress={onClickLife}>
                                                     저장
@@ -826,23 +856,24 @@ export function ChecklistStatue({
                         </div>
                     </div>
                 </CardBody>
-                <Divider/>
-                <CardFooter className="p-0">
-                    <div className="w-full grid grid-cols-3">
+                <CardFooter className="border-t border-gray-200/80 bg-gray-50/70 p-2.5 dark:border-white/10 dark:bg-white/[0.025]">
+                    <div className="grid w-full grid-cols-3 gap-2">
                         <Button
                             fullWidth
-                            radius="none"
-                            color="primary"
+                            radius="sm"
+                            color="default"
                             size="sm"
                             variant="flat"
+                            className="h-9 border border-gray-200/80 bg-white px-2 text-xs font-medium sm:text-sm dark:border-white/10 dark:bg-white/[0.04]"
                             isDisabled={isLoadingData}
                             onPress={() => onOpenChangePosition(true)}>순서 변경</Button>
                         <Button
                             fullWidth
-                            radius="none"
-                            color="success"
+                            radius="sm"
+                            color="default"
                             variant="flat"
                             size="sm"
+                            className="h-9 border border-gray-200/80 bg-white px-2 text-xs font-medium text-success sm:text-sm dark:border-white/10 dark:bg-white/[0.04]"
                             isDisabled={isLoadingData}
                             onPress={onOpen}>캐릭터 추가</Button>
                         <Tooltip 
@@ -851,10 +882,11 @@ export function ChecklistStatue({
                             content="캐릭터 정보만 수정되며, 체크리스트는 영향을 주지 않습니다.">
                             <Button
                                 fullWidth
-                                radius="none"
-                                color="primary"
+                                radius="sm"
+                                color="default"
                                 variant="flat"
                                 size="sm"
+                                className="h-9 border border-gray-200/80 bg-white px-2 text-xs font-medium text-primary sm:text-sm dark:border-white/10 dark:bg-white/[0.04]"
                                 isDisabled={isDisableUpdate || isLoadingData}
                                 isLoading={isLoading}
                                 onPress={onClickUpdatedCharacters}>캐릭터 갱신하기</Button>
@@ -868,23 +900,34 @@ export function ChecklistStatue({
                 checklist={checklist}
                 dispatch={dispatch}/>
             <Modal
-                radius="sm"
+                radius="lg"
+                size="lg"
+                scrollBehavior="inside"
                 isDismissable={false}
                 isOpen={isOpen}
                 onOpenChange={onOpenChange}
                 onClose={onCloseModal}>
-                <ModalContent>
+                <ModalContent className="border border-gray-200/80 dark:border-white/10">
                     {(onClose) => (
                         <>
-                            <ModalHeader>캐릭터 추가</ModalHeader>
-                            <ModalBody>
-                                <div className="w-full max-h-[600px] sm600:max-h-[800px] overflow-y-auto">
-                                    <div className="flex gap-2 mb-4">
+                            <ModalHeader className="flex flex-col gap-1 border-b border-gray-200/80 px-6 py-5 dark:border-white/10">
+                                <div className="flex items-center gap-2">
+                                    <span className="h-5 w-1 rounded-full bg-success"/>
+                                    <p className="text-xl font-semibold">캐릭터 추가</p>
+                                </div>
+                                <p className="pl-3 text-sm font-normal fadedtext">대표 캐릭터를 조회하고 추가할 캐릭터를 선택하세요.</p>
+                            </ModalHeader>
+                            <ModalBody className="px-6 py-5">
+                                <div className="w-full">
+                                    <div className="mb-5 flex flex-col items-start gap-2 sm:flex-row">
                                         <Input
                                             label="대표 캐릭터 이름"
+                                            labelPlacement="outside"
                                             placeholder="2~12 글자"
                                             maxLength={12}
-                                            size="sm"
+                                            size="lg"
+                                            radius="sm"
+                                            variant="bordered"
                                             value={inputValue}
                                             onValueChange={setInputValue}
                                             className="grow"/>
@@ -893,19 +936,21 @@ export function ChecklistStatue({
                                             radius="sm"
                                             isLoading={isLoadingSearch}
                                             color="primary"
+                                            variant="flat"
+                                            className="w-full shrink-0 font-semibold sm:w-[96px] sm:self-end"
                                             onPress={onClickLoadCharacters}>조회</Button>
                                     </div>
-                                    <div className="mb-4 max-h-[400px] overflow-y-auto overflow-x-hidden">
+                                    <div className="mb-4 max-h-[360px] space-y-2 overflow-y-auto overflow-x-hidden pr-1">
                                         {result.map((item, index) => (
-                                            <div key={index} className="w-full min-h-[64px] mb-1">
+                                            <div key={`${item.server}-${item.nickname}`} className="min-h-[64px] w-full">
                                                 <Checkbox
                                                     aria-label={item.nickname}
                                                     isDisabled={((MAX_CHARACTER_COUNT <= checklist.length + getCheckedResult(result)) && !item.isCheck) || isHaveCharacter(checklist, item.nickname)}
                                                     classNames={{
                                                         base: cn(
-                                                            "w-full max-w-full bg-content1",
-                                                            "hover:bg-content2",
-                                                            "cursor-pointer rounded-lg gap-2 border-2 border-transparent m-auto box-border",
+                                                            "w-full max-w-full bg-gray-50/80 dark:bg-white/[0.035]",
+                                                            "hover:bg-primary/[0.04]",
+                                                            "cursor-pointer rounded-xl gap-2 border border-gray-200/80 dark:border-white/10 m-auto box-border p-3",
                                                             "data-[selected=true]:border-primary"
                                                         ),
                                                         label: "w-full",
@@ -923,7 +968,7 @@ export function ChecklistStatue({
                                         ))}
                                     </div>
                                     <div className={clsx(
-                                        "gap-2 mb-4",
+                                        "mb-4 items-center gap-2 rounded-xl bg-gray-50/80 p-3 dark:bg-white/[0.035]",
                                         result.length !== 0 ? 'flex' : 'hidden'
                                     )}>
                                         <div className="grow">
@@ -939,10 +984,10 @@ export function ChecklistStatue({
                                         </Tooltip>
                                     </div>
                                     <div className={clsx(
-                                        "mb-4",
+                                        "mb-4 rounded-xl border border-gray-200/80 bg-gray-50/80 p-4 dark:border-white/10 dark:bg-white/[0.035]",
                                         result.length !== 0 ? 'block' : 'hidden'
                                     )}>
-                                        <RadioGroup label="계정 선택" value={selected} onValueChange={setSelected} className="mb-8">
+                                        <RadioGroup label="계정 선택" value={selected} onValueChange={setSelected} className="mb-6">
                                             {accounts.length > 0 ? accounts.map((account, index) => (
                                                 <Radio key={index} value={account}>{account}</Radio>
                                             )) : <Radio value="본계정">본계정</Radio>}
@@ -952,6 +997,7 @@ export function ChecklistStatue({
                                             radius="sm"
                                             labelPlacement="outside"
                                             placeholder="2~12글자"
+                                            variant="bordered"
                                             value={inputAccount}
                                             onValueChange={setInputAccount}/>
                                         <Button
@@ -961,7 +1007,7 @@ export function ChecklistStatue({
                                             variant="flat"
                                             color="success"
                                             isDisabled={inputAccount === ''}
-                                            className="mt-2"
+                                            className="mt-3 font-medium"
                                             onPress={onClickAddAccount}>
                                             계정 추가
                                         </Button>
@@ -972,8 +1018,9 @@ export function ChecklistStatue({
                                         isDisabled={getCheckedResult(result) === 0}
                                         isLoading={isLoadingAdd}
                                         color="primary"
+                                        size="lg"
                                         className={clsx(
-                                            "mb-4",
+                                            "mb-1 font-semibold",
                                             result.length !== 0 ? 'block' : 'hidden'
                                         )}
                                         onPress={async () => {
@@ -1003,7 +1050,11 @@ export function SelectServer({ checklist, server, setServer }: SelectServerProps
             orientation="horizontal"
             value={server}
             onValueChange={setServer}
-            className="mt-6">
+            classNames={{
+                label: "text-sm font-medium text-foreground",
+                description: "text-xs",
+                wrapper: "mt-1 flex-wrap gap-2",
+            }}>
             <CustomRadio key={0} value="전체">전체</CustomRadio>
             {getServerList(checklist).map((server, index) => (
                 <CustomRadio key={index+1} value={server}>{server}</CustomRadio>
@@ -1020,9 +1071,9 @@ function CustomRadio(props: RadioProps) {
             {...otherProps}
             classNames={{
                 base: cn(
-                    "inline-flex m-0 bg-content1 hover:bg-content2 items-center justify-between",
-                    "flex-row-reverse max-w-[200px] cursor-pointer rounded-md gap-4 p-2 border-2 border-transparent",
-                    "data-[selected=true]:border-primary",
+                    "inline-flex m-0 items-center justify-between bg-gray-100/80 hover:bg-gray-200/70 dark:bg-gray-900 dark:hover:bg-gray-800",
+                    "flex-row-reverse max-w-none cursor-pointer rounded-lg gap-3 border border-transparent px-3 py-2",
+                    "data-[selected=true]:border-primary data-[selected=true]:bg-primary-50 dark:data-[selected=true]:bg-primary-950/30",
                 ),
             }}>
             {children}
@@ -2653,21 +2704,35 @@ type CubeDetailComponentProps = {
 }
 export function CubeDetailComponent({ checklist, cubes }: CubeDetailComponentProps) {
     return (
-        <div className="w-full mt-4">
-            <p className="text-xl mb-2">큐브 전체 현황</p>
-            <Tabs aria-label="cube-detail">
+        <section className="mt-4 w-full overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950/60">
+            <div className="flex flex-col gap-1 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-gray-800">
+                <div className="flex items-center justify-between gap-3">
+                    <h2 className="text-lg font-semibold">큐브 전체 현황</h2>
+                    <Chip size="sm" variant="flat" color="primary">{checklist.length}명</Chip>
+                </div>
+                <p className="text-sm fadedtext">보유 입장권과 예상 보석 보상을 한 번에 확인하세요.</p>
+            </div>
+            <Tabs
+                aria-label="cube-detail"
+                color="primary"
+                variant="underlined"
+                classNames={{
+                    base: "w-full px-4 pt-2 sm:px-5",
+                    tabList: "gap-5",
+                    panel: "px-4 pb-5 pt-3 sm:px-5",
+                }}>
                 <Tab key="setting" title="개수">
-                    <div className="max-w-full w-full overflow-x-auto">
+                    <div className="max-w-full w-full overflow-x-auto rounded-xl border border-gray-200/80 dark:border-gray-800">
                         <CubeDetailCount checklist={checklist} cubes={cubes}/>
                     </div>
                 </Tab>
                 <Tab key="statue" title="보상">
-                    <div className="max-w-full w-full overflow-x-auto">
+                    <div className="max-w-full w-full overflow-x-auto rounded-xl border border-gray-200/80 p-3 dark:border-gray-800">
                         <CubeDetailGems checklist={checklist} cubes={cubes}/>
                     </div>
                 </Tab>
             </Tabs>
-        </div>
+        </section>
     )
 }
 
@@ -3183,17 +3248,34 @@ export function FilterComponent({
 }: FilterComponentProps) {
 
     return (
-        <div className="w-full mt-4">
-            <h1 className="text-xl mb-1">검색 필터</h1>
-            <div className="w-full flex flex-col sm:flex-row gap-3 sm:items-center">
+        <div className="w-full pt-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                    <h3 className="text-sm font-semibold">검색 필터</h3>
+                    <p className="mt-0.5 text-xs fadedtext">표시할 계정과 콘텐츠를 세부적으로 설정합니다.</p>
+                </div>
+                <Tooltip showArrow content="설정값을 유지하려면 프로필 설정에서 설정하세요.">
+                    <Checkbox
+                        size="sm"
+                        isSelected={isHideDayContent}
+                        onValueChange={setHideDayContent}
+                        classNames={{
+                            base: "shrink-0 rounded-md px-1 py-1",
+                            label: "text-sm text-foreground",
+                        }}>
+                        일일 콘텐츠 숨기기
+                    </Checkbox>
+                </Tooltip>
+            </div>
+            <div className="grid w-full gap-3 sm:grid-cols-2 md960:grid-cols-[minmax(200px,1fr)_minmax(200px,1fr)_auto_auto] md960:items-end">
                 <Select
                     label="계정 검색"
-                    placeholder="게정를 선택하세요."
+                    placeholder="계정을 선택하세요."
                     selectedKeys={filterAccount}
-                    radius="sm"
-                    size="sm"
+                    radius="md"
+                    variant="bordered"
                     onSelectionChange={setFilterAccount}
-                    className="w-full sm:w-[260px]">
+                    className="w-full">
                     {getAccounts(checklist).map((account, index) => (
                         <SelectItem key={index}>{account}</SelectItem>
                     ))}
@@ -3202,27 +3284,33 @@ export function FilterComponent({
                     label="콘텐츠로 검색"
                     placeholder="콘텐츠를 선택하세요."
                     selectedKeys={filterContent}
-                    radius="sm"
-                    size="sm"
+                    radius="md"
+                    variant="bordered"
                     onSelectionChange={setFilterContent}
-                    className="w-full sm:w-[260px]">
+                    className="w-full">
                     {getBossesByHaveContent(checklist, bosses).map((boss, index) => (
                         <SelectItem key={index}>{boss}</SelectItem>
                     ))}
                 </Select>
-                <Popover showArrow>
+                <Popover showArrow placement="bottom-end">
                     <PopoverTrigger>
                         <Button
-                            radius="sm"
+                            radius="md"
                             color="primary"
-                            className="w-full sm:w-[max-content]">
+                            variant="flat"
+                            className="w-full font-medium md960:w-auto">
                             필터 추가 옵션
                         </Button>
                     </PopoverTrigger>
-                    <PopoverContent>
-                        <div className="w-full min-[301px]:w-[300px] px-1.5 py-2">
-                            <div className="w-full grid grid-cols-[1fr_max-content] gap-2">
-                                <p className="cursor-pointer" onClick={() => {
+                    <PopoverContent className="border border-gray-200/80 p-0 shadow-lg dark:border-gray-800">
+                        <div className="w-full min-[301px]:w-[330px] p-4">
+                            <div className="mb-3">
+                                <p className="font-semibold">추가 필터</p>
+                                <p className="mt-0.5 text-xs fadedtext">캐릭터와 콘텐츠 표시 조건을 설정합니다.</p>
+                            </div>
+                            <div className="flex w-full flex-col gap-2">
+                                <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-gray-900">
+                                <p className="cursor-pointer text-sm" onClick={() => {
                                     localStorage.setItem('isRemainHomework', String(!isRemainHomework));
                                     setRemainHomework(!isRemainHomework);
                                 }}>주간 숙제를 완료한 캐릭터 숨기기</p>
@@ -3233,7 +3321,9 @@ export function FilterComponent({
                                         localStorage.setItem('isRemainHomework', String(isSelected));
                                         setRemainHomework(isSelected);
                                     }}/>
-                                <p className="cursor-pointer" onClick={() => {
+                                </div>
+                                <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-gray-900">
+                                <p className="cursor-pointer text-sm" onClick={() => {
                                     localStorage.setItem('isShowGoldCharacter', String(!isShowGoldCharacter));
                                     setShowGoldCharacter(!isShowGoldCharacter);
                                 }}>골드 지정 캐릭터만 표시하기</p>
@@ -3244,7 +3334,9 @@ export function FilterComponent({
                                         localStorage.setItem('isShowGoldCharacter', String(isSelected));
                                         setShowGoldCharacter(isSelected);
                                     }}/>
-                                <p className="cursor-pointer" onClick={() => {
+                                </div>
+                                <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-gray-900">
+                                <p className="cursor-pointer text-sm" onClick={() => {
                                     localStorage.setItem('isHideCompleteContent', String(!isHideCompleteContent));
                                     setHideCompleteContent(!isHideCompleteContent);
                                 }}>숙제 완료한 콘텐츠 숨기기</p>
@@ -3255,15 +3347,18 @@ export function FilterComponent({
                                         localStorage.setItem('isHideCompleteContent', String(isSelected));
                                         setHideCompleteContent(isSelected);
                                     }}/>
+                                </div>
                             </div>
-                            <Divider className="mt-2"/>
-                            <p className="fadedtext text-sm mt-2">해당 설정값은 브라우저에 저장됩니다.</p>
+                            <Divider className="mt-3"/>
+                            <p className="mt-3 text-xs fadedtext">해당 설정값은 브라우저에 저장됩니다.</p>
                         </div>
                     </PopoverContent>
                 </Popover>
                 <Button 
-                    radius="sm"
+                    radius="md"
                     color="danger"
+                    variant="flat"
+                    className="w-full font-medium md960:w-auto"
                     onPress={() => {
                         setFilterAccount(new Set([]));
                         setFilterContent(new Set([]));
@@ -3279,26 +3374,6 @@ export function FilterComponent({
                     }}>
                     필터 해제
                 </Button>
-                <Tooltip showArrow content="설정값을 유지하려면 프로필 설정에서 설정하세요.">
-                    <Checkbox
-                        isSelected={isHideDayContent}
-                        onValueChange={setHideDayContent}
-                        classNames={{
-                            base: cn(
-                                "inline-flex w-full max-w-full sm:max-w-[320px] bg-content1",
-                                "hover:bg-content2 items-center justify-start",
-                                "cursor-pointer rounded-lg gap-2 px-3 py-1 border-2 border-transparent",
-                                "data-[selected=true]:border-primary",
-                            ),
-                            label: "w-full",
-                        }}
-                        className="ml-auto">
-                        <div className="w-full">
-                            <p>일일 콘텐츠 숨기기</p>
-                            <p className="fadedtext text-[9pt]">일일 콘텐츠를 보이지 않도록 숨깁니다.</p>
-                        </div>
-                    </Checkbox>
-                </Tooltip>
             </div>
         </div>
     )
@@ -3347,14 +3422,27 @@ export function RemainChecklistComponent({ checklist, bosses }: RemainChecklistC
     }, [selectedKey, datas]);
 
     return (
-        <div className="w-full mt-4">
-            <div className="w-full sm:h-[400px] grid sm:grid-cols-[1fr_3fr] gap-2">
-                <div className="h-[200px] sm:h-full overflow-y-auto scrollbar-hide">
+        <section className="mt-4 w-full overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950/60">
+            <div className="flex flex-col gap-1 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-gray-800">
+                <div className="flex items-center justify-between gap-3">
+                    <h2 className="text-lg font-semibold">남은 숙제 현황</h2>
+                    <Chip size="sm" variant="flat" color={results.length > 0 ? "warning" : "success"}>{results.length}개</Chip>
+                </div>
+                <p className="text-sm fadedtext">콘텐츠를 선택해 아직 완료하지 않은 캐릭터를 확인하세요.</p>
+            </div>
+            <div className="grid w-full gap-3 p-4 sm:h-[420px] sm:grid-cols-[minmax(170px,0.8fr)_minmax(0,3fr)] sm:p-5">
+                <div className="h-[200px] overflow-y-auto rounded-xl border border-gray-200/80 bg-gray-50/60 p-2 scrollbar-hide dark:border-gray-800 dark:bg-gray-900/50 sm:h-full">
                     <Tabs 
                         fullWidth 
                         isVertical={true}
                         selectedKey={selectedKey} 
                         color="primary"
+                        variant="light"
+                        classNames={{
+                            tabList: "gap-1",
+                            cursor: "rounded-lg",
+                            tab: "justify-start px-3",
+                        }}
                         onSelectionChange={(key) => setSelectedKey(String(key))}>
                         {bosses.sort((a, b) => {
                             const bDiff = bosses.find(boss => boss.name === b.name);
@@ -3372,10 +3460,9 @@ export function RemainChecklistComponent({ checklist, bosses }: RemainChecklistC
                         ))}
                     </Tabs>
                 </div>
-                <div className="w-full max-h-[400px] sm:h-[max-content] overflow-y-auto scrollbar-hide">
-                    <Card radius="sm" shadow="sm" className="mx-1 mt-1 mb-2">
-                        <CardBody>
-                            <div className="w-full grid grid-cols-[1fr_1px_1fr_1px_1fr] gap-2">
+                <div className="w-full max-h-[420px] overflow-y-auto scrollbar-hide">
+                    <div className="mb-3 rounded-xl border border-gray-200/80 bg-gray-50/60 p-3 dark:border-gray-800 dark:bg-gray-900/50">
+                            <div className="grid w-full grid-cols-[1fr_1px_1fr_1px_1fr] gap-2">
                                 <div className="w-full flex items-center">
                                     <p className="grow fadedtext text-[10pt]">남은 숙제</p>
                                     <p className="text-md font-bold">{results.length}</p>
@@ -3391,15 +3478,14 @@ export function RemainChecklistComponent({ checklist, bosses }: RemainChecklistC
                                     <p className="text-md font-bold">{results.filter(data => !data.isGold || !data.isGoldCharacter).length}</p>
                                 </div>
                             </div>
-                        </CardBody>
-                    </Card>
-                    <div className="w-full h-full grid sm:grid-cols-2 gap-3 sm:gap-2 p-1">
+                    </div>
+                    <div className="grid h-full w-full gap-2 sm:grid-cols-2">
                         {results.map((data, index) => (
-                            <Card key={index} radius="sm" shadow="sm" className={clsx(
-                                "h-[max-content] border-l-4",
+                            <Card key={index} radius="lg" shadow="none" className={clsx(
+                                "h-[max-content] border border-gray-200/80 border-l-4 dark:border-gray-800",
                                 data.isGold && data.isGoldCharacter ? "border-[#F3B600]" : "border-[#cccccc] dark:border-[#333333]"
                             )}>
-                                <CardBody>
+                                <CardBody className="p-3">
                                     <div className="w-full flex gap-3 items-center justify-end">
                                         <JobAvatar size="md" job={data.job}/>
                                         <div className="grow">
@@ -3436,15 +3522,15 @@ export function RemainChecklistComponent({ checklist, bosses }: RemainChecklistC
                         ))}
                     </div>
                     {results.length === 0 ? (
-                        <div className="w-full h-[400px] fadedtext flex justify-center items-center">
-                            <div className="flex gap-2 items-center">
+                        <div className="flex min-h-[240px] w-full items-center justify-center rounded-xl border border-dashed border-gray-300 fadedtext dark:border-gray-700">
+                            <div className="flex flex-col items-center gap-2 px-4 text-center sm:flex-row">
                                 <CheckIcon size={24}/>
-                                <p className="text-md sm:text-xl">남은 숙제가 없거나 데이터가 존재하지 않습니다.</p>
+                                <p className="text-sm sm:text-base">남은 숙제가 없거나 데이터가 존재하지 않습니다.</p>
                             </div>
                         </div>
                     ) : <></>}
                 </div>
             </div>
-        </div>
+        </section>
     )
 }
