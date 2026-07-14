@@ -3,7 +3,7 @@ import { getColorByProgress, getCompleteMaxPoint, getCompletePoint, getProgressD
 import { Card, CardBody, CardFooter, CardHeader, Checkbox, Divider, Popover, PopoverContent, PopoverTrigger, Progress, Switch, Tooltip } from "@heroui/react";
 import CheckIcon from "@/Icons/CheckIcon";
 import clsx from "clsx";
-import { getBackgroundByGrade, getColorTextByGrade, useMobileQuery } from "@/utiils/utils";
+import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils";
 import { getTextAttack } from "../lib/skillFeat";
 import { CharacterInfo, Collect } from "../model/types";
 import collectData from "@/data/characters/collect/data.json";
@@ -56,38 +56,51 @@ export function PointComponent({ info }: { info: CharacterInfo }) {
     const hobbys = info.collection.hobbys;
     const collectEquipments = info.collection.collectEquipments;
     const [isSelected, setSelected] = useState(false);
-    const isMobile = useMobileQuery();
+    const progressValue = getProgressData(collects);
+    const progressMax = collects.length * 100;
+    const progressPercent = progressMax > 0 ? Math.round(progressValue / progressMax * 100) : 0;
 
     return (
         <div className="w-full">
-            <Card fullWidth radius="sm" className="mb-8">
-                <CardBody>
-                    <div className="w-full flex flex-col md960:flex-row gap-3 md960:gap-5 items-center">
-                        <div className="w-full md960:w-[280px]">
+            <Card fullWidth radius="lg" className="mb-8 border border-default-200/80 bg-content1/95 shadow-sm dark:border-white/10 dark:bg-[#18181b]">
+                <CardHeader className="px-5 py-4">
+                    <div>
+                        <p className="text-lg font-semibold">수집형 포인트</p>
+                        <p className="text-xs text-default-500">전체 수집 진행도와 현재 적용 중인 보상을 확인하세요.</p>
+                    </div>
+                </CardHeader>
+                <Divider/>
+                <CardBody className="p-4 sm:p-5">
+                    <div className="grid w-full grid-cols-1 gap-4 md960:grid-cols-[280px_minmax(0,1fr)_220px] md960:items-stretch">
+                        <div className="flex w-full flex-col justify-between rounded-xl bg-default-50 p-4 dark:bg-white/[0.04]">
+                            <div className="mb-3 flex items-end justify-between gap-2">
+                                <div>
+                                    <p className="text-xs font-medium text-default-500">전체 진행도</p>
+                                    <p className="mt-1 text-3xl font-bold tabular-nums">{progressPercent}<span className="ml-0.5 text-base font-semibold text-default-400">%</span></p>
+                                </div>
+                                <p className="text-xs tabular-nums text-default-500">{progressValue} / {progressMax}</p>
+                            </div>
                             <Progress
-                                label="전체 진행도"
-                                showValueLabel
                                 radius="sm"
-                                value={getProgressData(collects)}
-                                maxValue={collects.length * 100}
-                                color={getColorByProgress(getProgressData(collects), collects.length * 100)}
+                                value={progressValue}
+                                maxValue={progressMax}
+                                color={getColorByProgress(progressValue, progressMax)}
                             />
                             <Switch
                                 isSelected={isSelected}
                                 onValueChange={setSelected}
                                 size="sm"
-                                className="min-w-full mt-4 md960:mt-2"
+                                className="mt-4 min-w-full"
                             >
                                 미달성 항목만 보기
                             </Switch>
                         </div>
-                        <Divider orientation={isMobile ? "horizontal" : "vertical"} className="md960:h-[65px]" />
-                        <div className="w-full md960:w-[max-content] grow grid grid-cols-2 gap-3">
+                        <div className="grid w-full grid-cols-2 gap-2 rounded-xl bg-default-50 p-3 dark:bg-white/[0.04]">
                             {hobbys.map((hobby, index) => (
-                                <div key={index}>
-                                    <div className="w-full flex gap-1 mb-1 text-sm">
-                                        <p className="grow">{hobby.type}</p>
-                                        <p>{hobby.point}</p>
+                                <div key={index} className="rounded-lg bg-white/80 px-3 py-2 dark:bg-white/[0.04]">
+                                    <div className="mb-1.5 flex w-full gap-1 text-xs">
+                                        <p className="grow font-medium">{hobby.type}</p>
+                                        <p className="font-semibold tabular-nums">{hobby.point}<span className="font-normal text-default-400">/{hobby.maxPoint}</span></p>
                                     </div>
                                     <Progress
                                         size="sm"
@@ -98,8 +111,8 @@ export function PointComponent({ info }: { info: CharacterInfo }) {
                                 </div>
                             ))}
                         </div>
-                        <Divider orientation={isMobile ? "horizontal" : "vertical"} className="md960:h-[65px]" />
-                        <div className="w-full md960:w-[200px]">
+                        <div className="w-full rounded-xl bg-default-50 p-3 dark:bg-white/[0.04]">
+                            <p className="mb-2 text-xs font-semibold text-default-500">수집 보상 장비</p>
                             <Popover showArrow disableAnimation>
                                 <PopoverTrigger>
                                     <div className="w-full flex items-center gap-2 cursor-pointer">

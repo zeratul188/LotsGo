@@ -5,6 +5,7 @@ import {
     Modal, 
     ModalBody, 
     ModalContent, 
+    ModalFooter,
     ModalHeader, 
     useDisclosure,
     Tooltip,
@@ -64,26 +65,32 @@ export function FindComponent({ joinRaids, isLoadingData, dispatch }: FindCompon
 
     return (
         <div>
-            <Card radius="sm">
-                <CardBody>
-                    <div className="w-full flex flex-col sm:flex-row gap-3 sm:items-center">
-                        <div>
-                            <p className="fadedtext text-[8pt]">총 파티 개수</p>
-                            <p className="text-lg font-bold">{results.length}</p>
+            <Card radius="lg" className="border border-default-200/80 bg-content1 shadow-sm dark:border-white/10 dark:bg-[#18181b]">
+                <CardBody className="p-4 sm:p-5">
+                    <div className="mb-4 flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl font-bold">공개 파티 찾기</h1>
+                            <Chip size="sm" radius="full" variant="flat" color="primary">{results.length}개</Chip>
                         </div>
+                        <p className="text-xs text-default-500">파티명이나 파티장 이름으로 참여할 파티를 찾아보세요.</p>
+                    </div>
+                    <div className="w-full flex flex-col gap-3 sm:flex-row sm:items-end">
                         <Input
-                            label="검색"
+                            label="파티 검색"
+                            labelPlacement="outside"
                             placeholder="파티명 또는 파티장 이름을 검색하세요."
                             value={searchValue}
                             onValueChange={setSearchValue}
                             maxLength={20}
-                            radius="sm"
+                            radius="lg"
                             size="sm"
-                            className="w-full sm:w-[240px]"/>
+                            className="w-full sm:max-w-[360px]"
+                            classNames={{ label: "text-xs font-medium text-default-500" }}/>
                         <Button
-                            size={isMobile ? 'md' : 'lg'}
+                            size={isMobile ? 'md' : 'md'}
                             color="primary"
-                            radius="sm">
+                            radius="lg"
+                            className="font-semibold sm:min-w-[88px]">
                             검색
                         </Button>
                         <div className="grow"/>
@@ -91,12 +98,14 @@ export function FindComponent({ joinRaids, isLoadingData, dispatch }: FindCompon
                             <div>
                                 <Button
                                     fullWidth
-                                    size={isMobile ? 'md' : 'lg'}
-                                    color="primary"
-                                    radius="sm"
+                                    size="md"
+                                    color="default"
+                                    variant="flat"
+                                    radius="lg"
+                                    className="font-semibold"
                                     isDisabled={!userId || joinRaids.length >= 5}
                                     onPress={() => setOpenJoin(true)}>
-                                    파티 참가
+                                    초대 링크 참가
                                 </Button>
                             </div>
                         </Tooltip>
@@ -104,12 +113,13 @@ export function FindComponent({ joinRaids, isLoadingData, dispatch }: FindCompon
                             <div>
                                 <Button
                                     fullWidth
-                                    size={isMobile ? 'md' : 'lg'}
+                                    size="md"
                                     color="primary"
-                                    radius="sm"
+                                    radius="lg"
+                                    className="font-semibold"
                                     isDisabled={!userId || joinRaids.length >= 5}
                                     onPress={onOpen}>
-                                    파티 추가
+                                    파티 만들기
                                 </Button>
                             </div>
                         </Tooltip>
@@ -123,60 +133,69 @@ export function FindComponent({ joinRaids, isLoadingData, dispatch }: FindCompon
                     </div>
                 </div>
             )}
-            <div className="w-full sm:min-h-[600px] overflow-x-auto scrollbar-hide mt-5">
+            <div className="mt-5 w-full overflow-x-auto scrollbar-hide">
                 {isLoadingData ? <LoadingComponent heightStyle={'h-[calc(100vh-105px)]'}/> : (
                     <div>
-                        <div className="w-full grid min-[681px]:grid-cols-2 min-[1021px]:grid-cols-3 gap-3 p-2">
-                            {results.slice((page-1) * rowsPerPage, page * rowsPerPage).map((raid, index) => (
-                                <Card key={index} radius="sm" shadow="sm">
-                                    <CardBody>
-                                        <div>
-                                            <div className="w-full flex items-start">
+                        <div className="grid w-full gap-3 p-1 min-[681px]:grid-cols-2 min-[1021px]:grid-cols-3">
+                            {results.slice((page-1) * rowsPerPage, page * rowsPerPage).map((raid) => {
+                                const isJoined = isInvitedParty(raid.id, joinRaids);
+                                return (
+                                <Card key={raid.id} radius="lg" shadow="none" className="border border-default-200/80 bg-content1 transition-colors hover:border-primary-200 hover:bg-primary-50/30 dark:border-white/10 dark:bg-[#18181b] dark:hover:border-primary-500/40 dark:hover:bg-primary-500/5">
+                                    <CardBody className="gap-4 p-4">
+                                        <div className="flex items-start gap-3">
+                                            <div className="min-w-0 grow">
                                                 <div className="flex items-center gap-2">
-                                                    <h3 className="text-xl font-bold">{raid.name}</h3>
-                                                    {raid.isPwd ? <div className="fadedtext"><LockerIcon size={16}/></div> : null}
+                                                    <h3 className="truncate text-lg font-bold">{raid.name}</h3>
+                                                    {raid.isPwd ? <span className="text-default-400" title="비밀번호 필요"><LockerIcon size={15}/></span> : null}
                                                 </div>
-                                                <div className="grow"/>
-                                                <p className="fadedtext text-sm">Lv.{raid.avgLevel}</p>
+                                                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                                                    <Chip size="sm" radius="full" variant="flat" color="secondary" startContent={<span className="pl-1"><LeaderIcon size={12}/></span>}>
+                                                        {raid.managerNickname}
+                                                    </Chip>
+                                                    <Chip size="sm" radius="full" variant="flat">참여 {raid.members.length}명</Chip>
+                                                </div>
                                             </div>
-                                            <div className="w-full flex gap-1 items-end">
-                                                <Chip
-                                                    size="sm"
-                                                    radius="sm"
-                                                    variant="flat"
-                                                    color="secondary"
-                                                    startContent={<div className="pl-1 pr-0.5"><LeaderIcon size={12}/></div>}>
-                                                    {raid.managerNickname}
-                                                </Chip>
-                                                <Chip
-                                                    size="sm"
-                                                    radius="sm"
-                                                    variant="flat">
-                                                    {raid.members.length}명
-                                                </Chip>
-                                                <div className="grow"/>
-                                                <Button
-                                                    size="sm"
-                                                    color="primary"
-                                                    isLoading={isLoadingJoin[raid.id] ?? false}
-                                                    isDisabled={isInvitedParty(raid.id, joinRaids) || !userId}
-                                                    radius="sm"
-                                                    onPress={async () => {
-                                                        if (raid.isPwd) {
-                                                            setSelectedRaid(raid);
-                                                            setOpenPrivate(true);
-                                                        } else {
-                                                            await joinPublicParty(userId, raid, joinRaids, setLoadingJoin, dispatch);
-                                                        }
-                                                    }}>
-                                                    {isInvitedParty(raid.id, joinRaids) ? '참가 완료' : '참가'}
-                                                </Button>
+                                            <div className="shrink-0 text-right">
+                                                <p className="text-[11px] text-default-400">평균 레벨</p>
+                                                <p className="text-sm font-semibold tabular-nums text-default-600 dark:text-default-300">Lv.{raid.avgLevel}</p>
                                             </div>
+                                        </div>
+                                        <div className="flex items-center justify-between gap-2 border-t border-default-100 pt-3 dark:border-white/[0.06]">
+                                            <span className={clsx("text-xs font-medium", raid.isPwd ? "text-warning-600 dark:text-warning-400" : "text-success-600 dark:text-success-400")}>
+                                                {raid.isPwd ? '비밀번호 필요' : '공개 파티'}
+                                            </span>
+                                            <Button
+                                                size="sm"
+                                                color={isJoined ? "success" : "primary"}
+                                                variant={isJoined ? "flat" : "solid"}
+                                                isLoading={isLoadingJoin[raid.id] ?? false}
+                                                isDisabled={isJoined || !userId}
+                                                radius="lg"
+                                                className="font-semibold"
+                                                onPress={async () => {
+                                                    if (raid.isPwd) {
+                                                        setSelectedRaid(raid);
+                                                        setOpenPrivate(true);
+                                                    } else {
+                                                        await joinPublicParty(userId, raid, joinRaids, setLoadingJoin, dispatch);
+                                                    }
+                                                }}>
+                                                {isJoined ? '참가 완료' : '참가'}
+                                            </Button>
                                         </div>
                                     </CardBody>
                                 </Card>
-                            ))}
+                                )
+                            })}
                         </div>
+                        {results.length === 0 && (
+                            <Card radius="lg" shadow="none" className="border border-dashed border-default-200 bg-default-50/50 dark:border-white/10 dark:bg-white/[0.02]">
+                                <CardBody className="items-center justify-center px-4 py-14 text-center">
+                                    <p className="text-base font-semibold">조건에 맞는 공개 파티가 없습니다.</p>
+                                    <p className="mt-1 text-sm text-default-500">다른 검색어를 입력하거나 새 파티를 만들어보세요.</p>
+                                </CardBody>
+                            </Card>
+                        )}
                         <div className={clsx(
                             "flex w-full justify-center mt-3",
                             Math.ceil(results.length / rowsPerPage) > 1 ? '' : 'hidden'
@@ -236,6 +255,8 @@ function JoinPrivatePartyModal({ isOpenPrivate, setOpenPrivate, userId, joinRaid
 
     return (
         <Modal
+            size="sm"
+            radius="lg"
             isDismissable={false}
             isOpen={isOpenPrivate}
             onClose={() => {
@@ -248,9 +269,16 @@ function JoinPrivatePartyModal({ isOpenPrivate, setOpenPrivate, userId, joinRaid
             <ModalContent>
                 {(onClose) => (
                     <>
-                        <ModalHeader>공개 파티 참가</ModalHeader>
-                        <ModalBody>
-                            <div className="w-full pb-4">
+                        <ModalHeader className="px-5 pb-2 pt-5 text-xl">비밀번호로 참가</ModalHeader>
+                        <ModalBody className="gap-4 px-5 py-3">
+                            <div className="w-full">
+                                <p className="text-sm text-default-500">선택한 파티의 비밀번호를 입력해 주세요.</p>
+                                {selectedRaid && (
+                                    <div className="mt-3 rounded-xl bg-default-50 px-3 py-3 dark:bg-white/[0.04]">
+                                        <p className="font-semibold">{selectedRaid.name}</p>
+                                        <p className="mt-1 text-xs text-default-500">파티장 {selectedRaid.managerNickname} · 평균 Lv.{selectedRaid.avgLevel} · 참여 {selectedRaid.members.length}명</p>
+                                    </div>
+                                )}
                                 <Input
                                     isRequired
                                     type="password"
@@ -259,22 +287,16 @@ function JoinPrivatePartyModal({ isOpenPrivate, setOpenPrivate, userId, joinRaid
                                     placeholder="최대 18글자"
                                     value={inputPwd}
                                     onValueChange={setInputPwd}
-                                    radius="sm"
+                                    radius="lg"
                                     isInvalid={isErrorPwd}
                                     errorMessage="비밀번호가 일치하지 않습니다."
                                     maxLength={18}/>
-                                <Button
-                                    fullWidth
-                                    color="primary"
-                                    radius="sm"
-                                    isDisabled={inputPwd === ''}
-                                    isLoading={isLoadingJoin}
-                                    className="mt-4"
-                                    onPress={async () => await handleJoinPrivateParty(userId, selectedRaid, inputPwd, joinRaids, setLoadingJoin, onClose, dispatch)}>
-                                    참가
-                                </Button>
                             </div>
                         </ModalBody>
+                        <ModalFooter className="gap-2 px-5 pb-5 pt-2">
+                            <Button variant="flat" radius="lg" onPress={onClose}>취소</Button>
+                            <Button color="primary" radius="lg" className="grow font-semibold" isDisabled={inputPwd === ''} isLoading={isLoadingJoin} onPress={async () => await handleJoinPrivateParty(userId, selectedRaid, inputPwd, joinRaids, setLoadingJoin, onClose, dispatch)}>참가하기</Button>
+                        </ModalFooter>
                     </>
                 )}
             </ModalContent>
@@ -300,6 +322,8 @@ function JoinPartyModal({ isOpen, setOpen, userId, joinRaids, dispatch }: JoinPa
 
     return (
         <Modal
+            size="sm"
+            radius="lg"
             isDismissable={false}
             isOpen={isOpen}
             onClose={() => {
@@ -314,9 +338,10 @@ function JoinPartyModal({ isOpen, setOpen, userId, joinRaids, dispatch }: JoinPa
             <ModalContent>
                 {(onClose) => (
                     <>
-                        <ModalHeader>파티 참가</ModalHeader>
-                        <ModalBody>
-                            <div className="w-full pb-4">
+                        <ModalHeader className="px-5 pb-2 pt-5 text-xl">초대 링크로 참가</ModalHeader>
+                        <ModalBody className="gap-4 px-5 py-3">
+                            <div className="w-full">
+                                <p className="mb-3 text-sm text-default-500">파티장에게 받은 초대 링크를 입력해 주세요.</p>
                                 <Input
                                     isRequired
                                     label="초대 링크"
@@ -325,13 +350,13 @@ function JoinPartyModal({ isOpen, setOpen, userId, joinRaids, dispatch }: JoinPa
                                     isDisabled={party !== null}
                                     value={inputLink}
                                     onValueChange={setInputLink}
-                                    radius="sm"
+                                    radius="lg"
                                     isInvalid={isErrorLink}
                                     errorMessage="초대 링크가 올바르지 않습니다."
                                     maxLength={30}/>
                                 {party ? party.isPwd ? (
-                                    <div className="mt-4">
-                                        <p className="mb-8 text-sm">참가할 파티가 비밀번호가 설정되어 있습니다. 비밀번호를 입력해주세요.</p>
+                                    <div className="mt-4 rounded-xl bg-default-50 p-3 dark:bg-white/[0.04]">
+                                        <p className="mb-3 text-sm text-default-600 dark:text-default-300">비밀번호가 설정된 파티입니다. 비밀번호를 입력해 주세요.</p>
                                         <Input
                                             isRequired
                                             type="password"
@@ -340,24 +365,18 @@ function JoinPartyModal({ isOpen, setOpen, userId, joinRaids, dispatch }: JoinPa
                                             placeholder="최대 18글자"
                                             value={inputPwd}
                                             onValueChange={setInputPwd}
-                                            radius="sm"
+                                            radius="lg"
                                             isInvalid={isErrorPwd}
                                             errorMessage="비밀번호가 일치하지 않습니다."
                                             maxLength={18}/>
                                     </div>
                                 ) : null : null}
-                                <Button
-                                    fullWidth
-                                    color="primary"
-                                    radius="sm"
-                                    isDisabled={inputLink === '' || (party !== null && inputPwd === '')}
-                                    isLoading={isLoadingJoin}
-                                    className="mt-4"
-                                    onPress={async () => await handleJoinParty(userId, inputLink, inputPwd, setLoadingJoin, party, setParty, setErrorLink, setErrorPwd, onClose, joinRaids, dispatch)}>
-                                    참가
-                                </Button>
                             </div>
                         </ModalBody>
+                        <ModalFooter className="gap-2 px-5 pb-5 pt-2">
+                            <Button variant="flat" radius="lg" onPress={onClose}>취소</Button>
+                            <Button color="primary" radius="lg" className="grow font-semibold" isDisabled={inputLink === '' || (party !== null && inputPwd === '')} isLoading={isLoadingJoin} onPress={async () => await handleJoinParty(userId, inputLink, inputPwd, setLoadingJoin, party, setParty, setErrorLink, setErrorPwd, onClose, joinRaids, dispatch)}>참가하기</Button>
+                        </ModalFooter>
                     </>
                 )}
             </ModalContent>
@@ -389,6 +408,8 @@ function AddPartyModal({ isOpen, onOpenChange, raids, userId, joinRaids, dispatc
 
     return (
         <Modal 
+            size="sm"
+            radius="lg"
             isDismissable={false} 
             isOpen={isOpen} 
             onOpenChange={onOpenChange}
@@ -402,9 +423,10 @@ function AddPartyModal({ isOpen, onOpenChange, raids, userId, joinRaids, dispatc
             <ModalContent>
                 {(onClose) => (
                     <>
-                        <ModalHeader>파티 추가</ModalHeader>
-                        <ModalBody>
-                            <div className="w-full pb-4">
+                        <ModalHeader className="px-5 pb-2 pt-5 text-xl">새 파티 만들기</ModalHeader>
+                        <ModalBody className="gap-4 px-5 py-3">
+                            <div className="w-full">
+                                <p className="mb-4 text-sm text-default-500">함께 플레이할 파티 정보를 설정해 주세요.</p>
                                 <Input
                                     isRequired
                                     label="파티명"
@@ -412,29 +434,29 @@ function AddPartyModal({ isOpen, onOpenChange, raids, userId, joinRaids, dispatc
                                     placeholder="최대 12글자"
                                     value={inputName}
                                     onValueChange={setInputName}
-                                    radius="sm"
+                                    radius="lg"
                                     maxLength={12}/>
-                                <p className="fadedtext mt-3 text-sm">공개 여부</p>
+                                <p className="mt-5 text-xs font-semibold text-default-500">공개 범위</p>
                                 <Tabs 
                                     fullWidth
-                                    radius="sm" 
+                                    radius="lg"
                                     color="primary" 
                                     selectedKey={selectedOpen} 
                                     onSelectionChange={(key) => setSelectedOpen(String(key))}
-                                    className="mt-1">
-                                    <Tab key="yes" title="공개"/>
-                                    <Tab key="no" title="비공개"/>
+                                    className="mt-2">
+                                    <Tab key="yes" title="공개 파티"/>
+                                    <Tab key="no" title="비공개 파티"/>
                                 </Tabs>
-                                <p className="fadedtext mt-3 text-sm">비밀번호 설정</p>
+                                <p className="mt-5 text-xs font-semibold text-default-500">입장 방식</p>
                                 <Tabs 
                                     fullWidth
-                                    radius="sm" 
+                                    radius="lg"
                                     color="primary" 
                                     selectedKey={selectedPwd} 
                                     onSelectionChange={(key) => setSelectedPwd(String(key))}
-                                    className="mt-1 mb-4">
-                                    <Tab key="yes" title="미설정"/>
-                                    <Tab key="no" title="설정"/>
+                                    className="mt-2">
+                                    <Tab key="yes" title="누구나 참가"/>
+                                    <Tab key="no" title="비밀번호 사용"/>
                                 </Tabs>
                                 <Input
                                     isRequired
@@ -444,23 +466,18 @@ function AddPartyModal({ isOpen, onOpenChange, raids, userId, joinRaids, dispatc
                                     placeholder="최대 18글자"
                                     value={inputPwd}
                                     onValueChange={setInputPwd}
-                                    radius="sm"
                                     maxLength={18}
+                                    radius="lg"
                                     className={clsx(
-                                        "mb-4",
+                                        "mt-3",
                                         selectedPwd === 'no' ? '' : 'hidden'
                                     )}/>
-                                <Button
-                                    fullWidth
-                                    color="primary"
-                                    isLoading={isLoadingAdd}
-                                    isDisabled={inputName.trim() === '' || (selectedPwd === 'no' && inputPwd.trim() === '')}
-                                    radius="sm"
-                                    onPress={async () => await handleAddRaid(dispatch, inputName, selectedOpen === 'yes', selectedPwd === 'no', inputPwd, onClose, userId, setLoadingAdd, titleCharacter, joinRaids, level)}>
-                                    추가
-                                </Button>
                             </div>
                         </ModalBody>
+                        <ModalFooter className="gap-2 px-5 pb-5 pt-2">
+                            <Button variant="flat" radius="lg" onPress={onClose}>취소</Button>
+                            <Button fullWidth color="primary" isLoading={isLoadingAdd} isDisabled={inputName.trim() === '' || (selectedPwd === 'no' && inputPwd.trim() === '')} radius="lg" className="font-semibold" onPress={async () => await handleAddRaid(dispatch, inputName, selectedOpen === 'yes', selectedPwd === 'no', inputPwd, onClose, userId, setLoadingAdd, titleCharacter, joinRaids, level)}>파티 만들기</Button>
+                        </ModalFooter>
                     </>
                 )}
             </ModalContent>

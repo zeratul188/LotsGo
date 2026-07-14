@@ -44,7 +44,8 @@ export type RewardItem = {
 export type Notice = {
     title: string,
     date: string,
-    link: string
+    link: string,
+    type?: string
 }
 
 export type LostarkEvent = {

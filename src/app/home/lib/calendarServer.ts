@@ -276,7 +276,8 @@ export async function loadEvents(apikey: string | undefined): Promise<LostarkEve
 
 // 로스트아크 API로부터 공지사항 데이터를 가져오는 함수
 export async function loadNotices(apikey: string | undefined): Promise<Notice[]> {
-    const cached = await redis.get('notices');
+    const cacheKey = 'notices:v2';
+    const cached = await redis.get(cacheKey);
     if (cached) {
         const data: Notice[] = JSON.parse(cached);
         return data;
@@ -297,13 +298,14 @@ export async function loadNotices(apikey: string | undefined): Promise<Notice[]>
             const newNotice: Notice = {
                 title: notice.Title,
                 date: eventDate.format(),
-                link: notice.Link
+                link: notice.Link,
+                type: notice.Type ?? '공지'
             }
             notices.push(newNotice);
         }
 
         const TTL_TIME = 24 * 60 * 60; // 24시간 유효시간
-        await redis.set('notices', JSON.stringify(notices), "EX", TTL_TIME);
+        await redis.set(cacheKey, JSON.stringify(notices), "EX", TTL_TIME);
         return notices;
     }
     return [];

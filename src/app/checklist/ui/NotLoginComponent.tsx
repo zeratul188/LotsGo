@@ -4,7 +4,7 @@ import { SetStateFn, useMobileQuery } from "@/utiils/utils"
 import { 
     Accordion, AccordionItem, 
     addToast, 
-    Button, ButtonGroup, 
+    Button,
     Card, CardBody, CardFooter, CardHeader, 
     Checkbox, 
     Chip, 
@@ -37,15 +37,15 @@ type ChecklistStatueProps = {
     bosses: Boss[]
 }
 function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
-    const isMobile = useMobileQuery();
     const life = 7561, max = 12000;
     return (
         <>
             <Card
                 fullWidth
-                radius="sm"
-                className="md960:w-[calc(100vw-40px)] lg1280:w-[1240px] md960:fixed md960:top-[80px] md960:left-1/2 md960:-translate-x-1/2 md960:z-50">
-                <CardHeader className="p-2 bg-blue-200 dark:bg-blue-950">
+                radius="lg"
+                shadow="none"
+                className="overflow-hidden border border-gray-200/80 bg-white/95 shadow-[0_10px_35px_rgba(15,23,42,0.08)] md960:fixed md960:left-1/2 md960:top-[80px] md960:z-50 md960:w-[calc(100vw-40px)] md960:-translate-x-1/2 lg1280:w-[1240px] dark:border-white/10 dark:bg-[#171717]/95 dark:shadow-none">
+                <CardHeader className="border-b border-primary/15 bg-primary/[0.07] p-2 dark:bg-primary/[0.09]">
                     <div className="w-full flex gap-2 items-center px-2">
                         <p className="grow text-sm sm:text-md text-blue-600 dark:text-blue-400">현재 테스트 계정을 이용하고 계십니다.</p>
                         <Button
@@ -59,13 +59,12 @@ function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
                         </Button>
                     </div>
                 </CardHeader>
-                <Divider/>
-                <CardBody>
-                    <div className="w-full grid grid-cols-1 md960:grid-cols-[4fr_1px_3fr_1px_3fr] gap-2">
-                        <div className="w-full flex flex-col sm:flex-row items-center gap-2">
+                <CardBody className="p-3">
+                    <div className="grid w-full grid-cols-1 gap-2 md960:grid-cols-[1.2fr_1fr_1fr]">
+                        <div className="flex w-full flex-col gap-2 rounded-xl border border-warning/20 bg-warning/[0.045] p-3 dark:bg-warning/[0.06]">
                             <Progress 
                                 aria-label="all-gold"
-                                size="md"
+                                size="sm"
                                 color="warning"
                                 label={(
                                     <div className="flex items-center">
@@ -80,22 +79,34 @@ function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
                                 radius="sm"
                                 value={getHaveGolds(bosses, checklist)}
                                 maxValue={getAllGolds(bosses, checklist)}
-                                className="grow"/>
-                            <Popover showArrow disableAnimation>
-                                <PopoverTrigger>
-                                    <Button
-                                        size="sm"
-                                        variant="flat"
-                                        color="warning"
-                                        radius="sm"
-                                        className="h-[30px] sm:h-full w-full sm:w-[max-content]">
-                                        자세히
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
-                                    <div className="w-[calc(100vw-60px)] min-[501px]:max-w-[500px] pl-1 pr-1 pt-3 pb-2">
-                                        <div className="w-full overflow-x-auto scrollbar-hide">
-                                            <div className="w-[400px] min-[501px]:w-full max-h-[400px] overflow-y-auto">
+                                className="min-w-0 grow"/>
+                            <div className="flex w-full items-center gap-2">
+                                <p className="min-w-0 grow text-[10pt] leading-5 fadedtext">
+                                    이번 주에 <img src="/icons/gold.png" alt="goldicon" className="mx-0.5 inline-block h-[14px] w-[14px]"/>
+                                    <strong className="text-black dark:text-white">{(getAllGolds(bosses, checklist) - getHaveGolds(bosses, checklist)).toLocaleString()}</strong>를 더 획득할 수 있습니다.
+                                </p>
+                                <Popover showArrow disableAnimation placement="bottom-end">
+                                    <PopoverTrigger>
+                                        <Button
+                                            size="sm"
+                                            variant="flat"
+                                            color="warning"
+                                            radius="sm"
+                                            className="h-8 min-w-[84px] shrink-0 font-medium">
+                                            자세히
+                                        </Button>
+                                    </PopoverTrigger>
+                                <PopoverContent className="border border-gray-200/80 bg-white/95 p-0 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#171717]/95">
+                                    <div className="w-[calc(100vw-40px)] p-4 min-[501px]:max-w-[520px]">
+                                        <div className="mb-3 flex items-start justify-between gap-3 border-b border-gray-200/80 pb-3 dark:border-white/10">
+                                            <div>
+                                                <p className="font-semibold">주간 골드 상세</p>
+                                                <p className="mt-1 text-xs fadedtext">캐릭터별 획득 골드와 부수입을 확인하세요.</p>
+                                            </div>
+                                            <Chip size="sm" radius="sm" color="warning" variant="flat">{checklist.length}명</Chip>
+                                        </div>
+                                        <div className="w-full overflow-x-auto rounded-xl border border-gray-200/80 dark:border-white/10 scrollbar-hide">
+                                            <div className="max-h-[360px] w-[440px] overflow-y-auto min-[501px]:w-full">
                                                 <Table removeWrapper>
                                                     <TableHeader>
                                                         <TableColumn>캐릭터명</TableColumn>
@@ -116,8 +127,7 @@ function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
                                                 </Table>
                                             </div>
                                         </div>
-                                        <Divider className="mt-1 mb-2"/>
-                                        <div className="w-full grid grid-cols-1 min-[501px]:grid-cols-3 gap-4 p-1 items-center">
+                                        <div className="mt-3 grid w-full grid-cols-1 items-center gap-x-3 gap-y-2 rounded-xl bg-gray-50/80 p-3 min-[501px]:grid-cols-3 dark:bg-white/[0.04]">
                                             <div className="w-full flex items-center gap-1">
                                                 <p className="grow text-[9pt] fadedtext">총 콘텐츠</p>
                                                 <img 
@@ -159,7 +169,7 @@ function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
                                             </div>
                                         </div>
                                         {bosses.length && checklist.length ? (
-                                            <div className="w-full h-2 bg-gray-200 rounded-full relative overflow-hidden mt-2">
+                                            <div className="relative mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-white/10">
                                                 <div className="absolute top-0 left-0 h-full bg-purple-600" style={{ width: '100%' }}></div>
                                                 <div className="absolute top-0 left-0 h-full bg-yellow-500" style={{ width: `${getHaveGolds(bosses, checklist) !== 0 ? Math.round(getAllContentGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 + Math.round(getAllBoundGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 : 0}%` }}></div>
                                                 <div className="absolute top-0 left-0 h-full bg-green-500" style={{ width: `${getHaveGolds(bosses, checklist) !== 0 ? Math.round(getAllContentGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 : 0}%` }}></div>
@@ -167,13 +177,13 @@ function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
                                         ) : <></>}
                                     </div>
                                 </PopoverContent>
-                            </Popover>
+                                </Popover>
+                            </div>
                         </div>
-                        <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
-                        <div className="w-full flex items-center">
+                        <div className="flex w-full flex-col rounded-xl border border-secondary/20 bg-secondary/[0.04] p-3 dark:bg-secondary/[0.06]">
                             <Progress 
                                 aria-label="all-gold"
-                                size="md"
+                                size="sm"
                                 color="secondary"
                                 label={`📃 숙제 진행 상황 : ${getCompleteChecklist(checklist)} / ${getAllCountChecklist(checklist)}`}
                                 showValueLabel={true}
@@ -182,12 +192,11 @@ function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
                                 maxValue={getAllCountChecklist(checklist)}
                                 className="w-full"/>
                         </div>
-                        <div><Divider orientation={isMobile ? 'horizontal' : 'vertical'}/></div>
-                        <div className="w-full flex flex-col md960:flex-row gap-2 items-center flex-shrink-0">
+                        <div className="flex w-full flex-shrink-0 flex-col items-stretch gap-2 rounded-xl border border-success/20 bg-success/[0.04] p-3 md960:flex-row md960:items-start dark:bg-success/[0.06]">
                             <Tooltip showArrow content="생명의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.">
                                 <Progress 
                                     aria-label="all-gold"
-                                    size="md"
+                                    size="sm"
                                     color="success"
                                     label={`🍃 생명의 기운 : ${Math.floor(life).toLocaleString()} / ${max.toLocaleString()}`}
                                     radius="sm"
@@ -196,7 +205,7 @@ function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
                                     className="grow"/>
                             </Tooltip>
                             <p className="block md960:hidden fadedtext text-[9pt] w-full text-left">생명의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.</p>
-                            <div className="w-full md960:w-[max-content] flex shrink-0 min-w-fit flex-row md960:flex-col gap-2 md960:gap-0 items-center">
+                            <div className="flex w-full min-w-fit shrink-0 flex-row items-center gap-2 md960:w-auto md960:flex-col md960:gap-1">
                                 <Tooltip showArrow content={<div className="w-[240px]">
                                     <h3 className="text-lg font-bold">베아트리스의 축복</h3>
                                     <Divider className="mb-1 mt-0.5"/>
@@ -217,9 +226,10 @@ function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
                                             <Button
                                                 size="sm"
                                                 color="primary"
+                                                variant="flat"
                                                 radius="sm"
                                                 isDisabled
-                                                className="w-[100px] md960:w-[max-content]">
+                                                className="w-[100px] font-medium md960:w-auto">
                                                 수정
                                             </Button>
                                         </div>
@@ -229,40 +239,42 @@ function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
                         </div>
                     </div>
                 </CardBody>
-                <Divider/>
-                <CardFooter className="p-0">
-                    <div className="w-full grid grid-cols-3">
+                <CardFooter className="border-t border-gray-200/80 bg-gray-50/70 p-2.5 dark:border-white/10 dark:bg-white/[0.025]">
+                    <div className="grid w-full grid-cols-3 gap-2">
                         <Tooltip showArrow content="테스트 계정에서는 이용하실 수 없는 기능입니다.">
                             <div>
                                 <Button
                                     fullWidth
-                                    radius="none"
-                                    color="primary"
+                                    radius="sm"
+                                    color="default"
                                     size="sm"
                                     isDisabled
-                                    variant="flat">순서 변경</Button>
+                                    variant="flat"
+                                    className="h-9 border border-gray-200/80 bg-white px-2 text-xs font-medium sm:text-sm dark:border-white/10 dark:bg-white/[0.04]">순서 변경</Button>
                             </div>
                         </Tooltip>
                         <Tooltip showArrow content="테스트 계정에서는 이용하실 수 없는 기능입니다.">
                             <div>
                                 <Button
                                     fullWidth
-                                    radius="none"
-                                    color="success"
+                                    radius="sm"
+                                    color="default"
                                     variant="flat"
                                     isDisabled
-                                    size="sm">캐릭터 추가</Button>
+                                    size="sm"
+                                    className="h-9 border border-gray-200/80 bg-white px-2 text-xs font-medium text-success sm:text-sm dark:border-white/10 dark:bg-white/[0.04]">캐릭터 추가</Button>
                             </div>
                         </Tooltip>
                         <Tooltip showArrow content="테스트 계정에서는 이용하실 수 없는 기능입니다.">
                             <div>
                                 <Button
                                     fullWidth
-                                    radius="none"
-                                    color="primary"
+                                    radius="sm"
+                                    color="default"
                                     variant="flat"
                                     isDisabled
-                                    size="sm">캐릭터 갱신하기</Button>
+                                    size="sm"
+                                    className="h-9 border border-gray-200/80 bg-white px-2 text-xs font-medium text-primary sm:text-sm dark:border-white/10 dark:bg-white/[0.04]">캐릭터 갱신하기</Button>
                             </div>
                         </Tooltip>
                     </div>
@@ -282,11 +294,11 @@ type SettingButtonProps = {
 function SettingButton({ size, checklist, setChecklist, characterIndex}: SettingButtonProps) {
     const onClickCheckGold = useOnClickCheckGold(characterIndex, checklist, setChecklist);
     return (
-        <Dropdown>
+        <Dropdown placement="bottom-end">
             <DropdownTrigger>
-                <Button isIconOnly variant="light"><SettingIcon size={size} className="text-gray-500 hover:text-gray-800 cursor-pointer" /></Button>
+                <Button isIconOnly variant="light" size="sm" radius="full" aria-label="캐릭터 설정"><SettingIcon size={size} className="cursor-pointer text-gray-500" /></Button>
             </DropdownTrigger>
-            <DropdownMenu>
+            <DropdownMenu aria-label="캐릭터 설정 메뉴" variant="flat" className="min-w-[190px] p-1">
                 <DropdownItem 
                     key="gold"
                     startContent={
@@ -344,8 +356,8 @@ function RestCheckButton({ checklist, character, setChecklist, index, type }: Re
     return (
         <div 
             className={clsx(
-                "max-w-full w-full mt-2 box-border p-1.5 pt-0.5",
-                type === '에포나' ? dayValue.value === 3 ? 'outline-2 outline-yellow-400 dark:outline-yellow-700 rounded-md bg-yellow-400/20 dark:bg-yellow-700/20' : '' : dayValue.value === 1 ? 'outline-2 outline-yellow-400 dark:outline-yellow-700 rounded-md bg-yellow-400/20 dark:bg-yellow-700/20' : ''
+                "mt-2 box-border w-full max-w-full rounded-lg border border-transparent px-2 py-1.5",
+                type === '에포나' ? dayValue.value === 3 ? 'border-warning-200 bg-warning-50/70 dark:border-warning-900 dark:bg-warning-950/20' : 'hover:bg-gray-100/70 dark:hover:bg-gray-900/70' : dayValue.value === 1 ? 'border-warning-200 bg-warning-50/70 dark:border-warning-900 dark:bg-warning-950/20' : 'hover:bg-gray-100/70 dark:hover:bg-gray-900/70'
             )}>
             <Checkbox
                 aria-label={`${character.nickname}'s ${type}`}
@@ -354,7 +366,7 @@ function RestCheckButton({ checklist, character, setChecklist, index, type }: Re
                 lineThrough
                 radius="full"
                 isSelected={type === '에포나' ? dayValue.value === 3 : dayValue.value === 1}
-                className="p-0 pl-2"
+                className="p-0"
                 onChange={onClickDayCheck}>
                 {getDayName(type, character.level)} ({dayValue.value}/{type === '에포나' ? 3 : 1})
             </Checkbox>
@@ -463,8 +475,8 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
             {checklist
                 .filter((character) => character.server === server || server === '전체')
                 .map((character, index) => (
-                    <Card key={index} fullWidth radius="sm" className="w-full min-[561px]:w-[560px]">
-                        <CardHeader>
+                    <Card key={index} fullWidth radius="lg" shadow="none" className="w-full min-[561px]:w-[560px] overflow-hidden border border-gray-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]">
+                        <CardHeader className="p-4 pb-3">
                             <div className="w-full flex flex-col md960:flex-row items-center gap-2">
                                 <div className="w-full grow flex gap-4 items-center">
                                     <div className="flex flex-col gap-2 items-center">
@@ -500,7 +512,7 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                     </div>
                                 </div>
                                 <div className="w-full md960:w-[330px]">
-                                    <Popover showArrow disableAnimation radius="sm">
+                                    <Popover showArrow disableAnimation radius="md">
                                         <PopoverTrigger>
                                             <Progress 
                                                 aria-label="all-gold"
@@ -516,14 +528,15 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                                     </div>
                                                 )}
                                                 showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
-                                                radius="sm"
+                                                radius="md"
                                                 value={getCompleteGoldCharacter(bosses, character)+character.otherGold}
                                                 maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
                                                 className="w-full cursor-pointer"/>
                                         </PopoverTrigger>
-                                        <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
-                                            <div className="w-[200px] p-1">
-                                                <div className="w-full flex gap-1 items-center">
+                                        <PopoverContent className="border border-gray-200/80 bg-white/95 p-0 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#171717]/95">
+                                            <div className="w-[250px] p-4">
+                                                <div className="mb-3"><p className="font-semibold">골드 획득 상세</p><p className="mt-0.5 text-xs fadedtext">완료한 콘텐츠 기준 획득량입니다.</p></div>
+                                                <div className="flex w-full items-center gap-2 rounded-lg bg-gray-100/70 px-3 py-2 dark:bg-white/[0.05]">
                                                     <div className="w-[9px] h-[9px] rounded-full bg-green-500"/>
                                                     <p className="grow">콘텐츠</p>
                                                     <div className="flex items-center">
@@ -534,7 +547,7 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                                         <span className="ml-1 text-md">{getCompleteSharedGoldCharacter(bosses, character).toLocaleString()}</span>
                                                     </div>
                                                 </div>
-                                                <div className="w-full flex gap-1 items-center mt-1">
+                                                <div className="mt-2 flex w-full items-center gap-2 rounded-lg bg-gray-100/70 px-3 py-2 dark:bg-white/[0.05]">
                                                     <div className="w-[9px] h-[9px] rounded-full bg-yellow-500"/>
                                                     <p className="grow">귀속 골드</p>
                                                     <div className="flex items-center">
@@ -545,7 +558,7 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                                         <span className="ml-1 text-md">{getCompleteBoundGoldCharacter(bosses, character).toLocaleString()}</span>
                                                     </div>
                                                 </div>
-                                                <div className="w-full flex gap-1 items-center mt-1">
+                                                <div className="mt-2 flex w-full items-center gap-2 rounded-lg bg-gray-100/70 px-3 py-2 dark:bg-white/[0.05]">
                                                     <div className="w-[9px] h-[9px] rounded-full bg-purple-600"/>
                                                     <p className="grow">부수입</p>
                                                     <div className="flex items-center">
@@ -569,54 +582,44 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                             </div>
                         </CardHeader>
                         <Divider/>
-                        <CardBody>
-                            <div className="w-full flex flex-col md960:flex-row gap-2">
-                                <div className="grow">
-                                    <Chip 
-                                        color="success" 
-                                        size="sm" 
-                                        variant="flat" 
-                                        radius="sm"
-                                        className="min-w-full text-center">일일 콘텐츠</Chip>
+                        <CardBody className="p-4 pt-3">
+                            <div className="flex w-full flex-col gap-3 md960:flex-row">
+                                <div className="min-w-0 grow">
+                                    <div className="mb-2 flex items-center justify-between gap-2 border-b border-success-200/70 pb-2 dark:border-success-900/50"><div><p className="text-sm font-semibold text-success-700 dark:text-success-400">일일 콘텐츠</p><p className="text-[11px] fadedtext">매일 초기화되는 숙제</p></div><Chip color="success" size="sm" variant="flat" radius="md">3개</Chip></div>
                                     <RestCheckButton checklist={checklist} setChecklist={setChecklist} character={character} index={index} type="전선"/>
                                     <RestCheckButton checklist={checklist} setChecklist={setChecklist} character={character} index={index} type="가디언"/>
                                     <RestCheckButton checklist={checklist} setChecklist={setChecklist} character={character} index={index} type="에포나"/>
                                     <Button 
-                                        color="primary" 
-                                        variant="light" 
+                                        color="success"
+                                        variant="flat"
                                         fullWidth 
                                         size="sm" 
                                         startContent={<AddIcon size={16}/>}
-                                        className="mt-4"
+                                        radius="md"
+                                        className="mt-3 font-medium"
                                         onPress={() => {
                                             addToast({
                                                 title: "이용 불가",
                                                 description: `테스트 계정에서는 이용할 수 없습니다.`,
                                                 color: "warning"
                                             });
-                                        }}>추가</Button>
+                                        }}>일일 콘텐츠 관리</Button>
                                 </div>
-                                <Divider className="block md960:hidden"/>
-                                <Divider orientation="vertical" className="hidden md960:block"/>
-                                <div className="grow-2">
-                                    <Chip 
-                                        color="secondary" 
-                                        size="sm" 
-                                        variant="flat" 
-                                        radius="sm"
-                                        className="min-w-full text-center">주간 콘텐츠</Chip>
-                                    <div className="pl-2.5">
+                                <div className="min-w-0 grow-2 border-t border-gray-200/80 pt-3 dark:border-white/10 md960:border-l md960:border-t-0 md960:pl-4 md960:pt-0">
+                                    <div className="mb-1 border-b border-secondary-200/70 pb-2 dark:border-secondary-900/50"><p className="text-sm font-semibold text-secondary-700 dark:text-secondary-400">주간 콘텐츠</p><p className="text-[11px] fadedtext">주간 초기화되는 숙제</p></div>
+                                    <div className="px-1.5 sm:px-2">
                                         {character.checklist.map((item, idx) => (
-                                            <div key={idx}>
+                                            <div key={idx} className={clsx(
+                                                "mt-2 w-full rounded-lg border",
+                                                isCheckHomework(item) ? 'border-primary-200 bg-primary-50/70 dark:border-primary-700/60 dark:bg-primary-500/10' : 'border-transparent hover:bg-gray-100/70 dark:hover:bg-white/[0.04]'
+                                            )}>
                                                 <Checkbox
                                                     aria-label={`checklist-${item.name}-${idx}`}
                                                     size="sm"
                                                     radius="full"
                                                     isSelected={isCheckHomework(item)}
-                                                    className={clsx(
-                                                        "max-w-full w-full mt-3 box-border p-1.5 [&_span:nth-of-type(2)]:w-full",
-                                                        isCheckHomework(item) ? 'outline-2 outline-blue-400 dark:outline-blue-800 rounded-md bg-blue-400/20 dark:bg-blue-800/20' : ''
-                                                    )}
+                                                    classNames={{base: "w-full max-w-none", label: "w-full"}}
+                                                    className="box-border w-full max-w-none px-2.5 py-1.5"
                                                     onChange={() => handleWeekContent(checklist, setChecklist, index, idx)}>
                                                     <div className="w-full flex items-center gap-1">
                                                         <div>
@@ -666,19 +669,20 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                         ))}
                                     </div>
                                     <Button 
-                                        color="primary" 
-                                        variant="light" 
+                                        color="secondary"
+                                        variant="flat"
                                         fullWidth 
                                         size="sm" 
                                         startContent={<AddIcon size={16}/>}
-                                        className="mt-4"
+                                        radius="md"
+                                        className="mt-3 font-medium"
                                         onPress={() => {
                                             addToast({
                                                 title: "이용 불가",
                                                 description: `테스트 계정에서는 이용할 수 없습니다.`,
                                                 color: "warning"
                                             });
-                                        }}>추가</Button>
+                                        }}>주간 콘텐츠 관리</Button>
                                 </div>
                             </div>
                         </CardBody>
@@ -765,26 +769,37 @@ export default function NotLoginedComponent({ initialChecklist, initialBosses, i
             <div className="w-full max-w-[1280px] mx-auto">
                 <ChecklistStatue checklist={checklist} bosses={initialBosses}/>
             </div>
-            <div className="md960:mt-[150px]">
+            <div className="md960:mt-[220px]">
                 <div className="w-full max-w-[1280px] mx-auto">
-                    <div className="w-full flex flex-col sm:flex-row gap-3 sm:items-center">
-                        <div className="grow">
+                    <section className="mt-5 overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]">
+                        <div className="flex flex-col gap-1 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-white/10">
+                            <h2 className="text-lg font-semibold">숙제 조회 설정</h2>
+                            <p className="text-sm fadedtext">테스트 데이터의 서버와 큐브 현황을 확인하세요.</p>
+                        </div>
+                        <div className="p-4 sm:p-5">
                             <SelectServer 
                                 checklist={checklist} 
                                 server={server}
                                 setServer={setServer}/>
                         </div>
-                        <ButtonGroup fullWidth={isMobile}>
-                            <Button
-                                radius="sm"
-                                color={isShowCubeDetail ? 'default' : 'primary'}
+                        <div className="flex flex-col gap-3 border-t border-gray-200/80 bg-gray-50/50 px-4 py-3 dark:border-white/10 dark:bg-white/[0.025] sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                            <div>
+                                <p className="text-sm font-semibold">정보 및 현황</p>
+                                <p className="text-xs fadedtext">테스트 계정에서 제공되는 현황을 확인합니다.</p>
+                            </div>
+                                <Button
+                                size="sm"
+                                radius="md"
+                                color="primary"
+                                variant={isShowCubeDetail ? 'flat' : 'bordered'}
+                                className="w-full font-medium sm:w-auto"
                                 onPress={() => {
                                     setShowCubeDetail(!isShowCubeDetail);
                                 }}>
                                 큐브 현황 {isShowCubeDetail ? '닫기' : "보기"}
                             </Button>
-                        </ButtonGroup>
-                    </div>
+                        </div>
+                    </section>
                     <div className={clsx(
                         isShowList ? 'block' : 'hidden'
                     )}>

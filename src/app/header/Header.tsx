@@ -10,19 +10,26 @@ export default function Header() {
     const isLargeSize = useBigSizeQuery();
 
     return (
-        <Navbar maxWidth={isLargeSize ? "full" : "2xl"} isBordered onMenuOpenChange={setMenuOpen}>
+        <Navbar
+            maxWidth={isLargeSize ? "full" : "2xl"}
+            isBordered
+            onMenuOpenChange={setMenuOpen}
+            classNames={{
+                base: "border-b border-gray-200/80 bg-white/90 backdrop-blur-xl dark:border-white/10 dark:bg-[#171717]/90",
+                wrapper: "px-3 sm:px-5"
+            }}>
             <NavbarContent className="flex sm:hidden">
                 <NavToggle isMenuOpen={isMenuOpen}/>
             </NavbarContent>
-            <NavbarContent justify={isMobile ? 'center' : 'start'}>
-                <div className="shrink-0 min-w-fit">
+            <NavbarContent className="gap-3 sm:gap-5" justify={isMobile ? 'center' : 'start'}>
+                <div className="min-w-fit shrink-0">
                     <NavBrand/>
                 </div>
-                <div className="hidden sm:flex shrink-0 gap-7 rounded-lg bg-[#cccccc]/25 dark:bg-[#4a4a4a]/25 px-5 py-2">
+                <div className="hidden shrink-0 items-center gap-1 sm:flex">
                     <NavContents/>
                 </div>
             </NavbarContent>
-            <NavbarContent className="gap-5" justify="end">
+            <NavbarContent className="gap-2" justify="end">
                 <ProfileContent/>
             </NavbarContent>
             <NavMenu/>
