@@ -25,6 +25,7 @@ export const DEFAULT_SPIRITS = [
 export const MYSTERY_SPIRITS = ["분출", "세계수의 공명"] as const;
 export type SpiritName = (typeof DEFAULT_SPIRITS)[number] | (typeof MYSTERY_SPIRITS)[number];
 export type SpiritLevel = 1 | 2 | 3;
+export type SpiritElement = "default" | "earth" | "water" | "fire" | "lightning" | "light";
 export type Position = { row: number; col: number };
 export type BaseTile = "normal" | "distorted";
 export type SpecialTile = "추가" | "재배치" | "축복" | "신비" | "강화" | "복제";

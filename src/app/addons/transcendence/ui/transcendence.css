@@ -135,6 +135,76 @@
     filter: drop-shadow(0 0 7px rgb(251 191 36 / .9));
 }
 
+.stone-destroy-effect--earth {
+    filter: drop-shadow(0 0 7px rgb(161 98 7 / .95));
+}
+
+.stone-destroy-effect--earth::after {
+    background: radial-gradient(circle, rgb(254 243 199 / .98) 0 5%, rgb(180 83 9 / .82) 14%, transparent 56%);
+}
+
+.stone-destroy-effect--earth .stone-destroy-fragment {
+    background: linear-gradient(145deg, #f5d0a0, #92400e 58%, #422006);
+    box-shadow: inset 0 0 2px rgb(255 237 213 / .85), 0 0 4px rgb(180 83 9 / .75);
+}
+
+.stone-destroy-effect--water {
+    filter: drop-shadow(0 0 8px rgb(14 165 233 / .95));
+}
+
+.stone-destroy-effect--water::after {
+    background: radial-gradient(circle, rgb(224 242 254 / .98) 0 5%, rgb(14 165 233 / .82) 14%, transparent 56%);
+}
+
+.stone-destroy-effect--water .stone-destroy-fragment {
+    border-radius: 45%;
+    clip-path: polygon(50% 0, 100% 38%, 78% 100%, 22% 100%, 0 38%);
+    background: linear-gradient(145deg, #e0f2fe, #0284c7 58%, #082f49);
+    box-shadow: inset 0 0 2px rgb(224 242 254 / .9), 0 0 5px rgb(14 165 233 / .8);
+}
+
+.stone-destroy-effect--fire {
+    filter: drop-shadow(0 0 7px rgb(249 115 22 / .88));
+}
+
+.stone-destroy-effect--fire::after {
+    background: radial-gradient(ellipse at 50% 78%, rgb(254 249 195 / .98) 0 7%, rgb(249 115 22 / .82) 22%, transparent 62%);
+}
+
+.stone-destroy-effect--fire .stone-destroy-fragment {
+    background: linear-gradient(145deg, #fef3c7, #ea580c 48%, #7f1d1d);
+    box-shadow: inset 0 0 2px rgb(255 237 213 / .9), 0 0 6px rgb(249 115 22 / .85);
+}
+
+.stone-destroy-effect--lightning {
+    filter: drop-shadow(0 0 10px rgb(37 99 235 / 1));
+}
+
+.stone-destroy-effect--lightning::after {
+    background:
+        linear-gradient(125deg, transparent 35%, rgb(219 234 254 / .98) 44%, transparent 52%),
+        radial-gradient(circle, rgb(239 246 255 / .98) 0 7%, rgb(37 99 235 / .9) 18%, transparent 58%);
+}
+
+.stone-destroy-effect--lightning .stone-destroy-fragment {
+    clip-path: polygon(44% 0, 100% 16%, 62% 48%, 92% 50%, 28% 100%, 42% 58%, 8% 56%);
+    background: linear-gradient(145deg, #eff6ff, #2563eb 55%, #172554);
+    box-shadow: 0 0 7px rgb(37 99 235 / .95);
+}
+
+.stone-destroy-effect--light {
+    filter: drop-shadow(0 0 10px rgb(250 250 250 / 1));
+}
+
+.stone-destroy-effect--light::after {
+    background: radial-gradient(circle, rgb(255 255 255 / 1) 0 8%, rgb(186 230 253 / .9) 20%, transparent 62%);
+}
+
+.stone-destroy-effect--light .stone-destroy-fragment {
+    background: linear-gradient(145deg, #ffffff, #bae6fd 55%, #64748b);
+    box-shadow: inset 0 0 3px rgb(255 255 255 / 1), 0 0 7px rgb(186 230 253 / .95);
+}
+
 .stone-destroy-effect::before,
 .stone-destroy-effect::after {
     content: "";
@@ -186,6 +256,238 @@
 .stone-destroy-fragment:nth-child(6) { --fragment-x: 15%; --fragment-y: 280%; --fragment-rotate: -120deg; }
 .stone-destroy-fragment:nth-child(7) { --fragment-x: -220%; --fragment-y: 220%; --fragment-rotate: -210deg; }
 .stone-destroy-fragment:nth-child(8) { --fragment-x: -300%; --fragment-y: 15%; --fragment-rotate: 160deg; }
+
+/* 속성별 파괴 동작 */
+.stone-destroy-effect--earth::before {
+    inset: 0;
+    border-radius: 18%;
+    background-image:
+        linear-gradient(28deg, transparent 43%, rgb(120 53 15 / .95) 45%, transparent 48%),
+        linear-gradient(148deg, transparent 47%, rgb(245 158 11 / .9) 49%, transparent 52%),
+        linear-gradient(90deg, transparent 48%, rgb(87 41 13 / .82) 49%, transparent 51%),
+        url("/images/transcendence/stone-tile.webp");
+    animation: stone-destroy-earth-crack .62s cubic-bezier(.2, .75, .35, 1) forwards;
+}
+
+.stone-destroy-effect--earth::after {
+    animation: stone-destroy-earth-dust .62s ease-out forwards;
+}
+
+.stone-destroy-effect--earth .stone-destroy-fragment {
+    animation-name: stone-destroy-earth-rubble;
+}
+
+.stone-destroy-effect--water::before {
+    inset: 12%;
+    border-radius: 45% 55% 48% 52%;
+    background:
+        radial-gradient(ellipse at 35% 28%, rgb(224 242 254 / .95) 0 5%, transparent 7%),
+        radial-gradient(ellipse at 70% 42%, rgb(125 211 252 / .9) 0 7%, transparent 9%),
+        radial-gradient(ellipse at 45% 72%, rgb(14 165 233 / .85) 0 8%, transparent 11%),
+        radial-gradient(ellipse at 50% 58%, rgb(56 189 248 / .65), transparent 58%);
+    animation: stone-destroy-water-droplet-burst .58s cubic-bezier(.15, .8, .25, 1) forwards;
+}
+
+.stone-destroy-effect--water::after {
+    inset: 24%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgb(224 242 254 / .9) 0 6%, rgb(14 165 233 / .72) 12%, transparent 44%);
+    animation: stone-destroy-water-droplet-pop .58s ease-out forwards;
+}
+
+.stone-destroy-effect--water .stone-destroy-fragment {
+    animation-name: stone-destroy-water-droplet;
+}
+
+.stone-destroy-effect--fire::before {
+    inset: 8% 20% 2%;
+    border-radius: 50% 50% 42% 42%;
+    background:
+        radial-gradient(ellipse at 50% 78%, rgb(254 240 138 / .98) 0 14%, rgb(249 115 22 / .92) 32%, transparent 65%),
+        linear-gradient(155deg, transparent 38%, rgb(239 68 68 / .78) 49%, transparent 61%),
+        linear-gradient(25deg, transparent 40%, rgb(251 146 60 / .8) 51%, transparent 63%);
+    mix-blend-mode: screen;
+    animation: stone-destroy-fire-flame .62s cubic-bezier(.2, .7, .3, 1) forwards;
+}
+
+.stone-destroy-effect--fire::after {
+    inset: 20%;
+    animation: stone-destroy-fire-glow .62s ease-out forwards;
+}
+
+.stone-destroy-effect--fire .stone-destroy-fragment {
+    animation-name: stone-destroy-fire-ember;
+}
+
+.stone-destroy-effect--lightning::before {
+    inset: -20%;
+    background:
+        linear-gradient(118deg, transparent 38%, rgb(255 255 255 / .98) 40% 43%, transparent 45%),
+        linear-gradient(72deg, transparent 47%, rgb(37 99 235 / .98) 49% 52%, transparent 54%),
+        linear-gradient(132deg, transparent 56%, rgb(147 197 253 / .95) 58% 60%, transparent 62%);
+    clip-path: polygon(48% 0, 58% 32%, 77% 28%, 61% 52%, 72% 55%, 38% 100%, 44% 63%, 25% 68%, 41% 42%, 30% 40%);
+    animation: stone-destroy-lightning-strike .3s steps(2, end) forwards;
+}
+
+.stone-destroy-effect--lightning::after {
+    animation: stone-destroy-lightning-flash .42s ease-out forwards;
+}
+
+.stone-destroy-effect--lightning .stone-destroy-fragment {
+    animation-name: stone-destroy-lightning-shard;
+}
+
+.stone-destroy-effect--light::before {
+    inset: -22%;
+    border-radius: 50%;
+    background:
+        repeating-conic-gradient(from 0deg, rgb(255 255 255 / .95) 0 5deg, transparent 5deg 25deg),
+        radial-gradient(circle, rgb(255 255 255 / .98), rgb(186 230 253 / .62) 32%, transparent 68%);
+    mix-blend-mode: screen;
+    animation: stone-destroy-light-halo .7s cubic-bezier(.2, .7, .3, 1) forwards;
+}
+
+.stone-destroy-effect--light::after {
+    inset: -16%;
+    animation: stone-destroy-light-flash .7s ease-out forwards;
+}
+
+.stone-destroy-effect--light .stone-destroy-fragment {
+    animation-name: stone-destroy-light-shard;
+}
+
+@keyframes stone-destroy-earth-crack {
+    0% { opacity: 0; transform: scale(.7) translate(0, -8%); }
+    18% { opacity: 1; transform: scale(1.08) translate(-3%, 2%); }
+    30% { transform: scale(1.02) translate(3%, -2%); }
+    44% { transform: scale(1.05) translate(-2%, 1%); }
+    100% { opacity: 0; transform: scale(1.18) translate(0, 8%); }
+}
+
+@keyframes stone-destroy-earth-dust {
+    0% { opacity: 0; transform: scale(.35); }
+    30% { opacity: 1; transform: scale(.85); }
+    100% { opacity: 0; transform: scale(1.55); }
+}
+
+@keyframes stone-destroy-earth-rubble {
+    0%, 12% { opacity: 0; transform: translate(0, 0) scale(.3) rotate(0); }
+    28% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--fragment-x), calc(var(--fragment-y) + 35%)) scale(.8) rotate(var(--fragment-rotate)); }
+}
+
+@keyframes stone-destroy-water-splash {
+    0% { opacity: 0; transform: scale(.2, .4); }
+    32% { opacity: 1; transform: scale(.7, 1.15); }
+    100% { opacity: 0; transform: scale(1.35, .72); }
+}
+
+@keyframes stone-destroy-water-ripple {
+    0% { opacity: 0; transform: scale(.1); }
+    20% { opacity: 1; }
+    100% { opacity: 0; transform: scale(1.35); }
+}
+
+@keyframes stone-destroy-water-droplet {
+    0%, 12% { opacity: 0; transform: translate(0, 0) scale(.25, .7) rotate(0); }
+    24% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--fragment-x), calc(var(--fragment-y) - 20%)) scale(.45, 1.35) rotate(var(--fragment-rotate)); }
+}
+
+@keyframes stone-destroy-fire-burst {
+    0% { opacity: 0; transform: scale(.25); }
+    28% { opacity: 1; transform: scale(1.15, 1.35); }
+    100% { opacity: 0; transform: scale(.8, 1.65); }
+}
+
+@keyframes stone-destroy-fire-flash {
+    0% { opacity: 0; transform: scale(.2); }
+    20% { opacity: 1; transform: scale(.8); }
+    100% { opacity: 0; transform: scale(1.6); }
+}
+
+@keyframes stone-destroy-fire-ember {
+    0%, 10% { opacity: 0; transform: translate(0, 0) scale(.3) rotate(0); }
+    25% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--fragment-x), calc(var(--fragment-y) - 55%)) scale(.5) rotate(var(--fragment-rotate)); }
+}
+
+@keyframes stone-destroy-lightning-strike {
+    0%, 18% { opacity: 0; transform: scale(.3); }
+    20%, 38% { opacity: 1; transform: scale(1.15); }
+    40%, 100% { opacity: 0; transform: scale(1.3); }
+}
+
+@keyframes stone-destroy-lightning-flash {
+    0%, 12% { opacity: 0; transform: scale(.3); }
+    18% { opacity: 1; transform: scale(1.05); }
+    100% { opacity: 0; transform: scale(1.8); }
+}
+
+@keyframes stone-destroy-lightning-shard {
+    0%, 16% { opacity: 0; transform: translate(0, 0) scale(.4) rotate(0); }
+    22% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--fragment-x), var(--fragment-y)) scale(.38) rotate(var(--fragment-rotate)); }
+}
+
+@keyframes stone-destroy-light-halo {
+    0% { opacity: 0; transform: scale(.25) rotate(-20deg); }
+    30% { opacity: 1; transform: scale(.95) rotate(25deg); }
+    100% { opacity: 0; transform: scale(1.45) rotate(90deg); }
+}
+
+@keyframes stone-destroy-light-flash {
+    0% { opacity: 0; transform: scale(.2); }
+    18% { opacity: 1; transform: scale(.8); }
+    100% { opacity: 0; transform: scale(1.7); }
+}
+
+@keyframes stone-destroy-light-shard {
+    0%, 16% { opacity: 0; transform: translate(0, 0) scale(.25) rotate(0); }
+    24% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--fragment-x), var(--fragment-y)) scale(.8) rotate(var(--fragment-rotate)); }
+}
+
+@keyframes stone-destroy-water-droplet-burst {
+    0% { opacity: 0; transform: scale(.25, .45); }
+    28% { opacity: 1; transform: scale(.9, 1.15); }
+    100% { opacity: 0; transform: scale(1.25, .8) translateY(10%); }
+}
+
+@keyframes stone-destroy-water-droplet-pop {
+    0% { opacity: 0; transform: scale(.15); }
+    24% { opacity: 1; transform: scale(.7); }
+    100% { opacity: 0; transform: scale(1.4); }
+}
+
+@keyframes stone-destroy-fire-flame {
+    0% { opacity: 0; transform: scale(.5, .35) translateY(35%); }
+    26% { opacity: 1; transform: scale(.9, 1.05) translateY(0); }
+    62% { transform: scale(1.05, 1.2) translateY(-4%); }
+    100% { opacity: 0; transform: scale(.72, 1.45) translateY(-12%); }
+}
+
+@keyframes stone-destroy-fire-glow {
+    0% { opacity: 0; transform: scale(.2); }
+    28% { opacity: .9; transform: scale(.7); }
+    100% { opacity: 0; transform: scale(1.2); }
+}
+
+.spirit-card--level2 {
+    border-color: rgb(253 224 71 / .98) !important;
+    box-shadow: 0 0 14px rgb(250 204 21 / .58), 0 0 28px rgb(245 158 11 / .28), 0 5px 16px rgb(0 0 0 / .22) !important;
+    animation: spirit-card-level2-glow 1.8s ease-in-out infinite;
+}
+
+.spirit-card--level3 {
+    border-color: rgb(147 197 253 / 1) !important;
+    box-shadow: 0 0 18px rgb(59 130 246 / .8), 0 0 34px rgb(37 99 235 / .5), 0 5px 18px rgb(0 0 0 / .25) !important;
+}
+
+@keyframes spirit-card-level2-glow {
+    0%, 100% { box-shadow: 0 0 12px rgb(250 204 21 / .45), 0 0 24px rgb(245 158 11 / .2), 0 5px 16px rgb(0 0 0 / .22) !important; }
+    50% { box-shadow: 0 0 22px rgb(250 204 21 / .9), 0 0 42px rgb(245 158 11 / .48), 0 5px 16px rgb(0 0 0 / .22) !important; }
+}
 
 @keyframes stone-destroy-shell {
     0% { opacity: 1; transform: scale(1); filter: brightness(1); }
