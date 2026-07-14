@@ -76,13 +76,13 @@ export default function SettingClient() {
             <Tabs 
                 fullWidth={isMobile} 
                 color="primary"
-                radius="sm"
+                radius="lg"
                 variant="light"
                 aria-label="settings tabs" 
                 placement={isMobile ? 'top' : 'start'}>
                 {tabs.map((tab) => (
                     <Tab key={tab.key} title={tab.title} className="min-w-[200px] flex-1">
-                        <div className="w-full sm:min-h-[calc(100vh-105px)] border-l-0 md:border-l border-gray-300 dark:border-gray-600 pl-0 md:pl-4 overflow-y-auto max-h-[calc(100vh-105px)] scrollbar-none">
+                        <div className="w-full sm:min-h-[calc(100vh-105px)] rounded-2xl border border-default-200/80 bg-content1 p-3 dark:border-white/10 dark:bg-[#18181b] md:pl-4 overflow-y-auto max-h-[calc(100vh-105px)] scrollbar-none">
                             {tab.component}
                         </div>
                     </Tab>

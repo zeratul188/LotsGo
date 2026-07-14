@@ -59,6 +59,7 @@ const menuItems = [
 export function NavMenu() {
     const dispatch = useDispatch<AppDispatch>();
     const router = useRouter();
+    const pathname = usePathname();
     const nickname = useSelector((state: RootState) => state.login.user.character);
     const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
     const mainCharacter: Character | undefined = expedition.find(character => character.nickname === nickname);
@@ -75,10 +76,10 @@ export function NavMenu() {
     }, [isLogined]);
 
     return (
-        <NavbarMenu>
+        <NavbarMenu className="gap-1 border-t border-gray-200/80 pt-4 dark:border-white/10">
             {isLogined ? mainCharacter ? (
                 (
-                    <div className="w-full flex gap-4 items-center mt-1">
+                    <div className="mb-2 mt-1 flex w-full items-center gap-3 rounded-xl bg-default-100/70 p-3">
                         <JobAvatar size="md" job={mainCharacter.job}/>
                         <div className="grow">
                             <p className="truncate overflow-hidden whitespace-nowrap">{mainCharacter.nickname}</p>
@@ -113,20 +114,28 @@ export function NavMenu() {
                 </Button>
             )}
             <Divider className="mt-2 mb-2"/>
-            {menuItems.map((item, index) => (
-                <NavbarMenuItem key={`${item.item}-${index}`}>
-                    <Button
-                        fullWidth
-                        as={Link}
-                        radius="sm"
-                        href={item.link} 
-                        variant="light"
-                        startContent={item.icon}
-                        className="justify-start text-md">
-                        {item.item}
-                    </Button>
-                </NavbarMenuItem>
-            ))}
+            {menuItems.map((item, index) => {
+                const isActive = pathname === item.link || pathname.startsWith(`${item.link}/`);
+
+                return (
+                    <NavbarMenuItem key={`${item.item}-${index}`}>
+                        <Button
+                            fullWidth
+                            as={Link}
+                            radius="sm"
+                            href={item.link}
+                            color={isActive ? "primary" : "default"}
+                            variant={isActive ? "flat" : "light"}
+                            startContent={item.icon}
+                            className={clsx(
+                                "h-11 justify-start px-3 text-md font-medium",
+                                isActive && "font-semibold"
+                            )}>
+                            {item.item}
+                        </Button>
+                    </NavbarMenuItem>
+                )
+            })}
             {isLogined ? (
                 <>
                     <Divider className="mt-2 mb-2"/>
@@ -138,23 +147,25 @@ export function NavMenu() {
                                 as={Link}
                                 radius="sm"
                                 href="/administrator"
-                                variant="light"
+                                color={pathname.startsWith('/administrator') ? "primary" : "default"}
+                                variant={pathname.startsWith('/administrator') ? "flat" : "light"}
                                 startContent={<SettingIcon/>}
-                                className="justify-start text-md">
+                                className="h-11 justify-start px-3 text-md font-medium">
                                 관리자 페이지
                             </Button>
                         </NavbarMenuItem>
                     ) : null}
-                    <NavbarMenuItem 
+                    <NavbarMenuItem
                         key="setting">
                         <Button
                             fullWidth
                             as={Link}
                             radius="sm"
                             href="/setting"
-                            variant="light"
+                            color={pathname.startsWith('/setting') ? "primary" : "default"}
+                            variant={pathname.startsWith('/setting') ? "flat" : "light"}
                             startContent={<SettingIcon/>}
-                            className="justify-start text-md">
+                            className="h-11 justify-start px-3 text-md font-medium">
                             설정
                         </Button>
                     </NavbarMenuItem>
@@ -183,13 +194,13 @@ export function NavBrand() {
             <a href="/" className="hidden sm:block">
                 <img 
                     src="/title(L).png" 
-                    width={180} 
+                    width={160}
                     alt="타이틀 이미지 (라이트 버전)"
                     className="dark:hidden"
                     onClick={() => location.href = '/'}/>
                 <img 
                     src="/title(D).png" 
-                    width={180} 
+                    width={160}
                     alt="타이틀 이미지 (어두운 버전)"
                     className="hidden dark:block"/>
             </a>
@@ -212,26 +223,20 @@ export function NavContents() {
     return (
         <>
             {navs.map((nav) => {
-                const isActive = pathname === nav.href;
+                const isActive = pathname === nav.href || pathname.startsWith(`${nav.href}/`);
 
                 return (
                     <NavbarItem key={nav.href}>
                         <Link
                             href={nav.href}
-                            color="foreground"
+                            color={isActive ? "primary" : "foreground"}
                             className={clsx(
-                                "relative px-1 py-1 font-medium transition-colors",
+                                "rounded-lg px-3 py-2 text-base font-medium transition-colors duration-200",
                                 isActive
-                                    ? "text-black dark:text-white font-semibold"
-                                    : "text-default-500 hover:text-black hover:dark:text-white"
+                                    ? "bg-primary/10 font-semibold text-primary"
+                                    : "text-default-500 hover:bg-default-100 hover:text-foreground"
                             )}>
                             {nav.label}
-                            <span
-                                className={clsx(
-                                    "absolute left-0 -bottom-0 h-[2px] w-full origin-left scale-x-0 bg-black/50 dark:bg-white/50 transition-transform duration-300",
-                                    isActive && "scale-x-100"
-                                )}
-                            />
                         </Link>
                     </NavbarItem>
                 )
@@ -280,20 +285,24 @@ function ProfileButton() {
             <Button
                 as={Link}
                 radius="sm"
-                variant="shadow"
-                className="bg-gradient-to-tr from-blue-700 to-pink-500 text-white shadow-lg"
+                color="primary"
+                variant="flat"
+                className="font-semibold"
                 href="/login">
                 로그인
             </Button>
         )
     } else {
         return (
-            <Dropdown>
+            <Dropdown placement="bottom-end">
                 <DropdownTrigger>
                     {!mainCharacter ? (
-                        <Button variant="light">{id}</Button>
+                        <Button radius="sm" variant="flat" className="font-medium">{id}</Button>
                     ) : (
-                        <div className="flex gap-2 items-center cursor-pointer" role="button" tabIndex={0}>
+                        <div
+                            className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-default-100"
+                            role="button"
+                            tabIndex={0}>
                             <JobAvatar size="md" job={mainCharacter.job}/>
                             <div className="h-[max-content]">
                                 <p className="truncate overflow-hidden whitespace-nowrap leading-none">{id}</p>
@@ -302,10 +311,41 @@ function ProfileButton() {
                         </div>
                     )}
                 </DropdownTrigger>
-                <DropdownMenu aria-label="logined-profile" onAction={onActionProfile}>
-                    <DropdownItem key="setting">설정</DropdownItem>
-                    {isAdministrator ? <DropdownItem key="administrator" color="secondary">관리자 페이지</DropdownItem> : null}
-                    <DropdownItem key="logout" color="danger" className="text-danger">로그아웃</DropdownItem>
+                <DropdownMenu
+                    aria-label="프로필 메뉴"
+                    variant="flat"
+                    onAction={onActionProfile}
+                    className="min-w-[220px]"
+                    topContent={
+                        <div className="mx-1 mb-1 border-b border-gray-200/80 px-2 pb-3 pt-2 dark:border-white/10">
+                            <p className="text-xs font-medium text-primary">내 계정</p>
+                            <p className="mt-1 truncate text-sm font-semibold">{id}</p>
+                            {mainCharacter ? (
+                                <p className="mt-1 truncate text-xs fadedtext">{mainCharacter.nickname} · {mainCharacter.job}</p>
+                            ) : null}
+                        </div>
+                    }>
+                    <DropdownItem
+                        key="setting"
+                        startContent={<SettingIcon/>}
+                        className="min-h-10 px-3 font-medium">
+                        설정
+                    </DropdownItem>
+                    {isAdministrator ? (
+                        <DropdownItem
+                            key="administrator"
+                            color="secondary"
+                            startContent={<SettingIcon/>}
+                            className="min-h-10 px-3 font-medium">
+                            관리자 페이지
+                        </DropdownItem>
+                    ) : null}
+                    <DropdownItem
+                        key="logout"
+                        color="danger"
+                        className="mt-1 min-h-10 border-t border-gray-200/80 px-3 font-medium text-danger dark:border-white/10">
+                        로그아웃
+                    </DropdownItem>
                 </DropdownMenu>
             </Dropdown>
         )
@@ -334,9 +374,9 @@ export function ProfileContent(props: SwitchProps) {
                             {...getWrapperProps()}
                             className={slots.wrapper({
                                 class: [
-                                "w-8 h-8",
+                                "h-9 w-9",
                                 "flex items-center justify-center",
-                                "rounded-lg bg-default-100 hover:bg-default-200",
+                                "rounded-lg bg-default-100 transition-colors hover:bg-default-200",
                                 ],
                             })}
                             onClick={() => {

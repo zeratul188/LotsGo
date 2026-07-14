@@ -4,6 +4,8 @@ import {
     Button,
     Card,
     CardBody,
+    CardHeader,
+    Divider,
     NumberInput, 
     Pagination, 
     Radio, RadioGroup, 
@@ -43,31 +45,43 @@ export default function CalcClient() {
 
     return (
         <div className="w-full">
-            <div className="w-full grid sm:grid-cols-[2fr_3fr] gap-4">
-                <div>
-                    <div className="w-full flex gap-2 items-end">
+            <section className="mb-5 overflow-hidden rounded-2xl border border-default-200/80 bg-gradient-to-br from-primary-50 via-content1 to-content1 px-5 py-5 shadow-sm dark:border-white/10 dark:from-primary-950/30 dark:via-[#18181b] dark:to-[#18181b] sm:px-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Auction Calculator</p>
+                <h1 className="mt-1 text-2xl font-bold">경매 계산기</h1>
+                <p className="mt-1 text-sm text-default-500">아이템 가격과 참여 인원을 입력하면 안전한 입찰 기준과 예상 분배금을 계산합니다.</p>
+            </section>
+            <div className="grid w-full gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
+                <section className="rounded-2xl border border-default-200/80 bg-content1/95 p-4 shadow-sm dark:border-white/10 dark:bg-[#18181b]">
+                    <div className="mb-3">
+                        <h2 className="text-lg font-semibold">입찰 조건</h2>
+                        <p className="text-xs text-default-500">가격과 인원을 선택하면 아래 결과가 즉시 갱신됩니다.</p>
+                    </div>
+                    <div className="flex w-full items-end gap-2">
                         <NumberInput
                             fullWidth
                             maxValue={999999999}
                             value={gold}
                             onValueChange={setGold}
                             labelPlacement="outside"
-                            label="경매 아이템 가격 (입력 후 Enter)"
+                            label="경매 아이템 가격"
                             placeholder="아이템 가격을 입력해주세요."
-                            radius="sm"
+                            radius="lg"
                             className="grow"/>
                         <Button
                             color="primary"
-                            radius="sm"
+                            radius="lg"
+                            className="h-10 px-5 font-semibold"
                             isDisabled={gold <= 0 || isNaN(gold)}
                             onPress={onClickSaveData}>
                             저장
                         </Button>
                     </div>
+                    <div className="mt-3 rounded-xl bg-default-50 p-2.5 dark:bg-white/[0.04]">
+                        <p className="mb-2 text-xs font-medium text-default-500">참여 인원</p>
                     <RadioGroup 
                         orientation="horizontal" 
                         defaultValue="4" 
-                        className="mt-4 mb-4"
+                        className="mb-0"
                         onValueChange={onClickPersons}>
                         <Radio value="4"><span className="pl-1 sm:pl-2 pr-2 sm:pr-4">4인</span></Radio>
                         <Radio value="8"><span className="pl-1 sm:pl-2 pr-2 sm:pr-4">8인</span></Radio>
@@ -78,18 +92,32 @@ export default function CalcClient() {
                             <NumberInput
                                 maxLength={2}
                                 value={inputPerson}
-                                radius="sm"
+                                radius="md"
                                 size="sm"
                                 onValueChange={setInputPerson}
                                 className="w-[80px]"/>
                             <span>인</span>
                         </div>
                     </RadioGroup>
+                    </div>
+                    <div className="mb-2 mt-4 flex items-center justify-between gap-2">
+                        <div>
+                            <h2 className="text-lg font-semibold">계산 결과</h2>
+                            <p className="text-xs text-default-500">원하는 행을 누르면 입찰가가 복사됩니다.</p>
+                        </div>
+                        <span className="rounded-full bg-default-100 px-2.5 py-1 text-xs font-medium text-default-500">{person}인 기준</span>
+                    </div>
                     <Table 
                         aria-label="item calc table"
-                        selectionMode="single">
+                        selectionMode="single"
+                        classNames={{
+                            wrapper: "border border-default-200/70 bg-content1 p-0 shadow-none dark:border-white/10 dark:bg-transparent",
+                            th: "bg-default-100 text-xs font-semibold text-default-500 dark:bg-white/[0.05]",
+                            td: "py-2 text-sm",
+                            tr: "transition-colors hover:bg-primary-50/70 dark:hover:bg-primary-500/10"
+                        }}>
                         <TableHeader>
-                            <TableColumn>:</TableColumn>
+                            <TableColumn>구분</TableColumn>
                             <TableColumn>입찰가 골드</TableColumn>
                             <TableColumn>이익 골드</TableColumn>
                             <TableColumn>분배금</TableColumn>
@@ -367,38 +395,44 @@ export default function CalcClient() {
                             </TableRow>
                         </TableBody>
                     </Table>
-                    <p className="mt-2 fadedtext text-sm">항목을 클릭하시면 클립보드에 복사됩니다.</p>
-                </div>
-                <Card radius="sm" className="h-[max-content]">
-                    <CardBody>
+                </section>
+                <Card radius="lg" className="h-[max-content] border border-default-200/80 bg-content1/95 shadow-sm dark:border-white/10 dark:bg-[#18181b]">
+                    <CardHeader className="px-5 py-4">
+                        <div>
+                            <h2 className="text-lg font-semibold">계산 기준</h2>
+                            <p className="text-xs text-default-500">각 입찰가가 계산되는 방식을 확인하세요.</p>
+                        </div>
+                    </CardHeader>
+                    <Divider/>
+                    <CardBody className="space-y-2 px-5 py-4">
                         <div className="w-full">
-                            <h3 className="font-bold text-lg">직접 이용 시</h3>
-                            <div className="flex flex-col sm:flex-row gap-1">
+                            <h3 className="text-sm font-semibold">직접 이용 시</h3>
+                            <div className="mt-1 rounded-lg bg-default-50 px-3 py-2 text-xs dark:bg-white/[0.04]">
                                 <p>경매가 × (인원수 - 1) × 인원수<span className="hidden sm:inline"> :</span></p>
                                 <p className="text-green-700 dark:text-green-400">{gold.toLocaleString()} × ({person} - 1) × {person}</p>
                             </div>
-                            <h3 className="font-bold text-lg mt-2">순익 분기점</h3>
-                            <div className="flex flex-col sm:flex-row gap-1">
+                            <h3 className="mt-3 text-sm font-semibold">순익 분기점</h3>
+                            <div className="mt-1 rounded-lg bg-default-50 px-3 py-2 text-xs dark:bg-white/[0.04]">
                                 <p>경매가 × 0.95 × (인원수 - 1) × 인원수<span className="hidden sm:inline"> :</span></p>
                                 <p className="text-green-700 dark:text-green-400">{gold.toLocaleString()} * 0.95 × ({person} - 1) × {person}</p>
                             </div>
-                            <h3 className="font-bold text-lg mt-2">선점 입찰가</h3>
-                            <div className="flex flex-col sm:flex-row gap-1">
+                            <h3 className="mt-3 text-sm font-semibold">선점 입찰가</h3>
+                            <div className="mt-1 rounded-lg bg-default-50 px-3 py-2 text-xs dark:bg-white/[0.04]">
                                 <p>순익 분기점 ÷ 1.1<span className="hidden sm:inline"> :</span></p>
                                 <p className="text-green-700 dark:text-green-400">{getBreakpointGold(gold, person).toLocaleString()} ÷ 1.1</p>
                             </div>
-                            <h3 className="font-bold text-lg mt-2">선점 25%</h3>
-                            <div className="flex flex-col sm:flex-row gap-1">
+                            <h3 className="mt-3 text-sm font-semibold">선점 25%</h3>
+                            <div className="mt-1 rounded-lg bg-default-50 px-3 py-2 text-xs dark:bg-white/[0.04]">
                                 <p>순익 분기점 ÷ 1.025<span className="hidden sm:inline"> :</span></p>
                                 <p className="text-green-700 dark:text-green-400">{getBreakpointGold(gold, person).toLocaleString()} ÷ 1.025</p>
                             </div>
-                            <h3 className="font-bold text-lg mt-2">선점 50%</h3>
-                            <div className="flex flex-col sm:flex-row gap-1">
+                            <h3 className="mt-3 text-sm font-semibold">선점 50%</h3>
+                            <div className="mt-1 rounded-lg bg-default-50 px-3 py-2 text-xs dark:bg-white/[0.04]">
                                 <p>순익 분기점 ÷ 1.05<span className="hidden sm:inline"> :</span></p>
                                 <p className="text-green-700 dark:text-green-400">{getBreakpointGold(gold, person).toLocaleString()} ÷ 1.05</p>
                             </div>
-                            <h3 className="font-bold text-lg mt-2">선점 75%</h3>
-                            <div className="flex flex-col sm:flex-row gap-1">
+                            <h3 className="mt-3 text-sm font-semibold">선점 75%</h3>
+                            <div className="mt-1 rounded-lg bg-default-50 px-3 py-2 text-xs dark:bg-white/[0.04]">
                                 <p>순익 분기점 ÷ 1.075<span className="hidden sm:inline"> :</span></p>
                                 <p className="text-green-700 dark:text-green-400">{getBreakpointGold(gold, person).toLocaleString()} ÷ 1.075</p>
                             </div>
@@ -419,14 +453,19 @@ export default function CalcClient() {
                     </div>
                 </div>
             )}
-            <div className="flex gap-2 mt-8 items-center">
+            <section className="mt-8 rounded-2xl border border-default-200/80 bg-content1/95 p-4 shadow-sm dark:border-white/10 dark:bg-[#18181b] sm:p-5">
+            <div className="flex items-center gap-2">
                 <div className="flex flex-row gap-3 items-end grow">
-                    <p className="text-2xl">저장 기록</p>
-                    <p className="text-sm fadedtext">총 {datas.length}개의 기록</p>
+                    <div>
+                        <p className="text-xl font-semibold">저장 기록</p>
+                        <p className="text-xs text-default-500">자주 확인하는 경매 계산 결과를 다시 확인할 수 있습니다.</p>
+                    </div>
+                    <span className="rounded-full bg-default-100 px-2.5 py-1 text-xs text-default-500">{datas.length}개</span>
                 </div>
                 <Button
                     color="danger"
-                    radius="sm"
+                    radius="lg"
+                    variant="flat"
                     onPress={onClickResetDatas}>
                     데이터 초기화
                 </Button>
@@ -435,7 +474,12 @@ export default function CalcClient() {
                 <Table 
                     removeWrapper 
                     aria-label="table datas" 
-                    className="mt-4 w-[1000px] min-[1001px]:w-full">
+                    className="mt-4 w-[1000px] min-[1001px]:w-full"
+                    classNames={{
+                        th: "bg-default-100 text-xs font-semibold text-default-500 dark:bg-white/[0.05]",
+                        td: "py-2.5 text-sm",
+                        tr: "transition-colors hover:bg-default-50 dark:hover:bg-white/[0.04]"
+                    }}>
                     <TableHeader>
                         <TableColumn>인원수</TableColumn>
                         <TableColumn>경매가</TableColumn>
@@ -613,7 +657,8 @@ export default function CalcClient() {
                         onChange={setPage}/>
                 </div>
             ) : <></>}
-            <p className="mt-2 fadedtext text-sm">항목을 클릭하시면 클립보드에 복사됩니다.</p>
+            <p className="mt-3 text-xs text-default-500">항목을 클릭하면 해당 값이 클립보드에 복사됩니다.</p>
+            </section>
             <Script
                 async
                 src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"

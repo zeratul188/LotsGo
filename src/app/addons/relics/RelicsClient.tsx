@@ -171,92 +171,220 @@ export default function RelicsClient({ relics }: RelicsClientProps) {
     const [selectedRelic, setSelectedRelic] = useState<RelicBook | null>(null);
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const isMobile = useMobileQuery();
+    const highestRelic = relics.length > 0
+        ? relics.reduce((highest, relic) => relic.price > highest.price ? relic : highest)
+        : null;
+    const increasedCount = relics.filter((relic) => getDiffPrice(relic) > 0).length;
+    const decreasedCount = relics.filter((relic) => getDiffPrice(relic) < 0).length;
+
+    const getChangeRate = (relic: RelicBook) => {
+        const previousPrice = getUndoPrice(relic);
+        if (previousPrice === 0) return 0;
+        return Math.round((getDiffPrice(relic) / previousPrice) * 1000) / 10;
+    }
+
+    const openHistory = (relic: RelicBook) => {
+        setSelectedRelic(relic);
+        onOpen();
+    }
 
     return (
         <div className="w-full">
-            <p className="fadedtext text-sm mb-2">매 정각에 유각 시세가 업데이트됩니다.</p>
-            <div className="w-full overflow-x-auto scrollbar-hide">
-                <Table removeWrapper radius="sm" className="w-[700px] min-[701px]:w-full">
-                    <TableHeader>
-                        <TableColumn>각인서</TableColumn>
-                        <TableColumn>가격</TableColumn>
-                        <TableColumn>이전 가격</TableColumn>
-                        <TableColumn>변동 골드</TableColumn>
-                        <TableColumn>차트</TableColumn>
-                    </TableHeader>
-                    <TableBody emptyContent="데이터가 존재하지 않습니다.">
-                        {relics.map((relic, index) => (
-                            <TableRow key={index}>
-                                <TableCell>
-                                    <div className="flex gap-2 items-center">
-                                        <img
-                                            src={getEngravingSrcByName(relic.name.replaceAll(' 각인서', ''))}
-                                            alt="relic book icon"
-                                            className="w-[28px] h-[28px] rounded-md"/>
-                                        <p className="text-relics text-[12pt]">{relic.name}</p>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex gap-1 items-center">
-                                        <img src="/icons/gold.png" alt="goldicon" className="w-[16px] h-[16px]"/>
-                                        <span className="text-[12pt]">{relic.price.toLocaleString()}</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex gap-1 items-center">
-                                        <img src="/icons/gold.png" alt="goldicon" className="w-[16px] h-[16px]"/>
-                                        <span className="text-[12pt]">{getUndoPrice(relic).toLocaleString()}</span>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex gap-1 items-center">
-                                        <span className={clsx(
-                                            "text-[12pt]",
-                                            getDiffPrice(relic) > 0 ? "text-green-700 dark:text-green-400" : getDiffPrice(relic) < 0 ? 'text-red-700 dark:text-red-400' : 'fadedtext'
-                                        )}>
-                                            {getDiffPrice(relic) > 0 ? '+' : getDiffPrice(relic) < 0 ? '-' : ''}
-                                        </span>
-                                        <span className={clsx(
-                                            "text-[12pt]",
-                                            getDiffPrice(relic) > 0 ? "text-green-700 dark:text-green-400" : getDiffPrice(relic) < 0 ? 'text-red-700 dark:text-red-400' : 'fadedtext'
-                                        )}>
-                                            {Math.abs(getDiffPrice(relic)).toLocaleString()} ({Math.round((getDiffPrice(relic) / getUndoPrice(relic)) * 1000) / 10}%)
-                                        </span>
-                                    </div>
-                                </TableCell>
-                                <TableCell>
-                                    <Button
-                                        variant="flat"
-                                        color="primary"
-                                        size="sm"
-                                        radius="sm"
-                                        onPress={() => {
-                                            setSelectedRelic(relic);
-                                            onOpen();
-                                        }}>
-                                        기록 보기
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-                {isMobile ? (
-                    <div className="w-full flex justify-center px-4">
-                        <div className="w-full max-w-[360px] min-h-[100px] mt-4">
-                            <BoxAd isLoaded={true}/>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="w-full flex justify-center px-4 overflow-hidden mt-8">
-                        <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-8">
-                            <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px]">
-                                <LineAd isLoaded={true}/>
+            <section className="overflow-hidden rounded-2xl border border-default-200/80 bg-content1 shadow-sm dark:border-white/10 dark:bg-[#18181b]">
+                <div className="border-b border-default-200/80 px-4 py-4 dark:border-white/10 sm:px-5">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h1 className="text-xl font-bold">유물 각인서 시세</h1>
+                                <span className="rounded-full bg-primary-50 px-2 py-1 text-[11px] font-semibold text-primary dark:bg-primary-500/15">총 {relics.length}종</span>
                             </div>
+                            <p className="mt-1 text-sm text-default-500">경매장 기준 현재가와 직전 가격의 변동을 확인할 수 있습니다.</p>
+                        </div>
+                        <div className="flex w-fit items-center gap-2 rounded-full bg-default-100 px-3 py-1.5 text-xs text-default-600 dark:bg-white/[0.06]">
+                            <span className="h-2 w-2 rounded-full bg-success"/>
+                            매 정각 업데이트
                         </div>
                     </div>
-                )}
-            </div>
+                    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        <div className="col-span-2 rounded-xl bg-default-50 px-3 py-3 dark:bg-white/[0.04] sm:col-span-1">
+                            <p className="text-xs text-default-500">현재 최고가</p>
+                            {highestRelic ? (
+                                <div className="mt-1 flex items-center gap-2">
+                                    <img
+                                        src={getEngravingSrcByName(highestRelic.name.replaceAll(' 각인서', ''))}
+                                        alt="relic book icon"
+                                        className="h-8 w-8 rounded-lg"/>
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-semibold text-relics">{highestRelic.name}</p>
+                                        <div className="flex items-center gap-1">
+                                            <img src="/icons/gold.png" alt="goldicon" className="h-3.5 w-3.5"/>
+                                            <span className="text-sm font-bold tabular-nums">{highestRelic.price.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : <p className="mt-2 text-sm text-default-400">데이터 없음</p>}
+                        </div>
+                        <div className="rounded-xl bg-success-50 px-3 py-3 dark:bg-success-500/10">
+                            <p className="text-xs text-success-700 dark:text-success-400">가격 상승</p>
+                            <p className="mt-1 text-xl font-bold text-success-700 dark:text-success-400">{increasedCount}<span className="ml-1 text-xs font-medium">종</span></p>
+                        </div>
+                        <div className="rounded-xl bg-danger-50 px-3 py-3 dark:bg-danger-500/10">
+                            <p className="text-xs text-danger-700 dark:text-danger-400">가격 하락</p>
+                            <p className="mt-1 text-xl font-bold text-danger-700 dark:text-danger-400">{decreasedCount}<span className="ml-1 text-xs font-medium">종</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="hidden sm:block">
+                    <Table
+                        removeWrapper
+                        aria-label="유물 각인서 시세"
+                        classNames={{
+                            th: "h-10 bg-default-50 text-xs font-semibold text-default-500 dark:bg-white/[0.04]",
+                            td: "border-b border-default-100 py-3 last:border-b-0 dark:border-white/[0.06]",
+                            tr: "transition-colors hover:bg-default-50/80 dark:hover:bg-white/[0.03]"
+                        }}>
+                        <TableHeader>
+                            <TableColumn>각인서</TableColumn>
+                            <TableColumn>현재 가격</TableColumn>
+                            <TableColumn>이전 가격</TableColumn>
+                            <TableColumn>가격 변동</TableColumn>
+                            <TableColumn align="center">기록</TableColumn>
+                        </TableHeader>
+                        <TableBody emptyContent="데이터가 존재하지 않습니다.">
+                            {relics.map((relic) => (
+                                <TableRow key={relic.name}>
+                                    <TableCell>
+                                        <div className="flex items-center gap-3">
+                                            <img
+                                                src={getEngravingSrcByName(relic.name.replaceAll(' 각인서', ''))}
+                                                alt="relic book icon"
+                                                className="h-10 w-10 rounded-lg ring-1 ring-black/5 dark:ring-white/10"/>
+                                            <div>
+                                                <p className="font-semibold text-relics">{relic.name}</p>
+                                                <p className="mt-0.5 text-[11px] text-default-400">유물 등급 각인서</p>
+                                            </div>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-1.5">
+                                            <img src="/icons/gold.png" alt="goldicon" className="h-4 w-4"/>
+                                            <span className="text-base font-bold tabular-nums">{relic.price.toLocaleString()}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex items-center gap-1.5 text-default-500">
+                                            <img src="/icons/gold.png" alt="goldicon" className="h-3.5 w-3.5 opacity-70"/>
+                                            <span className="text-sm tabular-nums">{getUndoPrice(relic).toLocaleString()}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className={clsx(
+                                            "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums",
+                                            getDiffPrice(relic) > 0
+                                                ? "bg-success-50 text-success-700 dark:bg-success-500/10 dark:text-success-400"
+                                                : getDiffPrice(relic) < 0
+                                                    ? "bg-danger-50 text-danger-700 dark:bg-danger-500/10 dark:text-danger-400"
+                                                    : "bg-default-100 text-default-500 dark:bg-white/[0.06]"
+                                        )}>
+                                            <span>{getDiffPrice(relic) > 0 ? '↑' : getDiffPrice(relic) < 0 ? '↓' : '−'}</span>
+                                            <span>{Math.abs(getDiffPrice(relic)).toLocaleString()}</span>
+                                            <span className="font-medium opacity-75">({Math.abs(getChangeRate(relic))}%)</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Button
+                                            variant="flat"
+                                            color="primary"
+                                            size="sm"
+                                            radius="lg"
+                                            className="font-medium"
+                                            onPress={() => openHistory(relic)}>
+                                            기록 보기
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+
+                <div className="divide-y divide-default-100 dark:divide-white/[0.06] sm:hidden">
+                    {relics.length > 0 ? relics.map((relic) => (
+                        <article key={relic.name} className="px-4 py-4">
+                            <div className="flex items-start gap-3">
+                                <img
+                                    src={getEngravingSrcByName(relic.name.replaceAll(' 각인서', ''))}
+                                    alt="relic book icon"
+                                    className="h-11 w-11 shrink-0 rounded-lg ring-1 ring-black/5 dark:ring-white/10"/>
+                                <div className="min-w-0 grow">
+                                    <p className="truncate font-semibold text-relics">{relic.name}</p>
+                                    <div className="mt-1 flex items-center gap-1.5">
+                                        <img src="/icons/gold.png" alt="goldicon" className="h-4 w-4"/>
+                                        <span className="text-lg font-bold tabular-nums">{relic.price.toLocaleString()}</span>
+                                        <span className="text-xs text-default-400">골드</span>
+                                    </div>
+                                </div>
+                                <div className={clsx(
+                                    "shrink-0 rounded-full px-2 py-1 text-xs font-semibold tabular-nums",
+                                    getDiffPrice(relic) > 0
+                                        ? "bg-success-50 text-success-700 dark:bg-success-500/10 dark:text-success-400"
+                                        : getDiffPrice(relic) < 0
+                                            ? "bg-danger-50 text-danger-700 dark:bg-danger-500/10 dark:text-danger-400"
+                                            : "bg-default-100 text-default-500 dark:bg-white/[0.06]"
+                                )}>
+                                    {getDiffPrice(relic) > 0 ? '↑' : getDiffPrice(relic) < 0 ? '↓' : '−'} {Math.abs(getChangeRate(relic))}%
+                                </div>
+                            </div>
+                            <div className="mt-3 flex items-center justify-between rounded-xl bg-default-50 px-3 py-2 dark:bg-white/[0.04]">
+                                <div>
+                                    <p className="text-[11px] text-default-400">이전 가격</p>
+                                    <p className="mt-0.5 text-sm font-medium tabular-nums">{getUndoPrice(relic).toLocaleString()} 골드</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-[11px] text-default-400">변동 금액</p>
+                                    <p className={clsx(
+                                        "mt-0.5 text-sm font-semibold tabular-nums",
+                                        getDiffPrice(relic) > 0
+                                            ? "text-success-700 dark:text-success-400"
+                                            : getDiffPrice(relic) < 0
+                                                ? "text-danger-700 dark:text-danger-400"
+                                                : "text-default-500"
+                                    )}>
+                                        {getDiffPrice(relic) > 0 ? '+' : getDiffPrice(relic) < 0 ? '-' : ''}{Math.abs(getDiffPrice(relic)).toLocaleString()} 골드
+                                    </p>
+                                </div>
+                                <Button
+                                    variant="flat"
+                                    color="primary"
+                                    size="sm"
+                                    radius="lg"
+                                    className="font-medium"
+                                    onPress={() => openHistory(relic)}>
+                                    기록 보기
+                                </Button>
+                            </div>
+                        </article>
+                    )) : (
+                        <div className="px-4 py-12 text-center text-sm text-default-400">데이터가 존재하지 않습니다.</div>
+                    )}
+                </div>
+            </section>
+            {isMobile ? (
+                <div className="w-full flex justify-center px-4">
+                    <div className="w-full max-w-[360px] min-h-[100px] mt-4">
+                        <BoxAd isLoaded={true}/>
+                    </div>
+                </div>
+            ) : (
+                <div className="w-full flex justify-center px-4 overflow-hidden mt-8">
+                    <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-8">
+                        <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px]">
+                            <LineAd isLoaded={true}/>
+                        </div>
+                    </div>
+                </div>
+            )}
             <ChartModal isOpen={isOpen} selectedRelic={selectedRelic} onOpenChange={onOpenChange}/>
             <Script
                 async
