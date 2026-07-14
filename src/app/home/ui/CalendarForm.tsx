@@ -5,9 +5,8 @@ import {
     Accordion,
     AccordionItem,
     Button,
-    Card, CardBody, CardFooter, 
+    Card, CardBody,
     Chip, 
-    Divider, 
     Link, 
     Popover, PopoverContent, PopoverTrigger, 
     ScrollShadow, 
@@ -34,12 +33,23 @@ function EventComponent({ events }: EventComponentProps) {
         return `${date.year()}년 ${date.month()+1}월 ${date.date()}일`;
     };
     return (
-        <div className="col-span-2">
-            <div className="flex gap-1 items-center">
-                <p className="grow text-2xl">로스트아크 이벤트</p>
+        <section className="col-span-2 overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-[#171717] dark:shadow-none">
+            <div className="flex items-center gap-3 border-b border-gray-200/80 px-4 py-4 dark:border-white/10">
+                <div className="min-w-0 grow">
+                    <div className="flex items-center gap-2">
+                        <span className="h-5 w-1 rounded-full bg-primary"/>
+                        <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">로스트아크 이벤트</h2>
+                        <Chip size="sm" radius="sm" variant="flat" color="primary" className="shrink-0">
+                            총 {events.length}개
+                        </Chip>
+                    </div>
+                    <p className="mt-1 pl-3 text-xs fadedtext">현재 진행 중인 이벤트를 확인해 보세요.</p>
+                </div>
                 <Button
                     size="sm"
-                    variant="flat"
+                    radius="sm"
+                    variant="bordered"
+                    className="shrink-0 border-gray-300 bg-white font-medium shadow-sm dark:border-white/20 dark:bg-white/5"
                     onPress={() => {
                         const url = "https://lostark.game.onstove.com/News/Event/Now";
                         window.open(url, '_blank');
@@ -47,40 +57,47 @@ function EventComponent({ events }: EventComponentProps) {
                     더보기
                 </Button>
             </div>
-            <Divider className="mt-4"/>
-            <ScrollShadow className="w-full h-[600px] sm:h-[500px] pt-4">
+            <ScrollShadow className="h-[600px] w-full p-4 sm:h-[500px]">
                 {events.length > 0 ? (
-                    <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
                         {events.map((event, index) => (
                             <Card 
                                 key={index} 
                                 isPressable
                                 as={Link}
                                 shadow="none"
+                                radius="lg"
+                                className="group border border-gray-200/80 bg-gray-50/60 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-white/[0.025]"
                                 href={event.link}>
-                                <CardBody className="overflow-visible p-0">
+                                <CardBody className="relative h-[180px] overflow-hidden p-0">
                                     <img
                                         alt={event.title}
-                                        className="w-full object-cover h-[180px] rounded-md"
+                                        className="h-[180px] w-full rounded-md object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                                         src={event.thumbnail}/>
-                                </CardBody>
-                                <CardFooter>
-                                    <div className="w-full text-left">
-                                        <p className="text-md truncate">{event.title}</p>
-                                        <p className="fadedtext text-xs truncate">{getStringByDate(dayjs(event.startDate))} ~ {getStringByDate(dayjs(event.endDate))}</p>
+                                    <Chip
+                                        size="sm"
+                                        radius="sm"
+                                        color="primary"
+                                        variant="flat"
+                                        className="absolute left-3 top-3 bg-white/90 font-medium dark:bg-black/70">
+                                        진행 중
+                                    </Chip>
+                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/55 to-transparent px-3 pb-3 pt-10 text-left text-white">
+                                        <p className="truncate font-medium drop-shadow-sm">{event.title}</p>
+                                        <p className="mt-0.5 truncate text-xs text-white/80">{getStringByDate(dayjs(event.startDate))} ~ {getStringByDate(dayjs(event.endDate))}</p>
                                     </div>
-                                </CardFooter>
+                                </CardBody>
                             </Card>
                         ))}
                     </div>
                 ) : (
-                    <div className="w-full h-[240px] flex flex-col items-center justify-center">
+                    <div className="flex h-[240px] w-full flex-col items-center justify-center">
                         <p className="text-xl fadedtext">이벤트 정보가 없습니다.</p>
-                        <p className="text-sm fadedtext mt-2">로스트아크 점검 시간에는 데이터를 확인할 수 없습니다.</p>
+                        <p className="mt-2 text-sm fadedtext">로스트아크 점검 시간에는 데이터를 확인할 수 없습니다.</p>
                     </div>
                 )}
             </ScrollShadow>
-        </div>
+        </section>
     )
 }
 
@@ -93,13 +110,28 @@ function NoticeComponent({ notices }: NoticeComponentProps) {
         if (!isDayjs(date)) return '';
         return `${date.year()}년 ${date.month()+1}월 ${date.date()}일`;
     };
+    const getNoticeChipColor = (type?: string): "default" | "primary" | "secondary" | "success" | "warning" | "danger" => {
+        if (type?.includes('점검')) return 'danger';
+        if (type?.includes('이벤트')) return 'success';
+        if (type?.includes('상점')) return 'warning';
+        if (type?.includes('공지')) return 'primary';
+        return 'secondary';
+    };
     return (
-        <div>
-            <div className="flex gap-1 items-center">
-                <p className="grow text-2xl">로스트아크 공지사항</p>
+        <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-[#171717] dark:shadow-none">
+            <div className="flex items-center gap-3 border-b border-gray-200/80 px-4 py-4 dark:border-white/10">
+                <div className="min-w-0 grow">
+                    <div className="flex items-center gap-2">
+                        <span className="h-5 w-1 rounded-full bg-primary"/>
+                        <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">로스트아크 공지사항</h2>
+                    </div>
+                    <p className="mt-1 pl-3 text-xs fadedtext">중요한 소식과 점검 일정을 확인해 보세요.</p>
+                </div>
                 <Button
                     size="sm"
-                    variant="flat"
+                    radius="sm"
+                    variant="bordered"
+                    className="shrink-0 border-gray-300 bg-white font-medium shadow-sm dark:border-white/20 dark:bg-white/5"
                     onPress={() => {
                         const url = "https://lostark.game.onstove.com/News/Notice/List";
                         window.open(url, '_blank');
@@ -107,28 +139,40 @@ function NoticeComponent({ notices }: NoticeComponentProps) {
                     더보기
                 </Button>
             </div>
-            <Divider className="mt-4"/>
             {notices.length > 0 ? (
-                <ScrollShadow className="w-full h-[500px]">
+                <ScrollShadow className="h-[500px] w-full p-3">
                     {notices.map((notice, index) => (
                         <a href={notice.link} key={index} target="_blank" rel="noopener noreferrer">
                             <div className={clsx(
-                                "w-full pr-2 pl-2 pt-2 pb-2 hover:bg-gray-100 dark:hover:bg-[#222222]",
-                                index !== 0 ? "border-t-1 border-[#dddddd] dark:border-[#222222]" : ""
+                                "flex w-full items-center gap-3 rounded-lg px-2 py-2.5 transition-colors hover:bg-gray-100 dark:hover:bg-white/[0.05]",
+                                index !== 0 ? "border-t border-gray-200/80 dark:border-white/10" : ""
                             )}>
-                                <p className="text-sm truncate">{notice.title}</p>
-                                <p className="fadedtext text-xs truncate">{getStringByDate(dayjs(notice.date))}</p>
+                                <Chip
+                                    size="sm"
+                                    radius="sm"
+                                    variant="flat"
+                                    color={getNoticeChipColor(notice.type)}
+                                    classNames={{
+                                        base: "min-w-[52px] shrink-0",
+                                        content: "w-full text-center"
+                                    }}>
+                                    {notice.type ?? '공지'}
+                                </Chip>
+                                <div className="min-w-0 grow">
+                                    <p className="truncate text-[11px] fadedtext">{getStringByDate(dayjs(notice.date))}</p>
+                                    <p className="mt-0.5 truncate text-sm font-medium">{notice.title}</p>
+                                </div>
                             </div>
                         </a>
                     ))}
                 </ScrollShadow>
             ) : (
-                <div className="w-full h-[240px] flex flex-col items-center justify-center">
+                <div className="flex h-[240px] w-full flex-col items-center justify-center">
                     <p className="text-xl fadedtext">공지사항 정보가 없습니다.</p>
-                    <p className="text-sm fadedtext mt-2">로스트아크 점검 시간에는 데이터를 확인할 수 없습니다.</p>
+                    <p className="mt-2 text-sm fadedtext">로스트아크 점검 시간에는 데이터를 확인할 수 없습니다.</p>
                 </div>
             )}
-        </div>
+        </section>
     )
 }
 
