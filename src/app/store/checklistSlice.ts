@@ -35,6 +35,7 @@ export type CubeList = {
 }
 export type CheckCharacter = {
     nickname: string,
+    memo?: string,
     level: number,
     job: string,
     server: string,
@@ -115,6 +116,10 @@ export type UpdateAccount = {
     characterIndex: number,
     account: string
 }
+export type UpdateMemo = {
+    nickname: string,
+    memo: string
+}
 
 const checklistSlice = createSlice({
     name: 'checklist',
@@ -124,6 +129,7 @@ const checklistSlice = createSlice({
         saveData(state, action: PayloadAction<CheckCharacter[]>) {
             const newChecklist = (action.payload ?? []).map((charaacter: any) => ({
                 ...charaacter,
+                memo: charaacter.memo ?? '',
                 cubelist: charaacter.cubelist ?? [],
                 position: charaacter.position ?? 9999
             }));
@@ -201,6 +207,12 @@ const checklistSlice = createSlice({
             const characterIndex = action.payload.characterIndex;
             const account = action.payload.account;
             state.checklist[characterIndex].account = account;
+        },
+        updateMemo(state, action: PayloadAction<UpdateMemo>) {
+            const character = state.checklist.find(item => item.nickname === action.payload.nickname);
+            if (character) {
+                character.memo = action.payload.memo;
+            }
         }
     }
 })
@@ -220,6 +232,7 @@ export const {
     removeCharacter,
     calculateOtherGold,
     resetCube,
-    updateAccount
+    updateAccount,
+    updateMemo
 } = checklistSlice.actions;
 export default checklistSlice.reducer;

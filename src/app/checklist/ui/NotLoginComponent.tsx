@@ -468,6 +468,24 @@ type ChecklistComponentProps = {
     bosses: Boss[],
     cubes: Cube[]
 }
+
+function CharacterMemoPreview({ memo }: { memo?: string }) {
+    const value = memo?.trim() ?? '';
+    return (
+        <div className="w-full border-t border-gray-200/70 pt-2 dark:border-white/10">
+            <div className="flex min-w-0 items-start">
+                <span aria-hidden="true" className="mr-2 shrink-0 text-sm">📝</span>
+                <p className={clsx(
+                "max-h-[4.5rem] overflow-hidden whitespace-pre-wrap break-words leading-6 line-clamp-3",
+                value ? "text-sm text-foreground" : "text-xs fadedtext"
+            )}>
+                {value || "메모를 입력해주세요."}
+                </p>
+            </div>
+        </div>
+    );
+}
+
 function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: ChecklistComponentProps) {
     const [inputOtherGold, setInputOtherGold] = useState<{ [nickname: string]: number }>({});
     return (
@@ -476,7 +494,7 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                 .filter((character) => character.server === server || server === '전체')
                 .map((character, index) => (
                     <Card key={index} fullWidth radius="lg" shadow="none" className="w-full min-[561px]:w-[560px] overflow-hidden border border-gray-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]">
-                        <CardHeader className="p-4 pb-3">
+                        <CardHeader className="flex-col items-stretch p-4 pb-3">
                             <div className="w-full flex flex-col md960:flex-row items-center gap-2">
                                 <div className="w-full grow flex gap-4 items-center">
                                     <div className="flex flex-col gap-2 items-center">
@@ -580,6 +598,7 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                     </Popover>
                                 </div>
                             </div>
+                            <CharacterMemoPreview memo={character.memo}/>
                         </CardHeader>
                         <Divider/>
                         <CardBody className="p-4 pt-3">

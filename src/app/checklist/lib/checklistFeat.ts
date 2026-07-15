@@ -15,7 +15,8 @@ import {
     resetCube, 
     saveData, 
     saveRest, 
-    updateAccount
+    updateAccount,
+    updateMemo
 } from "../../store/checklistSlice";
 import { SetStateFn } from "@/utiils/utils";
 import { addToast, Selection } from "@heroui/react";
@@ -179,6 +180,7 @@ export async function loadChecklist(
         for (const character of top6) {
             const checkCharacter: CheckCharacter = {
                 nickname: character.nickname,
+                memo: '',
                 level: character.level,
                 job: character.job,
                 server: character.server,
@@ -2147,6 +2149,7 @@ export async function handleAddCharacter(
         if (item.isCheck) {
             const checkCharacter: CheckCharacter = {
                 nickname: item.nickname,
+                memo: '',
                 level: item.level,
                 job: item.job,
                 server: item.server,
@@ -2255,6 +2258,49 @@ export async function handleCalculateOtherGold(
 }
 
 // 순서 변경 드래그 이벤트 함수
+export async function handleUpdateMemo(
+    checklist: CheckCharacter[],
+    nickname: string,
+    memo: string,
+    dispatch: AppDispatch
+): Promise<boolean> {
+    const userStr = sessionStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser ? storedUser.id : '';
+    const character = checklist.find(item => item.nickname === nickname);
+    if (!character) return false;
+
+    const previousMemo = character.memo ?? '';
+    const normalizedMemo = memo.trim();
+    if (normalizedMemo.length > 300) {
+        addToast({
+            title: "메모 저장 오류",
+            description: "메모는 300자 이내로 작성해주세요.",
+            color: "danger"
+        });
+        return false;
+    }
+
+    dispatch(updateMemo({ nickname, memo: normalizedMemo }));
+    const saveRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, nickname, memo: normalizedMemo, type: 'update-memo' })
+    });
+
+    if (!saveRes.ok) {
+        dispatch(updateMemo({ nickname, memo: previousMemo }));
+        addToast({
+            title: "메모 저장 실패",
+            description: "메모를 저장하지 못했습니다. 잠시 후 다시 시도해주세요.",
+            color: "danger"
+        });
+        return false;
+    }
+
+    return true;
+}
+
 export function handleOnDragEnd(
     positions: CheckCharacter[],
     setPositions: SetStateFn<CheckCharacter[]>

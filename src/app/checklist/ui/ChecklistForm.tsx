@@ -19,6 +19,7 @@ import {
     Tabs,
     Tab,
     Input,
+    Textarea,
     CardFooter,
     Accordion, AccordionItem,
     Dropdown, DropdownTrigger, DropdownMenu, DropdownItem,
@@ -104,6 +105,7 @@ import {
     handleRemoveWeekList, 
     handleResetCube, 
     handleSelectAccount, 
+    handleUpdateMemo,
     handleSelectCharacter, 
     handleWeekBonusCheckStage, 
     handleWeekCheckStage, 
@@ -1139,7 +1141,7 @@ export function ChecklistComponent({
                         "w-full overflow-hidden border border-gray-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]",
                         isHideDayContent ? isMobile ? "" : "min-[331px]:w-[330px]" : "min-[561px]:w-[560px]"
                     )}>
-                        <CardHeader className="p-4 pb-3">
+                        <CardHeader className="flex-col items-stretch p-4 pb-3">
                             <div className={clsx(
                                 "w-full flex items-center gap-1",
                                 isHideDayContent ? "flex-col" : "flex-col md960:flex-row"
@@ -1162,12 +1164,13 @@ export function ChecklistComponent({
                                         <p>{character.server}</p>
                                     </div>
                                 </Chip>
-                                <div className="w-full grow flex gap-2 items-center">
+                                <div className="w-full grow flex flex-col gap-1">
+                                    <div className="w-full flex gap-2 items-center">
                                     <JobEmblemIcon job={character.job} size={38}/>
                                     <div className="flex grow flex-row md960:flex-col items-center">
                                         <div className="grow-1 w-full">
                                             <p className="mt-1 text-xs fadedtext">{character.job} · Lv.{character.level}</p>
-                                            <div className="flex gap-2 items-center">
+                                            <div className="flex min-w-0 gap-2 items-center">
                                                 <span className={clsx(
                                                     isHideDayContent ? isMobile ? "text-xl" : "text-lg" : "text-xl"
                                                 )}>{character.nickname}</span>
@@ -1192,6 +1195,16 @@ export function ChecklistComponent({
                                                 setAccounts={setAccounts}/>
                                         </div>
                                     </div>
+                                    </div>
+                                    {isHideDayContent && (
+                                        <div className="w-full min-w-0">
+                                            <CharacterMemo
+                                                checklist={checklist}
+                                                nickname={character.nickname}
+                                                dispatch={dispatch}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                                 <div className={clsx(
                                     "w-full h-full md960:w-[330px] flex",
@@ -1294,6 +1307,15 @@ export function ChecklistComponent({
                                     </Popover>
                                 </div>
                             </div>
+                            {!isHideDayContent && (
+                                <div className="mt-2 w-full border-t border-gray-200/70 pt-2 dark:border-white/10">
+                                    <CharacterMemo
+                                        checklist={checklist}
+                                        nickname={character.nickname}
+                                        dispatch={dispatch}
+                                    />
+                                </div>
+                            )}
                         </CardHeader>
                         <Divider/>
                         <CardBody className="p-4 pt-3">
@@ -1817,6 +1839,85 @@ function SelectAccountModal({
             </ModalContent>
         </Modal>
     )
+}
+
+type CharacterMemoProps = {
+    checklist: CheckCharacter[],
+    nickname: string,
+    dispatch: AppDispatch
+}
+
+function CharacterMemo({ checklist, nickname, dispatch }: CharacterMemoProps) {
+    const character = checklist.find(item => item.nickname === nickname);
+    const [draft, setDraft] = useState(character?.memo ?? '');
+    const [isSaving, setSaving] = useState(false);
+    const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+    const memo = character?.memo ?? '';
+
+    const openEditor = () => {
+        setDraft(memo);
+        onOpen();
+    };
+
+    const saveMemo = async () => {
+        setSaving(true);
+        const saved = await handleUpdateMemo(checklist, nickname, draft, dispatch);
+        setSaving(false);
+        if (saved) onClose();
+    };
+
+    return (
+        <>
+            <button
+                type="button"
+                className="group flex min-h-6 min-w-0 w-full max-w-[520px] cursor-pointer items-start justify-start px-1 text-left hover:text-foreground hover:underline"
+                aria-label={memo ? `${nickname} 메모 수정` : `${nickname} 메모 추가`}
+                onClick={openEditor}
+            >
+                <span aria-hidden="true" className="mr-2 shrink-0 text-sm">📝</span>
+                <span className={clsx(
+                    "max-h-[4.5rem] overflow-hidden whitespace-pre-wrap break-words leading-6",
+                    memo ? "line-clamp-3 text-sm text-foreground" : "text-xs fadedtext"
+                )}>{memo || "메모를 입력해주세요."}</span>
+            </button>
+            <Modal
+                isOpen={isOpen}
+                onOpenChange={onOpenChange}
+                placement="center"
+                size="sm"
+            >
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1">
+                                {nickname} 메모
+                            </ModalHeader>
+                            <ModalBody>
+                                <Textarea
+                                    autoFocus
+                                    minRows={3}
+                                    maxRows={6}
+                                    maxLength={300}
+                                    value={draft}
+                                    placeholder="캐릭터 상태나 임시 메모를 입력하세요."
+                                    description={`${draft.length}/300자`}
+                                    onValueChange={setDraft}
+                                />
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button variant="light" onPress={onClose}>
+                                    취소
+                                </Button>
+                                <Button color="primary" isLoading={isSaving} onPress={saveMemo}>
+                                    저장
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+        </>
+    );
 }
 
 // 설정 버튼 요소

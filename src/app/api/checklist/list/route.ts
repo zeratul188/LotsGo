@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
             }
             return {
                 nickname: item.nickname ?? '',
+                memo: typeof item.memo === 'string' ? item.memo : '',
                 level: item.level ?? 0,
                 job: item.job ?? '',
                 server: item.server ?? '',
@@ -68,7 +69,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     const body = await req.json();
     const id = body.id;
-    const checklist: CheckCharacter[] = body.checklist;
+    const checklist: CheckCharacter[] = body.checklist ?? [];
     const updatedChecklist = [...checklist];
 
     try {
@@ -85,6 +86,27 @@ export async function POST(req: NextRequest) {
         let characterIndex = -1, checklistIndex = -1, listIndex = -1;
         
         switch(body.type) {
+            case 'update-memo': {
+                const nickname = typeof body.nickname === 'string' ? body.nickname : '';
+                const memo = typeof body.memo === 'string' ? body.memo.trim() : null;
+
+                if (!nickname || memo === null || memo.length > 300) {
+                    return NextResponse.json({ error: 'Invalid memo request.' }, { status: 400 });
+                }
+
+                const storedChecklist = (targetDoc.data().checklist ?? []) as CheckCharacter[];
+                const memoIndex = findIndexByNickname(storedChecklist, nickname);
+                if (memoIndex === -1) {
+                    return NextResponse.json({ error: 'Character not found.' }, { status: 404 });
+                }
+
+                const memoChecklist = storedChecklist.map((character, index) => index === memoIndex ? {
+                    ...character,
+                    memo
+                } : character);
+                await updateDoc(docRef, { checklist: memoChecklist });
+                return NextResponse.json({ message: 'Memo saved.' }, { status: 200 });
+            }
             case 'init':
                 await updateDoc(docRef, {
                     checklist: checklist
