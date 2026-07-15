@@ -7,6 +7,7 @@ import {
     PreviewCell,
     SpecialTile,
     SpiritCard,
+    SpiritElement,
     SpiritLevel,
     SpiritName,
     StagePreset,
@@ -36,6 +37,15 @@ const weightedPick = <T,>(items: readonly T[], weights: number[]): T => {
 
 export const drawDefaultCard = () => makeCard(weightedPick(DEFAULT_SPIRITS, SPIRIT_WEIGHTS));
 export const drawMysteryCard = () => makeCard(MYSTERY_SPIRITS[Math.random() < 0.5 ? 0 : 1]);
+
+export const getSpiritElement = (name: SpiritName): SpiritElement => {
+    if (["지진", "충격파"].includes(name)) return "earth";
+    if (["용오름", "분출", "해일", "폭풍우"].includes(name)) return "water";
+    if (["대폭발", "업화"].includes(name)) return "fire";
+    if (["벼락", "낙뢰"].includes(name)) return "lightning";
+    if (["정화", "세계수의 공명"].includes(name)) return "light";
+    return "default";
+};
 
 export const getBoardSize = (stage: number): 6 | 7 | 8 => stage <= 3 ? 6 : stage <= 5 ? 7 : 8;
 
@@ -219,7 +229,7 @@ export type TurnNotice = {
 export type TurnResult = {
     game: GameState;
     notices: TurnNotice[];
-    destroyedPositions: Position[];
+    destroyedPositions: { position: Position; element: SpiritElement }[];
 };
 
 const mergeCards = (cards: SpiritCard[], upcoming: SpiritCard[]) => {
@@ -286,10 +296,13 @@ export const executeTurn = (state: GameState, target: Position): TurnResult => {
 
     let specials: SpecialTile[] = [];
     const notices: TurnNotice[] = [];
-    const destroyedPositions: Position[] = [];
+    const destroyedPositions: { position: Position; element: SpiritElement }[] = [];
     const destroyTile = (row: number, col: number) => {
         if (!next.board[row][col]) return;
-        destroyedPositions.push({ row, col });
+        destroyedPositions.push({
+            position: { row, col },
+            element: getSpiritElement(card.name),
+        });
         next.board[row][col] = null;
     };
     if (card.name === "벼락") {
