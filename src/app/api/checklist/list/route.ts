@@ -34,6 +34,7 @@ export async function GET(req: NextRequest) {
                 nickname: item.nickname ?? '',
                 memo: typeof item.memo === 'string' ? item.memo : '',
                 paradisePower: typeof item.paradisePower === 'number' && Number.isFinite(item.paradisePower) ? Math.max(0, Math.trunc(item.paradisePower)) : 0,
+                hallsHourglassCheck: item.hallsHourglassCheck === true,
                 level: item.level ?? 0,
                 job: item.job ?? '',
                 server: item.server ?? '',
@@ -128,6 +129,26 @@ export async function POST(req: NextRequest) {
                 } : character);
                 await updateDoc(docRef, { checklist: updatedStoredChecklist });
                 return NextResponse.json({ message: 'Paradise power saved.' }, { status: 200 });
+            }
+            case 'check-halls-hourglass': {
+                const nickname = typeof body.nickname === 'string' ? body.nickname : '';
+                const isCheck = body.isCheck === true;
+                const storedChecklist = (targetDoc.data().checklist ?? []) as CheckCharacter[];
+                const characterIndex = findIndexByNickname(storedChecklist, nickname);
+
+                if (!nickname || characterIndex === -1) {
+                    return NextResponse.json({ error: 'Character not found.' }, { status: 404 });
+                }
+                if (Number(storedChecklist[characterIndex].level) < 1730) {
+                    return NextResponse.json({ error: 'Character level is too low.' }, { status: 400 });
+                }
+
+                const updatedStoredChecklist = storedChecklist.map((character, index) => index === characterIndex ? {
+                    ...character,
+                    hallsHourglassCheck: isCheck
+                } : character);
+                await updateDoc(docRef, { checklist: updatedStoredChecklist });
+                return NextResponse.json({ message: 'Halls hourglass checklist saved.' }, { status: 200 });
             }
             case 'init':
                 await updateDoc(docRef, {

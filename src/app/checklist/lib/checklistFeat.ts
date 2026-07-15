@@ -17,7 +17,8 @@ import {
     saveRest, 
     updateAccount,
     updateMemo,
-    updateParadisePower
+    updateParadisePower,
+    updateHallsHourglassCheck
 } from "../../store/checklistSlice";
 import { SetStateFn } from "@/utiils/utils";
 import { addToast, Selection } from "@heroui/react";
@@ -204,6 +205,7 @@ export async function loadChecklist(
                 isGold: true,
                 otherGold: 0,
                 paradisePower: 0,
+                hallsHourglassCheck: false,
                 position: 9999,
                 account: '본계정'
             }
@@ -1949,6 +1951,10 @@ export function useClickUpdatedCharacters(
                     character.server = expeditionCharacter.server;
                     character.job = expeditionCharacter.job;
                     character.level = expeditionCharacter.level;
+                    const previousCharacter = checklist.find(item => item.nickname === character.nickname);
+                    character.hallsHourglassCheck = previousCharacter?.level && previousCharacter.level < 1730
+                        ? false
+                        : previousCharacter?.hallsHourglassCheck ?? false;
                     updatedCharacters.add(character.nickname);
                     updatedCount++;
                 }
@@ -2174,6 +2180,7 @@ export async function handleAddCharacter(
                 isGold: isGold,
                 otherGold: 0,
                 paradisePower: 0,
+                hallsHourglassCheck: false,
                 position: 9999,
                 account: selected
             }
@@ -2328,6 +2335,33 @@ export async function handleUpdateParadisePower(
     if (!editRes.ok) {
         addToast({ title: '낙원력 저장 실패', description: '낙원력을 저장하지 못했습니다.', color: 'danger' });
         dispatch(updateParadisePower({ nickname, paradisePower: previousParadisePower }));
+        return false;
+    }
+    return true;
+}
+
+export async function handleHallsHourglassCheck(
+    checklist: CheckCharacter[],
+    nickname: string,
+    isCheck: boolean,
+    dispatch: AppDispatch
+): Promise<boolean> {
+    const userStr = sessionStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser ? storedUser.id : '';
+    const character = checklist.find(item => item.nickname === nickname);
+    if (!character || character.level < 1730) return false;
+
+    const previousValue = character.hallsHourglassCheck ?? false;
+    dispatch(updateHallsHourglassCheck({ nickname, isCheck }));
+    const saveRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, nickname, isCheck, type: 'check-halls-hourglass' })
+    });
+    if (!saveRes.ok) {
+        dispatch(updateHallsHourglassCheck({ nickname, isCheck: previousValue }));
+        addToast({ title: '할의 모래시계 저장 실패', description: '체크 상태를 저장하지 못했습니다.', color: 'danger' });
         return false;
     }
     return true;
@@ -2740,6 +2774,7 @@ export async function handleResetChecklist(
                     }
                 }),
                 otherGold: 0,
+                hallsHourglassCheck: false,
                 weeklist: weeklist.map((list: any) => ({
                     ...list,
                     isCheck: false

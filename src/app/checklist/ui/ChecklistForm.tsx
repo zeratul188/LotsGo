@@ -107,6 +107,7 @@ import {
     handleSelectAccount, 
     handleUpdateMemo,
     handleUpdateParadisePower,
+    handleHallsHourglassCheck,
     handleSelectCharacter, 
     handleWeekBonusCheckStage, 
     handleWeekCheckStage, 
@@ -1390,7 +1391,7 @@ export function ChecklistComponent({
                                                     isHideBonusMode ? 'hidden' : ''
                                                 )}/>
                                         </Tooltip>
-                                    </div>
+                                     </div>
                                     <div className="px-1.5 py-1 sm:px-2">
                                         {character.checklist.length === 0 ? (
                                             <div className="w-full h-[140px] flex items-center justify-center">
@@ -1629,7 +1630,7 @@ export function ChecklistComponent({
                                                     aria-checked={item.isCheck}
                                                     aria-label={`checklist-${item.name}-${idx}`}
                                                     className="flex w-full cursor-pointer items-center gap-2 px-2.5 py-1.5 text-left text-sm"
-                                                    onClick={async () => await handleWeekListCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
+                                                     onClick={async () => await handleWeekListCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                     <span className={clsx(
                                                         "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
                                                         item.isCheck ? "border-secondary bg-secondary text-white" : "border-gray-400 dark:border-gray-600"
@@ -1639,9 +1640,30 @@ export function ChecklistComponent({
                                                     <span className={item.isCheck ? "line-through fadedtext" : ""}>{item.name}</span>
                                                 </button>
                                             </div>
-                                        ))}
-                                    </div>
-                                    <Button 
+                                         ))}
+                                         {character.level >= 1730 ? (
+                                             <div className={clsx(
+                                                 "mt-2 w-full rounded-lg border py-1",
+                                                 character.hallsHourglassCheck ? 'border-warning-200 bg-warning-50/70 dark:border-warning-700/60 dark:bg-warning-500/10' : 'border-transparent hover:bg-warning-50/40 dark:hover:bg-warning-950/20',
+                                                 isHideCompleteContent && character.hallsHourglassCheck ? 'hidden' : ''
+                                             )}>
+                                                 <Checkbox
+                                                     aria-label="할의 모래시계"
+                                                     color="warning"
+                                                     size="sm"
+                                                     radius="full"
+                                                     isSelected={character.hallsHourglassCheck ?? false}
+                                                     classNames={{base: "w-full max-w-none", label: "flex min-w-0 flex-1 items-center justify-start text-left"}}
+                                                     className="box-border w-full max-w-none py-1.5 pl-4 pr-2.5"
+                                                     onValueChange={async (isCheck) => {
+                                                         await handleHallsHourglassCheck(checklist, character.nickname, isCheck, dispatch);
+                                                     }}>
+                                                     <span className={character.hallsHourglassCheck ? 'line-through fadedtext' : ''}>할의 모래시계</span>
+                                                 </Checkbox>
+                                             </div>
+                                         ) : null}
+                                     </div>
+                                     <Button
                                         color="secondary"
                                         variant="flat"
                                         fullWidth 

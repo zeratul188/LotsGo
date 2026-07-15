@@ -37,6 +37,7 @@ export type CheckCharacter = {
     nickname: string,
     memo?: string,
     paradisePower?: number,
+    hallsHourglassCheck?: boolean,
     level: number,
     job: string,
     server: string,
@@ -125,6 +126,10 @@ export type UpdateParadisePower = {
     nickname: string,
     paradisePower: number
 }
+export type UpdateHallsHourglassCheck = {
+    nickname: string,
+    isCheck: boolean
+}
 
 const checklistSlice = createSlice({
     name: 'checklist',
@@ -136,6 +141,7 @@ const checklistSlice = createSlice({
                 ...charaacter,
                 memo: charaacter.memo ?? '',
                 paradisePower: Number.isFinite(charaacter.paradisePower) ? Math.max(0, Math.trunc(charaacter.paradisePower)) : 0,
+                hallsHourglassCheck: charaacter.hallsHourglassCheck ?? false,
                 cubelist: charaacter.cubelist ?? [],
                 position: charaacter.position ?? 9999
             }));
@@ -225,6 +231,12 @@ const checklistSlice = createSlice({
             if (character) {
                 character.paradisePower = action.payload.paradisePower;
             }
+        },
+        updateHallsHourglassCheck(state, action: PayloadAction<UpdateHallsHourglassCheck>) {
+            const character = state.checklist.find(item => item.nickname === action.payload.nickname);
+            if (character) {
+                character.hallsHourglassCheck = action.payload.isCheck;
+            }
         }
     }
 })
@@ -246,6 +258,7 @@ export const {
     resetCube,
     updateAccount,
     updateMemo,
-    updateParadisePower
+    updateParadisePower,
+    updateHallsHourglassCheck
 } = checklistSlice.actions;
 export default checklistSlice.reducer;
