@@ -751,7 +751,14 @@ export default function TranscendenceForm() {
                                 <span className="rounded-full bg-default-200/70 px-2 py-1 text-[10px] font-medium text-default-600">3장 미리보기</span>
                             </div>
                             <div className="flex justify-center gap-3">
-                                {game.upcoming.slice(0, 3).map((card) => <SpiritCardView key={card.id} card={card} small/>)}
+                                {game.upcoming.slice(0, 3).map((card, index) => (
+                                    <div key={card.id} className="relative">
+                                        <span className="absolute -left-1 -top-1 z-10 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground shadow-md">
+                                            {index + 1}
+                                        </span>
+                                        <SpiritCardView card={card} small/>
+                                    </div>
+                                ))}
                             </div>
                         </section>
 
@@ -834,8 +841,13 @@ export default function TranscendenceForm() {
                         <div className="ml-1 self-center">
                             <p className="mb-1 text-center text-[10px] text-default-500">다음 카드</p>
                             <div className="flex gap-1">
-                                {game.upcoming.slice(0, 3).map((card) => (
-                                    <SpiritCardView key={card.id} card={card} mini/>
+                                {game.upcoming.slice(0, 3).map((card, index) => (
+                                    <div key={card.id} className="relative">
+                                        <span className="absolute -left-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-primary-foreground shadow-md">
+                                            {index + 1}
+                                        </span>
+                                        <SpiritCardView card={card} mini/>
+                                    </div>
                                 ))}
                             </div>
                         </div>
