@@ -219,6 +219,7 @@ export const resetWeekChecklist = onRequest({
                   }
                 }),
                 otherGold: 0,
+                hallsHourglassCheck: false,
                 weeklist: weeklist.map((list: any) => ({
                     ...list,
                     isCheck: false

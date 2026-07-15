@@ -32,6 +32,9 @@ export async function GET(req: NextRequest) {
             }
             return {
                 nickname: item.nickname ?? '',
+                memo: typeof item.memo === 'string' ? item.memo : '',
+                paradisePower: typeof item.paradisePower === 'number' && Number.isFinite(item.paradisePower) ? Math.max(0, Math.trunc(item.paradisePower)) : 0,
+                hallsHourglassCheck: item.hallsHourglassCheck === true,
                 level: item.level ?? 0,
                 job: item.job ?? '',
                 server: item.server ?? '',
@@ -68,7 +71,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     const body = await req.json();
     const id = body.id;
-    const checklist: CheckCharacter[] = body.checklist;
+    const checklist: CheckCharacter[] = body.checklist ?? [];
     const updatedChecklist = [...checklist];
 
     try {
@@ -85,6 +88,68 @@ export async function POST(req: NextRequest) {
         let characterIndex = -1, checklistIndex = -1, listIndex = -1;
         
         switch(body.type) {
+            case 'update-memo': {
+                const nickname = typeof body.nickname === 'string' ? body.nickname : '';
+                const memo = typeof body.memo === 'string' ? body.memo.trim() : null;
+
+                if (!nickname || memo === null || memo.length > 300) {
+                    return NextResponse.json({ error: 'Invalid memo request.' }, { status: 400 });
+                }
+
+                const storedChecklist = (targetDoc.data().checklist ?? []) as CheckCharacter[];
+                const memoIndex = findIndexByNickname(storedChecklist, nickname);
+                if (memoIndex === -1) {
+                    return NextResponse.json({ error: 'Character not found.' }, { status: 404 });
+                }
+
+                const memoChecklist = storedChecklist.map((character, index) => index === memoIndex ? {
+                    ...character,
+                    memo
+                } : character);
+                await updateDoc(docRef, { checklist: memoChecklist });
+                return NextResponse.json({ message: 'Memo saved.' }, { status: 200 });
+            }
+            case 'update-paradise-power': {
+                const nickname = typeof body.nickname === 'string' ? body.nickname : '';
+                const paradisePower = Number(body.paradisePower);
+
+                if (!nickname || !Number.isInteger(paradisePower) || paradisePower < 0 || paradisePower > 999999999) {
+                    return NextResponse.json({ error: 'Invalid paradise power request.' }, { status: 400 });
+                }
+
+                const storedChecklist = (targetDoc.data().checklist ?? []) as CheckCharacter[];
+                const characterIndex = findIndexByNickname(storedChecklist, nickname);
+                if (characterIndex === -1) {
+                    return NextResponse.json({ error: 'Character not found.' }, { status: 404 });
+                }
+
+                const updatedStoredChecklist = storedChecklist.map((character, index) => index === characterIndex ? {
+                    ...character,
+                    paradisePower
+                } : character);
+                await updateDoc(docRef, { checklist: updatedStoredChecklist });
+                return NextResponse.json({ message: 'Paradise power saved.' }, { status: 200 });
+            }
+            case 'check-halls-hourglass': {
+                const nickname = typeof body.nickname === 'string' ? body.nickname : '';
+                const isCheck = body.isCheck === true;
+                const storedChecklist = (targetDoc.data().checklist ?? []) as CheckCharacter[];
+                const characterIndex = findIndexByNickname(storedChecklist, nickname);
+
+                if (!nickname || characterIndex === -1) {
+                    return NextResponse.json({ error: 'Character not found.' }, { status: 404 });
+                }
+                if (Number(storedChecklist[characterIndex].level) < 1730) {
+                    return NextResponse.json({ error: 'Character level is too low.' }, { status: 400 });
+                }
+
+                const updatedStoredChecklist = storedChecklist.map((character, index) => index === characterIndex ? {
+                    ...character,
+                    hallsHourglassCheck: isCheck
+                } : character);
+                await updateDoc(docRef, { checklist: updatedStoredChecklist });
+                return NextResponse.json({ message: 'Halls hourglass checklist saved.' }, { status: 200 });
+            }
             case 'init':
                 await updateDoc(docRef, {
                     checklist: checklist

@@ -468,6 +468,24 @@ type ChecklistComponentProps = {
     bosses: Boss[],
     cubes: Cube[]
 }
+
+function CharacterMemoPreview({ memo }: { memo?: string }) {
+    const value = memo?.trim() ?? '';
+    return (
+        <div className="w-full border-t border-gray-200/70 pt-2 dark:border-white/10">
+            <div className="flex min-w-0 items-start">
+                <span aria-hidden="true" className="mr-2 shrink-0 text-sm">📝</span>
+                <p className={clsx(
+                "max-h-[4.5rem] overflow-hidden whitespace-pre-wrap break-words leading-6 line-clamp-3",
+                value ? "text-sm text-foreground" : "text-xs fadedtext"
+            )}>
+                {value || "메모를 입력해주세요."}
+                </p>
+            </div>
+        </div>
+    );
+}
+
 function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: ChecklistComponentProps) {
     const [inputOtherGold, setInputOtherGold] = useState<{ [nickname: string]: number }>({});
     return (
@@ -476,7 +494,7 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                 .filter((character) => character.server === server || server === '전체')
                 .map((character, index) => (
                     <Card key={index} fullWidth radius="lg" shadow="none" className="w-full min-[561px]:w-[560px] overflow-hidden border border-gray-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]">
-                        <CardHeader className="p-4 pb-3">
+                        <CardHeader className="flex-col items-stretch p-4 pb-3">
                             <div className="w-full flex flex-col md960:flex-row items-center gap-2">
                                 <div className="w-full grow flex gap-4 items-center">
                                     <div className="flex flex-col gap-2 items-center">
@@ -580,6 +598,7 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                     </Popover>
                                 </div>
                             </div>
+                            <CharacterMemoPreview memo={character.memo}/>
                         </CardHeader>
                         <Divider/>
                         <CardBody className="p-4 pt-3">
@@ -606,7 +625,7 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                         }}>일일 콘텐츠 관리</Button>
                                 </div>
                                 <div className="min-w-0 grow-2 border-t border-gray-200/80 pt-3 dark:border-white/10 md960:border-l md960:border-t-0 md960:pl-4 md960:pt-0">
-                                    <div className="mb-1 border-b border-secondary-200/70 pb-2 dark:border-secondary-900/50"><p className="text-sm font-semibold text-secondary-700 dark:text-secondary-400">주간 콘텐츠</p><p className="text-[11px] fadedtext">주간 초기화되는 숙제</p></div>
+                                    <div className="mb-1 border-b border-secondary-200/70 pb-2 dark:border-secondary-700/70"><p className="text-sm font-semibold text-secondary-700 dark:text-secondary-700">주간 콘텐츠</p><p className="text-[11px] text-gray-500 dark:text-gray-400">주간 초기화되는 숙제</p></div>
                                     <div className="px-1.5 sm:px-2">
                                         {character.checklist.map((item, idx) => (
                                             <div key={idx} className={clsx(
@@ -721,6 +740,13 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                                 handleSetOtherGold(checklist, setChecklist, index, inputOtherGold[character.nickname] ?? 0, 'add');
                                             }}>+</Button>
                                     </Tooltip>
+                                </div>
+                                <div className="mb-2 flex min-h-7 items-center gap-2 px-1 text-sm" aria-label="낙원력">
+                                    <span aria-hidden="true" className="shrink-0 text-sm">⚔️</span>
+                                    <span className="shrink-0 font-medium">낙원력</span>
+                                    <span className={(character.paradisePower ?? 0) > 0 ? "font-semibold text-foreground" : "fadedtext"}>
+                                        {(character.paradisePower ?? 0) > 0 ? (character.paradisePower ?? 0).toLocaleString() : '미설정'}
+                                    </span>
                                 </div>
                                 <Divider/>
                                 <Accordion>
