@@ -106,6 +106,7 @@ import {
     handleResetCube, 
     handleSelectAccount, 
     handleUpdateMemo,
+    handleUpdateParadisePower,
     handleSelectCharacter, 
     handleWeekBonusCheckStage, 
     handleWeekCheckStage, 
@@ -1694,6 +1695,7 @@ export function ChecklistComponent({
                                             }}>+</Button>
                                     </Tooltip>
                                 </div>
+                                <CharacterParadisePower checklist={checklist} nickname={character.nickname} dispatch={dispatch}/>
                                 <Divider/>
                                 <Accordion>
                                     <AccordionItem key="0" title={<span className="flex gap-2 items-center cursor-pointer">
@@ -1911,6 +1913,75 @@ function CharacterMemo({ checklist, nickname, dispatch }: CharacterMemoProps) {
                                 <Button color="primary" isLoading={isSaving} onPress={saveMemo}>
                                     저장
                                 </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+        </>
+    );
+}
+
+type CharacterParadisePowerProps = CharacterMemoProps
+
+function CharacterParadisePower({ checklist, nickname, dispatch }: CharacterParadisePowerProps) {
+    const character = checklist.find(item => item.nickname === nickname);
+    const currentPower = character?.paradisePower ?? 0;
+    const [draft, setDraft] = useState(currentPower);
+    const [isSaving, setSaving] = useState(false);
+    const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+
+    const openEditor = () => {
+        setDraft(currentPower);
+        onOpen();
+    };
+
+    const savePower = async () => {
+        if (!Number.isInteger(draft) || draft < 0 || draft > 999999999) {
+            addToast({ title: '낙원력 입력 확인', description: '0 이상 999,999,999 이하의 정수를 입력해주세요.', color: 'warning' });
+            return;
+        }
+        setSaving(true);
+        const saved = await handleUpdateParadisePower(checklist, nickname, draft, dispatch);
+        setSaving(false);
+        if (saved) onClose();
+    };
+
+    return (
+        <>
+            <button
+                type="button"
+                className="flex min-h-7 w-full cursor-pointer items-center gap-2 rounded-md px-1 text-left text-sm hover:bg-gray-100/70 dark:hover:bg-white/[0.04]"
+                aria-label={`${nickname} 낙원력 수정`}
+                onClick={openEditor}
+            >
+                <span aria-hidden="true" className="shrink-0 text-sm">⚔️</span>
+                <span className="shrink-0 font-medium">낙원력</span>
+                <span className={currentPower > 0 ? "font-semibold text-foreground" : "fadedtext"}>
+                    {currentPower > 0 ? currentPower.toLocaleString() : '미설정'}
+                </span>
+                <span className="ml-auto text-xs fadedtext">수정</span>
+            </button>
+            <Modal isOpen={isOpen} onOpenChange={onOpenChange} placement="center" size="sm">
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader>{nickname} 낙원력</ModalHeader>
+                            <ModalBody>
+                                <NumberInput
+                                    autoFocus
+                                    label="낙원력"
+                                    labelPlacement="outside"
+                                    placeholder="0 ~ 999999999"
+                                    minValue={0}
+                                    maxValue={999999999}
+                                    value={draft}
+                                    onValueChange={setDraft}
+                                />
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button variant="light" onPress={onClose}>취소</Button>
+                                <Button color="primary" isLoading={isSaving} onPress={savePower}>저장</Button>
                             </ModalFooter>
                         </>
                     )}

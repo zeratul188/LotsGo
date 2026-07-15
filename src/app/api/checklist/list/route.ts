@@ -33,6 +33,7 @@ export async function GET(req: NextRequest) {
             return {
                 nickname: item.nickname ?? '',
                 memo: typeof item.memo === 'string' ? item.memo : '',
+                paradisePower: typeof item.paradisePower === 'number' && Number.isFinite(item.paradisePower) ? Math.max(0, Math.trunc(item.paradisePower)) : 0,
                 level: item.level ?? 0,
                 job: item.job ?? '',
                 server: item.server ?? '',
@@ -106,6 +107,27 @@ export async function POST(req: NextRequest) {
                 } : character);
                 await updateDoc(docRef, { checklist: memoChecklist });
                 return NextResponse.json({ message: 'Memo saved.' }, { status: 200 });
+            }
+            case 'update-paradise-power': {
+                const nickname = typeof body.nickname === 'string' ? body.nickname : '';
+                const paradisePower = Number(body.paradisePower);
+
+                if (!nickname || !Number.isInteger(paradisePower) || paradisePower < 0 || paradisePower > 999999999) {
+                    return NextResponse.json({ error: 'Invalid paradise power request.' }, { status: 400 });
+                }
+
+                const storedChecklist = (targetDoc.data().checklist ?? []) as CheckCharacter[];
+                const characterIndex = findIndexByNickname(storedChecklist, nickname);
+                if (characterIndex === -1) {
+                    return NextResponse.json({ error: 'Character not found.' }, { status: 404 });
+                }
+
+                const updatedStoredChecklist = storedChecklist.map((character, index) => index === characterIndex ? {
+                    ...character,
+                    paradisePower
+                } : character);
+                await updateDoc(docRef, { checklist: updatedStoredChecklist });
+                return NextResponse.json({ message: 'Paradise power saved.' }, { status: 200 });
             }
             case 'init':
                 await updateDoc(docRef, {

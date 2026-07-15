@@ -741,6 +741,13 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                             }}>+</Button>
                                     </Tooltip>
                                 </div>
+                                <div className="mb-2 flex min-h-7 items-center gap-2 px-1 text-sm" aria-label="낙원력">
+                                    <span aria-hidden="true" className="shrink-0 text-sm">⚔️</span>
+                                    <span className="shrink-0 font-medium">낙원력</span>
+                                    <span className={(character.paradisePower ?? 0) > 0 ? "font-semibold text-foreground" : "fadedtext"}>
+                                        {(character.paradisePower ?? 0) > 0 ? (character.paradisePower ?? 0).toLocaleString() : '미설정'}
+                                    </span>
+                                </div>
                                 <Divider/>
                                 <Accordion>
                                     <AccordionItem key="0" title={<span className="flex gap-2 items-center cursor-pointer">

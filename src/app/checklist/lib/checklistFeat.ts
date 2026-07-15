@@ -16,7 +16,8 @@ import {
     saveData, 
     saveRest, 
     updateAccount,
-    updateMemo
+    updateMemo,
+    updateParadisePower
 } from "../../store/checklistSlice";
 import { SetStateFn } from "@/utiils/utils";
 import { addToast, Selection } from "@heroui/react";
@@ -202,6 +203,7 @@ export async function loadChecklist(
                 cube: 0,
                 isGold: true,
                 otherGold: 0,
+                paradisePower: 0,
                 position: 9999,
                 account: '본계정'
             }
@@ -2171,6 +2173,7 @@ export async function handleAddCharacter(
                 cube: 0,
                 isGold: isGold,
                 otherGold: 0,
+                paradisePower: 0,
                 position: 9999,
                 account: selected
             }
@@ -2298,6 +2301,35 @@ export async function handleUpdateMemo(
         return false;
     }
 
+    return true;
+}
+
+export async function handleUpdateParadisePower(
+    checklist: CheckCharacter[],
+    nickname: string,
+    paradisePower: number,
+    dispatch: AppDispatch
+) {
+    const userStr = sessionStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser ? storedUser.id : '';
+    const character = checklist.find(item => item.nickname === nickname);
+    if (!character) return false;
+
+    const previousParadisePower = character.paradisePower ?? 0;
+    const normalizedParadisePower = Math.trunc(paradisePower);
+    dispatch(updateParadisePower({ nickname, paradisePower: normalizedParadisePower }));
+
+    const editRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, nickname, paradisePower: normalizedParadisePower, type: 'update-paradise-power' })
+    });
+    if (!editRes.ok) {
+        addToast({ title: '낙원력 저장 실패', description: '낙원력을 저장하지 못했습니다.', color: 'danger' });
+        dispatch(updateParadisePower({ nickname, paradisePower: previousParadisePower }));
+        return false;
+    }
     return true;
 }
 
