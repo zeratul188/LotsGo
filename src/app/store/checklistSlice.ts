@@ -35,6 +35,9 @@ export type CubeList = {
 }
 export type CheckCharacter = {
     nickname: string,
+    memo?: string,
+    paradisePower?: number,
+    hallsHourglassCheck?: boolean,
     level: number,
     job: string,
     server: string,
@@ -115,6 +118,18 @@ export type UpdateAccount = {
     characterIndex: number,
     account: string
 }
+export type UpdateMemo = {
+    nickname: string,
+    memo: string
+}
+export type UpdateParadisePower = {
+    nickname: string,
+    paradisePower: number
+}
+export type UpdateHallsHourglassCheck = {
+    nickname: string,
+    isCheck: boolean
+}
 
 const checklistSlice = createSlice({
     name: 'checklist',
@@ -124,6 +139,9 @@ const checklistSlice = createSlice({
         saveData(state, action: PayloadAction<CheckCharacter[]>) {
             const newChecklist = (action.payload ?? []).map((charaacter: any) => ({
                 ...charaacter,
+                memo: charaacter.memo ?? '',
+                paradisePower: Number.isFinite(charaacter.paradisePower) ? Math.max(0, Math.trunc(charaacter.paradisePower)) : 0,
+                hallsHourglassCheck: charaacter.hallsHourglassCheck ?? false,
                 cubelist: charaacter.cubelist ?? [],
                 position: charaacter.position ?? 9999
             }));
@@ -201,6 +219,24 @@ const checklistSlice = createSlice({
             const characterIndex = action.payload.characterIndex;
             const account = action.payload.account;
             state.checklist[characterIndex].account = account;
+        },
+        updateMemo(state, action: PayloadAction<UpdateMemo>) {
+            const character = state.checklist.find(item => item.nickname === action.payload.nickname);
+            if (character) {
+                character.memo = action.payload.memo;
+            }
+        },
+        updateParadisePower(state, action: PayloadAction<UpdateParadisePower>) {
+            const character = state.checklist.find(item => item.nickname === action.payload.nickname);
+            if (character) {
+                character.paradisePower = action.payload.paradisePower;
+            }
+        },
+        updateHallsHourglassCheck(state, action: PayloadAction<UpdateHallsHourglassCheck>) {
+            const character = state.checklist.find(item => item.nickname === action.payload.nickname);
+            if (character) {
+                character.hallsHourglassCheck = action.payload.isCheck;
+            }
         }
     }
 })
@@ -220,6 +256,9 @@ export const {
     removeCharacter,
     calculateOtherGold,
     resetCube,
-    updateAccount
+    updateAccount,
+    updateMemo,
+    updateParadisePower,
+    updateHallsHourglassCheck
 } = checklistSlice.actions;
 export default checklistSlice.reducer;

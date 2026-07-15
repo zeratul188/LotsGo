@@ -19,6 +19,7 @@ import {
     Tabs,
     Tab,
     Input,
+    Textarea,
     CardFooter,
     Accordion, AccordionItem,
     Dropdown, DropdownTrigger, DropdownMenu, DropdownItem,
@@ -104,6 +105,9 @@ import {
     handleRemoveWeekList, 
     handleResetCube, 
     handleSelectAccount, 
+    handleUpdateMemo,
+    handleUpdateParadisePower,
+    handleHallsHourglassCheck,
     handleSelectCharacter, 
     handleWeekBonusCheckStage, 
     handleWeekCheckStage, 
@@ -1139,7 +1143,7 @@ export function ChecklistComponent({
                         "w-full overflow-hidden border border-gray-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]",
                         isHideDayContent ? isMobile ? "" : "min-[331px]:w-[330px]" : "min-[561px]:w-[560px]"
                     )}>
-                        <CardHeader className="p-4 pb-3">
+                        <CardHeader className="flex-col items-stretch p-4 pb-3">
                             <div className={clsx(
                                 "w-full flex items-center gap-1",
                                 isHideDayContent ? "flex-col" : "flex-col md960:flex-row"
@@ -1149,7 +1153,7 @@ export function ChecklistComponent({
                                     color="default"
                                     variant="flat"
                                     className={clsx(
-                                        "min-w-full bg-gray-100/80 dark:bg-white/[0.05]",
+                                        "my-1 min-w-full py-1 bg-gray-100/80 dark:bg-white/[0.05]",
                                         isHideDayContent ? '' : 'hidden'
                                     )}>
                                     <div className="grid grid-cols-[4fr_1px_10fr_1px_5fr] gap-1 text-center text-xs">
@@ -1162,12 +1166,13 @@ export function ChecklistComponent({
                                         <p>{character.server}</p>
                                     </div>
                                 </Chip>
-                                <div className="w-full grow flex gap-2 items-center">
+                                <div className="w-full grow flex flex-col gap-1">
+                                    <div className="w-full flex gap-2 items-center">
                                     <JobEmblemIcon job={character.job} size={38}/>
                                     <div className="flex grow flex-row md960:flex-col items-center">
                                         <div className="grow-1 w-full">
                                             <p className="mt-1 text-xs fadedtext">{character.job} · Lv.{character.level}</p>
-                                            <div className="flex gap-2 items-center">
+                                            <div className="flex min-w-0 gap-2 items-center">
                                                 <span className={clsx(
                                                     isHideDayContent ? isMobile ? "text-xl" : "text-lg" : "text-xl"
                                                 )}>{character.nickname}</span>
@@ -1192,6 +1197,16 @@ export function ChecklistComponent({
                                                 setAccounts={setAccounts}/>
                                         </div>
                                     </div>
+                                    </div>
+                                    {isHideDayContent && (
+                                        <div className="w-full min-w-0">
+                                            <CharacterMemo
+                                                checklist={checklist}
+                                                nickname={character.nickname}
+                                                dispatch={dispatch}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                                 <div className={clsx(
                                     "w-full h-full md960:w-[330px] flex",
@@ -1294,6 +1309,15 @@ export function ChecklistComponent({
                                     </Popover>
                                 </div>
                             </div>
+                            {!isHideDayContent && (
+                                <div className="mt-2 w-full border-t border-gray-200/70 pt-2 dark:border-white/10">
+                                    <CharacterMemo
+                                        checklist={checklist}
+                                        nickname={character.nickname}
+                                        dispatch={dispatch}
+                                    />
+                                </div>
+                            )}
                         </CardHeader>
                         <Divider/>
                         <CardBody className="p-4 pt-3">
@@ -1349,10 +1373,10 @@ export function ChecklistComponent({
                                     "min-w-0 grow-2",
                                     isHideDayContent ? "" : "border-t border-gray-200/80 pt-3 dark:border-white/10 md960:border-l md960:border-t-0 md960:pl-4 md960:pt-0"
                                 )}>
-                                    <div className="flex w-full items-center gap-2 border-b border-secondary-200/70 pb-2 dark:border-secondary-900/50">
+                                    <div className="flex w-full items-center gap-2 border-b border-secondary-200/70 pb-2 dark:border-secondary-700/70">
                                         <div className="grow">
-                                            <p className="text-sm font-semibold text-secondary-700 dark:text-secondary-400">주간 콘텐츠</p>
-                                            <p className="text-[11px] fadedtext">주간 초기화되는 숙제</p>
+                                            <p className="text-sm font-semibold text-secondary-700 dark:text-secondary-700">주간 콘텐츠</p>
+                                            <p className="text-[11px] text-gray-500 dark:text-gray-400">주간 초기화되는 숙제</p>
                                         </div>
                                         <Tooltip showArrow content="더보기 관리 모드">
                                             <Switch 
@@ -1367,7 +1391,7 @@ export function ChecklistComponent({
                                                     isHideBonusMode ? 'hidden' : ''
                                                 )}/>
                                         </Tooltip>
-                                    </div>
+                                     </div>
                                     <div className="px-1.5 py-1 sm:px-2">
                                         {character.checklist.length === 0 ? (
                                             <div className="w-full h-[140px] flex items-center justify-center">
@@ -1606,7 +1630,7 @@ export function ChecklistComponent({
                                                     aria-checked={item.isCheck}
                                                     aria-label={`checklist-${item.name}-${idx}`}
                                                     className="flex w-full cursor-pointer items-center gap-2 px-2.5 py-1.5 text-left text-sm"
-                                                    onClick={async () => await handleWeekListCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
+                                                     onClick={async () => await handleWeekListCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                     <span className={clsx(
                                                         "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
                                                         item.isCheck ? "border-secondary bg-secondary text-white" : "border-gray-400 dark:border-gray-600"
@@ -1616,9 +1640,30 @@ export function ChecklistComponent({
                                                     <span className={item.isCheck ? "line-through fadedtext" : ""}>{item.name}</span>
                                                 </button>
                                             </div>
-                                        ))}
-                                    </div>
-                                    <Button 
+                                         ))}
+                                         {character.level >= 1730 ? (
+                                             <div className={clsx(
+                                                 "mt-2 w-full rounded-lg border py-1",
+                                                 character.hallsHourglassCheck ? 'border-warning-200 bg-warning-50/70 dark:border-warning-700/60 dark:bg-warning-500/10' : 'border-transparent hover:bg-warning-50/40 dark:hover:bg-warning-950/20',
+                                                 isHideCompleteContent && character.hallsHourglassCheck ? 'hidden' : ''
+                                             )}>
+                                                 <Checkbox
+                                                     aria-label="할의 모래시계"
+                                                     color="warning"
+                                                     size="sm"
+                                                     radius="full"
+                                                     isSelected={character.hallsHourglassCheck ?? false}
+                                                     classNames={{base: "w-full max-w-none", label: "flex min-w-0 flex-1 items-center justify-start text-left"}}
+                                                     className="box-border w-full max-w-none py-1.5 pl-4 pr-2.5"
+                                                     onValueChange={async (isCheck) => {
+                                                         await handleHallsHourglassCheck(checklist, character.nickname, isCheck, dispatch);
+                                                     }}>
+                                                     <span className={character.hallsHourglassCheck ? 'line-through fadedtext' : ''}>할의 모래시계</span>
+                                                 </Checkbox>
+                                             </div>
+                                         ) : null}
+                                     </div>
+                                     <Button
                                         color="secondary"
                                         variant="flat"
                                         fullWidth 
@@ -1672,6 +1717,7 @@ export function ChecklistComponent({
                                             }}>+</Button>
                                     </Tooltip>
                                 </div>
+                                <CharacterParadisePower checklist={checklist} nickname={character.nickname} dispatch={dispatch}/>
                                 <Divider/>
                                 <Accordion>
                                     <AccordionItem key="0" title={<span className="flex gap-2 items-center cursor-pointer">
@@ -1817,6 +1863,154 @@ function SelectAccountModal({
             </ModalContent>
         </Modal>
     )
+}
+
+type CharacterMemoProps = {
+    checklist: CheckCharacter[],
+    nickname: string,
+    dispatch: AppDispatch
+}
+
+function CharacterMemo({ checklist, nickname, dispatch }: CharacterMemoProps) {
+    const character = checklist.find(item => item.nickname === nickname);
+    const [draft, setDraft] = useState(character?.memo ?? '');
+    const [isSaving, setSaving] = useState(false);
+    const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+    const memo = character?.memo ?? '';
+
+    const openEditor = () => {
+        setDraft(memo);
+        onOpen();
+    };
+
+    const saveMemo = async () => {
+        setSaving(true);
+        const saved = await handleUpdateMemo(checklist, nickname, draft, dispatch);
+        setSaving(false);
+        if (saved) onClose();
+    };
+
+    return (
+        <>
+            <button
+                type="button"
+                className="group flex min-h-6 min-w-0 w-full max-w-[520px] cursor-pointer items-start justify-start px-1 text-left hover:text-foreground hover:underline"
+                aria-label={memo ? `${nickname} 메모 수정` : `${nickname} 메모 추가`}
+                onClick={openEditor}
+            >
+                <span aria-hidden="true" className="mr-2 shrink-0 text-sm">📝</span>
+                <span className={clsx(
+                    "max-h-[4.5rem] overflow-hidden whitespace-pre-wrap break-words leading-6",
+                    memo ? "line-clamp-3 text-sm text-foreground" : "text-xs fadedtext"
+                )}>{memo || "메모를 입력해주세요."}</span>
+            </button>
+            <Modal
+                isOpen={isOpen}
+                onOpenChange={onOpenChange}
+                placement="center"
+                size="sm"
+            >
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col gap-1">
+                                {nickname} 메모
+                            </ModalHeader>
+                            <ModalBody>
+                                <Textarea
+                                    autoFocus
+                                    minRows={3}
+                                    maxRows={6}
+                                    maxLength={300}
+                                    value={draft}
+                                    placeholder="캐릭터 상태나 임시 메모를 입력하세요."
+                                    description={`${draft.length}/300자`}
+                                    onValueChange={setDraft}
+                                />
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button variant="light" onPress={onClose}>
+                                    취소
+                                </Button>
+                                <Button color="primary" isLoading={isSaving} onPress={saveMemo}>
+                                    저장
+                                </Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+        </>
+    );
+}
+
+type CharacterParadisePowerProps = CharacterMemoProps
+
+function CharacterParadisePower({ checklist, nickname, dispatch }: CharacterParadisePowerProps) {
+    const character = checklist.find(item => item.nickname === nickname);
+    const currentPower = character?.paradisePower ?? 0;
+    const [draft, setDraft] = useState(currentPower);
+    const [isSaving, setSaving] = useState(false);
+    const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+
+    const openEditor = () => {
+        setDraft(currentPower);
+        onOpen();
+    };
+
+    const savePower = async () => {
+        if (!Number.isInteger(draft) || draft < 0 || draft > 999999999) {
+            addToast({ title: '낙원력 입력 확인', description: '0 이상 999,999,999 이하의 정수를 입력해주세요.', color: 'warning' });
+            return;
+        }
+        setSaving(true);
+        const saved = await handleUpdateParadisePower(checklist, nickname, draft, dispatch);
+        setSaving(false);
+        if (saved) onClose();
+    };
+
+    return (
+        <>
+            <button
+                type="button"
+                className="flex min-h-7 w-full cursor-pointer items-center gap-2 rounded-md px-1 text-left text-sm hover:bg-gray-100/70 dark:hover:bg-white/[0.04]"
+                aria-label={`${nickname} 낙원력 수정`}
+                onClick={openEditor}
+            >
+                <span aria-hidden="true" className="shrink-0 text-sm">⚔️</span>
+                <span className="shrink-0 font-medium">낙원력</span>
+                <span className={currentPower > 0 ? "font-semibold text-foreground" : "fadedtext"}>
+                    {currentPower > 0 ? currentPower.toLocaleString() : '미설정'}
+                </span>
+                <span className="ml-auto text-xs fadedtext">수정</span>
+            </button>
+            <Modal isOpen={isOpen} onOpenChange={onOpenChange} placement="center" size="sm">
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader>{nickname} 낙원력</ModalHeader>
+                            <ModalBody>
+                                <NumberInput
+                                    autoFocus
+                                    label="낙원력"
+                                    labelPlacement="outside"
+                                    placeholder="0 ~ 999999999"
+                                    minValue={0}
+                                    maxValue={999999999}
+                                    value={draft}
+                                    onValueChange={setDraft}
+                                />
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button variant="light" onPress={onClose}>취소</Button>
+                                <Button color="primary" isLoading={isSaving} onPress={savePower}>저장</Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
+        </>
+    );
 }
 
 // 설정 버튼 요소
