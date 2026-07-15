@@ -625,7 +625,7 @@ function ChecklistComponent({ checklist, setChecklist, server, bosses, cubes }: 
                                         }}>일일 콘텐츠 관리</Button>
                                 </div>
                                 <div className="min-w-0 grow-2 border-t border-gray-200/80 pt-3 dark:border-white/10 md960:border-l md960:border-t-0 md960:pl-4 md960:pt-0">
-                                    <div className="mb-1 border-b border-secondary-200/70 pb-2 dark:border-secondary-900/50"><p className="text-sm font-semibold text-secondary-700 dark:text-secondary-400">주간 콘텐츠</p><p className="text-[11px] fadedtext">주간 초기화되는 숙제</p></div>
+                                    <div className="mb-1 border-b border-secondary-200/70 pb-2 dark:border-secondary-700/70"><p className="text-sm font-semibold text-secondary-700 dark:text-secondary-700">주간 콘텐츠</p><p className="text-[11px] text-gray-500 dark:text-gray-400">주간 초기화되는 숙제</p></div>
                                     <div className="px-1.5 sm:px-2">
                                         {character.checklist.map((item, idx) => (
                                             <div key={idx} className={clsx(

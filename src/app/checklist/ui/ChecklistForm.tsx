@@ -1153,7 +1153,7 @@ export function ChecklistComponent({
                                     color="default"
                                     variant="flat"
                                     className={clsx(
-                                        "min-w-full bg-gray-100/80 dark:bg-white/[0.05]",
+                                        "my-1 min-w-full py-1 bg-gray-100/80 dark:bg-white/[0.05]",
                                         isHideDayContent ? '' : 'hidden'
                                     )}>
                                     <div className="grid grid-cols-[4fr_1px_10fr_1px_5fr] gap-1 text-center text-xs">
@@ -1373,10 +1373,10 @@ export function ChecklistComponent({
                                     "min-w-0 grow-2",
                                     isHideDayContent ? "" : "border-t border-gray-200/80 pt-3 dark:border-white/10 md960:border-l md960:border-t-0 md960:pl-4 md960:pt-0"
                                 )}>
-                                    <div className="flex w-full items-center gap-2 border-b border-secondary-200/70 pb-2 dark:border-secondary-900/50">
+                                    <div className="flex w-full items-center gap-2 border-b border-secondary-200/70 pb-2 dark:border-secondary-700/70">
                                         <div className="grow">
-                                            <p className="text-sm font-semibold text-secondary-700 dark:text-secondary-400">주간 콘텐츠</p>
-                                            <p className="text-[11px] fadedtext">주간 초기화되는 숙제</p>
+                                            <p className="text-sm font-semibold text-secondary-700 dark:text-secondary-700">주간 콘텐츠</p>
+                                            <p className="text-[11px] text-gray-500 dark:text-gray-400">주간 초기화되는 숙제</p>
                                         </div>
                                         <Tooltip showArrow content="더보기 관리 모드">
                                             <Switch 
