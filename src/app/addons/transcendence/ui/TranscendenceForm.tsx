@@ -26,6 +26,7 @@ import {
     Position,
     PreviewCell,
     SpiritCard,
+    SpiritElement,
     TranscendenceGrade,
     TranscendenceProgress,
 } from "../model/types";
@@ -150,6 +151,8 @@ function SpiritCardView({ card, selected, small, mini, onClick }: {
             className={clsx(
                 "relative overflow-hidden rounded-xl border text-left text-white shadow-md transition",
                 "bg-gradient-to-br", SPIRIT_STYLE[card.name],
+                card.level === 2 && "spirit-card--level2",
+                card.level === 3 && "spirit-card--level3",
                 onClick ? "cursor-pointer" : "cursor-default",
                 mini
                     ? "h-14 w-10 rounded-lg sm:h-16 sm:w-12"
@@ -188,10 +191,10 @@ function SpiritCardView({ card, selected, small, mini, onClick }: {
 
 const keyOf = ({ row, col }: Position) => `${row}-${col}`;
 
-function Board({ game, hovered, destroyingKeys, enableHoverPreview, onHover, onLeave, onClick }: {
+function Board({ game, hovered, destroyingEffects, enableHoverPreview, onHover, onLeave, onClick }: {
     game: GameState;
     hovered: Position | null;
-    destroyingKeys: ReadonlySet<string>;
+    destroyingEffects: ReadonlyMap<string, SpiritElement>;
     enableHoverPreview: boolean;
     onHover: (position: Position) => void;
     onLeave: () => void;
@@ -218,7 +221,7 @@ function Board({ game, hovered, destroyingKeys, enableHoverPreview, onHover, onL
                 const position = { row: rowIndex, col: colIndex };
                 const initial = game.preset.blocks[rowIndex][colIndex];
                 const previewCell = previewMap.get(keyOf(position)) as PreviewCell | undefined;
-                const isDestroying = destroyingKeys.has(keyOf(position));
+                const destroyingElement = destroyingEffects.get(keyOf(position));
                 const targetable = tile?.base === "normal"
                     || tile?.base === "distorted" && selectedCard !== null && canTargetDistorted(selectedCard.name);
                 const clickable = targetable && selectedCard !== null && game.completedGrade === null;
@@ -253,8 +256,8 @@ function Board({ game, hovered, destroyingKeys, enableHoverPreview, onHover, onL
                                     : `${previewCell.chance}%`}
                             </span>
                         )}
-                        {isDestroying && (
-                            <span className="stone-destroy-effect" aria-hidden="true">
+                        {destroyingElement && (
+                            <span className={clsx("stone-destroy-effect", `stone-destroy-effect--${destroyingElement}`)} aria-hidden="true">
                                 {Array.from({ length: 8 }, (_, index) => (
                                     <span key={index} className="stone-destroy-fragment"/>
                                 ))}
@@ -409,7 +412,7 @@ export default function TranscendenceForm() {
         presets.find((preset) => preset.equipment === nextEquipment)!.setting[nextStage - 1];
     const [game, setGame] = useState(() => createGame(equipment, stage, getPreset()));
     const [hovered, setHovered] = useState<Position | null>(null);
-    const [destroyingKeys, setDestroyingKeys] = useState<Set<string>>(() => new Set());
+    const [destroyingEffects, setDestroyingEffects] = useState<Map<string, SpiritElement>>(() => new Map());
     const [progress, setProgress] = useState<TranscendenceProgress>(() => createEmptyTranscendenceProgress());
     const [progressStatus, setProgressStatus] = useState<ProgressStatus>("loading");
 
@@ -457,15 +460,15 @@ export default function TranscendenceForm() {
     }, [isCheckedToken, isLogined, userId]);
 
     useEffect(() => {
-        if (destroyingKeys.size === 0) return;
-        const timeout = window.setTimeout(() => setDestroyingKeys(new Set()), 520);
+        if (destroyingEffects.size === 0) return;
+        const timeout = window.setTimeout(() => setDestroyingEffects(new Map()), 560);
         return () => window.clearTimeout(timeout);
-    }, [destroyingKeys]);
+    }, [destroyingEffects]);
 
     const restart = (nextEquipment = equipment, nextStage = stage) => {
         setGame(createGame(nextEquipment, nextStage, getPreset(nextEquipment, nextStage)));
         setHovered(null);
-        setDestroyingKeys(new Set());
+        setDestroyingEffects(new Map());
     };
 
     const confirmRestart = () => {
@@ -593,7 +596,7 @@ export default function TranscendenceForm() {
         if (game.completedGrade === null && result.game.completedGrade !== null) {
             void saveCompletion(result.game.equipment, result.game.stage, result.game.completedGrade);
         }
-        setDestroyingKeys(new Set(result.destroyedPositions.map(keyOf)));
+        setDestroyingEffects(new Map(result.destroyedPositions.map(({ position, element }) => [keyOf(position), element])));
         setGame(result.game);
         setHovered(null);
     };
@@ -663,7 +666,7 @@ export default function TranscendenceForm() {
             <div className="grid gap-6 lg:grid-cols-[minmax(0,620px)_1fr]">
                 <div>
                     <Board
-                        game={game} hovered={hovered} destroyingKeys={destroyingKeys}
+                        game={game} hovered={hovered} destroyingEffects={destroyingEffects}
                         enableHoverPreview={!isMobile}
                         onHover={setHovered} onLeave={() => setHovered(null)}
                         onClick={attackTile}/>
@@ -748,7 +751,14 @@ export default function TranscendenceForm() {
                                 <span className="rounded-full bg-default-200/70 px-2 py-1 text-[10px] font-medium text-default-600">3장 미리보기</span>
                             </div>
                             <div className="flex justify-center gap-3">
-                                {game.upcoming.slice(0, 3).map((card) => <SpiritCardView key={card.id} card={card} small/>)}
+                                {game.upcoming.slice(0, 3).map((card, index) => (
+                                    <div key={card.id} className="relative">
+                                        <span className="absolute -left-1 -top-1 z-10 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground shadow-md">
+                                            {index + 1}
+                                        </span>
+                                        <SpiritCardView card={card} small/>
+                                    </div>
+                                ))}
                             </div>
                         </section>
 
@@ -831,8 +841,13 @@ export default function TranscendenceForm() {
                         <div className="ml-1 self-center">
                             <p className="mb-1 text-center text-[10px] text-default-500">다음 카드</p>
                             <div className="flex gap-1">
-                                {game.upcoming.slice(0, 3).map((card) => (
-                                    <SpiritCardView key={card.id} card={card} mini/>
+                                {game.upcoming.slice(0, 3).map((card, index) => (
+                                    <div key={card.id} className="relative">
+                                        <span className="absolute -left-1 -top-1 z-10 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-primary-foreground shadow-md">
+                                            {index + 1}
+                                        </span>
+                                        <SpiritCardView card={card} mini/>
+                                    </div>
                                 ))}
                             </div>
                         </div>
