@@ -111,7 +111,7 @@ const countRaidProgressChecks = (context, width, height) => {
             const next = checkCenters.find((candidate) => {
                 const horizontalGap = candidate.x - current.x;
                 return horizontalGap >= width * 0.04
-                    && horizontalGap <= width * 0.22
+                    && horizontalGap <= width * 0.35
                     && Math.abs(candidate.y - current.y) <= height * 0.05;
             });
             if (!next) break;
@@ -133,7 +133,7 @@ const inspectProgress = (frame) => {
             viewport.x,
             viewport.y,
             viewport.width * 0.22,
-            viewport.height * 0.32,
+            Math.min(viewport.height, frame.displayHeight * 0.32),
             0,
             0,
             progressCanvas.width,

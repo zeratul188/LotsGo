@@ -169,7 +169,7 @@ function countRaidProgressChecks(context: CanvasRenderingContext2D, width: numbe
             const next = checkCenters.find((candidate) => {
                 const horizontalGap = candidate.x - current.x;
                 return horizontalGap >= width * 0.04
-                    && horizontalGap <= width * 0.22
+                    && horizontalGap <= width * 0.35
                     && Math.abs(candidate.y - current.y) <= height * 0.05;
             });
             if (!next) break;
@@ -519,7 +519,7 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
         });
     };
 
-    const inspectRaidProgress = (source: CanvasImageSource, viewport: AnalysisViewport) => {
+    const inspectRaidProgress = (source: CanvasImageSource, viewport: AnalysisViewport, sourceHeight: number) => {
         const boss = currentBossRef.current;
         const progressCanvas = progressCanvasRef.current;
         if (!boss
@@ -538,7 +538,7 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
             viewport.x,
             viewport.y,
             viewport.width * 0.22,
-            viewport.height * 0.32,
+            Math.min(viewport.height, sourceHeight * 0.32),
             0,
             0,
             progressCanvas.width,
@@ -616,7 +616,7 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
         // 게임의 레이드명으로 재인식할 수 있으므로 게임 창으로 돌아갈 때까지 OCR을 멈춘다.
         if (document.hasFocus()) return;
         const viewport = getAnalysisViewport(sourceWidth, sourceHeight, isForced21By9Ref.current);
-        inspectRaidProgress(source, viewport);
+        inspectRaidProgress(source, viewport, sourceHeight);
         const now = Date.now();
         if (now - lastOcrAnalysisAtRef.current < OCR_ANALYSIS_INTERVAL) return;
         const canvas = canvasRef.current;
@@ -679,9 +679,9 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
             context.drawImage(
                     source,
                     viewport.x,
-                    viewport.y + viewport.height * 0.015,
+                    viewport.y + sourceHeight * 0.015,
                     viewport.width * 0.20,
-                    viewport.height * 0.14,
+                    Math.min(sourceHeight * 0.14, viewport.height - sourceHeight * 0.015),
                 0,
                 0,
                 canvas.width,
@@ -728,7 +728,7 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
         let frameWorker: Worker;
         let isUsingMainThreadProcessor = false;
         try {
-            frameWorker = new Worker('/workers/autoChecklistFrameWorker.js?v=background-progress-4');
+            frameWorker = new Worker('/workers/autoChecklistFrameWorker.js?v=background-progress-5');
             frameWorkerRef.current = frameWorker;
         } catch {
             startTimerFallback();
