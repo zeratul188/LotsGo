@@ -3,6 +3,7 @@
 import {
     addToast,
     Button,
+    Checkbox,
     Chip,
     Divider,
     Modal,
@@ -39,6 +40,12 @@ type FrameTrackProcessorConstructor = new (options: {
     track: MediaStreamTrack,
     maxBufferSize?: number
 }) => FrameTrackProcessor;
+type AnalysisViewport = {
+    x: number,
+    y: number,
+    width: number,
+    height: number
+}
 
 const PROGRESS_ANALYSIS_INTERVAL = 500;
 const OCR_ANALYSIS_INTERVAL = 1400;
@@ -49,6 +56,22 @@ const OCR_ANALYSIS_TIMEOUT = 20 * 1000;
 const FRAME_FRESHNESS_TIMEOUT = 5 * 1000;
 const FRAME_SIGNATURE_WIDTH = 32;
 const FRAME_SIGNATURE_HEIGHT = 18;
+const FORCED_21_BY_9_ASPECT_RATIO = 64 / 27;
+const FORCED_21_BY_9_STORAGE_KEY = 'auto-checklist-forced-21-by-9';
+
+function getAnalysisViewport(width: number, height: number, isForced21By9: boolean): AnalysisViewport {
+    if (!isForced21By9 || width <= 0 || height <= 0 || width / height >= FORCED_21_BY_9_ASPECT_RATIO) {
+        return { x: 0, y: 0, width, height };
+    }
+
+    const viewportHeight = Math.min(height, width / FORCED_21_BY_9_ASPECT_RATIO);
+    return {
+        x: 0,
+        y: (height - viewportHeight) / 2,
+        width,
+        height: viewportHeight
+    };
+}
 
 function getFrameSignature(context: CanvasRenderingContext2D): number {
     const pixels = context.getImageData(0, 0, FRAME_SIGNATURE_WIDTH, FRAME_SIGNATURE_HEIGHT).data;
@@ -173,6 +196,7 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
     const [lastResult, setLastResult] = useState('아직 자동 체크된 관문이 없습니다.');
     const [recognitionNameCount, setRecognitionNameCount] = useState(0);
     const [detectedProgressCount, setDetectedProgressCount] = useState(0);
+    const [isForced21By9, setIsForced21By9] = useState(false);
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -204,6 +228,7 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
     const lastRaidSeenAtRef = useRef(0);
     const lastFrameSignatureRef = useRef<number | null>(null);
     const lastFrameChangedAtRef = useRef(0);
+    const isForced21By9Ref = useRef(false);
 
     useEffect(() => {
         checklistRef.current = checklist;
@@ -217,6 +242,18 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
     useEffect(() => {
         selectedNicknameRef.current = selectedNickname;
     }, [selectedNickname]);
+
+    useEffect(() => {
+        const storedValue = localStorage.getItem(FORCED_21_BY_9_STORAGE_KEY) === 'true';
+        isForced21By9Ref.current = storedValue;
+        setIsForced21By9(storedValue);
+    }, []);
+
+    const handleForced21By9Change = (isSelected: boolean) => {
+        isForced21By9Ref.current = isSelected;
+        setIsForced21By9(isSelected);
+        localStorage.setItem(FORCED_21_BY_9_STORAGE_KEY, String(isSelected));
+    };
 
     useEffect(() => () => {
         if (timerRef.current) clearInterval(timerRef.current);
@@ -482,13 +519,13 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
         });
     };
 
-    const inspectRaidProgress = (source: CanvasImageSource, sourceWidth: number, sourceHeight: number) => {
+    const inspectRaidProgress = (source: CanvasImageSource, viewport: AnalysisViewport) => {
         const boss = currentBossRef.current;
         const progressCanvas = progressCanvasRef.current;
         if (!boss
             || !progressCanvas
-            || sourceWidth === 0
-            || sourceHeight === 0
+            || viewport.width === 0
+            || viewport.height === 0
             || Date.now() < progressRetryAtRef.current) return;
 
         const context = progressCanvas.getContext('2d', { willReadFrequently: true });
@@ -498,10 +535,10 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
         context.filter = 'none';
         context.drawImage(
             source,
-            0,
-            0,
-            sourceWidth * 0.22,
-            sourceHeight * 0.32,
+            viewport.x,
+            viewport.y,
+            viewport.width * 0.22,
+            viewport.height * 0.32,
             0,
             0,
             progressCanvas.width,
@@ -578,7 +615,8 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
         // 전체 화면 공유 중 로츠고에 다시 포커스하면, 화면에 표시된 레이드 상태를
         // 게임의 레이드명으로 재인식할 수 있으므로 게임 창으로 돌아갈 때까지 OCR을 멈춘다.
         if (document.hasFocus()) return;
-        inspectRaidProgress(source, sourceWidth, sourceHeight);
+        const viewport = getAnalysisViewport(sourceWidth, sourceHeight, isForced21By9Ref.current);
+        inspectRaidProgress(source, viewport);
         const now = Date.now();
         if (now - lastOcrAnalysisAtRef.current < OCR_ANALYSIS_INTERVAL) return;
         const canvas = canvasRef.current;
@@ -600,7 +638,7 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
         canvas.width = FRAME_SIGNATURE_WIDTH;
         canvas.height = FRAME_SIGNATURE_HEIGHT;
         context.filter = 'none';
-        context.drawImage(source, 0, 0, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
+        context.drawImage(source, viewport.x, viewport.y, viewport.width, viewport.height, 0, 0, canvas.width, canvas.height);
         const frameSignature = getFrameSignature(context);
         if (lastFrameSignatureRef.current !== frameSignature) {
             lastFrameSignatureRef.current = frameSignature;
@@ -618,10 +656,10 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
                 context.filter = 'grayscale(1) contrast(2)';
                 context.drawImage(
                     source,
-                    sourceWidth * 0.25,
-                    sourceHeight * 0.35,
-                    sourceWidth * 0.50,
-                    sourceHeight * 0.35,
+                    viewport.x + viewport.width * 0.25,
+                    viewport.y + viewport.height * 0.35,
+                    viewport.width * 0.50,
+                    viewport.height * 0.35,
                     0,
                     0,
                     canvas.width,
@@ -639,11 +677,11 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
             canvas.height = 500;
             context.filter = 'none';
             context.drawImage(
-                source,
-                0,
-                sourceHeight * 0.015,
-                sourceWidth * 0.20,
-                sourceHeight * 0.14,
+                    source,
+                    viewport.x,
+                    viewport.y + viewport.height * 0.015,
+                    viewport.width * 0.20,
+                    viewport.height * 0.14,
                 0,
                 0,
                 canvas.width,
@@ -690,7 +728,7 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
         let frameWorker: Worker;
         let isUsingMainThreadProcessor = false;
         try {
-            frameWorker = new Worker('/workers/autoChecklistFrameWorker.js?v=background-progress-2');
+            frameWorker = new Worker('/workers/autoChecklistFrameWorker.js?v=background-progress-3');
             frameWorkerRef.current = frameWorker;
         } catch {
             startTimerFallback();
@@ -793,7 +831,8 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
                     frameWorker.postMessage({
                         type: 'start-stream',
                         readable: processor.readable,
-                        interval: PROGRESS_ANALYSIS_INTERVAL
+                        interval: PROGRESS_ANALYSIS_INTERVAL,
+                        forced21By9: isForced21By9Ref.current
                     }, [processor.readable as unknown as Transferable]);
                     return;
                 } catch {
@@ -810,7 +849,8 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
             frameWorker.postMessage({
                 type: 'start',
                 track: analysisTrack,
-                interval: PROGRESS_ANALYSIS_INTERVAL
+                interval: PROGRESS_ANALYSIS_INTERVAL,
+                forced21By9: isForced21By9Ref.current
             }, [analysisTrack]);
         } catch {
             analysisTrack.stop();
@@ -946,6 +986,16 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
                                     </ol>
                                 </div>
 
+                                <div className="rounded-xl border border-gray-200/80 p-4 dark:border-white/10">
+                                    <Checkbox
+                                        isSelected={isForced21By9}
+                                        isDisabled={isRunning}
+                                        onValueChange={handleForced21By9Change}>
+                                        <span className="font-medium">강제 21:9 모드 사용</span>
+                                    </Checkbox>
+                                    <p className="mt-1 pl-7 text-xs fadedtext">16:9 모니터에서 강제 21:9 설정으로 위아래 검은 영역이 생기는 경우 선택해 주세요.</p>
+                                </div>
+
                                 <Select
                                     label="플레이할 캐릭터"
                                     labelPlacement="outside"
@@ -982,6 +1032,8 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
                                         <span className="break-all">{completionOcrText || '분석 대기 중'}</span>
                                         <span className="fadedtext">진행도 완료 관문</span>
                                         <span>{detectedProgressCount}개 감지</span>
+                                        <span className="fadedtext">화면 비율</span>
+                                        <span>{isForced21By9 ? '강제 21:9 보정' : '기본 화면'}</span>
                                         <span className="fadedtext">인식 이름 데이터</span>
                                         <span>{recognitionNameCount}개 등록됨</span>
                                         <span className="fadedtext">처리 결과</span>
