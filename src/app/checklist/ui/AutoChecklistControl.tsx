@@ -728,7 +728,7 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
         let frameWorker: Worker;
         let isUsingMainThreadProcessor = false;
         try {
-            frameWorker = new Worker('/workers/autoChecklistFrameWorker.js?v=background-progress-3');
+            frameWorker = new Worker('/workers/autoChecklistFrameWorker.js?v=background-progress-4');
             frameWorkerRef.current = frameWorker;
         } catch {
             startTimerFallback();
