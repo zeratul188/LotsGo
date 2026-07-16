@@ -8,6 +8,22 @@ let progressContext = progressCanvas?.getContext('2d', { willReadFrequently: tru
 let progressCandidate = null;
 let progressConfirmations = 0;
 let lastProgressSent = -1;
+let isForced21By9 = false;
+const FORCED_21_BY_9_ASPECT_RATIO = 64 / 27;
+
+const getAnalysisViewport = (width, height) => {
+    if (!isForced21By9 || !width || !height || width / height >= FORCED_21_BY_9_ASPECT_RATIO) {
+        return { x: 0, y: 0, width, height };
+    }
+
+    const viewportHeight = Math.min(height, width / FORCED_21_BY_9_ASPECT_RATIO);
+    return {
+        x: 0,
+        y: (height - viewportHeight) / 2,
+        width,
+        height: viewportHeight
+    };
+};
 
 const countRaidProgressChecks = (context, width, height) => {
     const pixels = context.getImageData(0, 0, width, height).data;
@@ -108,13 +124,14 @@ const countRaidProgressChecks = (context, width, height) => {
 const inspectProgress = (frame) => {
     if (!progressCanvas || !progressContext || !frame.displayWidth || !frame.displayHeight) return;
     try {
+        const viewport = getAnalysisViewport(frame.displayWidth, frame.displayHeight);
         progressContext.clearRect(0, 0, progressCanvas.width, progressCanvas.height);
         progressContext.drawImage(
             frame,
-            0,
-            0,
-            frame.displayWidth * 0.22,
-            frame.displayHeight * 0.32,
+            viewport.x,
+            viewport.y,
+            viewport.width * 0.22,
+            viewport.height * 0.32,
             0,
             0,
             progressCanvas.width,
@@ -221,6 +238,7 @@ self.onmessage = async (event) => {
     if (event.data?.type !== 'start' && event.data?.type !== 'start-stream') return;
 
     const interval = Math.max(Number(event.data.interval) || 1400, 500);
+    isForced21By9 = Boolean(event.data.forced21By9);
     isActive = true;
     lastFrameReadAt = Date.now();
 
