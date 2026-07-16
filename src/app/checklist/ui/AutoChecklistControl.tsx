@@ -28,7 +28,10 @@ type AutoChecklistControlProps = {
     checklist: CheckCharacter[],
     bosses: Boss[],
     dispatch: AppDispatch,
-    isDisabled: boolean
+    isDisabled: boolean,
+    selectedNickname: string,
+    setSelectedNickname: (nickname: string) => void,
+    onSharingStateChange: (isSharing: boolean) => void
 }
 
 type CaptureStatus = 'idle' | 'requesting' | 'loading-ocr' | 'active' | 'stopped' | 'error';
@@ -182,9 +185,16 @@ function countRaidProgressChecks(context: CanvasRenderingContext2D, width: numbe
     return maximumSequence;
 }
 
-export default function AutoChecklistControl({ checklist, bosses, dispatch, isDisabled }: AutoChecklistControlProps) {
+export default function AutoChecklistControl({
+    checklist,
+    bosses,
+    dispatch,
+    isDisabled,
+    selectedNickname,
+    setSelectedNickname,
+    onSharingStateChange
+}: AutoChecklistControlProps) {
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
-    const [selectedNickname, setSelectedNickname] = useState('');
     const [status, setStatus] = useState<CaptureStatus>('idle');
     const [statusMessage, setStatusMessage] = useState('캐릭터를 선택하고 화면 공유를 시작하세요.');
     const [ocrProgress, setOcrProgress] = useState(0);
@@ -229,6 +239,7 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
     const lastFrameSignatureRef = useRef<number | null>(null);
     const lastFrameChangedAtRef = useRef(0);
     const isForced21By9Ref = useRef(false);
+    const previousSelectedNicknameRef = useRef(selectedNickname);
 
     useEffect(() => {
         checklistRef.current = checklist;
@@ -298,6 +309,26 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
         setCurrentBoss(null);
         setLastCompletion('');
     };
+
+    useEffect(() => {
+        const previousNickname = previousSelectedNicknameRef.current;
+        selectedNicknameRef.current = selectedNickname;
+        previousSelectedNicknameRef.current = selectedNickname;
+        if (!previousNickname
+            || !selectedNickname
+            || previousNickname === selectedNickname
+            || !streamRef.current?.active) return;
+
+        clearCurrentRaidContext();
+        processedEventsRef.current.clear();
+        setLastResult(`${selectedNickname} 캐릭터로 자동 체크 대상을 변경했습니다.`);
+        setStatusMessage(`"${selectedNickname}" 캐릭터 화면을 분석하고 있습니다.`);
+        addToast({
+            title: '자동 체크 캐릭터 변경',
+            description: `${selectedNickname} 캐릭터로 변경했습니다.`,
+            color: 'primary'
+        });
+    }, [selectedNickname]);
 
     const clearExpiredRaidContext = () => {
         if (!document.hasFocus()
@@ -447,8 +478,7 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
         }
     };
 
-    const applyOptimisticStageCheck = (boss: Boss, stage: number): Checklist | null => {
-        const nickname = selectedNicknameRef.current;
+    const applyOptimisticStageCheck = (nickname: string, boss: Boss, stage: number): Checklist | null => {
         const character = checklistRef.current.find((item) => item.nickname === nickname);
         const raidChecklist = character?.checklist.find((item) => item.name === boss.name);
         if (!raidChecklist) return null;
@@ -469,6 +499,7 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
     };
 
     const enqueueProgressStageChecks = (boss: Boss, completedStageCount: number) => {
+        const targetNickname = selectedNicknameRef.current;
         const firstStage = lastProgressCountRef.current + 1;
         if (completedStageCount < firstStage) return;
 
@@ -480,11 +511,11 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
                 if (processedEventsRef.current.has(eventKey)) continue;
 
                 processedEventsRef.current.add(eventKey);
-                const previousChecklist = applyOptimisticStageCheck(boss, stage);
+                const previousChecklist = applyOptimisticStageCheck(targetNickname, boss, stage);
                 try {
                     const result = await handleAutoRaidCheck(
                         checklistRef.current,
-                        selectedNicknameRef.current,
+                        targetNickname,
                         boss.id,
                         'stage',
                         stage,
@@ -504,7 +535,7 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
                     });
                 } catch (error) {
                     if (previousChecklist) {
-                        replaceLocalChecklistItem(selectedNicknameRef.current, boss.name, previousChecklist);
+                        replaceLocalChecklistItem(targetNickname, boss.name, previousChecklist);
                     }
                     processedEventsRef.current.delete(eventKey);
                     lastProgressCountRef.current = Math.min(lastProgressCountRef.current, stage - 1);
@@ -922,6 +953,10 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
     const isSharing = status === 'loading-ocr' || status === 'active';
     const statusColor = status === 'active' ? 'success' : status === 'error' ? 'danger' : 'default';
 
+    useEffect(() => {
+        onSharingStateChange(isSharing);
+    }, [isSharing, onSharingStateChange]);
+
     return (
         <>
             <Button
@@ -982,6 +1017,7 @@ export default function AutoChecklistControl({ checklist, bosses, dispatch, isDi
                                     <ol className="list-decimal space-y-1 pl-5 text-sm fadedtext">
                                         <li>플레이할 캐릭터를 선택합니다.</li>
                                         <li>화면 공유 시작을 누르고 로스트아크 창을 선택합니다.</li>
+                                        <li>화면 공유 중 다른 캐릭터로 변경하려면 해당 캐릭터 카드의 전환 아이콘을 누릅니다.</li>
                                         <li>레이드 완료 문구가 반복 인식되면 해당 관문이 자동 체크됩니다.</li>
                                     </ol>
                                 </div>

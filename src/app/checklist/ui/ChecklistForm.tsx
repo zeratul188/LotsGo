@@ -156,6 +156,7 @@ import BusIcon from "@/Icons/BusIcon";
 import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 import JobAvatar from "@/Icons/JobAvatar";
 import { EditIcon } from "@/Icons/EditIcon";
+import SwitchCharacterIcon from "@/Icons/SwitchCharacterIcon";
 
 // state 관리
 export type ModalData = {
@@ -525,7 +526,10 @@ type ChecklistStatueProps = {
     setMax: SetStateFn<number>,
     accounts: string[],
     setAccounts: SetStateFn<string[]>,
-    isLoadingData: boolean
+    isLoadingData: boolean,
+    autoChecklistNickname: string,
+    setAutoChecklistNickname: (nickname: string) => void,
+    setAutoChecklistSharing: (isSharing: boolean) => void
 }
 export function ChecklistStatue({ 
     server,
@@ -544,7 +548,10 @@ export function ChecklistStatue({
     setMax,
     accounts,
     setAccounts,
-    isLoadingData
+    isLoadingData,
+    autoChecklistNickname,
+    setAutoChecklistNickname,
+    setAutoChecklistSharing
  }: ChecklistStatueProps) {
     const [isLoading, setLoading] = useState(false);
     const [inputValue, setInputValue] = useState('');
@@ -901,7 +908,10 @@ export function ChecklistStatue({
                             checklist={checklist}
                             bosses={bosses}
                             dispatch={dispatch}
-                            isDisabled={isLoadingData}/>
+                            isDisabled={isLoadingData}
+                            selectedNickname={autoChecklistNickname}
+                            setSelectedNickname={setAutoChecklistNickname}
+                            onSharingStateChange={setAutoChecklistSharing}/>
                     </div>
                 </CardFooter>
             </Card>
@@ -1110,7 +1120,10 @@ type ChecklistProps = {
     setAccounts: SetStateFn<string[]>,
     filterAccount: Selection,
     isHideCompleteContent: boolean,
-    isHideBonusMode: boolean
+    isHideBonusMode: boolean,
+    autoChecklistNickname: string,
+    isAutoChecklistSharing: boolean,
+    setAutoChecklistNickname: (nickname: string) => void
 }
 export function ChecklistComponent({ 
     checklist, 
@@ -1129,7 +1142,10 @@ export function ChecklistComponent({
     setAccounts,
     filterAccount,
     isHideCompleteContent,
-    isHideBonusMode
+    isHideBonusMode,
+    autoChecklistNickname,
+    isAutoChecklistSharing,
+    setAutoChecklistNickname
 }: ChecklistProps) {
     const [inputOtherGold, setInputOtherGold] = useState<{ [nickname: string]: number }>({});
     const [inputCubeControl, setInputCubeControl] = useState<{ [nickname: string]: number }>({});
@@ -1177,19 +1193,32 @@ export function ChecklistComponent({
                                     <JobEmblemIcon job={character.job} size={38}/>
                                     <div className="flex grow flex-row md960:flex-col items-center">
                                         <div className="grow-1 w-full">
-                                            <p className="mt-1 text-xs fadedtext">{character.job} · Lv.{character.level}</p>
-                                            <div className="flex min-w-0 gap-2 items-center">
+                                            <div className="mt-1 flex min-w-0 items-center gap-1.5 text-xs">
+                                                <p className="min-w-0 truncate fadedtext">{character.job} · Lv.{character.level}</p>
+                                                {isAutoChecklistSharing && autoChecklistNickname === character.nickname ? (
+                                                    <span className="shrink-0 font-medium text-primary">자동 체크 중...</span>
+                                                ) : null}
+                                            </div>
+                                            <div className="flex min-w-0 gap-1 items-center">
                                                 <span className={clsx(
-                                                    isHideDayContent ? isMobile ? "text-xl" : "text-lg" : "text-xl"
+                                                    isHideDayContent ? isMobile ? "text-xl" : "text-lg" : "text-xl",
+                                                    character.nickname.length >= 12 && "md960:whitespace-nowrap md960:text-[15px] md960:tracking-tight"
                                                 )}>{character.nickname}</span>
-                                                <div className="hidden md960:block">
+                                                <div className="hidden items-center md960:flex">
                                                     <SettingButton 
-                                                        size={14} 
+                                                        size={14}
+                                                        compact
                                                         checklist={checklist} 
                                                         characterIndex={getIndexByNickname(checklist, character.nickname)}
                                                         dispatch={dispatch}
                                                         accounts={accounts}
                                                         setAccounts={setAccounts}/>
+                                                    <AutoChecklistCharacterButton
+                                                        size={14}
+                                                        nickname={character.nickname}
+                                                        selectedNickname={autoChecklistNickname}
+                                                        isSharing={isAutoChecklistSharing}
+                                                        onSelect={setAutoChecklistNickname}/>
                                                 </div>
                                             </div>
                                         </div>
@@ -2019,6 +2048,46 @@ function CharacterParadisePower({ checklist, nickname, dispatch }: CharacterPara
     );
 }
 
+type AutoChecklistCharacterButtonProps = {
+    size: number,
+    nickname: string,
+    selectedNickname: string,
+    isSharing: boolean,
+    onSelect: (nickname: string) => void
+}
+
+function AutoChecklistCharacterButton({
+    size,
+    nickname,
+    selectedNickname,
+    isSharing,
+    onSelect
+}: AutoChecklistCharacterButtonProps) {
+    const isSelected = selectedNickname === nickname;
+    const isDisabled = !isSharing || isSelected;
+    const ariaLabel = !isSharing
+        ? '화면 공유 중에만 자동 체크 캐릭터를 변경할 수 있습니다.'
+        : isSelected
+            ? `${nickname} 캐릭터가 현재 자동 체크 대상으로 선택되어 있습니다.`
+            : `${nickname} 캐릭터로 자동 체크 대상을 변경`;
+
+    return (
+        <Button
+            isIconOnly
+            variant="light"
+            size="sm"
+            radius="full"
+            className="h-6 min-w-6 w-6"
+            aria-label={ariaLabel}
+            isDisabled={isDisabled}
+            onPress={() => onSelect(nickname)}>
+            <SwitchCharacterIcon
+                size={size}
+                className={isDisabled ? 'text-gray-300 dark:text-gray-600' : 'text-black dark:text-white'}/>
+        </Button>
+    );
+}
+
 // 설정 버튼 요소
 type SettingButtonProps = {
     size: number,
@@ -2026,16 +2095,25 @@ type SettingButtonProps = {
     characterIndex: number,
     dispatch: AppDispatch,
     accounts: string[],
-    setAccounts: SetStateFn<string[]>
+    setAccounts: SetStateFn<string[]>,
+    compact?: boolean
 }
-function SettingButton({ size, checklist, characterIndex, dispatch, accounts, setAccounts }: SettingButtonProps) {
+function SettingButton({ size, checklist, characterIndex, dispatch, accounts, setAccounts, compact = false }: SettingButtonProps) {
     const [isOpenAccount, setOpenAccount] = useState(false);
     const onOpenChangeAccount = (isOpen: boolean) => setOpenAccount(isOpen);
     return (
         <>
             <Dropdown placement="bottom-end">
                 <DropdownTrigger>
-                    <Button isIconOnly variant="light" size="sm" radius="full" aria-label="캐릭터 설정"><SettingIcon size={size} className="cursor-pointer text-gray-500" /></Button>
+                    <Button
+                        isIconOnly
+                        variant="light"
+                        size="sm"
+                        radius="full"
+                        className={compact ? "h-6 min-w-6 w-6" : undefined}
+                        aria-label="캐릭터 설정">
+                        <SettingIcon size={size} className="cursor-pointer text-gray-500" />
+                    </Button>
                 </DropdownTrigger>
                 <DropdownMenu aria-label="캐릭터 설정 메뉴" variant="flat" className="min-w-[190px] p-1">
                     <DropdownItem 

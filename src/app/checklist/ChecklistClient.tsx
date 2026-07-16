@@ -46,6 +46,8 @@ export default function ChecklistClient() {
     const checklist: CheckCharacter[] = useSelector((state: RootState) => state.checklist.checklist);
     const isMobile = useMobileQuery();
     const [isLoadingReset, setLoadingReset] = useState(false);
+    const [autoChecklistNickname, setAutoChecklistNickname] = useState('');
+    const [isAutoChecklistSharing, setAutoChecklistSharing] = useState(false);
     const lastFetchRef = useRef(Date.now());
     
     const [isOpenBosses, setOpenBosses] = useState(false);
@@ -196,7 +198,10 @@ export default function ChecklistClient() {
                     setMax={checklistForm.setMax}
                     accounts={checklistForm.accounts}
                     setAccounts={checklistForm.setAccounts}
-                    isLoadingData={checklistForm.isLoading}/>
+                    isLoadingData={checklistForm.isLoading}
+                    autoChecklistNickname={autoChecklistNickname}
+                    setAutoChecklistNickname={setAutoChecklistNickname}
+                    setAutoChecklistSharing={setAutoChecklistSharing}/>
             </div>
             {!checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
                 <div className="w-full flex justify-center overflow-hidden md960:pt-[110px]">
@@ -311,7 +316,10 @@ export default function ChecklistClient() {
                         setAccounts={checklistForm.setAccounts}
                         filterAccount={checklistForm.filterAccount}
                         isHideCompleteContent={checklistForm.isHideCompleteContent}
-                        isHideBonusMode={checklistForm.isHideBonusMode}/>
+                        isHideBonusMode={checklistForm.isHideBonusMode}
+                        autoChecklistNickname={autoChecklistNickname}
+                        isAutoChecklistSharing={isAutoChecklistSharing}
+                        setAutoChecklistNickname={setAutoChecklistNickname}/>
                     <ChecklistModal
                         isOpen={checklistForm.isOpen}
                         modalData={checklistForm.modalData}
