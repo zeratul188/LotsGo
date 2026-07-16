@@ -1,4 +1,4 @@
-import { CheckCharacter, ChecklistItem, Day } from "@/app/store/checklistSlice";
+import { CheckCharacter, Day } from "@/app/store/checklistSlice";
 import { firestore } from "@/utiils/firebase";
 import { collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";

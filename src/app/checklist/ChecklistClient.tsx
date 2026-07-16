@@ -52,9 +52,6 @@ export default function ChecklistClient() {
     const onOpenChangeBosses = (isOpen: boolean) => setOpenBosses(isOpen);
 
     useEffect(() => {
-        if (checklistForm.bosses.length === 0) {
-            checklistForm.setBosses(initialBosses);
-        }
         if (checklistForm.cubes.length === 0) {
             checklistForm.setCubes(initialCubes);
         }
@@ -106,13 +103,24 @@ export default function ChecklistClient() {
         if (!isCheckedToken) return;
         if (checkLogin()) {
             checklistForm.setLogined(true);
-            Promise.all([getCubes(), getBosses()])
-                .then(([cubeData, bossData]) => {
-                    checklistForm.setCubes(cubeData);
+            getBosses()
+                .then((bossData) => {
                     checklistForm.setBosses(bossData);
                 })
                 .catch(() => {
-                    // Keep local JSON fallback when remote sync fails.
+                    checklistForm.setBosses([]);
+                    addToast({
+                        title: "보스 데이터 로드 오류",
+                        description: "데이터베이스의 보스 정보를 불러오지 못했습니다.",
+                        color: "danger"
+                    });
+                });
+            getCubes()
+                .then((cubeData) => {
+                    checklistForm.setCubes(cubeData);
+                })
+                .catch(() => {
+                    checklistForm.setCubes(initialCubes);
                 });
         }
         const loadSettings = async () => {
