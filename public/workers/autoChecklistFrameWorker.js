@@ -8,8 +8,10 @@ let progressContext = progressCanvas?.getContext('2d', { willReadFrequently: tru
 let progressCandidate = null;
 let progressConfirmations = 0;
 let lastProgressSent = -1;
+let lastProgressSentAt = 0;
 let isForced21By9 = false;
 const FORCED_21_BY_9_ASPECT_RATIO = 64 / 27;
+const PROGRESS_REPEAT_INTERVAL = 2000;
 
 const getAnalysisViewport = (width, height) => {
     if (!isForced21By9 || !width || !height || width / height >= FORCED_21_BY_9_ASPECT_RATIO) {
@@ -144,8 +146,11 @@ const inspectProgress = (frame) => {
             progressCandidate = count;
             progressConfirmations = 1;
         }
-        if (progressConfirmations >= 3 && count !== lastProgressSent) {
+        const now = Date.now();
+        const shouldRepeatStableProgress = count > 0 && now - lastProgressSentAt >= PROGRESS_REPEAT_INTERVAL;
+        if (progressConfirmations >= 3 && (count !== lastProgressSent || shouldRepeatStableProgress)) {
             lastProgressSent = count;
+            lastProgressSentAt = now;
             self.postMessage({ type: 'progress', count });
         }
     } catch {
@@ -169,6 +174,7 @@ const stopFrameReading = async () => {
     progressCandidate = null;
     progressConfirmations = 0;
     lastProgressSent = -1;
+    lastProgressSentAt = 0;
 };
 
 const readFrames = async (readable, interval) => {
