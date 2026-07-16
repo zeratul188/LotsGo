@@ -8,6 +8,7 @@ import {
     Input,
     NumberInput,
     Switch,
+    Textarea,
     CardHeader,
     Table, TableHeader, TableColumn, TableBody, TableRow, TableCell
  } from "@heroui/react";
@@ -137,6 +138,7 @@ function BossComponent() {
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [inputName, setInputName] = useState('');
     const [inputSimple, setInputSimple] = useState('');
+    const [inputScreenNames, setInputScreenNames] = useState('');
     const [inputMax, setInputMax] = useState(0);
     const [inputs, setInputs] = useState<Difficulty[]>([]);
     const [isEditMode, setEditMode] = useState(false);
@@ -153,7 +155,7 @@ function BossComponent() {
         onValueChangeBonus,
         onValueChangeOnce
     } = useInputHandlers(inputs, setInputs);
-    const onCloseModal = useClearData(setInputName, setInputSimple, setInputs, setEditMode, setEditIndex, setInputMax);
+    const onCloseModal = useClearData(setInputName, setInputSimple, setInputScreenNames, setInputs, setEditMode, setEditIndex, setInputMax);
 
     useEffect(() => {
         const fetchBoss = async () => {
@@ -193,6 +195,9 @@ function BossComponent() {
                                         <h2 className="grow text-xl font-bold">{item.name}</h2>
                                         <p className="fadedtext text-sm">{item.max}인 | {item.simple}</p>
                                     </div>
+                                    <p className="mt-1 text-sm fadedtext">
+                                        화면 인식 이름: {(item.screenNames ?? []).length > 0 ? item.screenNames?.join(', ') : '등록되지 않음'}
+                                    </p>
                                 </CardHeader>
                                 <Divider/>
                                 <CardBody>
@@ -233,7 +238,7 @@ function BossComponent() {
                                     <div className="w-full flex gap-4">
                                         <div className="grow-1"/>
                                         <Button color="danger" onPress={async () => await onClickRemove(index, boss, setBoss)}>삭제</Button>
-                                        <Button color="primary" onPress={() => onClickEdit(index, setEditMode, setEditIndex, onOpen, boss[index], setInputName, setInputSimple, setInputMax, setInputs)}>수정</Button>
+                                        <Button color="primary" onPress={() => onClickEdit(index, setEditMode, setEditIndex, onOpen, boss[index], setInputName, setInputSimple, setInputScreenNames, setInputMax, setInputs)}>수정</Button>
                                     </div>
                                 </CardFooter>
                             </Card>
@@ -277,6 +282,13 @@ function BossComponent() {
                                         value={inputMax}
                                         onValueChange={setInputMax}/>
                                 </div>
+                                <Textarea
+                                    label="게임 화면 표시 이름"
+                                    labelPlacement="outside"
+                                    description="게임 좌측 상단에 표시되는 이름을 줄바꿈 또는 쉼표로 구분해 입력하세요."
+                                    placeholder={'어둠군단장 카멘\n또 다른 표시 이름'}
+                                    value={inputScreenNames}
+                                    onValueChange={setInputScreenNames}/>
                                 <div className="max-h-[500px] overflow-y-auto">
                                     {inputs.map((input: Difficulty, index: number) => (
                                         <div key={index} className="mt-4">
@@ -358,7 +370,7 @@ function BossComponent() {
                             <Divider/>
                             <ModalFooter>
                                 <Button color="default" variant="light" onPress={onClose}>취소</Button>
-                                <Button color="primary" onPress={async () => await useOnAddData(inputName, inputSimple, inputMax, inputs, onClose, boss, setBoss, isEditMode, editIndex)}>{isEditMode ? '수정' : '추가'}</Button>
+                                <Button color="primary" onPress={async () => await useOnAddData(inputName, inputSimple, inputScreenNames, inputMax, inputs, onClose, boss, setBoss, isEditMode, editIndex)}>{isEditMode ? '수정' : '추가'}</Button>
                             </ModalFooter>
                         </>
                     )}

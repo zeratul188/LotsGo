@@ -142,6 +142,7 @@ import AddIcon from "../../icons/AddIcon";
 import DeleteIcon from "../../icons/DeleteIcon";
 import { Cube } from "../../api/checklist/cube/route";
 import { MAX_CHARACTER_COUNT } from "@/utiils/constants";
+import AutoChecklistControl from "./AutoChecklistControl";
 import {
   DragDropContext,
   Droppable,
@@ -862,7 +863,7 @@ export function ChecklistStatue({
                     </div>
                 </CardBody>
                 <CardFooter className="border-t border-gray-200/80 bg-gray-50/70 p-2.5 dark:border-white/10 dark:bg-white/[0.025]">
-                    <div className="grid w-full grid-cols-3 gap-2">
+                    <div className="grid w-full grid-cols-3 gap-2 md960:grid-cols-4">
                         <Button
                             fullWidth
                             radius="sm"
@@ -896,6 +897,11 @@ export function ChecklistStatue({
                                 isLoading={isLoading}
                                 onPress={onClickUpdatedCharacters}>캐릭터 갱신하기</Button>
                         </Tooltip>
+                        <AutoChecklistControl
+                            checklist={checklist}
+                            bosses={bosses}
+                            dispatch={dispatch}
+                            isDisabled={isLoadingData}/>
                     </div>
                 </CardFooter>
             </Card>
