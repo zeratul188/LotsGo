@@ -2,8 +2,43 @@ import type { SetStateFn } from "@/utiils/utils";
 import type { Boss, Difficulty } from "../model/types";
 import { useCallback } from "react";
 import { addToast } from "@heroui/react";
-import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from "firebase/firestore";
-import { firestore } from "@/utiils/firebase";
+
+type BossMutationResponse = {
+    id?: string,
+    message?: string,
+    error?: string
+}
+
+async function requestBossMutation(body: Record<string, unknown>): Promise<BossMutationResponse> {
+    const storedToken = sessionStorage.getItem('token');
+    if (!storedToken) throw new Error('로그인 토큰이 없습니다. 다시 로그인해주세요.');
+    let token: string = storedToken;
+
+    const request = (accessToken: string) => fetch('/api/checklist/boss', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`
+        },
+        credentials: 'include',
+        body: JSON.stringify(body)
+    });
+
+    let response = await request(token);
+    if (response.status === 401) {
+        const refreshResponse = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
+        const refreshData = await refreshResponse.json().catch(() => null);
+        if (refreshResponse.ok && typeof refreshData?.accessToken === 'string') {
+            token = refreshData.accessToken;
+            sessionStorage.setItem('token', token);
+            response = await request(token);
+        }
+    }
+
+    const result: BossMutationResponse = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error ?? '콘텐츠 데이터를 저장하지 못했습니다.');
+    return result;
+}
 
 // 콘텐츠 데이터 로딩 함수
 export async function loadBoss(
@@ -11,23 +46,9 @@ export async function loadBoss(
     setBoss: SetStateFn<Boss[]>
 ) {
     try {
-        const snapshot = await getDocs(collection(firestore, 'boss'));
-        const bosses: Boss[] = snapshot.docs.map(doc => ({
-            id: doc.id,
-            name: doc.data().name,
-            simple: doc.data().simple ? doc.data().simple : '',
-            max: doc.data().max ?? 0,
-            difficulty: doc.data().difficulty.map((d: any) => ({
-                difficulty: d.difficulty,
-                stage: d.stage ?? 0,
-                level: d.level,
-                isBiweekly: d.isBiweekly,
-                gold: d.gold,
-                boundGold: d.boundGold ?? 0,
-                bonus: d.bonus ?? 0,
-                isOnce: d.isOnce ?? false
-            }))
-        }));
+        const response = await fetch('/api/checklist/boss', { cache: 'no-store' });
+        if (!response.ok) throw new Error('Failed load boss database.');
+        const bosses: Boss[] = await response.json();
         setBoss(bosses);
         setLoading(false);
     } catch(err) {
@@ -82,6 +103,7 @@ export function useInputHandlers(inputs: Difficulty[], setInputs: SetStateFn<Dif
 export function useClearData(
     setInputName: SetStateFn<string>, 
     setInputSimple: SetStateFn<string>, 
+    setInputScreenNames: SetStateFn<string>,
     setInputs: SetStateFn<Difficulty[]>,
     setEditMode: SetStateFn<boolean>,
     setEditIndex: SetStateFn<number>,
@@ -90,6 +112,7 @@ export function useClearData(
     return () => {
         setInputName('');
         setInputSimple('');
+        setInputScreenNames('');
         setInputMax(0);
         setInputs([]);
         setEditMode(false);
@@ -120,6 +143,7 @@ function isEmptyValue(inputs: Difficulty[]) {
 export async function useOnAddData(
     inputName: string, 
     inputSimple: string,
+    inputScreenNames: string,
     inputMax: number,
     inputs: Difficulty[],
     onClose: () => void,
@@ -128,6 +152,11 @@ export async function useOnAddData(
     isEditMode: boolean,
     editIndex: number
 ) {
+    const screenNames = Array.from(new Set(inputScreenNames
+        .split(/[\n,]/)
+        .map((name) => name.trim())
+        .filter(Boolean)));
+
     if (inputName.trim() === '') {
         addToast({
             title: "내용 없음",
@@ -158,16 +187,29 @@ export async function useOnAddData(
         return;
     }
 
-    const inputBoss = {
-        name: inputName,
-        simple: inputSimple,
-        max: inputMax,
-        difficulty: inputs
+    const normalizedScreenNames = screenNames.map(normalizeScreenName);
+    const duplicatedScreenName = boss.some((item, index) => index !== editIndex &&
+        (item.screenNames ?? []).some((name) => normalizedScreenNames.includes(normalizeScreenName(name))));
+    if (duplicatedScreenName) {
+        addToast({
+            title: "중복된 화면 표시 이름",
+            description: "다른 콘텐츠에서 이미 사용 중인 화면 표시 이름이 있습니다.",
+            color: "danger"
+        });
+        return;
     }
+
     if (isEditMode) {
         try {
-            const docRef = doc(firestore, "boss", boss[editIndex].id);
-            await updateDoc(docRef, inputBoss);
+            await requestBossMutation({
+                type: 'edit',
+                id: boss[editIndex].id,
+                inputName,
+                inputSimple,
+                inputMax,
+                screenNames,
+                inputs
+            });
             addToast({
                 title: "데이터 수정 완료",
                 description: `\"${inputName}\" 콘텐츠의 데이터를 수정하는데 성공하였습니다.`,
@@ -176,6 +218,7 @@ export async function useOnAddData(
             const editBoss = [...boss];
             editBoss[editIndex].name = inputName;
             editBoss[editIndex].simple = inputSimple;
+            editBoss[editIndex].screenNames = screenNames;
             editBoss[editIndex].max = inputMax;
             editBoss[editIndex].difficulty = inputs;
             setBoss(editBoss);
@@ -189,7 +232,15 @@ export async function useOnAddData(
         }
     } else {
         try {
-            const addRef = await addDoc(collection(firestore, 'boss'), inputBoss);
+            const result = await requestBossMutation({
+                type: 'add',
+                inputName,
+                inputSimple,
+                inputMax,
+                screenNames,
+                inputs
+            });
+            if (!result.id) throw new Error('추가된 콘텐츠 ID를 확인할 수 없습니다.');
             addToast({
                 title: "데이터 저장 완료",
                 description: `\"${inputName}\" 콘텐츠의 데이터를 저장하는데 성공하였습니다.`,
@@ -198,9 +249,10 @@ export async function useOnAddData(
             const newBoss: Boss = {
                 name: inputName,
                 simple: inputSimple,
+                screenNames,
                 max: inputMax,
                 difficulty: inputs,
-                id: addRef.id
+                id: result.id
             }
             setBoss([...(boss || []), newBoss]);
         } catch(err) {
@@ -224,6 +276,7 @@ export function onClickEdit(
     selectBoss: Boss,
     setInputName: SetStateFn<string>,
     setInputSimple: SetStateFn<string>,
+    setInputScreenNames: SetStateFn<string>,
     setInputMax: SetStateFn<number>,
     setInputs: SetStateFn<Difficulty[]>
 ) {
@@ -232,8 +285,13 @@ export function onClickEdit(
     setInputName(selectBoss.name);
     setInputs(selectBoss.difficulty);
     setInputSimple(selectBoss.simple);
+    setInputScreenNames((selectBoss.screenNames ?? []).join('\n'));
     setInputMax(selectBoss.max);
     onOpen();
+}
+
+function normalizeScreenName(value: string): string {
+    return value.normalize('NFKC').replace(/[^0-9A-Za-z가-힣]/g, '').toLowerCase();
 }
 
 // 데이터 삭제 버튼 이벤트
@@ -244,8 +302,7 @@ export async function onClickRemove(
 ) {
     if (confirm('데이터를 삭제하면 되돌릴 수 없습니다. 정말 데이터를 삭제하시겠습니까?')) {
         try {
-            const removeRef = doc(firestore, "boss", boss[removeIndex].id);
-            await deleteDoc(removeRef);
+            await requestBossMutation({ type: 'remove', id: boss[removeIndex].id });
             addToast({
                 title: "데이터 삭제 완료",
                 description: `\"${boss[removeIndex].name}\" 콘텐츠의 데이터를 저장하는데 성공하였습니다.`,

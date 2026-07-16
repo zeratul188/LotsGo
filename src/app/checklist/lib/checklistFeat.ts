@@ -353,15 +353,9 @@ function initialWeekContents(level: number, bosses: Boss[], notImportedList: str
 
 // 콘텐츠 정보 가져오는 항수
 export async function getBosses(): Promise<Boss[]> {
-    const snapshot = await getDocs(collection(firestore, 'boss'));
-    const bosses: Boss[] = snapshot.docs.map(doc => ({
-        id: doc.id,
-        name: doc.data().name,
-        simple: doc.data().simple ? doc.data().simple : '',
-        max: doc.data().max ?? 0,
-        difficulty: doc.data().difficulty
-    }));
-    return bosses;
+    const response = await fetch('/api/checklist/boss', { cache: 'no-store' });
+    if (!response.ok) throw new Error('보스 데이터를 불러오지 못했습니다.');
+    return await response.json();
 }
 
 // 큐브 정보 가져오는 함수
@@ -994,6 +988,77 @@ export async function handleWeekCheckStage(
         }));
         return;
     }
+}
+
+export type AutoRaidCheckResult = {
+    changed: boolean,
+    nickname: string,
+    contentName: string,
+    checklistItem: Checklist
+}
+
+// 화면 인식 결과로 주간 레이드 관문을 완료 상태로만 저장하는 함수
+export async function handleAutoRaidCheck(
+    checklist: CheckCharacter[],
+    nickname: string,
+    bossId: string,
+    completionType: 'stage' | 'all',
+    stage: number | null,
+    dispatch: AppDispatch
+): Promise<AutoRaidCheckResult> {
+    const userStr = sessionStorage.getItem('user');
+    const storedToken = sessionStorage.getItem('token');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser ? storedUser.id : '';
+    if (!storedToken) throw new Error('로그인 토큰이 존재하지 않습니다. 다시 로그인해주세요.');
+    let token: string = storedToken;
+    const requestBody = JSON.stringify({
+            id,
+            type: 'auto-check-raid',
+            nickname,
+            bossId,
+            completionType,
+            stage
+        });
+    const requestAutoCheck = (accessToken: string) => fetch('/api/checklist/auto-raid', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            authorization: `Bearer ${accessToken}`
+        },
+        body: requestBody
+    });
+    let response = await requestAutoCheck(token);
+    if (response.status === 401) {
+        const refreshResponse = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
+        const refreshData = await refreshResponse.json().catch(() => null);
+        if (refreshResponse.ok && typeof refreshData?.accessToken === 'string') {
+            token = refreshData.accessToken;
+            sessionStorage.setItem('token', token);
+            response = await requestAutoCheck(token);
+        }
+    }
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => null);
+        throw new Error(error?.error ?? '자동 체크 저장에 실패했습니다.');
+    }
+
+    const result: AutoRaidCheckResult = await response.json();
+    const characterIndex = getIndexByNickname(checklist, result.nickname);
+    const checklistIndex = characterIndex === -1
+        ? -1
+        : checklist[characterIndex].checklist.findIndex((item) => item.name === result.contentName);
+
+    if (characterIndex !== -1 && checklistIndex !== -1) {
+        dispatch(checkWeek({
+            characterIndex,
+            checklistIndex,
+            checklist: result.checklistItem
+        }));
+    }
+
+    return result;
 }
 
 // 주간 콘텐츠 체크 이벤트 함수
@@ -3002,7 +3067,7 @@ export function isCheckHomework(content: Checklist): boolean {
 // 보스 간단 이름 가져오기
 export function getSimpleBossName(bosses: Boss[], name: string): string {
     const findBoss = bosses.find(boss => boss.name === name);
-    return findBoss ? findBoss.simple : '알 수 없는 콘텐츠';
+    return findBoss?.simple || name || '알 수 없는 콘텐츠';
 }
 
 // 관문 별 체크 버튼 테두리 반환
