@@ -76,13 +76,13 @@ export function useUpdateData(
                 setBadges(inputBadges);
                 addToast({
                     title: "최신화 완료",
-                    description: `데이터를 최산화하였습니다.`,
+                    description: `후원 혜택 대상 데이터를 최신 상태로 반영했습니다.`,
                     color: "success"
                 });
             } else {
                 addToast({
-                    title: "데이터 저장 오류2",
-                    description: `데이터를 저장하는데 문제가 발생하였습니다.`,
+                    title: "데이터 저장 오류",
+                    description: `최신화된 혜택 대상 데이터를 저장하지 못했습니다.`,
                     color: "danger"
                 });
             }
