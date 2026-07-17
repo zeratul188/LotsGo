@@ -14,6 +14,25 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
     const router = useRouter();
 
     useEffect(() => {
+      const clearAuthState = async () => {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
+        localStorage.removeItem('userSettings');
+        Cookies.remove('userApiKey', { path: '/' });
+        dispatch(logout());
+        await signOut(auth).catch(() => undefined);
+      };
+
+      const handleExpiredSession = async () => {
+        await clearAuthState();
+        addToast({
+            title: "로그인 세션 만료",
+            description: "로그인 세션이 만료되었거나 인증 상태가 불안정합니다. 다시 로그인해 주세요.",
+            color: "danger"
+        });
+        router.push('/login');
+      };
+
       const checkToken = async () => {
             const token = sessionStorage.getItem('token');
             const storedUser = sessionStorage.getItem('user');
@@ -23,7 +42,7 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
                         authorization: `Bearer ${token}`
                     }
                 });
-                if (res.status !== 401) {
+                if (res.ok) {
                     dispatch(setCheckToken(true));
                     dispatch(logined(JSON.parse(storedUser)));
                     return;
@@ -33,47 +52,27 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
                 method: "POST",
                 credentials: "include",
             });
+            if (!refreshRes.ok) {
+                await handleExpiredSession();
+                return;
+            }
+
             const data = await refreshRes.json();
-            if (refreshRes.ok) {
-                const loginUser: LoginUser = {
-                    id: data.userData.id,
-                    expedition: data.userData.expeditions,
-                    character: data.userData ? data.userData.nickname : '',
-                    apiKey: data.userData ? data.userData.apiKey ? data.userData.apiKey : null : null
-                }
-                sessionStorage.setItem('token', data.accessToken);
-                sessionStorage.setItem('user', JSON.stringify(loginUser));
-                dispatch(logined(loginUser));
-            }
-            else {
-                if (data.type === 'logout') {
-                    const logoutRes = await fetch("/api/auth/logout", {
-                        method: "POST",
-                        credentials: "include",
-                    });
-                    if (logoutRes.ok) {
-                        sessionStorage.removeItem('token');
-                        sessionStorage.removeItem('user');
-                        localStorage.removeItem('userSettings');
-                        Cookies.remove('userApiKey', {
-                            path: '/',
-                        });
-                        dispatch(logout());
-                        await signOut(auth);
-                        addToast({
-                            title: "유효 기간 만료",
-                            description: `아이디의 유효 기간이 만료되었거나 강제 로그아웃되었습니다. 다시 로그인해주시기 바랍니다.`,
-                            color: "danger"
-                        });
-                        router.push('/');
-                    }
-                }
-            }
+            const loginUser: LoginUser = {
+                id: data.userData.id,
+                expedition: data.userData.expeditions,
+                character: data.userData ? data.userData.nickname : '',
+                apiKey: data.userData ? data.userData.apiKey ? data.userData.apiKey : null : null
+            };
+            sessionStorage.setItem('token', data.accessToken);
+            sessionStorage.setItem('user', JSON.stringify(loginUser));
+            dispatch(logined(loginUser));
             dispatch(setCheckToken(true));
-        }
+        };
+
         dispatch(setCheckToken(false));
-        checkToken();
-    }, []);
+        checkToken().catch(() => handleExpiredSession());
+    }, [dispatch, router]);
 
     return (<>{children}</>);
 }

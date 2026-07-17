@@ -11,7 +11,6 @@ import {
     getCountAttackGem,
     getCountCooldownBoundGem,
     getGemLevelChartData,
-    getGemLevelChartRange,
     getExpeditionStatStatusMessage,
     getMaxCombatPower,
     getMaxItemLevel,
@@ -25,48 +24,23 @@ import {
     getTier4Gem,
     getStatTextColor
 } from "../lib/expeditionStatFeat";
-import { getBackgroundByGrade, getColorTextByGrade, useMobileQuery } from "@/utiils/utils";
+import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils";
 import homeData from "@/data/home/data.json";
 import classData from "@/data/classimgs/data.json";
 import { useEffect, useState } from "react";
-import { Bar, BarChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis } from "recharts";
-import { useTheme } from "next-themes";
 import clsx from "clsx";
 import { getEngravingSrcByName } from "../lib/characterFeat";
 import { ClassCount } from "../model/types";
 import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 
+const expeditionCardClass = "overflow-hidden border border-default-200/80 bg-content1/95 shadow-sm dark:border-white/10 dark:bg-[#18181b]";
+const expeditionCardHeaderClass = "border-b border-default-200/70 px-5 py-4 dark:border-white/10";
+const expeditionInsetClass = "rounded-2xl border border-default-200/70 bg-default-50/80 shadow-sm dark:border-white/10 dark:bg-white/[0.035]";
+
 type ExpeditionStatComponentProps = {
     nickname: string | null,
     expeditionCharacters: ExpeditionCharacter[],
     isLoading: boolean
-}
-
-type BarLabelProps = {
-    x?: number,
-    y?: number,
-    width?: number,
-    height?: number,
-    value?: number | string
-}
-
-function renderBarLabel({ x = 0, y = 0, width = 0, height = 0, value }: BarLabelProps) {
-    const numericValue = Number(value);
-    if (!numericValue) {
-        return <g />;
-    }
-
-    return (
-        <text
-            x={x + width / 2}
-            y={y + height / 2}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontSize="9pt"
-            fill="#ffffff">
-            {Math.abs(numericValue)}
-        </text>
-    );
 }
 
 export function ExpeditionStatComponent({
@@ -94,12 +68,12 @@ export function ExpeditionStatComponent({
 
     return (
         <div className="w-full min-h-[700px]">
-            <p className="fadedtext text-sm mb-3">
+            <div className="mb-4 rounded-xl border border-primary-200/70 bg-primary-50/70 px-4 py-3 text-xs leading-5 text-primary-700 dark:border-primary-500/20 dark:bg-primary-500/10 dark:text-primary-300">
                 이 원정대 정보는 최소 1번 이상 조회했던 캐릭터만 포함되며, 조회 또는 갱신했던 시점을 기준으로 계산된 값입니다.
-            </p>
+            </div>
             <Characters expeditionCharacters={expeditionCharacters}/>
             <GemComponent expeditionCharacters={expeditionCharacters}/>
-            <div className="w-full grid sm:grid-cols-3 mt-4 gap-4">
+            <div className="mt-4 grid w-full grid-cols-1 gap-4 lg:grid-cols-3">
                 <StatSummaryCard expeditionCharacters={expeditionCharacters}/>
                 <EngravingCard expeditionCharacters={expeditionCharacters}/>
                 <ArkGridCard expeditionCharacters={expeditionCharacters}/>
@@ -110,11 +84,7 @@ export function ExpeditionStatComponent({
 }
 
 function GemComponent({ expeditionCharacters }: { expeditionCharacters: ExpeditionCharacter[] }) {
-    const isMobile = useMobileQuery();
-    const { resolvedTheme } = useTheme();
     const haveGemCharacters = expeditionCharacters.filter(character => character.gems.length > 0);
-    const attackBarColor = resolvedTheme === 'dark' ? '#C20E4D' : '#F31260';
-    const cooldownBarColor = resolvedTheme === 'dark' ? '#12A150' : '#17C964';
 
     const allGemsCount = haveGemCharacters.reduce((total, character) => {
         return total + character.gems.length;
@@ -179,27 +149,20 @@ function GemComponent({ expeditionCharacters }: { expeditionCharacters: Expediti
     const [tier, setTier] = useState('4');
     const [isBound, setBound] = useState(false);
     const gemLevelChartData = getGemLevelChartData(haveGemCharacters, tier, isBound);
-    const gemLevelChartRange = getGemLevelChartRange(gemLevelChartData);
-    const gemLevelSummary = Array.from({ length: 10 }, (_, index) => {
-        const level = 10 - index;
-        const chartItem = gemLevelChartData.find((item) => item.level === `${level}레벨`);
-        const attackCount = Math.abs(chartItem?.attack ?? 0);
-        const cooldownCount = chartItem?.cooldown ?? 0;
-
-        return {
-            level,
-            totalCount: attackCount + cooldownCount,
-            attackCount,
-            cooldownCount
-        };
-    });
+    const gemLevelChartRange = Math.max(
+        ...gemLevelChartData.flatMap((item) => [Math.abs(item.attack), item.cooldown]),
+        1
+    );
 
     return (
         <div className="mt-4">
-            <Card fullWidth radius="sm" shadow="sm">
-                <CardHeader>
-                    <div className="w-full flex flex-col sm:flex-row gap-2 sm:items-center">
-                        <h1 className="text-lg">보석 현황</h1>
+            <Card fullWidth radius="lg" className={expeditionCardClass}>
+                <CardHeader className={expeditionCardHeaderClass}>
+                    <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
+                        <div>
+                            <h1 className="text-lg font-semibold">보석 현황</h1>
+                            <p className="mt-0.5 text-xs text-default-500">원정대 보석 구성과 레벨 분포를 확인합니다.</p>
+                        </div>
                         <Progress
                             showValueLabel
                             size="sm"
@@ -207,16 +170,20 @@ function GemComponent({ expeditionCharacters }: { expeditionCharacters: Expediti
                             label={`보석이 있는 캐릭터: ${haveGemCharacters.length} / ${expeditionCharacters.length}`}
                             value={haveGemCharacters.length}
                             maxValue={expeditionCharacters.length}
-                            className="w-full sm:w-[280px] ml-auto"/>
+                            className="w-full sm:ml-auto sm:w-[300px]"
+                            classNames={{
+                                label: "text-xs font-medium text-default-600 dark:text-default-300",
+                                value: "text-xs font-semibold",
+                                track: "h-2 bg-default-200/80 dark:bg-white/10"
+                            }}/>
                     </div>
                 </CardHeader>
-                <Divider/>
-                <CardBody className="overflow-hidden scrollbar-hide">
-                    <div className="w-full flex gap-2 flex-col sm:flex-row items-center">
-                        <div className="w-full sm:h-[240px] sm:w-[392px] flex gap-3 items-stretch">
-                            <div className="grow h-full flex flex-col items-center p-1">
-                                <p className="fadedtext text-xs">총 보석 개수</p>
-                                <p className="text-3xl font-bold">{allGemsCount}</p>
+                <CardBody className="overflow-hidden p-4 scrollbar-hide sm:p-5">
+                    <div className="flex w-full flex-col items-stretch gap-4 xl:flex-row">
+                        <div className={clsx(expeditionInsetClass, "flex w-full items-stretch gap-4 p-4 xl:h-[300px] xl:w-[420px]")}>
+                            <div className="flex h-full min-w-0 grow flex-col items-center">
+                                <p className="text-xs font-medium text-default-500">총 보석 개수</p>
+                                <p className="mt-1 text-3xl font-bold tracking-tight">{allGemsCount}</p>
                                 <div className="w-full flex mt-4">
                                     <div className="flex flex-col">
                                         <p className="fadedtext text-[7pt]">거래가능</p>
@@ -286,9 +253,9 @@ function GemComponent({ expeditionCharacters }: { expeditionCharacters: Expediti
                                 </div>
                             </div>
                             <Divider orientation="vertical" className="self-stretch h-auto"/>
-                            <div className="grow h-full flex flex-col items-center p-1">
-                                <p className="fadedtext text-xs">총 보석 레벨 평균</p>
-                                <p className="text-3xl font-bold">{avgGemLevel.toFixed(1)}</p>
+                            <div className="flex h-full min-w-0 grow flex-col items-center">
+                                <p className="text-xs font-medium text-default-500">총 보석 레벨 평균</p>
+                                <p className="mt-1 text-3xl font-bold tracking-tight">{avgGemLevel.toFixed(1)}</p>
                                 <div className="w-full flex mt-4">
                                     <div className="flex flex-col">
                                         <p className="fadedtext text-[7pt]">거래가능</p>
@@ -358,9 +325,8 @@ function GemComponent({ expeditionCharacters }: { expeditionCharacters: Expediti
                                 </div>
                             </div>
                         </div>
-                        <Divider orientation={isMobile ? 'horizontal' : 'vertical'} className="sm:self-stretch sm:h-auto"/>
-                        <div className="grow w-full h-auto sm:h-[240px] flex flex-col min-h-0">
-                            <div className="w-full flex gap-2 flex-col sm:flex-row">
+                        <div className={clsx(expeditionInsetClass, "flex min-h-0 w-full grow flex-col p-4 xl:h-[300px]")}>
+                            <div className="flex w-full flex-col gap-3 rounded-xl border border-default-200/70 bg-content1/70 px-3 py-2.5 sm:flex-row sm:items-center dark:border-white/10 dark:bg-white/[0.03]">
                                 <RadioGroup 
                                     size="sm" 
                                     orientation="horizontal"
@@ -379,71 +345,75 @@ function GemComponent({ expeditionCharacters }: { expeditionCharacters: Expediti
                                     귀속 제외
                                 </Checkbox>
                             </div>
-                            <div className="w-full sm:h-[240px] mt-2 overflow-hidden flex flex-col sm:flex-row">
-                                <div className="w-full sm:w-[200px] h-full flex gap-1 flex-col sm:mr-2 mb-2 sm:mb-0">
-                                    <div className="w-full flex gap-1 items-center">
-                                        <div className="grow border-b border-dotted border-default-800" />
-                                        <h3 className="text-xs font-semibold">레벨 별 보석 개수</h3>
-                                        <div className="grow border-b border-dotted border-default-800" />
+                            <div className="mt-3 flex min-h-[220px] w-full grow flex-col rounded-xl bg-content1/60 p-3 dark:bg-white/[0.025]">
+                                <div className="grid grid-cols-[48px_minmax(0,1fr)] items-center gap-2 px-1">
+                                    <span className="text-[10px] font-medium text-default-400">레벨</span>
+                                    <div className="grid grid-cols-2 text-[10px] font-semibold">
+                                        <span className="pr-3 text-right text-danger">겁화</span>
+                                        <span className="pl-3 text-success">작열</span>
                                     </div>
-                                    {gemLevelSummary.map((item) => (
-                                        <div
-                                            key={item.level}
-                                            className="flex-1 min-h-0 flex items-center sm:justify-between text-xs gap-1">
-                                            <p>{item.level}레벨</p>
-                                            <div className="grow border-b border-dotted border-default-300" />
-                                            <p>
-                                                <span className="font-semibold">{item.totalCount} </span>
-                                                <span className="fadedtext">
-                                                    (<span className="text-danger">{item.attackCount}</span> / <span className="text-success">{item.cooldownCount}</span>)
-                                                </span>
-                                            </p>
-                                        </div>
-                                    ))}
-                                </div>  
-                                <Divider orientation={isMobile ? 'horizontal' : 'vertical'} className="sm:h-full"/>
-                                <div className="w-full h-[240px] sm:h-full overflow-hidden">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart
-                                            data={gemLevelChartData}
-                                            layout="vertical"
-                                            stackOffset="sign"
-                                            margin={{ top: 8, right: 16, left: 16, bottom: 8 }}
-                                            barCategoryGap={12}
-                                            barSize={24}>
-                                            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                                            <XAxis
-                                                type="number"
-                                                domain={[-gemLevelChartRange, gemLevelChartRange]}
-                                                tickFormatter={(value) => `${Math.abs(value)}`}
-                                                tick={{ fontSize: '9pt' }}
-                                            />
-                                            <YAxis
-                                                type="category"
-                                                dataKey="level"
-                                                width={36}
-                                                tick={{ fontSize: '9pt' }}
-                                            />
-                                            <RechartsTooltip
-                                                formatter={(value: number, name: string) => [Math.abs(value), name === 'attack' ? '겁화' : '작열']}
-                                            />
-                                            <ReferenceLine x={0} stroke="#a1a1aa" />
-                                            <Bar 
-                                                dataKey="attack" 
-                                                name="attack" 
-                                                stackId="gem-count" 
-                                                fill={attackBarColor} 
-                                                radius={[0, 5, 5, 0]} 
-                                                label={renderBarLabel}/>
-                                            <Bar 
-                                                dataKey="cooldown" 
-                                                name="cooldown" 
-                                                stackId="gem-count" 
-                                                fill={cooldownBarColor} 
-                                                radius={[0, 5, 5, 0]}
-                                                label={renderBarLabel} />
-                                        </BarChart>
-                                    </ResponsiveContainer>
+                                </div>
+
+                                {gemLevelChartData.length > 0 ? (
+                                    <div className="mt-2 flex min-h-0 grow flex-col justify-center gap-2">
+                                        {gemLevelChartData.map((item) => {
+                                            const attackCount = Math.abs(item.attack);
+                                            const cooldownCount = item.cooldown;
+
+                                            return (
+                                                <div key={item.level} className="grid grid-cols-[48px_minmax(0,1fr)] items-center gap-2">
+                                                    <span className="text-right text-xs font-medium text-default-500">{item.level}</span>
+                                                    <div className="relative grid h-7 grid-cols-2 overflow-visible">
+                                                        <span className="pointer-events-none absolute inset-y-[-3px] left-1/4 border-l border-dashed border-default-200 dark:border-white/[0.07]"/>
+                                                        <span className="pointer-events-none absolute inset-y-[-3px] left-1/2 z-10 border-l border-default-400 dark:border-white/25"/>
+                                                        <span className="pointer-events-none absolute inset-y-[-3px] left-3/4 border-l border-dashed border-default-200 dark:border-white/[0.07]"/>
+
+                                                        <div className="flex h-full items-center justify-end">
+                                                            {attackCount > 0 ? (
+                                                                <Tooltip showArrow content={`겁화 ${attackCount}개`}>
+                                                                    <div
+                                                                        role="img"
+                                                                        aria-label={`${item.level} 겁화 ${attackCount}개`}
+                                                                        className="flex h-6 min-w-7 items-center justify-center rounded-l-lg bg-danger px-1.5 text-[10px] font-bold text-white shadow-sm"
+                                                                        style={{ width: `${attackCount / gemLevelChartRange * 100}%` }}
+                                                                    >
+                                                                        {attackCount}
+                                                                    </div>
+                                                                </Tooltip>
+                                                            ) : null}
+                                                        </div>
+                                                        <div className="flex h-full items-center justify-start">
+                                                            {cooldownCount > 0 ? (
+                                                                <Tooltip showArrow content={`작열 ${cooldownCount}개`}>
+                                                                    <div
+                                                                        role="img"
+                                                                        aria-label={`${item.level} 작열 ${cooldownCount}개`}
+                                                                        className="flex h-6 min-w-7 items-center justify-center rounded-r-lg bg-success px-1.5 text-[10px] font-bold text-white shadow-sm"
+                                                                        style={{ width: `${cooldownCount / gemLevelChartRange * 100}%` }}
+                                                                    >
+                                                                        {cooldownCount}
+                                                                    </div>
+                                                                </Tooltip>
+                                                            ) : null}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <div className="flex grow items-center justify-center text-xs text-default-400">
+                                        선택한 조건에 해당하는 보석이 없습니다.
+                                    </div>
+                                )}
+
+                                <div className="mt-2 grid grid-cols-[48px_minmax(0,1fr)] items-center gap-2">
+                                    <span/>
+                                    <div className="flex justify-between px-0.5 text-[10px] tabular-nums text-default-400">
+                                        <span>{gemLevelChartRange}</span>
+                                        <span>0</span>
+                                        <span>{gemLevelChartRange}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -474,34 +444,53 @@ function StatCard({ expeditionCharacters }: { expeditionCharacters: ExpeditionCh
 function StatSummaryCard({ expeditionCharacters }: { expeditionCharacters: ExpeditionCharacter[] }) {
     const statComboSummary = getStatComboSummary(expeditionCharacters);
     const characterStatUsageSummary = getCharacterStatUsageSummary(expeditionCharacters);
+    const maxStatComboCount = Math.max(...statComboSummary.map((item) => item.count), 1);
 
     return (
-        <Card fullWidth radius="sm" shadow="sm">
-            <CardHeader>특성</CardHeader>
-            <Divider/>
-            <CardBody>
-                <div className="w-full h-[240px] grid grid-cols-[2fr_1px_3fr] gap-3">
-                    <div className="h-full grow overflow-y-auto scrollbar-hide flex flex-col gap-2">
-                        <div className="w-full flex gap-1 items-center">
+        <Card fullWidth radius="lg" className={expeditionCardClass}>
+            <CardHeader className={expeditionCardHeaderClass}>
+                <div>
+                    <p className="font-semibold">특성</p>
+                    <p className="mt-0.5 text-xs text-default-500">주요 특성 조합과 캐릭터별 구성을 확인합니다.</p>
+                </div>
+            </CardHeader>
+            <CardBody className="p-4">
+                <div className="grid h-[270px] w-full grid-cols-[1fr_1px_1.2fr] gap-3">
+                    <div className="flex h-full grow flex-col gap-1.5 overflow-y-auto pr-1 scrollbar-hide">
+                        <div className="sticky top-0 z-10 flex w-full items-center gap-1 rounded-lg bg-default-100/95 px-2 py-1.5 backdrop-blur dark:bg-[#242427]/95">
                             <div className="grow border-b border-dotted border-default-800" />
-                            <h3 className="text-xs font-semibold">특성 조합 비율</h3>
+                                <h3 className="text-xs font-semibold">특성 조합 분포</h3>
                             <div className="grow border-b border-dotted border-default-800" />
                         </div>
                         {statComboSummary.length > 0 ? (
                             statComboSummary.map((item) => (
                                 <div
                                     key={item.label}
-                                    className="w-full flex gap-1 items-center text-sm">
-                                    {item.label.split(' / ').map((stat, index) => (
-                                        <Chip 
-                                            key={index}
-                                            size="sm"
-                                            variant={index === 0 ? 'solid' : 'flat'}
-                                            color={getStatChipColor(stat)}
-                                            radius="sm">{stat}</Chip>
-                                    ))}
-                                    <div className="grow border-b border-dotted border-default-300" />
-                                    <p className="shrink-0 font-semibold">{item.count}</p>
+                                    className="rounded-xl border border-default-200/70 bg-content1/70 px-2 py-2 transition-colors hover:border-default-300 dark:border-white/10 dark:bg-white/[0.025] dark:hover:border-white/20">
+                                    <div className="flex w-full items-center gap-1.5">
+                                        <div className="flex min-w-0 grow items-center gap-1">
+                                            {item.label.split(' / ').map((stat, index) => (
+                                                <div key={`${stat}-${index}`} className="flex min-w-0 items-center gap-1">
+                                                    {index > 0 ? <span className="text-[10px] text-default-400">+</span> : null}
+                                                    <Chip
+                                                        size="sm"
+                                                        variant="flat"
+                                                        color={getStatChipColor(stat)}
+                                                        radius="md"
+                                                        className="h-6 px-1 text-[10px] font-semibold">
+                                                        {stat}
+                                                    </Chip>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <span className="shrink-0 text-xs font-semibold tabular-nums">{item.count}명</span>
+                                    </div>
+                                    <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-default-200/80 dark:bg-white/10">
+                                        <div
+                                            className="h-full rounded-full bg-gradient-to-r from-primary-400 to-primary-600"
+                                            style={{ width: `${item.count / maxStatComboCount * 100}%` }}
+                                        />
+                                    </div>
                                 </div>
                             ))
                         ) : (
@@ -509,8 +498,8 @@ function StatSummaryCard({ expeditionCharacters }: { expeditionCharacters: Exped
                         )}
                     </div>
                     <Divider orientation="vertical" className="h-full"/>
-                    <div className="h-full grow overflow-y-auto scrollbar-hide flex flex-col gap-2">
-                        <div className="w-full flex gap-1 items-center">
+                    <div className="flex h-full grow flex-col gap-1.5 overflow-y-auto pr-1 scrollbar-hide">
+                        <div className="sticky top-0 z-10 flex w-full items-center gap-1 rounded-lg bg-default-100/95 px-2 py-1.5 backdrop-blur dark:bg-[#242427]/95">
                             <div className="grow border-b border-dotted border-default-800" />
                             <h3 className="text-xs font-semibold">캐릭터들의 특성 조합</h3>
                             <div className="grow border-b border-dotted border-default-800" />
@@ -519,7 +508,7 @@ function StatSummaryCard({ expeditionCharacters }: { expeditionCharacters: Exped
                             characterStatUsageSummary.map((character) => (
                                 <div
                                     key={character.nickname}
-                                    className="w-full flex gap-2 items-center text-xs">
+                                    className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1.5 text-xs transition-colors hover:bg-default-100 dark:hover:bg-white/[0.05]">
                                     <p className="shrink-0 font-medium">{character.nickname}</p>
                                     <div className="grow border-b border-dotted border-default-300" />
                                     {character.label.split(' / ').map((stat, index) => (
@@ -627,21 +616,23 @@ function EngravingCard({ expeditionCharacters }: { expeditionCharacters: Expedit
     }, 0);
 
     return (
-        <Card fullWidth radius="sm" shadow="sm">
-            <CardHeader>
+        <Card fullWidth radius="lg" className={expeditionCardClass}>
+            <CardHeader className={expeditionCardHeaderClass}>
                 <div className="w-full flex gap-1 items-center">
-                    <h1>각인</h1>
+                    <div>
+                        <h1 className="font-semibold">각인</h1>
+                        <p className="mt-0.5 text-xs text-default-500">원정대에서 사용하는 각인을 집계합니다.</p>
+                    </div>
                     <div className="flex gap-1 items-end ml-auto text-sm">
                         <p className="fadedtext">총 각인 레벨 합 :</p>
                         <p className="text-md text-orange-600 dark:text-orange-400">{sumEngraving.toLocaleString()}</p>
                     </div>
                 </div>
             </CardHeader>
-            <Divider/>
-            <CardBody>
-                <div className="w-full h-[240px] grid grid-cols-[1fr_1px_1fr] gap-3">
-                    <div className="h-full overflow-y-auto scrollbar-hide flex flex-col gap-2 pr-1">
-                        <div className="w-full flex gap-1 items-center">
+            <CardBody className="p-4">
+                <div className="grid h-[270px] w-full grid-cols-[1fr_1px_1fr] gap-3">
+                    <div className="flex h-full flex-col gap-1.5 overflow-y-auto pr-1 scrollbar-hide">
+                        <div className="sticky top-0 z-10 flex w-full items-center gap-1 rounded-lg bg-default-100/95 px-2 py-1.5 backdrop-blur dark:bg-[#242427]/95">
                             <div className="grow border-b border-dotted border-default-800" />
                             <h3 className="text-xs font-semibold">자주 사용하는 각인</h3>
                             <div className="grow border-b border-dotted border-default-800" />
@@ -650,11 +641,11 @@ function EngravingCard({ expeditionCharacters }: { expeditionCharacters: Expedit
                             engravingSummary.map((engraving) => (
                                 <div
                                     key={engraving.name}
-                                    className="w-full flex items-center gap-2 text-sm">
+                                    className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1 transition-colors hover:bg-default-100 dark:hover:bg-white/[0.05]">
                                     <img
                                         src={getEngravingSrcByName(engraving.name)}
                                         alt={engraving.name}
-                                        className="w-6 h-6 rounded-md shrink-0"/>
+                                        className="h-7 w-7 shrink-0 rounded-lg"/>
                                     <p className="truncate">
                                         {engraving.name}
                                     </p>
@@ -667,8 +658,8 @@ function EngravingCard({ expeditionCharacters }: { expeditionCharacters: Expedit
                         )}
                     </div>
                     <Divider orientation="vertical" className="h-full"/>
-                    <div className="h-full overflow-y-auto scrollbar-hide flex flex-col gap-2 pr-1">
-                        <div className="w-full flex gap-1 items-center">
+                    <div className="flex h-full flex-col gap-1.5 overflow-y-auto pr-1 scrollbar-hide">
+                        <div className="sticky top-0 z-10 flex w-full items-center gap-1 rounded-lg bg-default-100/95 px-2 py-1.5 backdrop-blur dark:bg-[#242427]/95">
                             <div className="grow border-b border-dotted border-default-800" />
                             <h3 className="text-xs font-semibold">유물 각인서</h3>
                             <div className="grow border-b border-dotted border-default-800" />
@@ -677,11 +668,11 @@ function EngravingCard({ expeditionCharacters }: { expeditionCharacters: Expedit
                             relicEngravingSummary.map((engraving) => (
                                 <div
                                     key={`relic-${engraving.name}`}
-                                    className="w-full flex items-center gap-2 text-sm">
+                                    className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1 transition-colors hover:bg-default-100 dark:hover:bg-white/[0.05]">
                                     <img
                                         src={getEngravingSrcByName(engraving.name)}
                                         alt={engraving.name}
-                                        className="w-6 h-6 rounded-md shrink-0"/>
+                                        className="h-7 w-7 shrink-0 rounded-lg"/>
                                     <p className={clsx("truncate", getColorTextByGrade(engraving.grade))}>
                                         {engraving.name}
                                     </p>
@@ -764,14 +755,18 @@ function ArkGridCard({ expeditionCharacters }: { expeditionCharacters: Expeditio
         });
 
     return (
-        <Card fullWidth radius="sm" shadow="sm">
-            <CardHeader>아크그리드</CardHeader>
-            <Divider/>
-            <CardBody>
-                <div className="w-full h-[240px] grid grid-cols-[2fr_1px_3fr] gap-3">
+        <Card fullWidth radius="lg" className={expeditionCardClass}>
+            <CardHeader className={expeditionCardHeaderClass}>
+                <div>
+                    <p className="font-semibold">아크그리드</p>
+                    <p className="mt-0.5 text-xs text-default-500">코어·젬 등급과 주요 코어를 집계합니다.</p>
+                </div>
+            </CardHeader>
+            <CardBody className="p-4">
+                <div className="grid h-[270px] w-full grid-cols-[2fr_1px_3fr] gap-3">
                     <div className="h-full flex flex-col gap-2 pr-1">
                         <div className="flex-1 h-full flex flex-col gap-1.5">
-                            <div className="w-full flex gap-1 items-center">
+                                <div className="flex w-full items-center gap-1 rounded-lg bg-default-100/80 px-2 py-1.5 dark:bg-white/[0.045]">
                                 <div className="grow border-b border-dotted border-default-800" />
                                 <h3 className="text-xs font-semibold">코어 개수</h3>
                                 <div className="grow border-b border-dotted border-default-800" />
@@ -779,7 +774,7 @@ function ArkGridCard({ expeditionCharacters }: { expeditionCharacters: Expeditio
                             {coreGradeSummary.map((item) => (
                                 <div
                                     key={item.grade}
-                                    className="w-full flex items-center gap-2 text-xs">
+                                    className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1 text-xs transition-colors hover:bg-default-100 dark:hover:bg-white/[0.05]">
                                     <p className={clsx("shrink-0 font-medium", getColorTextByGrade(item.grade))}>
                                         {item.grade}
                                     </p>
@@ -799,7 +794,7 @@ function ArkGridCard({ expeditionCharacters }: { expeditionCharacters: Expeditio
                         </div>
                         <Divider/>
                         <div className="flex-1 flex flex-col gap-1.5">
-                            <div className="w-full flex gap-1 items-center">
+                            <div className="flex w-full items-center gap-1 rounded-lg bg-default-100/80 px-2 py-1.5 dark:bg-white/[0.045]">
                                 <div className="grow border-b border-dotted border-default-800" />
                                 <h3 className="text-xs font-semibold">젬 개수</h3>
                                 <div className="grow border-b border-dotted border-default-800" />
@@ -807,7 +802,7 @@ function ArkGridCard({ expeditionCharacters }: { expeditionCharacters: Expeditio
                             {gemGradeSummary.map((item) => (
                                 <div
                                     key={`gem-${item.grade}`}
-                                    className="w-full flex items-center gap-2 text-xs">
+                                    className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1 text-xs transition-colors hover:bg-default-100 dark:hover:bg-white/[0.05]">
                                     <p className={clsx("shrink-0 font-medium", getColorTextByGrade(item.grade))}>
                                         {item.grade}
                                     </p>
@@ -827,14 +822,14 @@ function ArkGridCard({ expeditionCharacters }: { expeditionCharacters: Expeditio
                         </div>
                     </div>
                     <Divider orientation="vertical" className="h-full"/>
-                    <div className="h-full overflow-y-auto scrollbar-hide flex flex-col gap-2 pr-1">
+                    <div className="flex h-full flex-col gap-1.5 overflow-y-auto pr-1 scrollbar-hide">
                         {highGradeCores.length > 0 ? (
                             highGradeCores.map((core, index) => (
                                 <div
                                     key={`${core.nickname}-${core.name}-${index}`}
-                                    className="w-full flex items-center gap-2 text-xs">
+                                    className="flex w-full items-center gap-2 rounded-xl border border-transparent p-1.5 text-xs transition-colors hover:border-default-200 hover:bg-default-100 dark:hover:border-white/10 dark:hover:bg-white/[0.05]">
                                     <div className={clsx(
-                                        "w-9 h-9 shrink-0 rounded-md p-[2px]",
+                                        "h-10 w-10 shrink-0 rounded-xl p-[2px]",
                                         getBackgroundByGrade(core.grade)
                                     )}>
                                         <img
@@ -862,7 +857,6 @@ function ArkGridCard({ expeditionCharacters }: { expeditionCharacters: Expeditio
 
 // 캐릭터 통계
 function Characters({ expeditionCharacters }: { expeditionCharacters: ExpeditionCharacter[] }) {
-    const isMobile = useMobileQuery();
     const [level, setLevel] = useState(1640);
     const [characters, setCharacters] = useState<ExpeditionCharacter[]>([]);
     const contentLevels = [...homeData.contentLevels]
@@ -921,12 +915,12 @@ function Characters({ expeditionCharacters }: { expeditionCharacters: Expedition
     }, [characters]);
 
     return (
-        <Card fullWidth radius="sm" shadow="sm">
-            <CardHeader>
-                <div className="w-full flex gap-2 items-center">
+        <Card fullWidth radius="lg" className={expeditionCardClass}>
+            <CardHeader className={expeditionCardHeaderClass}>
+                <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center">
                     <div>
-                        <h1 className="text-lg">캐릭터 통계</h1>
-                        <p className="fadedtext text-xs">집계 대상 캐릭터 수 : {characters.length}</p>
+                        <h1 className="text-lg font-semibold">캐릭터 통계</h1>
+                        <p className="mt-0.5 text-xs text-default-500">설정한 레벨 이상 캐릭터 {characters.length}명을 집계합니다.</p>
                     </div>
                     <NumberInput
                         hideStepper
@@ -937,16 +931,18 @@ function Characters({ expeditionCharacters }: { expeditionCharacters: Expedition
                         value={level}
                         onValueChange={setLevel}
                         maxLength={4}
-                        className="w-[160px] ml-auto"/>
+                        className="w-full sm:ml-auto sm:w-[180px]"
+                        classNames={{
+                            inputWrapper: "h-11 border border-default-200 bg-default-100/80 shadow-none dark:border-white/10 dark:bg-white/[0.05]"
+                        }}/>
                 </div>
             </CardHeader>
-            <Divider/>
-            <CardBody>
-                <div className="w-full flex flex-col sm:flex-row gap-2">
-                    <div className="w-full sm:w-[337px] grid grid-cols-[1fr_1px_1fr] gap-2">
-                        <div className="flex flex-col items-center">
-                            <p className="fadedtext text-xs">전투력 평균</p>
-                            <p className="text-3xl font-bold">{formatCombatPower(averageCombatPower)}</p>
+            <CardBody className="p-4 sm:p-5">
+                <div className="flex w-full flex-col gap-4 xl:flex-row xl:items-stretch">
+                    <div className={clsx(expeditionInsetClass, "grid min-h-[240px] w-full grid-cols-[1fr_1px_1fr] gap-4 p-4 xl:w-[480px]")}>
+                        <div className="flex min-w-0 flex-col items-center">
+                            <p className="text-xs font-medium text-default-500">전투력 평균</p>
+                            <p className="mt-1 text-3xl font-bold tracking-tight">{formatCombatPower(averageCombatPower)}</p>
                             <div className="w-full flex gap-2 items-center mt-auto text-xs">
                                 <p className="shrink-0">딜러 평균</p>
                                 <div className="grow border-b border-dotted border-default-300" />
@@ -969,10 +965,10 @@ function Characters({ expeditionCharacters }: { expeditionCharacters: Expedition
                             </div>
                         </div>
                         <Divider orientation="vertical" className="min-h-full"/>
-                        <div className="flex flex-col items-center w-full">
+                        <div className="flex w-full min-w-0 flex-col items-center">
                             <div className="w-full flex gap-1 items-center">
                                 <div className="grow border-b border-dotted border-default-800" />
-                                <h3 className="text-xs font-semibold">레벨대 전투력 평균</h3>
+                                <h3 className="whitespace-nowrap text-xs font-semibold">레벨대 전투력 평균</h3>
                                 <div className="grow border-b border-dotted border-default-800" />
                             </div>
                             <div className="w-full flex flex-col gap-1 mt-2 text-xs">
@@ -988,15 +984,10 @@ function Characters({ expeditionCharacters }: { expeditionCharacters: Expedition
                             </div>
                         </div>
                     </div>
-                    <Divider
-                        orientation={isMobile ? 'horizontal' : 'vertical'}
-                        className="w-full h-px shrink-0 self-stretch sm:w-px sm:h-auto sm:min-h-full"
-                    />
-                    <div className="flex self-stretch">
-                        <div className="w-full sm:w-[160px] flex flex-col items-center">
-                
-                            <p className="fadedtext text-xs">아이템 레벨 평균</p>
-                            <p className="text-3xl font-bold">{formatCombatPower(averageItemLevel)}</p>
+                    <div className={clsx(expeditionInsetClass, "flex min-h-[240px] w-full self-stretch p-4 xl:w-[210px]")}>
+                        <div className="flex w-full flex-col items-center">
+                            <p className="text-xs font-medium text-default-500">아이템 레벨 평균</p>
+                            <p className="mt-1 text-3xl font-bold tracking-tight">{formatCombatPower(averageItemLevel)}</p>
                             <div className="w-full flex gap-2 items-center mt-auto text-xs">
                                 <p className="shrink-0">딜러 평균</p>
                                 <div className="grow border-b border-dotted border-default-300" />
@@ -1019,25 +1010,27 @@ function Characters({ expeditionCharacters }: { expeditionCharacters: Expedition
                             </div>
                         </div>
                     </div>
-                    <Divider
-                        orientation={isMobile ? 'horizontal' : 'vertical'}
-                        className="w-full h-px shrink-0 self-stretch sm:w-px sm:h-auto sm:min-h-full"
-                    />
-                    <div className="grow h-fit grid grid-cols-3 sm:grid-cols-5 gap-2">
-                        {classCounts.filter(count => count.count > 0).map((count, index) => (
-                            <Chip
-                                key={index}
-                                size="sm"
-                                variant="faded"
-                                radius="sm"
-                                startContent={<JobEmblemIcon job={count.className} size={16}/>}
-                                className="min-w-full">
-                                <div className="w-full flex items-center text-xs">
-                                    <p>{count.className}</p>
-                                    <p className="font-semibold ml-auto">{count.count}</p>
-                                </div>
-                            </Chip>
-                        ))}
+                    <div className={clsx(expeditionInsetClass, "h-fit grow p-4")}>
+                        <div className="mb-3 flex items-center justify-between">
+                            <p className="text-xs font-semibold text-default-600 dark:text-default-300">직업 구성</p>
+                            <span className="text-[10px] text-default-400">{classCounts.filter((count) => count.count > 0).length}개 직업</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
+                            {classCounts.filter(count => count.count > 0).map((count, index) => (
+                                <Chip
+                                    key={index}
+                                    size="sm"
+                                    variant="flat"
+                                    radius="md"
+                                    startContent={<JobEmblemIcon job={count.className} size={16}/>}
+                                    className="min-w-full border border-default-200/80 bg-content1/80 dark:border-white/10 dark:bg-white/[0.05]">
+                                    <div className="flex w-full items-center text-xs">
+                                        <p>{count.className}</p>
+                                        <p className="ml-auto font-semibold">{count.count}</p>
+                                    </div>
+                                </Chip>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </CardBody>
@@ -1047,29 +1040,38 @@ function Characters({ expeditionCharacters }: { expeditionCharacters: Expedition
 
 // 캐릭터 이미지 출력
 function CharacterImages({ expeditionCharacters }: { expeditionCharacters: ExpeditionCharacter[] }) {
+    const visibleCharacters = expeditionCharacters.filter((character) => character.profile.characterImageUrl !== '-');
+
     return (
-        <Card fullWidth radius="sm" shadow="sm" className="mt-4">
-            <CardHeader>캐릭터 아바타</CardHeader>
-            <Divider/>
-            <CardBody>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-7 gap-3">
-                    {expeditionCharacters
-                        .filter((character) => character.profile.characterImageUrl !== '-')
-                        .map((character) => (
+        <Card fullWidth radius="lg" className={clsx(expeditionCardClass, "mt-4")}>
+            <CardHeader className={expeditionCardHeaderClass}>
+                <div className="flex w-full items-center justify-between gap-3">
+                    <div>
+                        <p className="font-semibold">캐릭터 아바타</p>
+                        <p className="mt-0.5 text-xs text-default-500">원정대 캐릭터의 현재 모습을 모아봅니다.</p>
+                    </div>
+                    <Chip size="sm" radius="full" variant="flat" color="primary">{visibleCharacters.length}명</Chip>
+                </div>
+            </CardHeader>
+            <CardBody className="p-4 sm:p-5">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md960:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7">
+                    {visibleCharacters.map((character) => (
                             <div
                                 key={character.nickname}
-                                className="w-full overflow-hidden rounded-md bg-[#15181d] border border-default-200 dark:border-default-100/10 shadow-md">
-                                <div className="w-full aspect-[3/5]">
+                                className="group relative w-full overflow-hidden rounded-2xl border border-default-200/80 bg-[#11151b] shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary-300 hover:shadow-lg dark:border-white/10 dark:hover:border-primary-500/40">
+                                <div className="relative aspect-[3/5] w-full overflow-hidden">
                                     <img
                                         src={character.profile.characterImageUrl}
                                         alt={character.nickname}
                                         loading="lazy"
-                                        className="w-full h-full object-cover object-top"/>
-                                </div>
-                                <div className="w-full px-2 pb-2">
-                                    <div className="w-full p-1 rounded-md bg-[#ffffff]/10">
-                                        <p className="text-white text-xs">{character.nickname}</p>
-                                        <p className="fadedtext text-[7pt]">{character.profile.className} · Lv.{character.profile.itemLevel}</p>
+                                        className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-[1.025]"/>
+                                    <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/90 via-black/55 to-transparent"/>
+                                    <div className="absolute inset-x-0 bottom-0 p-2.5 text-white">
+                                        <p className="truncate text-xs font-semibold">{character.nickname}</p>
+                                        <div className="mt-1 flex items-center justify-between gap-1 text-[10px] text-white/65">
+                                            <span className="truncate">{character.profile.className}</span>
+                                            <span className="shrink-0 font-medium text-white/85">Lv.{character.profile.itemLevel.toLocaleString()}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

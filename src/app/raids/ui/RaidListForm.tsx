@@ -133,7 +133,7 @@ export function FindComponent({ joinRaids, isLoadingData, dispatch }: FindCompon
                     </div>
                 </div>
             )}
-            <div className="mt-5 w-full overflow-x-auto scrollbar-hide">
+            <div className="mt-5 min-h-[600px] w-full overflow-x-auto scrollbar-hide">
                 {isLoadingData ? <LoadingComponent heightStyle={'h-[calc(100vh-105px)]'}/> : (
                     <div>
                         <div className="grid w-full gap-3 p-1 min-[681px]:grid-cols-2 min-[1021px]:grid-cols-3">

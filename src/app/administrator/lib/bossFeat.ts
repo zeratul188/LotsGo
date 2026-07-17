@@ -130,6 +130,24 @@ export function useOnRemoveDifficulty(
     setInputs(removedInputs);
 }
 
+// 콘텐츠 수정 Modal에서 난이도 항목 순서 변경
+export function moveDifficulty(
+    index: number,
+    direction: -1 | 1,
+    inputs: Difficulty[],
+    setInputs: SetStateFn<Difficulty[]>
+) {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= inputs.length) return;
+
+    const reorderedInputs = [...inputs];
+    [reorderedInputs[index], reorderedInputs[targetIndex]] = [
+        reorderedInputs[targetIndex],
+        reorderedInputs[index]
+    ];
+    setInputs(reorderedInputs);
+}
+
 // 입력된 콘텐츠의 난이도마다 빈 내용이 있는지 체크 여부
 function isEmptyValue(inputs: Difficulty[]) {
     let isEmpty = false;
