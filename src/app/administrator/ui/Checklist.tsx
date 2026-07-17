@@ -366,7 +366,7 @@ function BossComponent() {
                                     </div>
                                     <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">{inputs.length}개 항목</span>
                                 </div>
-                                <div className="max-h-[500px] space-y-3 overflow-y-auto pr-1">
+                                <div className="space-y-3 pr-1">
                                     {inputs.map((input: Difficulty, index: number) => (
                                         <div key={index} className="rounded-2xl border border-default-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
                                             <div className="flex flex-wrap items-center gap-2">
