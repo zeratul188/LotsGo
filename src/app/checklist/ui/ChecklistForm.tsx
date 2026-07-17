@@ -2072,19 +2072,32 @@ function AutoChecklistCharacterButton({
             : `${nickname} 캐릭터로 자동 체크 대상을 변경`;
 
     return (
-        <Button
-            isIconOnly
-            variant="light"
-            size="sm"
-            radius="full"
-            className="h-6 min-w-6 w-6"
-            aria-label={ariaLabel}
-            isDisabled={isDisabled}
-            onPress={() => onSelect(nickname)}>
-            <SwitchCharacterIcon
-                size={size}
-                className={isDisabled ? 'text-gray-300 dark:text-gray-600' : 'text-black dark:text-white'}/>
-        </Button>
+        <span className="hidden md960:inline-flex">
+            <Tooltip
+                showArrow
+                placement="top"
+                content={isSharing
+                    ? isSelected
+                        ? '현재 자동 체크 중인 캐릭터입니다.'
+                        : '화면 공유 중 자동 체크할 캐릭터로 전환합니다.'
+                    : '화면 공유를 켜면 자동 체크 캐릭터를 전환할 수 있습니다.'}>
+                <span className="inline-flex">
+                    <Button
+                        isIconOnly
+                        variant="light"
+                        size="sm"
+                        radius="full"
+                        className="h-6 min-w-6 w-6"
+                        aria-label={ariaLabel}
+                        isDisabled={isDisabled}
+                        onPress={() => onSelect(nickname)}>
+                        <SwitchCharacterIcon
+                            size={size}
+                            className={isDisabled ? 'text-gray-300 dark:text-gray-600' : 'text-black dark:text-white'}/>
+                    </Button>
+                </span>
+            </Tooltip>
+        </span>
     );
 }
 
