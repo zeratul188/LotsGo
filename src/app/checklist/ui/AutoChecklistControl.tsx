@@ -971,7 +971,7 @@ export default function AutoChecklistControl({
                 {status === 'active' ? '자동 체크 작동 중 (Beta)' : '자동 체크 기능 켜기 (Beta)'}
             </Button>
             {isSharing ? (
-                <div className="hidden min-w-0 items-center gap-2 rounded-lg border border-primary-200/80 bg-primary-50/80 px-3 py-2 text-sm text-primary-700 md960:col-span-4 md960:flex dark:border-primary-800/70 dark:bg-primary-950/30 dark:text-primary-300">
+                <div className="hidden min-w-0 items-center gap-2 rounded-lg border border-primary-200/80 bg-primary-50/80 px-3 py-2 text-sm text-primary-700 md960:col-span-4 md960:flex dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-sky-200">
                     <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-danger"/>
                     <p className="min-w-0 truncate">
                         {currentBoss

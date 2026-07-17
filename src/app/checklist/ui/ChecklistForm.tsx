@@ -1193,7 +1193,7 @@ export function ChecklistComponent({
                                     <JobEmblemIcon job={character.job} size={38}/>
                                     <div className="flex grow flex-row md960:flex-col items-center">
                                         <div className="grow-1 w-full">
-                                            <div className="mt-1 flex min-w-0 items-center gap-1.5 text-xs">
+                                            <div className="mt-1 flex min-w-0 items-center gap-1.5 text-xs dark:[&>span]:text-sky-300">
                                                 <p className="min-w-0 truncate fadedtext">{character.job} · Lv.{character.level}</p>
                                                 {isAutoChecklistSharing && autoChecklistNickname === character.nickname ? (
                                                     <span className="shrink-0 font-medium text-primary">자동 체크 중...</span>
