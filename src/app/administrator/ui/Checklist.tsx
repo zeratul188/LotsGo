@@ -219,7 +219,11 @@ function BossComponent() {
                                 color="primary"
                                 radius="lg"
                                 className="min-w-28 font-bold"
-                                onPress={onOpen}>콘텐츠 추가</Button>
+                                onPress={() => {
+                                    onCloseModal();
+                                    onAddInput();
+                                    onOpen();
+                                }}>콘텐츠 추가</Button>
                             </div>
                         </div>
                         {boss.length !== 0 ? boss.sort((a, b) => {
@@ -364,7 +368,10 @@ function BossComponent() {
                                         <h3 className="font-bold">난이도 및 보상</h3>
                                         <p className="text-xs text-default-500">관문별 체크리스트와 골드 정보를 설정합니다.</p>
                                     </div>
-                                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">{inputs.length}개 항목</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">{inputs.length}개 항목</span>
+                                        <Button size="sm" color="primary" variant="flat" radius="lg" className="font-bold" onPress={onAddInput}>난이도 추가</Button>
+                                    </div>
                                 </div>
                                 <div className="space-y-3 pr-1">
                                     {inputs.map((input: Difficulty, index: number) => (
@@ -480,13 +487,6 @@ function BossComponent() {
                                         </div>
                                     ))}
                                 </div>
-                                <Button
-                                    fullWidth
-                                    color="primary"
-                                    variant="flat"
-                                    radius="lg"
-                                    className="mb-2 font-bold"
-                                    onPress={onAddInput}>난이도 추가</Button>
                             </ModalBody>
                             <ModalFooter>
                                 <Button radius="lg" color="default" variant="flat" onPress={onClose}>취소</Button>
