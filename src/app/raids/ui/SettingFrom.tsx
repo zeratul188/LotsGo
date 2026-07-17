@@ -12,6 +12,13 @@ import dynamic from "next/dynamic";
 const FixedLineAd = dynamic(() => import("@/app/ad/FixedLineAd"), { ssr: false });
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
+const settingModalClassNames = {
+    backdrop: "bg-black/60 backdrop-blur-sm",
+    base: "border border-default-200 bg-white shadow-2xl dark:border-white/10 dark:bg-[#171717]",
+    header: "border-b border-default-200 px-5 py-4 dark:border-white/10",
+    body: "gap-4 px-5 py-5",
+    footer: "border-t border-default-200 px-5 py-4 dark:border-white/10"
+};
 
 // 파티 설정 컴포넌트
 type PartySettingComponentProps = {
@@ -286,27 +293,32 @@ function ChangeManagerModal({ dispatch, setOpenChangeManager, isOpenChangeManage
 
     return (
         <Modal
-            radius="sm"
+            radius="lg"
+            size="lg"
+            classNames={settingModalClassNames}
             scrollBehavior="inside"
             isOpen={isOpenChangeManager}
             onOpenChange={(isOpen) => setOpenChangeManager(isOpen)}>
             <ModalContent>
                 {(onClose) => (
                     <>
-                        <ModalHeader>파티장 위임</ModalHeader>
+                        <ModalHeader>
+                            <div className="space-y-1">
+                                <h2 className="text-lg font-bold text-foreground">파티장 위임</h2>
+                                <p className="text-sm font-normal text-default-500">파티 관리 권한을 넘겨받을 파티원을 선택하세요.</p>
+                            </div>
+                        </ModalHeader>
                         <ModalBody>
-                            <p>파티장을 위임할 파티원을 선택해주세요.</p>
-                            <div className="w-full max-h-[400px] overflow-y-auto overflow-x-hidden">
+                            <div className="max-h-[400px] w-full space-y-2 overflow-y-auto overflow-x-hidden pr-1">
                                 {getMemberBoxs(raid.members, members, raid.managerId).map((box, index) => (
-                                    <div key={index} className="w-full min-h-[64px] mb-1">
+                                    <div key={index} className="w-full min-h-[64px]">
                                         <Checkbox
                                             aria-label={box.nickname}
                                             classNames={{
                                                 base: cn(
-                                                    "w-full max-w-full bg-content1",
-                                                    "hover:bg-content2",
-                                                    "cursor-pointer rounded-lg gap-2 border-2 border-transparent m-auto box-border",
-                                                    "data-[selected=true]:border-primary"
+                                                    "m-auto box-border w-full max-w-full gap-3 rounded-xl border border-default-200 bg-default-50/60 px-3 py-2",
+                                                    "cursor-pointer hover:border-primary/40 hover:bg-primary-50/30 dark:border-white/10 dark:bg-white/[0.03]",
+                                                    "data-[selected=true]:border-primary data-[selected=true]:bg-primary-50 dark:data-[selected=true]:bg-primary-500/10"
                                                 ),
                                                 label: "w-full",
                                             }}
@@ -333,11 +345,11 @@ function ChangeManagerModal({ dispatch, setOpenChangeManager, isOpenChangeManage
                             </div>
                         </ModalBody>
                         <ModalFooter>
+                            <Button radius="lg" variant="light" onPress={onClose}>취소</Button>
                             <Button
-                                fullWidth
-                                radius="sm"
-                                size="lg"
+                                radius="lg"
                                 color="primary"
+                                className="min-w-32 font-semibold"
                                 isLoading={isLoadingChange}
                                 isDisabled={!selectedMember}
                                 onPress={async () => handleChangeManager({
