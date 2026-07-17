@@ -129,7 +129,7 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                         <div className="min-w-0">
                                             <div className="flex flex-wrap items-center gap-2">
                                                 <p className="max-w-full truncate text-base font-bold">{skill.name}</p>
-                                                <span className="rounded-md bg-default-200 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-default-700 dark:bg-white/10 dark:text-default-200">Lv.{skill.level}</span>
+                                                <span className="rounded-md bg-default-200 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-default-700 dark:bg-white/15 dark:!text-white">Lv.{skill.level}</span>
                                                 <span className="text-xs text-default-500">{skill.type}</span>
                                             </div>
                                             {skill.tripods.length > 0 ? (

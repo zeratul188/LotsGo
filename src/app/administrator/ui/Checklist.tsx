@@ -22,6 +22,7 @@ import {
     useOnAddInput, 
     onClickEdit, 
     useOnRemoveDifficulty, 
+    moveDifficulty,
     onClickRemove, 
     loadBoss
 } from "../lib/bossFeat";
@@ -32,6 +33,24 @@ type TabMenu = {
     title: string,
     component: ReactNode
 }
+
+const fieldClassNames = {
+    inputWrapper: "border-default-200 bg-default-50 shadow-none data-[hover=true]:border-primary/50 dark:border-white/10 dark:bg-white/[0.04]",
+    label: "font-medium text-default-600"
+};
+
+const modalClassNames = {
+    backdrop: "bg-black/60 backdrop-blur-sm",
+    base: "border border-default-200 bg-white shadow-2xl dark:border-white/10 dark:bg-[#171717]",
+    header: "border-b border-default-200 px-5 py-4 dark:border-white/10",
+    body: "gap-4 px-5 py-5",
+    footer: "border-t border-default-200 px-5 py-4 dark:border-white/10"
+};
+
+const tableClassNames = {
+    th: "bg-default-100 text-xs font-bold text-default-500 dark:bg-white/[0.06]",
+    td: "border-b border-default-100 py-3 text-sm last:border-b-0 dark:border-white/[0.06]"
+};
 
 // 숙제 관리 - 큐브 관리 컴포넌트
 function CubeComponent() {
@@ -54,15 +73,22 @@ function CubeComponent() {
     return (
         <div className="w-full">
             {isLoading ? <LoadingComponent heightStyle={'h-[calc(100vh-105px)]'}/> : (
-                <div className="w-full min-h-[calc(100vh-105px)]">
-                    <div className="w-full flex gap-3 flex-col sm:flex-row items-center">
+                <div className="w-full min-h-[calc(100vh-180px)]">
+                    <section className="rounded-2xl border border-default-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#171717] sm:p-5">
+                        <div className="mb-4">
+                            <h2 className="text-lg font-bold">큐브 데이터 추가</h2>
+                            <p className="mt-1 text-sm text-default-500">큐브 단계별 권장 레벨과 보상 정보를 등록합니다.</p>
+                        </div>
+                    <div className="grid w-full gap-3 sm:grid-cols-2 xl:grid-cols-[1.4fr_1fr_.7fr_1.2fr_auto] xl:items-end">
                         <Input
                             isRequired
                             label="큐브 명"
                             placeholder="ex) 제 1 해금"
                             value={inputName}
                             onValueChange={setInputName}
-                            className="grow"/>
+                            radius="lg"
+                            variant="bordered"
+                            classNames={fieldClassNames}/>
                         <NumberInput
                             isRequired
                             label="권장 아이템 레벨"
@@ -72,7 +98,9 @@ function CubeComponent() {
                             step={5}
                             value={inputLevel}
                             onValueChange={setInputLevel}
-                            className="grow"/>
+                            radius="lg"
+                            variant="bordered"
+                            classNames={fieldClassNames}/>
                         <NumberInput
                             isRequired
                             label="티어"
@@ -82,7 +110,9 @@ function CubeComponent() {
                             step={1}
                             value={inputTier}
                             onValueChange={setInputTier}
-                            className="grow"/>
+                            radius="lg"
+                            variant="bordered"
+                            classNames={fieldClassNames}/>
                         <NumberInput
                             isRequired
                             label="보상 (1레벨 보석 기준)"
@@ -92,14 +122,19 @@ function CubeComponent() {
                             step={1}
                             value={inputReward}
                             onValueChange={setInputReward}
-                            className ="grow"/>
+                            radius="lg"
+                            variant="bordered"
+                            classNames={fieldClassNames}/>
                         <Button
                             color="primary"
                             size="lg"
-                            className="w-full sm:w-[200px]"
+                            radius="lg"
+                            className="h-14 w-full px-8 font-bold sm:col-span-2 xl:col-span-1"
                             onPress={onClickAddCube}>추가</Button>
                     </div>
-                    <Table removeWrapper className="mt-6">
+                    </section>
+                    <section className="mt-5 overflow-hidden rounded-2xl border border-default-200 bg-white p-3 shadow-sm dark:border-white/10 dark:bg-[#171717] sm:p-5">
+                    <Table removeWrapper aria-label="큐브 데이터 목록" classNames={tableClassNames}>
                         <TableHeader>
                             <TableColumn>큐브명</TableColumn>
                             <TableColumn>권장 아이템 레벨</TableColumn>
@@ -115,16 +150,20 @@ function CubeComponent() {
                                     <TableCell>{cube.tier}</TableCell>
                                     <TableCell>{cube.reward}</TableCell>
                                     <TableCell>
-                                        <button 
-                                            className="underline redbutton"
+                                        <Button
+                                            size="sm"
+                                            color="danger"
+                                            variant="flat"
+                                            radius="lg"
                                             onClick={async () => { 
                                                 await handleRemoveCube(index, cubes, setCubes)
-                                            }}>삭제</button>
+                                            }}>삭제</Button>
                                     </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
                     </Table>
+                    </section>
                 </div>
             )}
         </div>
@@ -168,14 +207,20 @@ function BossComponent() {
         <>
             <div className="w-full">
                 {isLoading ? <LoadingComponent heightStyle={'h-[calc(100vh-105px)]'}/> : (
-                    <div className="w-full min-h-[calc(100vh-105px)]">
-                        <div className="flex flex-col sm:flex-row gap-2 items-center mb-5">
-                            <span className="grow-1 text-lg text-left w-full">추가한 콘텐츠 수 : {boss.length}개</span>
+                    <div className="w-full min-h-[calc(100vh-180px)]">
+                        <div className="mb-5 flex flex-col gap-4 rounded-2xl border border-default-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#171717] sm:flex-row sm:items-center">
+                            <div className="grow">
+                                <h2 className="text-xl font-bold">레이드 콘텐츠</h2>
+                                <p className="mt-1 text-sm text-default-500">체크리스트에서 사용하는 난이도, 관문, 골드 보상을 관리합니다.</p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="rounded-full bg-primary/10 px-3 py-1.5 text-sm font-bold text-primary">총 {boss.length}개</span>
                             <Button 
                                 color="primary"
-                                size="lg"
-                                className="w-full sm:w-40"
-                                onPress={onOpen}>추가</Button>
+                                radius="lg"
+                                className="min-w-28 font-bold"
+                                onPress={onOpen}>콘텐츠 추가</Button>
+                            </div>
                         </div>
                         {boss.length !== 0 ? boss.sort((a, b) => {
                             const bDiff = boss.find(d => d.name === b.name);
@@ -189,23 +234,27 @@ function BossComponent() {
                             }
                             return bValue - aValue;
                         }).map((item: Boss, index: number) => (
-                            <Card key={index} radius="sm" className="mb-6">
-                                <CardHeader>
-                                    <div className="w-full flex gap-2 items-center">
-                                        <h2 className="grow text-xl font-bold">{item.name}</h2>
-                                        <p className="fadedtext text-sm">{item.max}인 | {item.simple}</p>
+                            <Card key={index} radius="lg" className="mb-5 border border-default-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]">
+                                <CardHeader className="flex-col items-start gap-2 px-5 py-4 sm:flex-row sm:items-center">
+                                    <div className="grow">
+                                        <h2 className="text-lg font-bold sm:text-xl">{item.name}</h2>
+                                        <p className="mt-1 text-sm text-default-500">
+                                            화면 인식 이름: {(item.screenNames ?? []).length > 0 ? item.screenNames?.join(', ') : '등록되지 않음'}
+                                        </p>
                                     </div>
-                                    <p className="mt-1 text-sm fadedtext">
-                                        화면 인식 이름: {(item.screenNames ?? []).length > 0 ? item.screenNames?.join(', ') : '등록되지 않음'}
-                                    </p>
+                                    <div className="flex shrink-0 gap-2">
+                                        <span className="rounded-full bg-default-100 px-3 py-1 text-xs font-semibold text-default-600 dark:bg-white/[0.06]">{item.max}인</span>
+                                        <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">{item.simple}</span>
+                                    </div>
                                 </CardHeader>
                                 <Divider/>
-                                <CardBody>
+                                <CardBody className="px-3 py-3 sm:px-5">
                                     <div className="w-full overflow-x-auto scrollbar-hide">
                                         <Table 
-                                            removeWrapper 
-                                            aria-label="difficulty table" 
-                                            className="w-[500px] sm:w-full">
+                                             removeWrapper
+                                             aria-label="difficulty table"
+                                             className="w-[720px] sm:w-full"
+                                             classNames={tableClassNames}>
                                             <TableHeader>
                                                 <TableColumn>난이도</TableColumn>
                                                 <TableColumn>관문</TableColumn>
@@ -225,8 +274,8 @@ function BossComponent() {
                                                         <TableCell>{difficulty.gold.toLocaleString()}</TableCell>
                                                         <TableCell>{difficulty.boundGold.toLocaleString()}</TableCell>
                                                         <TableCell>{difficulty.bonus.toLocaleString()}</TableCell>
-                                                        <TableCell>{difficulty.isBiweekly ? '○' : '✕'}</TableCell>
-                                                        <TableCell>{difficulty.isOnce ? '○' : '✕'}</TableCell>
+                                                        <TableCell><span className={difficulty.isBiweekly ? "font-bold text-success" : "text-default-300"}>{difficulty.isBiweekly ? '적용' : '—'}</span></TableCell>
+                                                        <TableCell><span className={difficulty.isOnce ? "font-bold text-success" : "text-default-300"}>{difficulty.isOnce ? '적용' : '—'}</span></TableCell>
                                                     </TableRow>
                                                 ))}
                                             </TableBody>
@@ -234,11 +283,11 @@ function BossComponent() {
                                     </div>
                                 </CardBody>
                                 <Divider/>
-                                <CardFooter>
-                                    <div className="w-full flex gap-4">
+                                <CardFooter className="px-5 py-3">
+                                    <div className="w-full flex gap-2">
                                         <div className="grow-1"/>
-                                        <Button color="danger" onPress={async () => await onClickRemove(index, boss, setBoss)}>삭제</Button>
-                                        <Button color="primary" onPress={() => onClickEdit(index, setEditMode, setEditIndex, onOpen, boss[index], setInputName, setInputSimple, setInputScreenNames, setInputMax, setInputs)}>수정</Button>
+                                        <Button radius="lg" color="danger" variant="flat" onPress={async () => await onClickRemove(index, boss, setBoss)}>삭제</Button>
+                                        <Button radius="lg" color="primary" variant="flat" onPress={() => onClickEdit(index, setEditMode, setEditIndex, onOpen, boss[index], setInputName, setInputSimple, setInputScreenNames, setInputMax, setInputs)}>수정</Button>
                                     </div>
                                 </CardFooter>
                             </Card>
@@ -252,25 +301,38 @@ function BossComponent() {
                 scrollBehavior="inside"
                 backdrop="blur"
                 size="4xl"
+                radius="lg"
+                classNames={modalClassNames}
                 onOpenChange={onOpenChange}
                 onClose={onCloseModal}>
                 <ModalContent>
                     {(onClose) => (
                         <>
-                            <ModalHeader>데이터 추가</ModalHeader>
+                            <ModalHeader className="flex flex-col items-start gap-1">
+                                <h2 className="text-xl font-bold">{isEditMode ? '콘텐츠 수정' : '콘텐츠 추가'}</h2>
+                                <p className="text-sm font-normal text-default-500">콘텐츠 기본 정보와 난이도별 보상을 입력하세요.</p>
+                            </ModalHeader>
                             <ModalBody>
+                                <section className="rounded-2xl border border-default-200 bg-default-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+                                <h3 className="mb-4 text-sm font-bold text-default-700">기본 정보</h3>
                                 <Input
                                     label="콘텐츠 명"
                                     labelPlacement="outside"
                                     placeholder="군단장 레이드 - 카멘"
                                     value={inputName}
+                                    radius="lg"
+                                    variant="bordered"
+                                    classNames={fieldClassNames}
                                     onValueChange={setInputName}/>
-                                <div className="w-full grid sm:grid-cols-[2fr_1fr] gap-2">
+                                <div className="mt-4 w-full grid sm:grid-cols-[2fr_1fr] gap-3">
                                     <Input
                                         label="간단 콘텐츠 명"
                                         labelPlacement="outside"
                                         placeholder="카멘"
                                         value={inputSimple}
+                                        radius="lg"
+                                        variant="bordered"
+                                        classNames={fieldClassNames}
                                         onValueChange={setInputSimple}/>
                                     <NumberInput
                                         label="최대 인원"
@@ -280,82 +342,140 @@ function BossComponent() {
                                         maxValue={99}
                                         step={1}
                                         value={inputMax}
+                                        radius="lg"
+                                        variant="bordered"
+                                        classNames={fieldClassNames}
                                         onValueChange={setInputMax}/>
                                 </div>
                                 <Textarea
+                                    className="mt-4"
                                     label="게임 화면 표시 이름"
                                     labelPlacement="outside"
                                     description="게임 좌측 상단에 표시되는 이름을 줄바꿈 또는 쉼표로 구분해 입력하세요."
                                     placeholder={'어둠군단장 카멘\n또 다른 표시 이름'}
                                     value={inputScreenNames}
+                                    radius="lg"
+                                    variant="bordered"
+                                    classNames={fieldClassNames}
                                     onValueChange={setInputScreenNames}/>
-                                <div className="max-h-[500px] overflow-y-auto">
+                                </section>
+                                <div className="flex items-center justify-between pt-1">
+                                    <div>
+                                        <h3 className="font-bold">난이도 및 보상</h3>
+                                        <p className="text-xs text-default-500">관문별 체크리스트와 골드 정보를 설정합니다.</p>
+                                    </div>
+                                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">{inputs.length}개 항목</span>
+                                </div>
+                                <div className="space-y-3 pr-1">
                                     {inputs.map((input: Difficulty, index: number) => (
-                                        <div key={index} className="mt-4">
-                                            <div className="flex gap-2">
-                                                <span className="text-md font-bold grow-1">{index+1}번 항목</span>
-                                                <span 
-                                                    className="text-red-500 underline hover:text-red-800 cursor-pointer"
-                                                    onClick={() => useOnRemoveDifficulty(index, inputs, setInputs)}>삭제하기</span>
+                                        <div key={index} className="rounded-2xl border border-default-200 bg-white p-4 dark:border-white/10 dark:bg-white/[0.03]">
+                                            <div className="flex flex-wrap items-center gap-2">
+                                                <div className="grow">
+                                                    <span className="text-sm font-bold">난이도 {index+1}</span>
+                                                    <span className="ml-2 text-xs text-default-400">저장 순서 {index+1}번째</span>
+                                                </div>
+                                                <Button
+                                                    size="sm"
+                                                    variant="flat"
+                                                    radius="lg"
+                                                    isDisabled={index === 0}
+                                                    aria-label={`${index+1}번 난이도를 위로 이동`}
+                                                    onPress={() => moveDifficulty(index, -1, inputs, setInputs)}>
+                                                    ↑ 위로
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="flat"
+                                                    radius="lg"
+                                                    isDisabled={index === inputs.length - 1}
+                                                    aria-label={`${index+1}번 난이도를 아래로 이동`}
+                                                    onPress={() => moveDifficulty(index, 1, inputs, setInputs)}>
+                                                    ↓ 아래로
+                                                </Button>
+                                                <Button size="sm" color="danger" variant="light" radius="lg" onPress={() => useOnRemoveDifficulty(index, inputs, setInputs)}>항목 삭제</Button>
                                             </div>
-                                            <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 items-center mt-2">
+                                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 items-end mt-3">
                                                 <Input
                                                     label="난이도"
                                                     labelPlacement="outside"
-                                                    placeholder="하드 1-3관"
-                                                    value={input.difficulty}
-                                                    onValueChange={(value: string) => onValueChangeDifficulty(value, index)}/>
+                                                     placeholder="하드 1-3관"
+                                                     value={input.difficulty}
+                                                     radius="lg"
+                                                     variant="bordered"
+                                                     classNames={fieldClassNames}
+                                                     onValueChange={(value: string) => onValueChangeDifficulty(value, index)}/>
                                                 <NumberInput
                                                     label="입장 레벨"
                                                     labelPlacement="outside"
                                                     placeholder="0 ~ 9999"
                                                     minValue={0}
                                                     maxValue={9999}
-                                                    step={5}
-                                                    value={input.level}
-                                                    onValueChange={(value: number) => onValueChangeLevel(value, index)}/>
+                                                     step={5}
+                                                     value={input.level}
+                                                     radius="lg"
+                                                     variant="bordered"
+                                                     classNames={fieldClassNames}
+                                                     onValueChange={(value: number) => onValueChangeLevel(value, index)}/>
                                                 <NumberInput
                                                     label="관문"
                                                     labelPlacement="outside"
                                                     placeholder="0 ~ 9999999"
                                                     minValue={0}
                                                     maxValue={9999999}
-                                                    step={1}
-                                                    value={input.stage}
-                                                    onValueChange={(value: number) => onValueChangeStage(value, index)}/>
+                                                     step={1}
+                                                     value={input.stage}
+                                                     radius="lg"
+                                                     variant="bordered"
+                                                     classNames={fieldClassNames}
+                                                     onValueChange={(value: number) => onValueChangeStage(value, index)}/>
                                                 <NumberInput
                                                     label="지급 골드"
                                                     labelPlacement="outside"
                                                     placeholder="0 ~ 9999999"
                                                     minValue={0}
                                                     maxValue={9999999}
-                                                    step={5}
-                                                    value={input.gold}
-                                                    onValueChange={(value: number) => onValueChangeGold(value, index)}/>
+                                                     step={5}
+                                                     value={input.gold}
+                                                     radius="lg"
+                                                     variant="bordered"
+                                                     classNames={fieldClassNames}
+                                                     onValueChange={(value: number) => onValueChangeGold(value, index)}/>
                                                 <NumberInput
                                                     label="귀속 골드"
                                                     labelPlacement="outside"
                                                     placeholder="0 ~ 9999999"
                                                     minValue={0}
                                                     maxValue={9999999}
-                                                    step={5}
-                                                    value={input.boundGold}
-                                                    onValueChange={(value: number) => onValueChangeBoundGold(value, index)}/>
+                                                     step={5}
+                                                     value={input.boundGold}
+                                                     radius="lg"
+                                                     variant="bordered"
+                                                     classNames={fieldClassNames}
+                                                     onValueChange={(value: number) => onValueChangeBoundGold(value, index)}/>
                                                 <NumberInput
                                                     label="더보기"
                                                     labelPlacement="outside"
                                                     placeholder="0 ~ 9999999"
                                                     minValue={0}
                                                     maxValue={9999999}
-                                                    step={5}
-                                                    value={input.bonus}
-                                                    onValueChange={(value: number) => onValueChangeBonus(value, index)}/>
-                                                <Switch 
+                                                     step={5}
+                                                     value={input.bonus}
+                                                     radius="lg"
+                                                     variant="bordered"
+                                                     classNames={fieldClassNames}
+                                                     onValueChange={(value: number) => onValueChangeBonus(value, index)}/>
+                                                <div className="col-span-2 flex flex-wrap gap-5 rounded-xl bg-default-50 px-3 py-3 dark:bg-white/[0.04] lg:col-span-3">
+                                                <Switch
+                                                    size="sm"
+                                                    color="primary"
                                                     isSelected={input.isBiweekly} 
                                                     onValueChange={(isSelected: boolean) => onValueChangeBiweekly(isSelected, index)}>격주 콘텐츠</Switch>
-                                                <Switch 
+                                                <Switch
+                                                    size="sm"
+                                                    color="primary"
                                                     isSelected={input.isOnce} 
                                                     onValueChange={(isSelected: boolean) => onValueChangeOnce(isSelected, index)}>원정대 1회</Switch>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
@@ -364,13 +484,13 @@ function BossComponent() {
                                     fullWidth
                                     color="primary"
                                     variant="flat"
-                                    className="mb-4"
+                                    radius="lg"
+                                    className="mb-2 font-bold"
                                     onPress={onAddInput}>난이도 추가</Button>
                             </ModalBody>
-                            <Divider/>
                             <ModalFooter>
-                                <Button color="default" variant="light" onPress={onClose}>취소</Button>
-                                <Button color="primary" onPress={async () => await useOnAddData(inputName, inputSimple, inputScreenNames, inputMax, inputs, onClose, boss, setBoss, isEditMode, editIndex)}>{isEditMode ? '수정' : '추가'}</Button>
+                                <Button radius="lg" color="default" variant="flat" onPress={onClose}>취소</Button>
+                                <Button radius="lg" color="primary" className="min-w-24 font-bold" onPress={async () => await useOnAddData(inputName, inputSimple, inputScreenNames, inputMax, inputs, onClose, boss, setBoss, isEditMode, editIndex)}>{isEditMode ? '수정 저장' : '콘텐츠 추가'}</Button>
                             </ModalFooter>
                         </>
                     )}
@@ -398,10 +518,18 @@ export default function Checklist() {
     return (
         <div className="w-full">
             <Tabs 
-                variant="underlined" 
+                variant="solid"
                 color="primary"
                 aria-label="Checklist Options" 
-                radius="sm">
+                radius="lg"
+                classNames={{
+                    base: "mb-4",
+                    tabList: "gap-1 rounded-xl border border-default-200 bg-default-100 p-1 dark:border-white/10 dark:bg-white/[0.05]",
+                    tab: "h-10 px-5",
+                    cursor: "bg-white shadow-sm dark:bg-white/10",
+                    tabContent: "font-bold text-default-500 group-data-[selected=true]:text-primary",
+                    panel: "w-full p-0"
+                }}>
                 {menus.map((menu: TabMenu) => (
                     <Tab key={menu.key} title={menu.title}>
                         {menu.component}
