@@ -72,7 +72,7 @@ export function PointComponent({ info }: { info: CharacterInfo }) {
                 <Divider/>
                 <CardBody className="p-4 sm:p-5">
                     <div className="grid w-full grid-cols-1 gap-4 md960:grid-cols-[280px_minmax(0,1fr)_220px] md960:items-stretch">
-                        <div className="flex w-full flex-col justify-between rounded-xl bg-default-50 p-4 dark:bg-white/[0.04]">
+                        <div className="flex w-full flex-col justify-between rounded-2xl border border-default-200/70 bg-default-50/80 p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
                             <div className="mb-3 flex items-end justify-between gap-2">
                                 <div>
                                     <p className="text-xs font-medium text-default-500">전체 진행도</p>
@@ -90,14 +90,14 @@ export function PointComponent({ info }: { info: CharacterInfo }) {
                                 isSelected={isSelected}
                                 onValueChange={setSelected}
                                 size="sm"
-                                className="mt-4 min-w-full"
+                                className="mt-4 min-w-full rounded-xl border border-default-200/70 bg-content1/70 px-3 py-2 dark:border-white/10 dark:bg-white/[0.03]"
                             >
                                 미달성 항목만 보기
                             </Switch>
                         </div>
-                        <div className="grid w-full grid-cols-2 gap-2 rounded-xl bg-default-50 p-3 dark:bg-white/[0.04]">
+                        <div className="grid w-full grid-cols-2 gap-2 rounded-2xl border border-default-200/70 bg-default-50/80 p-3 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
                             {hobbys.map((hobby, index) => (
-                                <div key={index} className="rounded-lg bg-white/80 px-3 py-2 dark:bg-white/[0.04]">
+                                <div key={index} className="rounded-xl border border-default-200/60 bg-content1/80 px-3 py-2.5 dark:border-white/10 dark:bg-white/[0.03]">
                                     <div className="mb-1.5 flex w-full gap-1 text-xs">
                                         <p className="grow font-medium">{hobby.type}</p>
                                         <p className="font-semibold tabular-nums">{hobby.point}<span className="font-normal text-default-400">/{hobby.maxPoint}</span></p>
@@ -111,31 +111,31 @@ export function PointComponent({ info }: { info: CharacterInfo }) {
                                 </div>
                             ))}
                         </div>
-                        <div className="w-full rounded-xl bg-default-50 p-3 dark:bg-white/[0.04]">
+                        <div className="w-full rounded-2xl border border-default-200/70 bg-default-50/80 p-3 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
                             <p className="mb-2 text-xs font-semibold text-default-500">수집 보상 장비</p>
                             <Popover showArrow disableAnimation>
                                 <PopoverTrigger>
-                                    <div className="w-full flex items-center gap-2 cursor-pointer">
-                                        <div className={`w-[32px] h-[32px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(collectEquipments.length > 0 ? collectEquipments[0].grade : "")}`}>
+                                    <div className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-default-200/60 bg-content1/80 p-2 transition-colors hover:bg-default-100 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.07]">
+                                        <div className={`h-9 w-9 shrink-0 rounded-lg p-[1px] ${getBackgroundByGrade(collectEquipments.length > 0 ? collectEquipments[0].grade : "")}`}>
                                             {collectEquipments.length > 0 ? (
                                                 <img
                                                     src={collectEquipments[0].icon}
                                                     alt="수집품 장비 1"
-                                                    className="w-[26px] h-[26px]"
+                                                    className="h-full w-full rounded-md object-cover"
                                                 />
                                             ) : null}
                                         </div>
                                         <div>
-                                            <p className={`w-full text-[11pt] truncate ${getColorTextByGrade(collectEquipments.length > 0 ? collectEquipments[0].grade : "")}`}>
+                                            <p className={`w-full truncate text-sm font-semibold ${getColorTextByGrade(collectEquipments.length > 0 ? collectEquipments[0].grade : "")}`}>
                                                 {collectEquipments.length > 0 ? `${collectEquipments[0].grade} ${collectEquipments[0].type}` : "-"}
                                             </p>
-                                            <p className="fadedtext text-[9pt]">{getTextAttack(collectEquipments.length > 0 ? collectEquipments[0].grade : "")}</p>
+                                            <p className="text-xs text-default-500">{getTextAttack(collectEquipments.length > 0 ? collectEquipments[0].grade : "")}</p>
                                         </div>
                                     </div>
                                 </PopoverTrigger>
-                                <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
-                                    <div className="max-w-[240px] pt-2 pl-1 pr-1 pb-2">
-                                        <ul className="list-disc pl-4">
+                                <PopoverContent className="border border-default-200 bg-content1/95 shadow-xl dark:border-white/10 dark:bg-[#18181b]/95">
+                                    <div className="max-w-[280px] p-4">
+                                        <ul className="list-disc space-y-1 pl-4 text-xs leading-5 text-default-600 dark:text-default-300">
                                             {collectEquipments.length > 0 ? collectEquipments[0].descriptions.map((line, idx) => (
                                                 <li key={idx}>{line}</li>
                                             )) : null}
@@ -145,27 +145,27 @@ export function PointComponent({ info }: { info: CharacterInfo }) {
                             </Popover>
                             <Popover showArrow disableAnimation>
                                 <PopoverTrigger>
-                                    <div className="w-full flex items-center gap-2 cursor-pointer mt-1">
-                                        <div className={`w-[32px] h-[32px] p-[1px] aspect-square rounded-md ${getBackgroundByGrade(collectEquipments.length > 1 ? collectEquipments[1].grade : "-")}`}>
+                                    <div className="mt-1 flex w-full cursor-pointer items-center gap-3 rounded-xl border border-default-200/60 bg-content1/80 p-2 transition-colors hover:bg-default-100 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.07]">
+                                        <div className={`h-9 w-9 shrink-0 rounded-lg p-[1px] ${getBackgroundByGrade(collectEquipments.length > 1 ? collectEquipments[1].grade : "-")}`}>
                                             {collectEquipments.length > 1 ? (
                                                 <img
                                                     src={collectEquipments[1].icon}
                                                     alt="수집품 장비 2"
-                                                    className="w-[26px] h-[26px]"
+                                                    className="h-full w-full rounded-md object-cover"
                                                 />
                                             ) : null}
                                         </div>
                                         <div>
-                                            <p className={`w-full text-[11pt] truncate ${getColorTextByGrade(collectEquipments.length > 1 ? collectEquipments[1].grade : "")}`}>
+                                            <p className={`w-full truncate text-sm font-semibold ${getColorTextByGrade(collectEquipments.length > 1 ? collectEquipments[1].grade : "")}`}>
                                                 {collectEquipments.length > 1 ? `${collectEquipments[1].grade} ${collectEquipments[1].type}` : "-"}
                                             </p>
-                                            <p className="fadedtext text-[9pt]">{getTextAttack(collectEquipments.length > 1 ? collectEquipments[1].grade : "-")}</p>
+                                            <p className="text-xs text-default-500">{getTextAttack(collectEquipments.length > 1 ? collectEquipments[1].grade : "-")}</p>
                                         </div>
                                     </div>
                                 </PopoverTrigger>
-                                <PopoverContent className="backdrop-blur-lg bg-white/70 dark:bg-[#141414]/70">
-                                    <div className="max-w-[240px] pt-2 pl-1 pr-1 pb-2">
-                                        <ul className="list-disc pl-4">
+                                <PopoverContent className="border border-default-200 bg-content1/95 shadow-xl dark:border-white/10 dark:bg-[#18181b]/95">
+                                    <div className="max-w-[280px] p-4">
+                                        <ul className="list-disc space-y-1 pl-4 text-xs leading-5 text-default-600 dark:text-default-300">
                                             {collectEquipments.length > 1 ? collectEquipments[1].descriptions.map((line, idx) => (
                                                 <li key={idx}>{line}</li>
                                             )) : null}
@@ -213,15 +213,18 @@ function CollectDetailCard({ collect, isSelected }: CollectDetailCardProps) {
         <Card
             radius="sm"
             className={clsx(
+                "overflow-hidden border border-default-200/80 bg-content1/95 shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-[#18181b]",
                 isSelected && completePoint === maxPoint ? "hidden" : "flex"
             )}
         >
-            <CardHeader>
+            <CardHeader className="px-4 pb-3 pt-4">
                 <div className="w-full">
                     <div className="w-full flex gap-2 items-center">
-                        <img src={collect.icon} alt={collect.type} className="w-6 h-6" />
-                        <p className="grow text-md">{collect.type}</p>
-                        <p className="fadedtext text-sm">{completePoint} / {maxPoint}</p>
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-default-100 p-1.5 dark:bg-white/[0.08]">
+                            <img src={collect.icon} alt={collect.type} className="h-full w-full object-contain" />
+                        </div>
+                        <p className="grow text-sm font-semibold">{collect.type}</p>
+                        <p className="text-xs font-medium tabular-nums text-default-500">{completePoint} / {maxPoint}</p>
                     </div>
                     <Progress
                         size="sm"
@@ -233,22 +236,22 @@ function CollectDetailCard({ collect, isSelected }: CollectDetailCardProps) {
                 </div>
             </CardHeader>
             <Divider />
-            <CardBody>
-                <div className="w-full max-h-[500px] overflow-y-auto scrollbar-hide">
+            <CardBody className="px-3 py-3">
+                <div className="w-full max-h-[500px] space-y-1 overflow-y-auto scrollbar-hide">
                     {!isShowMethod ? collect.items.map((item, idx) => {
                         const method = getCollectMethod(collect.type, item.name);
                         return (
                             <div
                                 key={idx}
                                 className={clsx(
-                                    "w-full flex gap-2 mb-2 items-center",
+                                    "w-full flex items-center gap-2 rounded-lg px-2.5 py-2 transition-colors hover:bg-default-100 dark:hover:bg-white/[0.05]",
                                     isSelected && item.point >= item.maxPoint ? "hidden" : "block"
                                 )}
                             >
                                 <div className="grow min-w-0">
                                     <p
                                         className={clsx(
-                                            "text-sm",
+                                            "text-sm font-medium",
                                             item.point >= item.maxPoint ? "opacity-50" : ""
                                         )}
                                     >
@@ -257,7 +260,7 @@ function CollectDetailCard({ collect, isSelected }: CollectDetailCardProps) {
                                     {method ? (
                                         <p
                                             className={clsx(
-                                                "block w-full text-[8pt] fadedtext truncate whitespace-nowrap overflow-hidden text-ellipsis",
+                                                "block w-full truncate whitespace-nowrap text-[8pt] text-default-500",
                                                 item.point >= item.maxPoint ? "opacity-50" : ""
                                             )}
                                         >
@@ -268,7 +271,7 @@ function CollectDetailCard({ collect, isSelected }: CollectDetailCardProps) {
                                 {item.maxPoint === 1 ? null : (
                                     <p
                                         className={clsx(
-                                            "text-sm",
+                                            "text-xs font-medium tabular-nums",
                                             item.point >= item.maxPoint ? "fadedtext" : ""
                                         )}
                                     >
@@ -282,14 +285,14 @@ function CollectDetailCard({ collect, isSelected }: CollectDetailCardProps) {
                         <div
                             key={idx}
                             className={clsx(
-                                "w-full flex gap-2 mb-2 items-center",
+                                "w-full flex items-center gap-2 rounded-lg px-2.5 py-2 transition-colors hover:bg-default-100 dark:hover:bg-white/[0.05]",
                                 isSelected && summary.completed >= summary.total ? "hidden" : "block"
                             )}
                         >
                             <Tooltip showArrow content={summary.name}>
                                 <p
                                     className={clsx(
-                                        "min-w-0 truncate text-sm",
+                                        "min-w-0 truncate text-sm font-medium",
                                         summary.completed >= summary.total ? "opacity-50" : ""
                                     )}>
                                     {summary.method}
@@ -298,7 +301,7 @@ function CollectDetailCard({ collect, isSelected }: CollectDetailCardProps) {
                             <div className="grow"/>
                             <p
                                 className={clsx(
-                                    "shrink-0 whitespace-nowrap text-sm",
+                                    "shrink-0 whitespace-nowrap text-xs font-medium tabular-nums",
                                     summary.completed >= summary.total ? "fadedtext" : ""
                                 )}
                             >
@@ -309,7 +312,7 @@ function CollectDetailCard({ collect, isSelected }: CollectDetailCardProps) {
                 </div>
             </CardBody>
             <Divider />
-            <CardFooter>
+            <CardFooter className="border-t border-default-200/70 px-4 py-3 dark:border-white/10">
                 <div className="w-full flex gap-1 items-center">
                     {completePoint === maxPoint ? (
                         <p className="text-xs text-green-600 dark:text-green-400">모든 수집품을 획득하였습니다.</p>

@@ -1,5 +1,5 @@
 import { CharacterFile, getCharacterType, getListByArmorType, getParsedText, getStoneEffectInTooltip } from "./characterFeat";
-import { Accessory, ArkGridGem, ArkGridInfo, ArkGridOption, ArkpassiveInfo, ArkpassiveItem, ArkpassivePoint, Arm, Avatar, CardData, CardDetailSet, CardInfo, CardSet, CharacterInfo, Collect, CollectEquipment, CollectionInfo, CollectItem, Core, Engraving, EquipInfo, Equipment, Gem, GemInfo, Hobby, Orb, Profile, Rune, Skill, SkillInfo, Stat, Stone, Tripod } from "../model/types";
+import { Accessory, ArkGridGem, ArkGridInfo, ArkGridOption, ArkpassiveInfo, ArkpassiveItem, ArkpassivePoint, Arm, Avatar, AvatarDye, CardData, CardDetailSet, CardInfo, CardSet, CharacterInfo, Collect, CollectEquipment, CollectionInfo, CollectItem, Core, Engraving, EquipInfo, Equipment, Gem, GemInfo, Hobby, Orb, Profile, Rune, Skill, SkillInfo, Stat, Stone, Tripod } from "../model/types";
 import characterJsonData from "@/data/characters/data.json";
 
 export function toNumber(value: unknown): number {
@@ -773,6 +773,40 @@ function findDescriptionInTooltip(parsed: any): string[] {
 }
 
 // 아바타 데이터 가져오기
+function getAvatarColor(value: unknown): string | null {
+    if (typeof value !== "string" || !/^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$/.test(value)) {
+        return null;
+    }
+
+    return value.toUpperCase();
+}
+
+function getAvatarDyes(tooltip: unknown): AvatarDye[] {
+    if (typeof tooltip !== "string") {
+        return [];
+    }
+
+    try {
+        const parsedTooltip = JSON.parse(tooltip) as Record<string, any>;
+        const tintGroup = Object.values(parsedTooltip).find((element) => element?.type === "ItemTintGroup");
+        const itemData = tintGroup?.value?.itemData;
+
+        if (!itemData || typeof itemData !== "object") {
+            return [];
+        }
+
+        return Object.values(itemData).map((item: any, index) => ({
+            part: typeof item?.title === "string" ? item.title : `부위${index + 1}`,
+            baseColor: getAvatarColor(item?.baseColor),
+            patternColor: getAvatarColor(item?.patternColor),
+            patternIcon: typeof item?.patternIcon === "string" && item.patternIcon.length > 0 ? item.patternIcon : null,
+            gloss: typeof item?.glossValue === "string" ? item.glossValue : ""
+        }));
+    } catch {
+        return [];
+    }
+}
+
 function getAvatars(datas: any[] | null): Avatar[] {
     let avatars: Avatar[] = [];
     if (datas) {
@@ -782,7 +816,8 @@ function getAvatars(datas: any[] | null): Avatar[] {
                 name: item.Name,
                 icon: item.Icon,
                 grade: item.Grade,
-                isInner: Boolean(item.IsInner)
+                isInner: Boolean(item.IsInner),
+                dyes: getAvatarDyes(item.Tooltip)
             }
             avatars.push(newAvatar);
         }

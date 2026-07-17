@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { LoadingComponent } from "../UtilsCompnents";
 import { AbilityComponent, ExpeditionComponent, HistoryComponent, InfomationComponent, NotFoundComponent, ProfileComponent, SearchComponent, useCharacterForm } from "./ui/CharacterForm"
 import { useSearchParams } from "next/navigation";
-import { Button, Divider, Input, Tab, Tabs, Tooltip } from "@heroui/react";
+import { Button, Divider, Input, Tooltip } from "@heroui/react";
 import { handleSearch, loadProfile, LoadProfileUI, UpdatePayload, UpdateUI, useClickUpdate } from "./lib/characterFeat";
 import { useMobileQuery } from "@/utiils/utils";
 import { SkillComponent } from "./ui/SkillForm";
@@ -222,6 +222,7 @@ export default function CharacterClient() {
             )
         }
     ]
+    const selectedTabItem = tabs.find((tab) => tab.id === selectedTab) ?? tabs[0];
 
     const updateUI: UpdateUI = {
         setDisable: characterForm.setDisable,
@@ -264,15 +265,38 @@ export default function CharacterClient() {
                         </div>
                     </div>
                 ) : <></>}
-                <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto md960:relative">
-                    <div className="w-full md960:w-[max-content] md960:absolute md960:top-4 md960:right-4 mb-4 md960:mb-0 flex flex-col md960:flex-row gap-3">
+                <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
+                    <div className="rounded-2xl border border-default-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-[#171717] md960:flex md960:items-center md960:gap-3">
+                    <div role="tablist" aria-label="전투정보실 메뉴" className="flex min-w-0 grow gap-1 overflow-x-auto rounded-xl bg-default-100/80 p-1 scrollbar-hide dark:bg-white/[0.05]">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.id}
+                                type="button"
+                                role="tab"
+                                aria-selected={selectedTab === tab.id}
+                                className={selectedTab === tab.id
+                                    ? "h-10 shrink-0 rounded-lg bg-white px-4 text-sm font-semibold text-primary shadow-sm transition-colors dark:bg-white/10"
+                                    : "h-10 shrink-0 rounded-lg px-4 text-sm font-semibold text-default-500 transition-colors hover:bg-white/60 hover:text-foreground dark:hover:bg-white/[0.06]"}
+                                onClick={() => setSelectedTab(tab.id)}>
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="mt-2 flex w-full flex-col items-center gap-2 md960:mt-0 md960:w-auto md960:shrink-0 md960:flex-row">
                         <Input
-                            radius="sm"
-                            placeholder="캐릭터명을 입력 후 Enter"
+                            radius="lg"
+                            variant="bordered"
+                            aria-label="다른 캐릭터 검색"
+                            placeholder="다른 캐릭터 검색"
                             value={inputSearch}
                             onValueChange={setInputSearch}
                             maxLength={12}
+                            startContent={<span className="text-lg text-default-400">⌕</span>}
                             className="w-full md960:w-[220px]"
+                            classNames={{
+                                inputWrapper: "h-10 border-default-200 bg-default-50 shadow-none data-[hover=true]:border-primary/50 dark:border-white/10 dark:bg-white/[0.05]",
+                                input: "text-sm"
+                            }}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     handleSearch(inputSearch, characterForm.setSearched, characterForm.setLoading, characterForm.setNickname);
@@ -285,30 +309,19 @@ export default function CharacterClient() {
                             }}/>
                         <Tooltip showArrow content="해당 캐릭터 접속을 종료하고 갱신해주세요.">
                             <Button
-                                radius="sm"
+                                radius="lg"
                                 color="primary"
                                 isLoading={characterForm.isLoadingUpdate}
                                 isDisabled={characterForm.isDisable}
-                                className="w-full md960:w-[max-content]"
+                                className="h-10 w-full min-w-28 font-bold md960:w-auto"
                                 onPress={onPressUpdate}>
-                                갱신하기
+                                <span className="text-base">↻</span>
+                                정보 갱신
                             </Button>
                         </Tooltip>
                     </div>
-                    <Tabs 
-                        selectedKey={selectedTab}
-                        onSelectionChange={(key) => setSelectedTab(String(key))}
-                        fullWidth={isMobile} 
-                        aria-label="character-tabs" 
-                        items={tabs} 
-                        size="lg" 
-                        variant="underlined">
-                        {(item) => (
-                            <Tab key={item.id} title={item.label}>
-                                {item.component}
-                            </Tab>
-                        )}
-                    </Tabs>
+                    </div>
+                    <div className="pt-5">{selectedTabItem.component}</div>
                     {!characterForm.isLoading && !characterForm.isNothing ? isMobile ? (
                         <div className="w-full flex justify-center px-4">
                             <div className="w-full max-w-[360px] min-h-[100px] mt-4">

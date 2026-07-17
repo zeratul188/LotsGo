@@ -269,7 +269,16 @@ export type Avatar = {
     name: string,
     icon: string,
     grade: string,
-    isInner: boolean
+    isInner: boolean,
+    dyes?: AvatarDye[]
+}
+
+export type AvatarDye = {
+    part: string,
+    baseColor: string | null,
+    patternColor: string | null,
+    patternIcon: string | null,
+    gloss: string
 }
 
 // 원정대 캐릭터 정보
