@@ -77,7 +77,7 @@ export function ExpeditionsComponent({ expeditions }: ExpeditionComponentProps) 
                                     const count = getCountByLevel(item.level, idx === 0 ? 9999 : data.levels[idx-1].level, serverCharacters);
                                     return (
                                         <Chip key={item.level} variant="flat" radius="full" className={clsx(
-                                            "shrink-0 items-center px-1 font-semibold !text-white dark:!text-white",
+                                            "shrink-0 items-center px-1 font-semibold",
                                             getBgColorByLevels(item.level),
                                             count > 0 ? 'flex' : 'hidden'
                                         )}>
@@ -109,7 +109,7 @@ export function ExpeditionsComponent({ expeditions }: ExpeditionComponentProps) 
                                         <div className="min-w-0 grow">
                                             <p className="truncate text-sm font-bold">{character.nickname}</p>
                                             <div className="mt-1 flex min-w-0 items-center gap-2">
-                                                <Chip size="sm" radius="full" variant="flat" className={clsx("h-5 shrink-0 font-semibold !text-white dark:!text-white", getBgColorByLevels(character.level))}>
+                                                <Chip size="sm" radius="full" variant="flat" className={clsx("h-5 shrink-0 font-semibold", getBgColorByLevels(character.level))}>
                                                     Lv.{character.level.toLocaleString()}
                                                 </Chip>
                                                 <p className="truncate text-xs text-default-500">{character.job}</p>

@@ -236,12 +236,12 @@
         },
         {
             "level": 1700,
-            "bg": "bg-[#6DD66D] dark:bg-[#6DD66D] text-white",
+            "bg": "bg-[#6DD66D] dark:bg-[#6DD66D] text-white dark:text-black",
             "border": "border-[#6DD66D] dark:border-[#6DD66D]"
         },
         {
             "level": 1680,
-            "bg": "bg-[#FF82C8] dark:bg-[#FF82C8] text-white",
+            "bg": "bg-[#FF82C8] dark:bg-[#FF82C8] text-white dark:text-black",
             "border": "border-[#FF82C8] dark:border-[#FF82C8]"
         },
         {
@@ -251,7 +251,7 @@
         },
         {
             "level": 0,
-            "bg": "bg-[#909090] dark:bg-[#717171]",
+            "bg": "bg-[#909090] dark:bg-[#717171] text-white dark:text-white",
             "border": "border-[#909090] dark:border-[#717171]"
         }
     ],
