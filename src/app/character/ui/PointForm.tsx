@@ -56,6 +56,7 @@ export function PointComponent({ info }: { info: CharacterInfo }) {
     const hobbys = info.collection.hobbys;
     const collectEquipments = info.collection.collectEquipments;
     const [isSelected, setSelected] = useState(false);
+    const [selectedCollectType, setSelectedCollectType] = useState(collects[0]?.type ?? '');
     const progressValue = getProgressData(collects);
     const progressMax = collects.length * 100;
     const progressPercent = progressMax > 0 ? Math.round(progressValue / progressMax * 100) : 0;
@@ -177,7 +178,12 @@ export function PointComponent({ info }: { info: CharacterInfo }) {
                     </div>
                 </CardBody>
             </Card>
-            <DetailComponent collects={collects} isSelected={isSelected} />
+            <DetailComponent
+                collects={collects}
+                isSelected={isSelected}
+                selectedCollectType={selectedCollectType}
+                onSelectCollect={setSelectedCollectType}
+            />
         </div>
     );
 }
@@ -185,14 +191,79 @@ export function PointComponent({ info }: { info: CharacterInfo }) {
 type DetailComponentProps = {
     collects: Collect[];
     isSelected: boolean;
+    selectedCollectType: string;
+    onSelectCollect: (type: string) => void;
 };
 
-export function DetailComponent({ collects, isSelected }: DetailComponentProps) {
+export function DetailComponent({ collects, isSelected, selectedCollectType, onSelectCollect }: DetailComponentProps) {
+    const visibleCollects = isSelected
+        ? collects.filter((collect) => getCompletePoint(collect) < getCompleteMaxPoint(collect))
+        : collects;
+    const selectedCollect = visibleCollects.find((collect) => collect.type === selectedCollectType) ?? visibleCollects[0] ?? null;
+
     return (
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 md960:grid-cols-4 gap-4">
-            {collects.map((collect, index) => (
-                <CollectDetailCard key={index} collect={collect} isSelected={isSelected} />
-            ))}
+        <div className="w-full">
+            <Card fullWidth radius="lg" className="mb-4 border border-default-200/80 bg-content1/95 shadow-sm dark:border-white/10 dark:bg-[#18181b]">
+                <CardHeader className="flex-col items-start gap-1 px-4 pb-3 pt-4 sm:px-5">
+                    <p className="text-base font-semibold">수집 종류</p>
+                    <p className="text-xs text-default-500">종류를 선택하면 해당 수집품의 보상 현황을 확인할 수 있습니다.</p>
+                </CardHeader>
+                <CardBody className="px-3 pb-4 pt-0 sm:px-4">
+                    {visibleCollects.length > 0 ? (
+                        <div role="tablist" aria-label="수집형 포인트 종류" className="grid grid-cols-2 gap-2 sm:grid-cols-3 md960:grid-cols-4">
+                            {visibleCollects.map((collect) => {
+                                const completePoint = getCompletePoint(collect);
+                                const maxPoint = getCompleteMaxPoint(collect);
+                                const isActive = selectedCollect?.type === collect.type;
+
+                                return (
+                                    <button
+                                        key={collect.type}
+                                        type="button"
+                                        role="tab"
+                                        aria-selected={isActive}
+                                        onClick={() => onSelectCollect(collect.type)}
+                                        className={clsx(
+                                            "min-w-0 cursor-pointer rounded-xl border p-3 text-left shadow-sm transition-all",
+                                            isActive
+                                                ? "border-primary bg-primary-50/80 ring-1 ring-primary/20 dark:bg-primary-500/10"
+                                                : "border-default-200/80 bg-default-50/70 hover:border-primary/40 hover:bg-default-100 dark:border-white/10 dark:bg-white/[0.025] dark:hover:bg-white/[0.06]"
+                                        )}
+                                    >
+                                        <div className="mb-2 flex min-w-0 items-center gap-2.5">
+                                            <div className={clsx(
+                                                "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg p-1.5",
+                                                isActive ? "bg-primary/10" : "bg-default-100 dark:bg-white/[0.08]"
+                                            )}>
+                                                <img src={collect.icon} alt="" className="h-full w-full object-contain" />
+                                            </div>
+                                            <div className="min-w-0 grow">
+                                                <p className={clsx("truncate text-sm font-semibold", isActive && "text-primary")}>{collect.type}</p>
+                                                <p className="mt-0.5 text-xs font-medium tabular-nums text-default-500">
+                                                    {completePoint}<span className="font-normal text-default-400"> / {maxPoint}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Progress
+                                            aria-label={`${collect.type} 진행도`}
+                                            size="sm"
+                                            color={getColorByProgress(completePoint, maxPoint)}
+                                            value={completePoint}
+                                            maxValue={maxPoint}
+                                        />
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="rounded-xl border border-success-200/70 bg-success-50/70 px-4 py-8 text-center dark:border-success-500/20 dark:bg-success-500/10">
+                            <p className="text-sm font-semibold text-success-700 dark:text-success-300">모든 수집 종류를 완료했습니다.</p>
+                            <p className="mt-1 text-xs text-default-500">전체 항목을 보려면 미달성 항목만 보기를 해제하세요.</p>
+                        </div>
+                    )}
+                </CardBody>
+            </Card>
+            {selectedCollect ? <CollectDetailCard collect={selectedCollect} isSelected={isSelected} /> : null}
         </div>
     );
 }
@@ -211,41 +282,47 @@ function CollectDetailCard({ collect, isSelected }: CollectDetailCardProps) {
 
     return (
         <Card
-            radius="sm"
-            className={clsx(
-                "overflow-hidden border border-default-200/80 bg-content1/95 shadow-sm transition-shadow hover:shadow-md dark:border-white/10 dark:bg-[#18181b]",
-                isSelected && completePoint === maxPoint ? "hidden" : "flex"
-            )}
+            radius="lg"
+            className="overflow-hidden border border-default-200/80 bg-content1/95 shadow-sm dark:border-white/10 dark:bg-[#18181b]"
         >
-            <CardHeader className="px-4 pb-3 pt-4">
+            <CardHeader className="px-4 pb-4 pt-4 sm:px-5">
                 <div className="w-full">
-                    <div className="w-full flex gap-2 items-center">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-default-100 p-1.5 dark:bg-white/[0.08]">
+                    <div className="flex w-full items-center gap-3">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-default-100 p-2 dark:bg-white/[0.08]">
                             <img src={collect.icon} alt={collect.type} className="h-full w-full object-contain" />
                         </div>
-                        <p className="grow text-sm font-semibold">{collect.type}</p>
-                        <p className="text-xs font-medium tabular-nums text-default-500">{completePoint} / {maxPoint}</p>
+                        <div className="min-w-0 grow">
+                            <p className="truncate text-base font-semibold">{collect.type}</p>
+                            <p className="mt-0.5 text-xs text-default-500">보상 획득 현황</p>
+                        </div>
+                        <div className="shrink-0 text-right">
+                            <p className="text-sm font-semibold tabular-nums">{completePoint}<span className="font-normal text-default-400"> / {maxPoint}</span></p>
+                            <p className="mt-0.5 text-[11px] text-default-500">{maxPoint - completePoint}개 남음</p>
+                        </div>
                     </div>
                     <Progress
                         size="sm"
                         color={getColorByProgress(completePoint, maxPoint)}
                         value={completePoint}
                         maxValue={maxPoint}
-                        className="mt-2"
+                        className="mt-3"
                     />
                 </div>
             </CardHeader>
             <Divider />
-            <CardBody className="px-3 py-3">
-                <div className="w-full max-h-[500px] space-y-1 overflow-y-auto scrollbar-hide">
+            <CardBody className="p-3 sm:p-4">
+                <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 md960:grid-cols-3">
                     {!isShowMethod ? collect.items.map((item, idx) => {
                         const method = getCollectMethod(collect.type, item.name);
                         return (
                             <div
                                 key={idx}
                                 className={clsx(
-                                    "w-full flex items-center gap-2 rounded-lg px-2.5 py-2 transition-colors hover:bg-default-100 dark:hover:bg-white/[0.05]",
-                                    isSelected && item.point >= item.maxPoint ? "hidden" : "block"
+                                    "flex min-h-14 w-full items-center gap-2 rounded-xl border bg-default-50/70 px-3 py-2.5 transition-colors hover:bg-default-100 dark:bg-white/[0.025] dark:hover:bg-white/[0.06]",
+                                    item.point >= item.maxPoint
+                                        ? "border-success-300/70 hover:border-success-400 dark:border-success-500/40 dark:hover:border-success-400"
+                                        : "border-default-200/70 hover:border-primary/30 dark:border-white/10",
+                                    isSelected && item.point >= item.maxPoint ? "hidden" : ""
                                 )}
                             >
                                 <div className="grow min-w-0">
@@ -285,8 +362,11 @@ function CollectDetailCard({ collect, isSelected }: CollectDetailCardProps) {
                         <div
                             key={idx}
                             className={clsx(
-                                "w-full flex items-center gap-2 rounded-lg px-2.5 py-2 transition-colors hover:bg-default-100 dark:hover:bg-white/[0.05]",
-                                isSelected && summary.completed >= summary.total ? "hidden" : "block"
+                                "flex min-h-14 w-full items-center gap-2 rounded-xl border bg-default-50/70 px-3 py-2.5 transition-colors hover:bg-default-100 dark:bg-white/[0.025] dark:hover:bg-white/[0.06]",
+                                summary.completed >= summary.total
+                                    ? "border-success-300/70 hover:border-success-400 dark:border-success-500/40 dark:hover:border-success-400"
+                                    : "border-default-200/70 hover:border-primary/30 dark:border-white/10",
+                                isSelected && summary.completed >= summary.total ? "hidden" : ""
                             )}
                         >
                             <Tooltip showArrow content={summary.name}>
@@ -312,7 +392,7 @@ function CollectDetailCard({ collect, isSelected }: CollectDetailCardProps) {
                 </div>
             </CardBody>
             <Divider />
-            <CardFooter className="border-t border-default-200/70 px-4 py-3 dark:border-white/10">
+            <CardFooter className="border-t border-default-200/70 bg-default-50/50 px-4 py-3 dark:border-white/10 dark:bg-white/[0.02] sm:px-5">
                 <div className="w-full flex gap-1 items-center">
                     {completePoint === maxPoint ? (
                         <p className="text-xs text-green-600 dark:text-green-400">모든 수집품을 획득하였습니다.</p>

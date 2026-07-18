@@ -1,5 +1,5 @@
 import { CharacterFile, getCharacterType, getListByArmorType, getParsedText, getStoneEffectInTooltip } from "./characterFeat";
-import { Accessory, ArkGridGem, ArkGridInfo, ArkGridOption, ArkpassiveInfo, ArkpassiveItem, ArkpassivePoint, Arm, Avatar, AvatarDye, CardData, CardDetailSet, CardInfo, CardSet, CharacterInfo, Collect, CollectEquipment, CollectionInfo, CollectItem, Core, Engraving, EquipInfo, Equipment, Gem, GemInfo, Hobby, Orb, Profile, Rune, Skill, SkillInfo, Stat, Stone, Tripod } from "../model/types";
+import { Accessory, ArkGridGem, ArkGridInfo, ArkGridOption, ArkpassiveInfo, ArkpassiveItem, ArkpassivePoint, Arm, Avatar, AvatarDye, CardData, CardDetailSet, CardInfo, CardSet, CharacterInfo, Collect, CollectEquipment, CollectionInfo, CollectItem, Core, CoreEffect, Engraving, EquipInfo, Equipment, Gem, GemInfo, Hobby, Orb, Profile, Rune, Skill, SkillInfo, Stat, Stone, Tripod } from "../model/types";
 import characterJsonData from "@/data/characters/data.json";
 
 export function toNumber(value: unknown): number {
@@ -624,6 +624,52 @@ function findRuneInTooltip(parsed: any): string {
     return "";
 }
 
+// 코어 툴팁에서 포인트별 코어 옵션을 가져온다.
+function getCoreEffects(tooltip: unknown): CoreEffect[] {
+    if (typeof tooltip !== 'string' || tooltip.trim() === '') {
+        return [];
+    }
+
+    try {
+        const parsedTooltip = JSON.parse(tooltip);
+
+        for (const key in parsedTooltip) {
+            const element = parsedTooltip[key];
+            const value = element?.value;
+            const title = getParsedText(value?.Element_000);
+
+            if (element?.type !== 'ItemPartBox' || title.trim() !== '코어 옵션' || typeof value?.Element_001 !== 'string') {
+                continue;
+            }
+
+            const optionText = getParsedText(
+                value.Element_001.replace(/<br\s*\/?\s*>/gi, '\n')
+            ).replace(/\r/g, '');
+            const effects: CoreEffect[] = [];
+            const effectPattern = /\[(\d+)P\]\s*([\s\S]*?)(?=\[\d+P\]|$)/g;
+
+            for (const match of optionText.matchAll(effectPattern)) {
+                const point = Number(match[1]);
+                const description = match[2]
+                    .split('\n')
+                    .map((line) => line.trim())
+                    .filter(Boolean)
+                    .join('\n');
+
+                if (Number.isFinite(point) && description !== '') {
+                    effects.push({ point, description });
+                }
+            }
+
+            return effects.sort((a, b) => a.point - b.point);
+        }
+    } catch (error) {
+        console.error('코어 Tooltip JSON 파싱 오류:', error);
+    }
+
+    return [];
+}
+
 // 아크 그리드 데이터 불러오기
 function getArkGrid(data: any): ArkGridInfo {
     const cores: Core[] = [];
@@ -644,7 +690,8 @@ function getArkGrid(data: any): ArkGridInfo {
                     name: item.Name,
                     point: Number(item.Point),
                     grade: item.Grade,
-                    gems: gems
+                    gems: gems,
+                    effects: getCoreEffects(item.Tooltip)
                 }
                 cores.push(core);
             }

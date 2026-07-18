@@ -78,7 +78,7 @@ function DyeColorCode({ label, color }: { label: string; color: string | null })
                 style={{ backgroundColor: color }}
             />
             <span>{label}</span>
-            <span className="font-mono font-semibold text-default-700 dark:text-default-200">{color}</span>
+            <span className="font-mono font-semibold text-default-700 dark:text-white">{color}</span>
         </button>
     );
 }
