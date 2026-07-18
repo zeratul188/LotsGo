@@ -114,6 +114,7 @@ export async function login(
                     dispatch(logined(loginUser));
                     sessionStorage.setItem('token', data.accessToken);
                     sessionStorage.setItem('user', JSON.stringify(loginUser));
+                    localStorage.setItem('sessionExpiresAt', data.sessionExpiresAt);
                     Cookies.set('userApiKey', loginUser.apiKey ?? '', {
                         path: '/',
                         secure: true,

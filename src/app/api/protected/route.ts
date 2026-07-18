@@ -14,19 +14,28 @@ export async function GET(req: NextRequest) {
         }
 
         const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        const decoded = jwt.verify(token, JWT_SECRET) as { sessionId: string };
 
         const sessionRef = doc(firestore, 'sessions', decoded.sessionId);
         const sessionSnapshot = await getDoc(sessionRef);
 
-        if (!sessionSnapshot.exists() || sessionSnapshot.data().revoked) throw new Error("TOEKN_IS_EXPIRED");
+        if (!sessionSnapshot.exists()) throw new Error("TOKEN_IS_EXPIRED");
+
+        const session = sessionSnapshot.data();
+        const expiresAt: Date = typeof session.expiresAt?.toDate === "function"
+            ? session.expiresAt.toDate()
+            : new Date(session.expiresAt);
+
+        if (session.revoked || Number.isNaN(expiresAt.getTime()) || expiresAt <= new Date()) {
+            throw new Error("TOKEN_IS_EXPIRED");
+        }
 
         return NextResponse.json({
             message: '인증된 사용자입니다.',
             result: decoded
         });
     } catch(err: any) {
-        if (err.message === 'TOEKN_IS_EXPIRED') {
+        if (err.message === 'TOKEN_IS_EXPIRED') {
             return NextResponse.json({ message: '토큰이 만료되었습니다.' }, { status: 401 });
         }
         return NextResponse.json({ message: '토큰을 검증할 수 없습니다.' }, { status: 401 });

@@ -50,6 +50,7 @@ export async function POST(req: NextRequest) {
         const refreshToken = generateRefreshToken();
         const refreshHash = hashToken(refreshToken);
         const now = new Date();
+        const expiresAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
         const nowTimestamp = Timestamp.now();
         const deleteAfter = Timestamp.fromMillis(nowTimestamp.toMillis() + 45 * 24 * 60 * 60 * 1000);
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
             refreshTokenHash: refreshHash,
             createdAt: now,
             lastUsedAt: now,
-            expiresAt: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
+            expiresAt,
             revoked: false,
             ipAddress,
             deleteAfter
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
 
         const isAdministrator: boolean = targetDoc.data().isAdministrator ?? false;
         const accessToken = signAccessToken({ id: userData.id, sessionId: session.id, isAdministrator: isAdministrator });
-        const res = NextResponse.json({ accessToken, userData, expedition });
+        const res = NextResponse.json({ accessToken, userData, expedition, sessionExpiresAt: expiresAt.toISOString() });
 
         res.cookies.set({
             name: "refreshToken",
