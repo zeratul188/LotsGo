@@ -1,4 +1,6 @@
+'use client'
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { Boss } from "../../api/checklist/boss/route";
 import { CheckCharacter, Checklist, ChecklistItem, OtherList } from "../../store/checklistSlice";
 import { 
@@ -142,7 +144,6 @@ import AddIcon from "../../icons/AddIcon";
 import DeleteIcon from "../../icons/DeleteIcon";
 import { Cube } from "../../api/checklist/cube/route";
 import { MAX_CHARACTER_COUNT } from "@/utiils/constants";
-import AutoChecklistControl from "./AutoChecklistControl";
 import {
   DragDropContext,
   Droppable,
@@ -158,21 +159,23 @@ import JobAvatar from "@/Icons/JobAvatar";
 import { EditIcon } from "@/Icons/EditIcon";
 import SwitchCharacterIcon from "@/Icons/SwitchCharacterIcon";
 
+const AutoChecklistControl = dynamic(() => import("./AutoChecklistControl"), { ssr: false });
+
 // state 관리
 export type ModalData = {
     characterIndex: number,
     type: string
 }
-export function useChecklistForm() {
+export function useChecklistForm(initialBosses: Boss[] = [], initialCubes: Cube[] = []) {
     const [isLoading, setLoading] = useState(true);
-    const [bosses, setBosses] = useState<Boss[]>([]);
+    const [bosses, setBosses] = useState<Boss[]>(initialBosses);
     const [server, setServer] = useState('전체');
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
     const [modalData, setModalData] = useState<ModalData>({
         characterIndex: -1,
         type: 'null'
     });
-    const [cubes, setCubes] = useState<Cube[]>([]);
+    const [cubes, setCubes] = useState<Cube[]>(initialCubes);
     const [life, setLife] = useState(0);
     const [max, setMax] = useState(0);
     const [isBlessing, setBlessing] = useState(false);

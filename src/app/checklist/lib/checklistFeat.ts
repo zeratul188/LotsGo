@@ -26,10 +26,9 @@ import { Boss, Difficulty } from "../../api/checklist/boss/route";
 import { Character, LoginUser } from "../../store/loginSlice";
 import { Cube } from "../../api/checklist/cube/route";
 import { collection, getDocs } from "firebase/firestore";
-import { database, firestore } from "@/utiils/firebase";
+import { firestore } from "@/utiils/firebase";
 import { decrypt } from "@/utiils/crypto";
 import { ChecklistData, ChecklistDataDifficulty, getLevelByContent } from "../../home/lib/checklistFeat";
-import { get, ref } from "firebase/database";
 import { ControlStage } from "../model/types";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
@@ -64,29 +63,30 @@ export async function loadChecklist(
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser ? storedUser.id : '';
 
-    const dataRef = ref(database, '/checklist/biweekly'); // 원하는 경로
-    const [snapshot, res, lifeRes] = await Promise.all([
-        get(dataRef),
-        fetch(`/api/checklist/list?id=${id}`),
-        fetch(`/api/checklist/life?id=${id}`)
-    ]);
-    if (snapshot.exists()) {
-        setBiweekly(Number(snapshot.val()));
-    }
-
+    const res = await fetch(`/api/checklist/bootstrap?id=${encodeURIComponent(id)}`, { cache: 'no-store' });
     if (!res.ok) {
         addToast({
             title: "데이터 로드 오류",
             description: `데이터를 가져오는데 문제가 발생하였습니다.`,
             color: "danger"
         });
+        setLoading(false);
         return;
     }
+    const bootstrapData: {
+        checklist: CheckCharacter[],
+        life: {
+            life: number,
+            max: number,
+            isBlessing: boolean,
+            date: { seconds: number, nanoseconds: number }
+        } | null,
+        biweekly: number
+    } = await res.json();
+    setBiweekly(bootstrapData.biweekly);
 
-    const lifeObj = await lifeRes.json();
-
-    // 생기 관련 데이터
-    if (lifeRes.status === 200) {
+    const lifeObj = bootstrapData.life;
+    if (lifeObj) {
         const today = new Date();
         const lifeDate = new Date(lifeObj.date.seconds * 1000 + lifeObj.date.nanoseconds / 1_000_000);
         const diffMs = today.getTime() - lifeDate.getTime();
@@ -102,7 +102,7 @@ export async function loadChecklist(
         }
         if (life > lifeObj.max) life = lifeObj.max;
         if (diffSeconds > 0) {
-            const lifeRes = await fetch(`/api/checklist/life`, {
+            void fetch(`/api/checklist/life`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -112,21 +112,22 @@ export async function loadChecklist(
                     max: lifeObj.max,
                     isBlessing: lifeObj.isBlessing
                 })
-            });
-            if (!lifeRes.ok) {
-                addToast({
-                    title: "데이터 로드 오류",
-                    description: `데이터를 가져오는데 문제가 발생하였습니다.`,
-                    color: "danger"
-                });
-                return;
-            }
+            }).then((response) => {
+                if (!response.ok) throw new Error('생활의 기운 저장 실패');
+            }).catch(() => addToast({
+                title: "생활의 기운 저장 오류",
+                description: `계산된 생활의 기운을 저장하지 못했습니다.`,
+                color: "danger"
+            }));
         }
         setLife(life);
         setMax(lifeObj.max)
         setBlessing(lifeObj.isBlessing);
     } else {
-        const initRes = await fetch(`/api/checklist/life`, {
+        setLife(0);
+        setMax(10000);
+        setBlessing(false);
+        void fetch(`/api/checklist/life`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -136,18 +137,16 @@ export async function loadChecklist(
                 isNotValue: false,
                 isBlessing: false
             })
-        });
-        if (!initRes.ok) {
-            addToast({
-                title: "데이터 로드 오류",
-                description: `데이터를 가져오는데 문제가 발생하였습니다.`,
-                color: "danger"
-            });
-            return;
-        }
+        }).then((response) => {
+            if (!response.ok) throw new Error('생활의 기운 초기화 실패');
+        }).catch(() => addToast({
+            title: "생활의 기운 저장 오류",
+            description: `생활의 기운 초기값을 저장하지 못했습니다.`,
+            color: "danger"
+        }));
     }
 
-    const checklist: CheckCharacter[] = await res.json();
+    const checklist = bootstrapData.checklist;
     checklist.sort((a, b) => b.level - a.level);
     checklist.sort((a, b) => {
         if (a.isGold && !b.isGold) return -1;
@@ -177,6 +176,7 @@ export async function loadChecklist(
         dispatch(saveData(checklist));
         setLoading(false);
     } else {
+        const initializationBosses = await getBosses().catch(() => bosses);
         const top6: Character[] = expedition.slice().sort((a, b) => b.level - a.level).slice(0, 6);
         const notImportedList: string[] = [];
         for (const character of top6) {
@@ -197,7 +197,7 @@ export async function loadChecklist(
                     questBonus: 0,
                     questUsing: 0
                 },
-                checklist: initialWeekContents(character.level, bosses, notImportedList),
+                checklist: initialWeekContents(character.level, initializationBosses, notImportedList),
                 cubelist: [],
                 daylist: [],
                 weeklist: [],
