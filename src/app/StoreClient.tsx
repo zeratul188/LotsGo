@@ -48,6 +48,14 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
                     return;
                 }
             }
+
+            // 비로그인 상태에서는 refresh 요청 자체가 필요하지 않습니다.
+            // refresh 쿠키가 없는 정상적인 401 응답을 세션 만료 오류로 표시하지 않도록 합니다.
+            if (!token && !storedUser) {
+                dispatch(setCheckToken(true));
+                return;
+            }
+
             const refreshRes = await fetch("/api/auth/refresh", {
                 method: "POST",
                 credentials: "include",
