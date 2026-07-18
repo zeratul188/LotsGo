@@ -131,6 +131,9 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                                 <p className="max-w-full truncate text-base font-bold">{skill.name}</p>
                                                 <span className="rounded-md bg-default-200 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-default-700 dark:bg-white/15 dark:!text-white">Lv.{skill.level}</span>
                                                 <span className="text-xs text-default-500">{skill.type}</span>
+                                                {skill.isCounter ? <Chip variant="flat" radius="sm" size="sm" color="success" className="h-5 min-h-5 px-1.5 text-[11px] font-medium leading-none">카운터</Chip> : <></>}
+                                                {skill.power !== '' ? <Chip variant="flat" radius="sm" size="sm" color="primary" className="h-5 min-h-5 px-1.5 text-[11px] font-medium leading-none">무력 {skill.power}</Chip> : <></>}
+                                                {skill.destroy > 0 ? <Chip variant="flat" radius="sm" size="sm" color="secondary" className="h-5 min-h-5 px-1.5 text-[11px] font-medium leading-none">파괴 {skill.destroy}</Chip> : <></>}
                                             </div>
                                             {skill.tripods.length > 0 ? (
                                                 <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 text-[11px] text-default-500">
@@ -155,9 +158,6 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                         </div>
                                     </div>
                                     <div className="flex flex-wrap items-center gap-2 md960:justify-end">
-                                        {skill.isCounter ? <Chip variant="flat" radius="sm" size="sm" color="success">카운터</Chip> : <></>}
-                                        {skill.power !== '' ? <Chip variant="flat" radius="sm" size="sm" color="primary">무력 {skill.power}</Chip> : <></>}
-                                        {skill.destroy > 0 ? <Chip variant="flat" radius="sm" size="sm" color="secondary">파괴 {skill.destroy}</Chip> : <></>}
                                         <div className="flex gap-1.5">
                                             {skill.tripods.length > 0 ? <p className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-[10pt] text-white">{skill.tripods[0].slot}</p> : <></>}
                                             {skill.tripods.length > 1 ? <p className="flex h-6 w-6 items-center justify-center rounded-full bg-green-700 text-[10pt] text-white">{skill.tripods[1].slot}</p> : <></>}

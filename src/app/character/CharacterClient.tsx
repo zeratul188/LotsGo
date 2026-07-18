@@ -275,8 +275,8 @@ export default function CharacterClient() {
                                 role="tab"
                                 aria-selected={selectedTab === tab.id}
                                 className={selectedTab === tab.id
-                                    ? "h-10 shrink-0 rounded-lg bg-white px-4 text-sm font-semibold text-primary shadow-sm transition-colors dark:bg-white/10"
-                                    : "h-10 shrink-0 rounded-lg px-4 text-sm font-semibold text-default-500 transition-colors hover:bg-white/60 hover:text-foreground dark:hover:bg-white/[0.06]"}
+                                    ? "h-10 shrink-0 cursor-pointer rounded-lg bg-white px-4 text-sm font-semibold text-primary shadow-sm transition-colors dark:bg-white/10"
+                                    : "h-10 shrink-0 cursor-pointer rounded-lg px-4 text-sm font-semibold text-default-500 transition-colors hover:bg-white/60 hover:text-foreground dark:hover:bg-white/[0.06]"}
                                 onClick={() => setSelectedTab(tab.id)}>
                                 {tab.label}
                             </button>
@@ -311,11 +311,10 @@ export default function CharacterClient() {
                             <Button
                                 radius="lg"
                                 color="primary"
-                                isLoading={characterForm.isLoadingUpdate}
-                                isDisabled={characterForm.isDisable}
+                                isDisabled={characterForm.isDisable || characterForm.isLoadingUpdate}
                                 className="h-10 w-full min-w-28 font-bold md960:w-auto"
                                 onPress={onPressUpdate}>
-                                <span className="text-base">↻</span>
+                                <span className={characterForm.isLoadingUpdate ? "text-base animate-spin" : "text-base"}>↻</span>
                                 정보 갱신
                             </Button>
                         </Tooltip>

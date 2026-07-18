@@ -40,7 +40,7 @@ export default function ChecklistClient() {
     const initialBosses: Boss[] = iBosses;
     const initialCubes: Cube[] = iCubes;
 
-    const checklistForm = useChecklistForm();
+    const checklistForm = useChecklistForm(initialBosses, initialCubes);
     const dispatch = useDispatch<AppDispatch>();
     const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
     const checklist: CheckCharacter[] = useSelector((state: RootState) => state.checklist.checklist);
@@ -54,17 +54,11 @@ export default function ChecklistClient() {
     const onOpenChangeBosses = (isOpen: boolean) => setOpenBosses(isOpen);
 
     useEffect(() => {
-        if (checklistForm.cubes.length === 0) {
-            checklistForm.setCubes(initialCubes);
-        }
-    }, []);
-    
-    useEffect(() => {
         if (!expedition || expedition.length === 0) return;
-        if (checkLogin() && checklistForm.bosses.length !== 0) {
+        if (checkLogin()) {
             loadChecklist(checklistForm.setLoading, dispatch, expedition, checklistForm.bosses, checklistForm.setLife, checklistForm.setBlessing, checklistForm.setMax, checklistForm.setBiweekly);
         }
-    }, [checklistForm.bosses, expedition]);
+    }, [expedition]);
 
     useEffect(() => {
         const results: string[] = [];

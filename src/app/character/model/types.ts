@@ -216,7 +216,12 @@ export type Core = {
     name: string,
     point: number,
     grade: string,
-    gems: ArkGridGem[]
+    gems: ArkGridGem[],
+    effects?: CoreEffect[]
+}
+export type CoreEffect = {
+    point: number,
+    description: string
 }
 export type ArkGridGem = {
     index: number,
