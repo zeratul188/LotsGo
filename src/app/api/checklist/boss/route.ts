@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { revalidateTag, unstable_cache } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 const JWT_SECRET = process.env.LOSTARK_JWT_SECRET!;
@@ -33,20 +34,24 @@ type BossPayload = Omit<Boss, 'id' | 'screenNames'> & {
     screenNames: string[]
 }
 
+const getCachedBosses = unstable_cache(async (): Promise<Boss[]> => {
+    const { adminDB } = await import("@/utiils/firebaseAdmin");
+    const snapshot = await adminDB.collection('boss').get();
+    return snapshot.docs.map((document) => ({
+        id: document.id,
+        name: document.data().name,
+        simple: document.data().simple ?? '',
+        screenNames: Array.isArray(document.data().screenNames) ? document.data().screenNames : [],
+        max: document.data().max ?? 0,
+        difficulty: Array.isArray(document.data().difficulty)
+            ? document.data().difficulty.map(normalizeDifficulty)
+            : []
+    }));
+}, ['checklist-bosses'], { revalidate: 300, tags: ['checklist-bosses'] });
+
 export async function GET(_req: NextRequest) {
     try {
-        const { adminDB } = await import("@/utiils/firebaseAdmin");
-        const snapshot = await adminDB.collection('boss').get();
-        const bosses: Boss[] = snapshot.docs.map((document) => ({
-            id: document.id,
-            name: document.data().name,
-            simple: document.data().simple ?? '',
-            screenNames: Array.isArray(document.data().screenNames) ? document.data().screenNames : [],
-            max: document.data().max ?? 0,
-            difficulty: Array.isArray(document.data().difficulty)
-                ? document.data().difficulty.map(normalizeDifficulty)
-                : []
-        }));
+        const bosses = await getCachedBosses();
         return NextResponse.json(bosses);
     } catch (error) {
         console.error(error);
@@ -80,6 +85,7 @@ export async function POST(req: NextRequest) {
                 const boss = parseBossRequest(body);
                 await validateScreenNameDuplicates(adminDB, boss.screenNames);
                 const addRef = await adminDB.collection('boss').add(boss);
+                revalidateTag('checklist-bosses');
                 return NextResponse.json({ message: '콘텐츠를 추가했습니다.', id: addRef.id }, { status: 200 });
             }
             case 'edit': {
@@ -94,6 +100,7 @@ export async function POST(req: NextRequest) {
                 }
                 await validateScreenNameDuplicates(adminDB, boss.screenNames, body.id);
                 await docRef.update(boss);
+                revalidateTag('checklist-bosses');
                 return NextResponse.json({ message: '콘텐츠를 수정했습니다.' }, { status: 200 });
             }
             case 'remove': {
@@ -106,6 +113,7 @@ export async function POST(req: NextRequest) {
                     return NextResponse.json({ error: '삭제할 콘텐츠를 찾을 수 없습니다.' }, { status: 404 });
                 }
                 await docRef.delete();
+                revalidateTag('checklist-bosses');
                 return NextResponse.json({ message: '콘텐츠를 삭제했습니다.' }, { status: 200 });
             }
             default:

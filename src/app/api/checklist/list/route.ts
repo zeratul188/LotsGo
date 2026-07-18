@@ -1,3 +1,4 @@
+import { normalizeChecklist } from "@/app/checklist/lib/normalizeChecklist";
 import { CheckCharacter, Day } from "@/app/store/checklistSlice";
 import { firestore } from "@/utiils/firebase";
 import { collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
@@ -17,50 +18,7 @@ export async function GET(req: NextRequest) {
 
         const targetDoc = snapshot.docs[0];
         const data = targetDoc.data();
-        //const checklist = data.checklist ?? [];
-        const checklist: CheckCharacter[] = data.checklist ? data.checklist.map((item: CheckCharacter) => {
-            const defaultDay: Day = {
-                boss: 0,
-                bossBonus: 0,
-                bossUsing: 0,
-                dungeon: 0,
-                dungeonBouus: 0,
-                dungeonUsing: 0,
-                quest: 0,
-                questBonus: 0,
-                questUsing: 0
-            }
-            return {
-                nickname: item.nickname ?? '',
-                memo: typeof item.memo === 'string' ? item.memo : '',
-                paradisePower: typeof item.paradisePower === 'number' && Number.isFinite(item.paradisePower) ? Math.max(0, Math.trunc(item.paradisePower)) : 0,
-                hallsHourglassCheck: item.hallsHourglassCheck === true,
-                level: item.level ?? 0,
-                job: item.job ?? '',
-                server: item.server ?? '',
-                day: item.day ?? defaultDay,
-                daylist: item.daylist ?? [],
-                checklist: item.checklist ? item.checklist.map((entry: any) => ({
-                    ...entry,
-                    items: entry.items.map((item: any) => ({
-                        difficulty: item.difficulty,
-                        stage: item.stage,
-                        isCheck: item.isCheck,
-                        isDisable: item.isDisable,
-                        isBonus: item.isBonus,
-                        isBiweekly: item.isBiweekly ?? false,
-                        busGold: item.busGold ?? 0
-                    }))
-                })) : [],
-                weeklist: item.weeklist ?? [],
-                cube: item.cube ?? 0,
-                cubelist: item.cubelist ?? [],
-                isGold: item.isGold ?? false,
-                otherGold: item.otherGold ?? 0,
-                position: item.position ?? 9999,
-                account: item.account ?? '본계정'
-            }
-        }) : [];
+        const checklist = normalizeChecklist(data.checklist);
         return NextResponse.json(checklist);
     } catch(error) {
         console.error(error);
