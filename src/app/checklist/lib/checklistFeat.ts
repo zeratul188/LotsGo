@@ -440,7 +440,7 @@ export function getAllGoldCharacter(
         .reduce((total, item) => total + getBossGold(bosses, item.name, item.items) + getBossBoundGold(bosses, item.name, item.items), 0) : 0;
     golds -= character.isGold ? character.checklist
         .filter(item => !item.isGold)
-        .reduce((total, item) => total + getBossBonusGold(bosses, item.name, item.items), 0) : 0;
+        .reduce((total, item) => total + getBossCheckedBonusGold(bosses, item.name, item.items), 0) : 0;
     golds += character.checklist
         .filter(item => item.busGold !== 0 && item.busGold)
         .reduce((total, item) => total + (item.busGold ?? 0), 0);
@@ -506,7 +506,7 @@ export function getAllGolds(
             .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.items) + getBossBoundGold(bosses, item.name, item.items), 0);
         goldFromChecklist -= character.checklist
             .filter(item => !item.isGold)
-            .reduce((sum, item) => sum + getBossBonusGold(bosses, item.name, item.items), 0);
+            .reduce((sum, item) => sum + getBossCheckedBonusGold(bosses, item.name, item.items), 0);
         return total + goldFromChecklist;
     }, 0);
     sum += checklist
