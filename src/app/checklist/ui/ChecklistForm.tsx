@@ -158,6 +158,7 @@ import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 import JobAvatar from "@/Icons/JobAvatar";
 import { EditIcon } from "@/Icons/EditIcon";
 import SwitchCharacterIcon from "@/Icons/SwitchCharacterIcon";
+import AnimatedNumber from "./AnimatedNumber";
 
 const AutoChecklistControl = dynamic(() => import("./AutoChecklistControl"), {
     ssr: false,
@@ -653,7 +654,7 @@ export function ChecklistStatue({
                                                 src="/icons/gold.png" 
                                                 alt="goldicon"
                                                 className="w-[19px] h-[19px]"/>
-                                            <span className="ml-1 text-md">주간 골드량 : {getHaveGolds(bosses, filteredChecklist).toLocaleString()} / {getAllGolds(bosses, filteredChecklist).toLocaleString()}</span>
+                                            <span className="ml-1 text-md">주간 골드량 : <AnimatedNumber value={getHaveGolds(bosses, filteredChecklist)}/> / <AnimatedNumber value={getAllGolds(bosses, filteredChecklist)}/></span>
                                         </div>
                                     )}
                                     showValueLabel={true}
@@ -664,7 +665,7 @@ export function ChecklistStatue({
                             <div className="flex w-full items-center gap-2">
                                 <p className="min-w-0 grow text-[10pt] leading-5 fadedtext">
                                     이번 주에 <img src="/icons/gold.png" alt="goldicon" className="mx-0.5 inline-block h-[14px] w-[14px]"/>
-                                    <strong className="text-black dark:text-white">{(getAllGolds(bosses, filteredChecklist) - getHaveGolds(bosses, filteredChecklist)).toLocaleString()}</strong>를 더 획득하실 수 있습니다.
+                                    <strong className="text-black dark:text-white"><AnimatedNumber value={getAllGolds(bosses, filteredChecklist) - getHaveGolds(bosses, filteredChecklist)}/></strong>를 더 획득하실 수 있습니다.
                                 </p>
                                 <Popover showArrow disableAnimation placement="bottom-end">
                                     <PopoverTrigger>
@@ -1302,7 +1303,7 @@ export function ChecklistComponent({
                                                             src="/icons/gold.png" 
                                                             alt="goldicon"
                                                             className="w-[16px] h-[16px]"/>
-                                                        <span className="ml-1 text-md">{(getCompleteGoldCharacter(bosses, character)+character.otherGold).toLocaleString()} / {(getAllGoldCharacter(bosses, character)+character.otherGold).toLocaleString()}</span>
+                                                        <span className="ml-1 text-md"><AnimatedNumber value={getCompleteGoldCharacter(bosses, character) + character.otherGold}/> / <AnimatedNumber value={getAllGoldCharacter(bosses, character) + character.otherGold}/></span>
                                                     </div>
                                                 )}
                                                 showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
