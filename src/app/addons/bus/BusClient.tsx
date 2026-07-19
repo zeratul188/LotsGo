@@ -51,7 +51,7 @@ function CalcComponent() {
                     </div>
                     <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">총 {person}명 기준</span>
                 </div>
-                <div className="grid w-full gap-3 lg:grid-cols-[1.15fr_1fr_1fr]">
+                <div className="grid w-full gap-3 lg:grid-cols-[1.35fr_0.9fr_0.9fr]">
                 <div className="rounded-xl border border-default-200/70 bg-default-50/70 p-3.5 dark:border-white/10 dark:bg-white/[0.04]">
                     <p className="mb-2 text-sm font-semibold">인원 수</p>
                     <RadioGroup 
