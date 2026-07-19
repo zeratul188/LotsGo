@@ -53,15 +53,13 @@ export default function AddonsClient({ children }: { children: React.ReactNode }
                 variant="light"
                 selectedKey={selected}
                 aria-label="addons tabs"
-                placement={isMobile ? 'top' : 'start'}
-                className="flex"
                 classNames={{
-                    base: "w-full sm:w-auto sm:items-start",
-                    tabList: "w-full gap-1 rounded-2xl border border-default-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-[#171717] sm:w-[220px]",
-                    tab: "h-auto min-h-14 justify-start px-4 py-3",
+                    base: "w-full",
+                    tabList: "w-full gap-1 rounded-2xl border border-default-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-[#171717]",
+                    tab: "h-auto min-h-12 justify-center px-3 py-2 sm:px-4",
                     cursor: "bg-primary/10 shadow-none dark:bg-primary/20",
-                    tabContent: "w-full text-left group-data-[selected=true]:text-primary",
-                    panel: "w-full min-w-0 px-0 pt-4 sm:pl-5 sm:pt-0"
+                    tabContent: "w-full text-center group-data-[selected=true]:text-primary",
+                    panel: "w-full min-w-0 px-0 pt-4"
                 }}
                 onSelectionChange={(key: any) => {
                     const index = tabs.findIndex(tab => tab.key === key);
@@ -79,13 +77,10 @@ export default function AddonsClient({ children }: { children: React.ReactNode }
                                 <p className="mt-0.5 hidden truncate text-xs text-default-400 sm:block">{tab.description}</p>
                             </div>
                         }
-                        className="min-w-[200px] flex-1">
-                        <div className="w-full overflow-y-auto rounded-2xl border border-default-200/80 bg-content1 p-3 dark:border-white/10 dark:bg-[#18181b] md:pl-4">
-                            {tab.key === selected ? children : null}
-                        </div>
-                    </Tab>
+                        className="min-w-[160px] flex-1"/>
                 ))}
             </Tabs>
+            <main className="mt-4">{children}</main>
         </div>
     )
 }
