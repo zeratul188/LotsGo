@@ -8,21 +8,25 @@ const tabs = [
     {
         key: 'calc',
         label: '경매 계산기',
+        description: '경매 입찰 금액 계산',
         path: '/addons'
     },
     {
         key: 'relics',
         label: '유물 각인서 시세',
+        description: '유물 각인서 시세 확인',
         path: '/addons/relics'
     },
     {
         key: 'bus',
         label: '버스 계산기',
+        description: '기사와 손님 정산 금액 계산',
         path: '/addons/bus'
     },
     {
         key: 'transcendence',
         label: '초월 시뮬레이터',
+        description: '초월 결과와 보상 시뮬레이션',
         path: '/addons/transcendence'
     }
 ]
@@ -45,10 +49,20 @@ export default function AddonsClient({ children }: { children: React.ReactNode }
             <Tabs
                 fullWidth={isMobile}
                 color="primary"
-                radius="sm"
-                variant="solid"
+                radius="lg"
+                variant="light"
                 selectedKey={selected}
                 aria-label="addons tabs"
+                placement={isMobile ? 'top' : 'start'}
+                className="flex"
+                classNames={{
+                    base: "w-full sm:w-auto sm:items-start",
+                    tabList: "w-full gap-1 rounded-2xl border border-default-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-[#171717] sm:w-[220px]",
+                    tab: "h-auto min-h-14 justify-start px-4 py-3",
+                    cursor: "bg-primary/10 shadow-none dark:bg-primary/20",
+                    tabContent: "w-full text-left group-data-[selected=true]:text-primary",
+                    panel: "w-full min-w-0 px-0 pt-4 sm:pl-5 sm:pt-0"
+                }}
                 onSelectionChange={(key: any) => {
                     const index = tabs.findIndex(tab => tab.key === key);
                     if (index >= 0) {
@@ -57,10 +71,21 @@ export default function AddonsClient({ children }: { children: React.ReactNode }
                     }
                 }}>
                 {tabs.map((tab) => (
-                    <Tab key={tab.key} title={tab.label} className="min-w-[160px] flex-1"/>
+                    <Tab
+                        key={tab.key}
+                        title={
+                            <div className="min-w-0 py-0.5 text-left">
+                                <p className="truncate text-sm font-bold">{tab.label}</p>
+                                <p className="mt-0.5 hidden truncate text-xs text-default-400 sm:block">{tab.description}</p>
+                            </div>
+                        }
+                        className="min-w-[200px] flex-1">
+                        <div className="w-full overflow-y-auto rounded-2xl border border-default-200/80 bg-content1 p-3 dark:border-white/10 dark:bg-[#18181b] md:pl-4">
+                            {tab.key === selected ? children : null}
+                        </div>
+                    </Tab>
                 ))}
             </Tabs>
-            <main className="mt-4">{children}</main>
         </div>
     )
 }
