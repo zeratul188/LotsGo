@@ -159,7 +159,21 @@ import JobAvatar from "@/Icons/JobAvatar";
 import { EditIcon } from "@/Icons/EditIcon";
 import SwitchCharacterIcon from "@/Icons/SwitchCharacterIcon";
 
-const AutoChecklistControl = dynamic(() => import("./AutoChecklistControl"), { ssr: false });
+const AutoChecklistControl = dynamic(() => import("./AutoChecklistControl"), {
+    ssr: false,
+    loading: () => (
+        <Button
+            fullWidth
+            radius="sm"
+            color="primary"
+            variant="flat"
+            size="sm"
+            className="hidden h-9 border border-primary/30 px-2 text-xs font-medium md960:flex sm:text-sm"
+            isDisabled>
+            자동 체크 기능 켜기 (Beta)
+        </Button>
+    )
+});
 
 // state 관리
 export type ModalData = {
