@@ -194,7 +194,7 @@ export default function AutoChecklistControl({
     setSelectedNickname,
     onSharingStateChange
 }: AutoChecklistControlProps) {
-    const { isOpen, onOpen, onOpenChange } = useDisclosure();
+    const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
     const [status, setStatus] = useState<CaptureStatus>('idle');
     const [statusMessage, setStatusMessage] = useState('캐릭터를 선택하고 화면 공유를 시작하세요.');
     const [ocrProgress, setOcrProgress] = useState(0);
@@ -934,6 +934,7 @@ export default function AutoChecklistControl({
 
             setStatus('active');
             setStatusMessage('화면을 분석하고 있습니다. 로스트아크를 플레이해도 됩니다.');
+            onClose();
             startFrameDrivenAnalysis(track, captureSession);
         } catch (error) {
             if (captureSessionRef.current !== captureSession) return;
@@ -962,10 +963,10 @@ export default function AutoChecklistControl({
             <Button
                 fullWidth
                 radius="sm"
-                color={status === 'active' ? 'success' : 'secondary'}
+                color={status === 'active' ? 'success' : 'primary'}
                 variant="flat"
                 size="sm"
-                className="hidden h-9 border border-secondary/30 px-2 text-xs font-medium md960:flex sm:text-sm"
+                className="hidden h-9 border border-primary/30 px-2 text-xs font-medium md960:flex sm:text-sm"
                 isDisabled={isDisabled}
                 onPress={onOpen}>
                 {status === 'active' ? '자동 체크 작동 중 (Beta)' : '자동 체크 기능 켜기 (Beta)'}

@@ -440,7 +440,7 @@ export function getAllGoldCharacter(
         .reduce((total, item) => total + getBossGold(bosses, item.name, item.items) + getBossBoundGold(bosses, item.name, item.items), 0) : 0;
     golds -= character.isGold ? character.checklist
         .filter(item => !item.isGold)
-        .reduce((total, item) => total + getBossBonusGold(bosses, item.name, item.items), 0) : 0;
+        .reduce((total, item) => total + getBossCheckedBonusGold(bosses, item.name, item.items), 0) : 0;
     golds += character.checklist
         .filter(item => item.busGold !== 0 && item.busGold)
         .reduce((total, item) => total + (item.busGold ?? 0), 0);
@@ -506,7 +506,7 @@ export function getAllGolds(
             .reduce((sum, item) => sum + getBossGold(bosses, item.name, item.items) + getBossBoundGold(bosses, item.name, item.items), 0);
         goldFromChecklist -= character.checklist
             .filter(item => !item.isGold)
-            .reduce((sum, item) => sum + getBossBonusGold(bosses, item.name, item.items), 0);
+            .reduce((sum, item) => sum + getBossCheckedBonusGold(bosses, item.name, item.items), 0);
         return total + goldFromChecklist;
     }, 0);
     sum += checklist
@@ -613,6 +613,17 @@ export function getMissedBonusGoldByGoldCharacter(
         }, 0);
 }
 
+function getGoldAfterBonus(diff: Difficulty | undefined, isBonus: boolean): { gold: number, boundGold: number } {
+    const gold = diff?.gold ?? 0;
+    const boundGold = diff?.boundGold ?? 0;
+    const bonus = isBonus ? diff?.bonus ?? 0 : 0;
+
+    return {
+        gold: Math.max(gold - Math.max(bonus - boundGold, 0), 0),
+        boundGold: Math.max(boundGold - bonus, 0)
+    };
+}
+
 export function getBossBoundGold(
     bosses: Boss[],
     name: string,
@@ -624,7 +635,7 @@ export function getBossBoundGold(
             for (const item of items) {
                 const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
                 if (!item.isDisable) {
-                    gold += diff ? diff.boundGold : 0;
+                    gold += getGoldAfterBonus(diff, item.isBonus).boundGold;
                 }
             }
             break;
@@ -645,7 +656,7 @@ export function getBossBoundCheckGold(
             for (const item of items) {
                 const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
                 if (item.isCheck) {
-                    gold += diff ? diff.boundGold : 0;
+                    gold += getGoldAfterBonus(diff, item.isBonus).boundGold;
                 }
             }
             break;
@@ -666,10 +677,7 @@ export function getBossGold(
             for (const item of items) {
                 const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
                 if (!item.isDisable) {
-                    gold += diff ? diff.gold : 0;
-                    if (item.isBonus) {
-                        gold -= diff ? diff.bonus : 0;
-                    }
+                    gold += getGoldAfterBonus(diff, item.isBonus).gold;
                 }
             }
             break;
@@ -711,10 +719,7 @@ export function getBossCheckedGold(
             for (const item of items) {
                 const diff = boss.difficulty.find(b => b.difficulty === item.difficulty && b.stage === item.stage);
                 if (item.isCheck) {
-                    gold += diff ? diff.gold : 0;
-                    if (item.isBonus) {
-                        gold -= diff ? diff.bonus : 0;
-                    }
+                    gold += getGoldAfterBonus(diff, item.isBonus).gold;
                 }
             }
             break;

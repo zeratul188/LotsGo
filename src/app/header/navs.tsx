@@ -1,8 +1,5 @@
 import { Image, NavbarItem, Link, NavbarMenuToggle, Tooltip, NavbarMenu, NavbarMenuItem, Button, Divider, addToast } from "@heroui/react";
-import { 
-    useSwitch, 
-    VisuallyHidden, 
-    SwitchProps,
+import {
     Dropdown,
     DropdownTrigger,
     DropdownMenu,
@@ -297,17 +294,29 @@ function ProfileButton() {
             <Dropdown placement="bottom-end">
                 <DropdownTrigger>
                     {!mainCharacter ? (
-                        <Button radius="sm" variant="flat" className="font-medium">{id}</Button>
+                        <Button
+                            radius="md"
+                            variant="flat"
+                            className="h-10 border border-default-200/80 bg-default-50/80 px-3 text-sm font-semibold shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary-50/70 hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-primary-500/10">
+                            {id}
+                        </Button>
                     ) : (
                         <div
-                            className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-default-100"
+                            className="group flex min-w-0 max-w-[230px] cursor-pointer items-center gap-2 rounded-xl border border-default-200/80 bg-default-50/80 px-2 py-1.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary-50/70 hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-primary-500/10"
                             role="button"
-                            tabIndex={0}>
-                            <JobAvatar size="md" job={mainCharacter.job}/>
-                            <div className="h-[max-content]">
-                                <p className="truncate overflow-hidden whitespace-nowrap leading-none">{id}</p>
-                                <p className="fadedtext truncate overflow-hidden whitespace-nowrap text-[10pt] leading-none mt-1">{mainCharacter.nickname}</p>
+                            tabIndex={0}
+                            aria-label="프로필 메뉴 열기">
+                            <div className="relative shrink-0">
+                                <JobAvatar size="md" job={mainCharacter.job}/>
+                                <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-success dark:border-[#171717]"/>
                             </div>
+                            <div className="min-w-0 text-left">
+                                <p className="truncate text-xs font-semibold leading-tight text-foreground">{id}</p>
+                                <p className="mt-1 truncate text-[10pt] leading-tight fadedtext">{mainCharacter.nickname} · {mainCharacter.job}</p>
+                            </div>
+                            <svg aria-hidden="true" className="ml-0.5 h-4 w-4 shrink-0 text-default-400 transition-transform duration-200 group-hover:translate-y-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6"/>
+                            </svg>
                         </div>
                     )}
                 </DropdownTrigger>
@@ -315,9 +324,9 @@ function ProfileButton() {
                     aria-label="프로필 메뉴"
                     variant="flat"
                     onAction={onActionProfile}
-                    className="min-w-[220px]"
+                    className="min-w-[240px] p-2"
                     topContent={
-                        <div className="mx-1 mb-1 border-b border-gray-200/80 px-2 pb-3 pt-2 dark:border-white/10">
+                        <div className="mx-0 mb-1 rounded-xl border border-primary-100/80 bg-primary-50/60 p-3 dark:border-primary-900/40 dark:bg-primary-500/[0.08]">
                             <p className="text-xs font-medium text-primary">내 계정</p>
                             <p className="mt-1 truncate text-sm font-semibold">{id}</p>
                             {mainCharacter ? (
@@ -353,47 +362,36 @@ function ProfileButton() {
 }
 
 // 헤더의 프로필 관련 요소
-export function ProfileContent(props: SwitchProps) {
-    const {theme, setTheme} = useTheme();
-    const {Component, slots, isSelected, getBaseProps, getInputProps, getWrapperProps } = useSwitch({
-        ...props,
-        defaultSelected: theme !== 'dark'
-    });
+export function ProfileContent() {
+    const { resolvedTheme, setTheme } = useTheme();
+    const isDark = resolvedTheme === 'dark';
+
+    const toggleTheme = () => {
+        const nextTheme = isDark ? 'light' : 'dark';
+        const root = document.documentElement;
+
+        setTheme(nextTheme);
+        localStorage.setItem('theme', nextTheme);
+        root.classList.toggle('dark', nextTheme === 'dark');
+    };
     return (
         <>
             <NavbarItem className="hidden sm:flex">
                 <ProfileButton/>
             </NavbarItem>
-            <NavbarItem>
-                <Tooltip showArrow content={theme === 'light' ? '다크 모드로 전환합니다.' : '라이트 모드로 전환합니다.'}>
-                    <Component {...getBaseProps()}>
-                        <VisuallyHidden>
-                            <input {...getInputProps()}/>
-                        </VisuallyHidden>
-                        <div
-                            {...getWrapperProps()}
-                            className={slots.wrapper({
-                                class: [
-                                "h-9 w-9",
-                                "flex items-center justify-center",
-                                "rounded-lg bg-default-100 transition-colors hover:bg-default-200",
-                                ],
-                            })}
-                            onClick={() => {
-                                const root = document.documentElement;
-                                if (isSelected) {
-                                    root.classList.add('dark');
-                                    setTheme('dark');
-                                    localStorage.setItem('theme', 'dark');
-                                } else {
-                                    setTheme('light');
-                                    root.classList.remove('dark');
-                                    localStorage.setItem('theme', 'light');
-                                }
-                            }}>
-                            {isSelected ? <SunIcon /> : <MoonIcon />}
-                        </div>
-                    </Component>
+            <NavbarItem className="shrink-0">
+                <Tooltip showArrow content={isDark ? '라이트 모드로 전환' : '다크 모드로 전환'}>
+                    <Button
+                        radius="full"
+                        variant="flat"
+                        aria-label={isDark ? '라이트 모드로 전환' : '다크 모드로 전환'}
+                        onPress={toggleTheme}
+                        className="group h-10 min-w-10 gap-1.5 border border-default-200/80 bg-default-50/80 px-2.5 text-default-600 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary-50/70 hover:text-primary hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] dark:text-default-300 dark:hover:bg-primary-500/10 sm:min-w-[86px]">
+                        <span className="flex h-5 w-5 items-center justify-center transition-transform duration-300 group-hover:rotate-12">
+                            {isDark ? <MoonIcon /> : <SunIcon />}
+                        </span>
+                        <span className="hidden text-xs font-semibold sm:inline">{isDark ? '다크' : '라이트'}</span>
+                    </Button>
                 </Tooltip>
             </NavbarItem>
         </>

@@ -330,31 +330,37 @@ export function ContentChip({ content, bosses, isMemberGold }: ContentChipProps)
         <Chip 
             size="lg"
             radius="sm"
-            variant="flat"
-            color={content.items.every(item => item.isCheck) ? "success" : 'danger'}
+            variant="bordered"
+            color="default"
             classNames={{
-                base: "min-w-full sm:min-w-fit",
-                content: "w-full min-w-0"
+                base: clsx(
+                    "h-auto min-w-full border bg-transparent px-3 pb-1 pt-1.5 sm:min-w-[180px]",
+                    content.items.every(item => item.isCheck)
+                        ? "border-success-400 dark:border-success-500"
+                        : "border-danger-400 dark:border-danger-500"
+                ),
+                content: "w-full min-w-0 p-0"
             }}
 >
-            <div className="flex gap-1 items-center">
-                <p className={clsx(
-                    "text-sm",
-                    content.items.every(item => item.isCheck) ? 'text-green-600 dark:text-green-400' : ''
-                )}>{getSimpleBossName(bosses, content.name)}</p>
-                {content.isGold && isMemberGold ? <img 
-                    src="/icons/gold.png" 
-                    alt="goldicon"
-                    className="w-[14px] h-[14px]"/> : <></>}
-                <div ref={scrollRef} className="ml-auto w-fit min-w-0 sm:min-w-fit max-w-full overflow-x-auto sm:overflow-x-hidden scrollbar-hide">
-                    <div className="flex flex-nowrap gap-1 w-max justify-end items-center">
+            <div className="flex w-full flex-col gap-0">
+                <div className="flex min-w-0 items-center gap-1">
+                    <p className="truncate text-sm font-medium">{getSimpleBossName(bosses, content.name)}</p>
+                    {content.isGold && isMemberGold ? <img
+                        src="/icons/gold.png"
+                        alt="goldicon"
+                        className="h-[14px] w-[14px] shrink-0"/> : null}
+                </div>
+                <div ref={scrollRef} className="w-full min-w-0 max-w-full overflow-x-auto scrollbar-hide">
+                    <div className="flex w-max flex-nowrap items-center gap-2">
                         {content.items.map((contentItem, itemIndex) => (
                             <Tooltip key={itemIndex} showArrow content={`${contentItem.difficulty} ${contentItem.stage}관문`}>
-                                <div className={clsx(
-                                    "w-[12px] h-[12px] rounded-full p-0.5 flex justify-center items-center opacity-75",
-                                    getBackgroundByStage(contentItem.difficulty, false)
-                                )}>
-                                    {contentItem.isCheck ? <CheckIcon size={10} color="#ffffff"/> : null}
+                                <div className="flex shrink-0 items-center gap-0.5 text-[11px] fadedtext">
+                                    <span className={clsx(
+                                        "h-2 w-2 shrink-0 rounded-full opacity-90",
+                                        getBackgroundByStage(contentItem.difficulty, false)
+                                    )}/>
+                                    <span>{contentItem.stage}관문</span>
+                                    {contentItem.isCheck ? <CheckIcon size={9} color="#16a34a"/> : null}
                                 </div>
                             </Tooltip>
                         ))}
