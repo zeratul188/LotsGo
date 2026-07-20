@@ -49,7 +49,8 @@ export async function handleInsertKey(
                 id: loginData.id,
                 character: loginData.character,
                 expedition: loginData.expedition,
-                apiKey: encryptApiKey
+                apiKey: encryptApiKey,
+                isSupporter: loginData.isSupporter === true
             }
             sessionStorage.setItem('user', JSON.stringify(loginUser));
             Cookies.set('userApiKey', encryptApiKey, {
@@ -107,9 +108,10 @@ export async function handleRemoveKey(
     if (loginData) {
         const loginUser: LoginUser = {
             id: loginData.id,
-            character: loginData.character,
-            expedition: loginData.expedition,
-            apiKey: null
+                character: loginData.character,
+                expedition: loginData.expedition,
+                apiKey: null,
+                isSupporter: loginData.isSupporter === true
         }
         sessionStorage.setItem('user', JSON.stringify(loginUser));
     }

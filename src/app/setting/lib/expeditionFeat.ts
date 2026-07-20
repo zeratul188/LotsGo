@@ -90,7 +90,8 @@ export async function handleSelectCharacter(
             id: id,
             expedition: newExpeditions,
             character: expedition[index].nickname,
-            apiKey: localUser.apiKey ? localUser.apiKey : null
+            apiKey: localUser.apiKey ? localUser.apiKey : null,
+            isSupporter: localUser.isSupporter === true
         }
         sessionStorage.setItem('user', JSON.stringify(loginUser));
     }
@@ -197,9 +198,10 @@ export function useClickUpdate(
                         const localUser = JSON.parse(localData);
                         const loginUser: LoginUser = {
                             id: id,
-                            expedition: newExpedition,
-                            character: defaultNickname,
-                            apiKey: localUser.apiKey ? localUser.apiKey : null
+                        expedition: newExpedition,
+                        character: defaultNickname,
+                        apiKey: localUser.apiKey ? localUser.apiKey : null,
+                        isSupporter: localUser.isSupporter === true
                         }
                         sessionStorage.setItem('user', JSON.stringify(loginUser));
                     }

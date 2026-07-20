@@ -109,7 +109,8 @@ export async function login(
                         id: user.id,
                         expedition: data.expedition,
                         character: data.userData ? data.userData.nickname : '',
-                        apiKey: data.userData ? data.userData.apiKey ? data.userData.apiKey : null : null
+                        apiKey: data.userData ? data.userData.apiKey ? data.userData.apiKey : null : null,
+                        isSupporter: data.userData?.isSupporter === true
                     }
                     dispatch(logined(loginUser));
                     sessionStorage.setItem('token', data.accessToken);

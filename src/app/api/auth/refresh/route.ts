@@ -49,7 +49,8 @@ export async function POST(req: NextRequest) {
             email: targetDoc.data().email,
             expeditions: targetDoc.data().expeditions,
             nickname: targetDoc.data().character,
-            apiKey: targetDoc.data().apiKey ? targetDoc.data().apiKey : null
+            apiKey: targetDoc.data().apiKey ? targetDoc.data().apiKey : null,
+            isSupporter: targetDoc.data().isSupporter === true
         };
         const isAdministrator: boolean = targetDoc.data().isAdministrator ?? false;
 
