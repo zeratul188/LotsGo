@@ -12,12 +12,12 @@ import {
     ModalFooter,
     ModalHeader,
     Progress,
-    Select,
-    SelectItem,
     useDisclosure
 } from '@heroui/react';
 import { useEffect, useRef, useState } from 'react';
 import type Tesseract from 'tesseract.js';
+import JobEmblemIcon from '@/Icons/JobEmblemIcon';
+import SwitchCharacterIcon from '@/Icons/SwitchCharacterIcon';
 import type { Boss } from '../../api/checklist/boss/route';
 import { checkWeek, type CheckCharacter, type Checklist } from '../../store/checklistSlice';
 import type { AppDispatch } from '../../store/store';
@@ -374,6 +374,7 @@ export default function AutoChecklistControl({
         if (target === 'raid') {
             setRecognizedText(compactText || '인식된 텍스트 없음');
             setLastOcrAt(new Date().toLocaleTimeString('ko-KR', {
+                hour12: false,
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit'
@@ -987,11 +988,11 @@ export default function AutoChecklistControl({
             <Modal
                 isOpen={isOpen}
                 onOpenChange={onOpenChange}
-                size="xl"
+                size="5xl"
                 scrollBehavior="inside"
                 isDismissable={!status || status !== 'requesting'}>
                 <ModalContent className="border border-gray-200/80 dark:border-white/10">
-                    {(onClose) => (
+                    {() => (
                         <>
                             <ModalHeader className="flex flex-col gap-1 border-b border-gray-200/80 px-6 py-5 dark:border-white/10">
                                 <div className="flex items-center gap-2">
@@ -1000,93 +1001,121 @@ export default function AutoChecklistControl({
                                 </div>
                                 <p className="pl-3 text-sm font-normal fadedtext">게임 화면에서 레이드 이름과 완료 문구를 인식합니다.</p>
                             </ModalHeader>
-                            <ModalBody className="gap-5 px-6 py-5">
-                                <div className="rounded-xl border border-warning/30 bg-warning/10 p-4 text-sm">
-                                    <p className="font-semibold text-warning-700 dark:text-warning-300">사용 전 확인해 주세요</p>
-                                    <ul className="mt-2 list-disc space-y-1.5 pl-5 fadedtext">
-                                        <li>Chrome 또는 Edge PC 환경에서 로스트아크 게임 창을 선택하세요.</li>
-                                        <li className="font-medium text-warning-800 dark:text-warning-200">레이드명 아래 화살표를 눌러 관문 진행도 UI를 축소하면 초록색 체크 표시를 확인할 수 없어 자동 체크가 작동하지 않습니다. 진행도 UI를 펼친 상태로 유지해 주세요.</li>
-                                        <li>게임 해상도·UI 배율, 컷신이나 로딩 화면, 브라우저의 백그라운드 절전 상태에 따라 인식이 늦어지거나 일부 관문이 누락될 수 있습니다.</li>
-                                        <li>브라우저 또는 게임 창을 최소화하거나 화면 공유 영상을 사용할 수 없는 상태가 되면 인식이 중단될 수 있습니다.</li>
-                                        <li>화면은 서버에 전송하거나 저장하지 않고 현재 브라우저에서만 분석합니다.</li>
-                                        <li>화면 공유가 끝나면 자동 체크도 함께 중지됩니다.</li>
-                                    </ul>
-                                </div>
-
-                                <div>
-                                    <p className="mb-2 font-semibold">이용 방법</p>
-                                    <ol className="list-decimal space-y-1 pl-5 text-sm fadedtext">
-                                        <li>플레이할 캐릭터를 선택합니다.</li>
-                                        <li>화면 공유 시작을 누르고 로스트아크 창을 선택합니다.</li>
-                                        <li>화면 공유 중 다른 캐릭터로 변경하려면 해당 캐릭터 카드의 전환 아이콘을 누릅니다.</li>
-                                        <li>레이드 완료 문구가 반복 인식되면 해당 관문이 자동 체크됩니다.</li>
-                                    </ol>
-                                </div>
-
-                                <div className="rounded-xl border border-gray-200/80 p-4 dark:border-white/10">
-                                    <Checkbox
-                                        isSelected={isForced21By9}
-                                        isDisabled={isRunning}
-                                        onValueChange={handleForced21By9Change}>
-                                        <span className="font-medium">강제 21:9 모드 사용</span>
-                                    </Checkbox>
-                                    <p className="mt-1 pl-7 text-xs fadedtext">16:9 모니터에서 강제 21:9 설정으로 위아래 검은 영역이 생기는 경우 선택해 주세요.</p>
-                                </div>
-
-                                <Select
-                                    label="플레이할 캐릭터"
-                                    labelPlacement="outside"
-                                    placeholder="캐릭터를 선택하세요."
-                                    selectedKeys={selectedNickname ? [selectedNickname] : []}
-                                    isDisabled={isRunning}
-                                    onSelectionChange={(keys) => setSelectedNickname(Array.from(keys)[0]?.toString() ?? '')}>
-                                    {checklist.map((character) => (
-                                        <SelectItem key={character.nickname} textValue={character.nickname}>
-                                            <div className="flex items-center justify-between gap-3">
-                                                <span className="font-medium">{character.nickname}</span>
-                                                <span className="text-xs fadedtext">{character.job} · Lv.{character.level}</span>
-                                            </div>
-                                        </SelectItem>
-                                    ))}
-                                </Select>
-
-                                <Divider/>
-                                <div className="space-y-3 rounded-xl border border-gray-200/80 p-4 dark:border-white/10">
-                                    <div className="flex items-center justify-between gap-2">
-                                        <p className="font-semibold">감지 상태</p>
-                                        <Chip size="sm" color={statusColor} variant="flat">
-                                            {status === 'active' ? '작동 중' : status === 'loading-ocr' ? '인식 모델 준비 중' : status === 'requesting' ? '공유 선택 중' : status === 'error' ? '오류' : '중지됨'}
-                                        </Chip>
+                            <ModalBody className="grid gap-5 px-6 py-5 lg:grid-cols-2">
+                                <div className="space-y-5">
+                                    <div className="rounded-xl border border-warning/30 bg-warning/10 p-4 text-sm">
+                                        <p className="font-semibold text-warning-700 dark:text-warning-300">사용 전 확인해 주세요</p>
+                                        <ul className="mt-2 list-disc space-y-2 pl-5 text-gray-800 dark:text-gray-200">
+                                            <li>Chrome 또는 Edge PC 환경에서 사용하고, 화면 공유 대상으로 로스트아크 게임 창을 선택하세요.</li>
+                                            <li className="font-semibold text-warning-800 dark:text-warning-200">레이드명과 관문 진행도가 표시되는 화면 왼쪽 상단에 파티원 체력 UI를 겹쳐 놓으면 레이드명·관문 진행도·완료 표시를 가려 자동 체크가 제대로 작동하지 않을 수 있습니다. 해당 UI를 이동하거나 접은 뒤 사용해 주세요.</li>
+                                            <li className="font-medium text-warning-800 dark:text-warning-200">레이드명 아래 화살표를 눌러 관문 진행도 UI를 축소하면 초록색 체크 표시를 확인할 수 없어 자동 체크가 작동하지 않습니다. 진행도 UI를 펼친 상태로 유지해 주세요.</li>
+                                            <li>게임 해상도와 UI 배율은 플레이할 때와 동일하게 유지해 주세요. 해상도 변경, 강제 21:9 설정, 컷신·로딩 화면에서는 인식이 늦어지거나 일부 관문이 누락될 수 있습니다.</li>
+                                            <li>브라우저나 게임 창을 최소화하지 말고, 화면 공유 영상이 가려지거나 멈추지 않도록 해 주세요. 브라우저의 백그라운드 절전, 화면 보호기, 다른 창의 전체 화면 덮어쓰기도 인식을 방해할 수 있습니다.</li>
+                                            <li>파티원 체력 UI 외에도 레이드명, 관문 진행도, 완료 문구를 가리는 알림·채팅·오버레이는 위치를 옮기거나 닫아 주세요.</li>
+                                            <li>자동 체크는 화면을 읽어 추정하는 베타 기능이므로 모든 상황에서 정확하지 않습니다. 인식 결과와 체크 상태를 직접 확인하고, 누락되면 수동으로 체크해 주세요.</li>
+                                            <li>화면은 서버에 전송하거나 저장하지 않고 현재 브라우저에서만 분석합니다. 화면 공유를 종료하면 자동 체크도 함께 중지됩니다.</li>
+                                        </ul>
                                     </div>
-                                    <p className="text-sm fadedtext">{statusMessage}</p>
-                                    {status === 'loading-ocr' ? <Progress size="sm" value={ocrProgress} color="secondary" aria-label="OCR 준비 진행률"/> : null}
-                                    <div className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-2 text-sm">
-                                        <span className="fadedtext">현재 레이드</span>
-                                        <span>{currentBoss?.name ?? '감지되지 않음'}</span>
-                                        <span className="fadedtext">최근 완료 문구</span>
-                                        <span>{lastCompletion || '감지되지 않음'}</span>
-                                        <span className="fadedtext">최근 완료 OCR</span>
-                                        <span className="break-all">{completionOcrText || '분석 대기 중'}</span>
-                                        <span className="fadedtext">진행도 완료 관문</span>
-                                        <span>{detectedProgressCount}개 감지</span>
-                                        <span className="fadedtext">화면 비율</span>
-                                        <span>{isForced21By9 ? '강제 21:9 보정' : '기본 화면'}</span>
-                                        <span className="fadedtext">인식 이름 데이터</span>
-                                        <span>{recognitionNameCount}개 등록됨</span>
-                                        <span className="fadedtext">처리 결과</span>
-                                        <span>{lastResult}</span>
-                                        <span className="fadedtext">최근 OCR{lastOcrAt ? ` (${lastOcrAt})` : ''}</span>
-                                        <span className="break-all">{recognizedText || '분석 대기 중'}</span>
+
+                                    <div>
+                                        <p className="mb-2 font-semibold">이용 방법</p>
+                                        <ol className="list-decimal space-y-2 pl-5 text-sm text-gray-900 dark:text-gray-100">
+                                            <li>플레이할 캐릭터를 선택합니다. 현재 게임에서 플레이할 캐릭터와 동일하게 선택해 주세요.</li>
+                                            <li><span className="font-medium">화면 공유 시작</span>을 누른 뒤 브라우저 권한 창에서 로스트아크 게임 창을 선택하고 공유합니다. 게임 창을 선택한 뒤에도 LotsGo 페이지는 열어 둔 상태로 유지해 주세요.</li>
+                                            <li>화면 공유가 시작되면 게임을 플레이합니다. 다른 캐릭터로 변경하려면 해당 캐릭터 카드의 <span className="font-medium">전환 아이콘 (양방향 화살표 모양 아이콘)</span>을 누릅니다. 화면 공유 중에만 전환할 수 있습니다.</li>
+                                            <li>게임 화면에서 레이드명과 관문 진행도 UI를 확인한 뒤, 레이드 완료 문구가 반복 인식되면 해당 관문이 자동 체크됩니다. 감지 상태에서 최근 OCR과 처리 결과를 확인할 수 있습니다.</li>
+                                            <li>레이드나 캐릭터를 바꿀 때는 화면 공유 대상을 유지하고, 인식이 멈추면 화면을 가리는 UI가 없는지 확인한 뒤 다시 공유를 시작합니다.</li>
+                                        </ol>
+                                    </div>
+                                </div>
+
+                                <div className="flex min-h-0 flex-col gap-5 lg:h-full">
+                                    <div className="rounded-xl border border-gray-200/80 p-4 dark:border-white/10">
+                                        <Checkbox
+                                            isSelected={isForced21By9}
+                                            isDisabled={isRunning}
+                                            onValueChange={handleForced21By9Change}>
+                                            <span className="font-medium">강제 21:9 모드 사용</span>
+                                        </Checkbox>
+                                        <p className="mt-1 pl-7 text-xs fadedtext">16:9 모니터에서 강제 21:9 설정으로 위아래 검은 영역이 생기는 경우 선택해 주세요.</p>
+                                    </div>
+
+                                    <div className="flex min-h-72 flex-1 flex-col rounded-xl border border-gray-200/80 p-4 dark:border-white/10">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <p className="font-semibold">플레이할 캐릭터</p>
+                                            <span className="text-xs fadedtext">1명 선택</span>
+                                        </div>
+                                        <p className="mt-1 text-xs fadedtext">화면 공유할 캐릭터를 체크해 주세요.</p>
+                                        <div className="mt-3 min-h-0 flex-1 divide-y divide-gray-200/80 overflow-y-auto overflow-x-hidden rounded-lg border border-gray-200/80 dark:divide-white/10 dark:border-white/10">
+                                            {checklist.map((character) => (
+                                                <Checkbox
+                                                    key={character.nickname}
+                                                    color="primary"
+                                                    classNames={{
+                                                        base: `relative m-0 inline-flex w-full max-w-none items-center justify-start rounded-none border-0 px-3 py-2 transition-colors ${selectedNickname === character.nickname
+                                                            ? "bg-primary-50/70 after:pointer-events-none after:absolute after:inset-0 after:z-10 after:border after:border-primary after:content-[''] dark:bg-primary-500/10"
+                                                            : 'hover:bg-gray-100 dark:hover:bg-white/5'}`,
+                                                        label: 'w-full min-w-0'
+                                                    }}
+                                                    isSelected={selectedNickname === character.nickname}
+                                                    isDisabled={isRunning}
+                                                    onValueChange={(isSelected) => {
+                                                        setSelectedNickname(isSelected ? character.nickname : '');
+                                                    }}>
+                                                    <div className="flex w-full min-w-0 items-center gap-3">
+                                                        <JobEmblemIcon job={character.job} size={32} className="text-foreground"/>
+                                                        <div className="min-w-0 flex-1">
+                                                            <p className="truncate font-medium">{character.nickname}</p>
+                                                            <p className="truncate text-xs fadedtext">{character.job} · Lv.{character.level}</p>
+                                                        </div>
+                                                    </div>
+                                                </Checkbox>
+                                            ))}
+                                        </div>
+                                        <p className="mt-3 flex items-center gap-1.5 text-xs fadedtext">
+                                            <SwitchCharacterIcon size={15} className="shrink-0 text-primary"/>
+                                            화면 공유 중에는 캐릭터 카드의 전환 아이콘을 눌러 쉽게 변경할 수 있습니다.
+                                        </p>
+                                    </div>
+
+                                    <Divider/>
+                                    <div className="space-y-3 rounded-xl border border-gray-200/80 p-4 dark:border-white/10">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <p className="font-semibold">감지 상태</p>
+                                            <Chip size="sm" color={statusColor} variant="flat">
+                                                {status === 'active' ? '작동 중' : status === 'loading-ocr' ? '인식 모델 준비 중' : status === 'requesting' ? '공유 선택 중' : status === 'error' ? '오류' : '중지됨'}
+                                            </Chip>
+                                        </div>
+                                        <p className="text-sm fadedtext">{statusMessage}</p>
+                                        {status === 'loading-ocr' ? <Progress size="sm" value={ocrProgress} color="secondary" aria-label="OCR 준비 진행률"/> : null}
+                                        <div className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-2 text-sm">
+                                            <span className="fadedtext">현재 레이드</span>
+                                            <span className="min-w-0 truncate whitespace-nowrap">{currentBoss?.name ?? '감지되지 않음'}</span>
+                                            <span className="fadedtext">최근 완료 OCR</span>
+                                            <span className="min-w-0 break-words line-clamp-3">{completionOcrText || '분석 대기 중'}</span>
+                                            <span className="fadedtext">진행도 완료 관문</span>
+                                            <span className="min-w-0 truncate whitespace-nowrap">{detectedProgressCount}개 감지</span>
+                                            <span className="fadedtext">화면 비율</span>
+                                            <span className="min-w-0 truncate whitespace-nowrap">{isForced21By9 ? '강제 21:9 보정' : '기본 화면'}</span>
+                                            <span className="fadedtext">처리 결과</span>
+                                            <span className="min-w-0 break-words line-clamp-2">{lastResult}</span>
+                                            <span className="fadedtext">
+                                                최근 OCR
+                                                {lastOcrAt ? <span className="block text-xs">{lastOcrAt}</span> : null}
+                                            </span>
+                                            <span className="min-w-0 break-words line-clamp-3">{recognizedText || '분석 대기 중'}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </ModalBody>
                             <ModalFooter className="border-t border-gray-200/80 px-6 py-4 dark:border-white/10">
-                                <Button variant="light" onPress={onClose}>닫기</Button>
                                 {isRunning ? (
-                                    <Button color="danger" variant="flat" onPress={() => stopCapture()}>화면 공유 중지</Button>
+                                    <Button fullWidth size="lg" color="danger" variant="flat" onPress={() => stopCapture()}>화면 공유 중지</Button>
                                 ) : (
                                     <Button
-                                        color="secondary"
+                                        fullWidth
+                                        size="lg"
+                                        color="primary"
                                         isDisabled={!selectedNickname || isDisabled}
                                         onPress={startCapture}>
                                         화면 공유 시작

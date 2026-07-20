@@ -10,7 +10,8 @@ export type LoginUser = {
     id: string,
     expedition: Array<Character>,
     character: string,
-    apiKey: string | null
+    apiKey: string | null,
+    isSupporter: boolean
 }
 type LoginState = {
     user: LoginUser,
@@ -23,7 +24,8 @@ const initialState: LoginState = {
         id: '',
         expedition: [],
         character: '',
-        apiKey: null
+        apiKey: null,
+        isSupporter: false
     },
     isCheckedToken: false,
     isLogined: false
@@ -41,12 +43,14 @@ const loginSlice = createSlice({
             state.user.expedition = action.payload.expedition;
             state.user.character = action.payload.character;
             state.user.apiKey = action.payload.apiKey ? action.payload.apiKey : null;
+            state.user.isSupporter = action.payload.isSupporter === true;
             state.isLogined = true;
         },
         logout(state) {
             state.user.id = '';
             state.user.expedition = [];
             state.user.character = '';
+            state.user.isSupporter = false;
             state.isLogined = false;
         },
         changeChracter(state, action: PayloadAction<string>) {

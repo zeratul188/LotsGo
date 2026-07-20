@@ -130,6 +130,83 @@
     font-size: 7px;
 }
 
+.supporter-badge-emblem {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    align-items: center;
+    justify-content: center;
+    color: #b45309;
+    cursor: help;
+}
+
+.supporter-badge-emblem::before {
+    position: absolute;
+    z-index: -1;
+    inset: 7px;
+    content: '';
+    border-radius: 9999px;
+    background:
+        radial-gradient(circle, rgba(253, 224, 71, 0.48) 0%, rgba(251, 146, 60, 0.24) 48%, transparent 72%);
+    filter: blur(5px);
+    animation: supporterBadgeAura 3.2s ease-in-out infinite;
+}
+
+.supporter-badge-emblem::after {
+    position: absolute;
+    z-index: 2;
+    top: -2px;
+    right: -1px;
+    content: '✦';
+    color: #f59e0b;
+    font-size: 13px;
+    line-height: 1;
+    text-shadow:
+        0 0 5px rgba(255, 255, 255, 0.95),
+        0 0 9px rgba(245, 158, 11, 0.82);
+    pointer-events: none;
+    animation: supporterBadgeSparkle 2.6s ease-in-out infinite;
+}
+
+.supporter-badge-icon {
+    width: 48px;
+    height: 48px;
+    filter:
+        drop-shadow(0 1px 0 rgba(255, 255, 255, 0.72))
+        drop-shadow(0 0 5px rgba(217, 119, 6, 0.34));
+    transition: transform 220ms ease, filter 220ms ease;
+    animation: supporterBadgeGlow 3.2s ease-in-out infinite;
+}
+
+.supporter-badge-emblem:hover .supporter-badge-icon {
+    transform: scale(1.08) rotate(-2deg);
+    filter:
+        drop-shadow(0 1px 0 rgba(255, 255, 255, 0.82))
+        drop-shadow(0 0 9px rgba(245, 158, 11, 0.58));
+}
+
+.supporter-badge-emblem-mobile {
+    color: #ddb04a;
+}
+
+.dark .supporter-badge-emblem {
+    color: #d6a23e;
+}
+
+.dark .supporter-badge-icon,
+.supporter-badge-emblem-mobile .supporter-badge-icon {
+    animation-name: supporterBadgeGlowDark;
+}
+
+.dark .supporter-badge-emblem::before,
+.supporter-badge-emblem-mobile::before {
+    background:
+        radial-gradient(circle, rgba(234, 179, 8, 0.3) 0%, rgba(180, 83, 9, 0.18) 48%, transparent 72%);
+}
+
 @keyframes supporterNameShine {
     0%, 58% {
         left: -55%;
@@ -150,13 +227,64 @@
     }
 }
 
+@keyframes supporterBadgeAura {
+    0%, 100% {
+        opacity: 0.55;
+        transform: scale(0.88);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.15);
+    }
+}
+
+@keyframes supporterBadgeGlow {
+    0%, 100% {
+        filter:
+            drop-shadow(0 1px 0 rgba(255, 255, 255, 0.72))
+            drop-shadow(0 0 4px rgba(217, 119, 6, 0.3));
+    }
+    50% {
+        filter:
+            drop-shadow(0 1px 0 rgba(255, 255, 255, 0.82))
+            drop-shadow(0 0 9px rgba(245, 158, 11, 0.46));
+    }
+}
+
+@keyframes supporterBadgeGlowDark {
+    0%, 100% {
+        filter:
+            drop-shadow(0 1px 0 rgba(0, 0, 0, 0.78))
+            drop-shadow(0 0 3px rgba(217, 119, 6, 0.24));
+    }
+    50% {
+        filter:
+            drop-shadow(0 1px 0 rgba(0, 0, 0, 0.86))
+            drop-shadow(0 0 6px rgba(245, 158, 11, 0.36));
+    }
+}
+
+@keyframes supporterBadgeSparkle {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(0.72) rotate(-10deg);
+    }
+    45% {
+        opacity: 1;
+        transform: scale(1.12) rotate(8deg);
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .tail-box,
     .tail-box-mobile,
     .empty-box::before,
     .empty-box-mobile::before,
     .empty-box::after,
-    .empty-box-mobile::after {
+    .empty-box-mobile::after,
+    .supporter-badge-emblem::before,
+    .supporter-badge-emblem::after,
+    .supporter-badge-icon {
         animation: none;
     }
 }

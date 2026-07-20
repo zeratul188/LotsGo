@@ -115,7 +115,8 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
                 id: data.userData.id,
                 expedition: data.userData.expeditions,
                 character: data.userData ? data.userData.nickname : '',
-                apiKey: data.userData ? data.userData.apiKey ? data.userData.apiKey : null : null
+                apiKey: data.userData ? data.userData.apiKey ? data.userData.apiKey : null : null,
+                isSupporter: data.userData?.isSupporter === true
             };
             sessionStorage.setItem('token', data.accessToken);
             sessionStorage.setItem('user', JSON.stringify(loginUser));
