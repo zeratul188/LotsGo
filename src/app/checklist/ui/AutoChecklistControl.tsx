@@ -374,6 +374,7 @@ export default function AutoChecklistControl({
         if (target === 'raid') {
             setRecognizedText(compactText || '인식된 텍스트 없음');
             setLastOcrAt(new Date().toLocaleTimeString('ko-KR', {
+                hour12: false,
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit'
@@ -1089,21 +1090,20 @@ export default function AutoChecklistControl({
                                         {status === 'loading-ocr' ? <Progress size="sm" value={ocrProgress} color="secondary" aria-label="OCR 준비 진행률"/> : null}
                                         <div className="grid grid-cols-[110px_1fr] gap-x-3 gap-y-2 text-sm">
                                             <span className="fadedtext">현재 레이드</span>
-                                            <span>{currentBoss?.name ?? '감지되지 않음'}</span>
-                                            <span className="fadedtext">최근 완료 문구</span>
-                                            <span>{lastCompletion || '감지되지 않음'}</span>
+                                            <span className="min-w-0 truncate whitespace-nowrap">{currentBoss?.name ?? '감지되지 않음'}</span>
                                             <span className="fadedtext">최근 완료 OCR</span>
-                                            <span className="break-all">{completionOcrText || '분석 대기 중'}</span>
+                                            <span className="min-w-0 break-words line-clamp-3">{completionOcrText || '분석 대기 중'}</span>
                                             <span className="fadedtext">진행도 완료 관문</span>
-                                            <span>{detectedProgressCount}개 감지</span>
+                                            <span className="min-w-0 truncate whitespace-nowrap">{detectedProgressCount}개 감지</span>
                                             <span className="fadedtext">화면 비율</span>
-                                            <span>{isForced21By9 ? '강제 21:9 보정' : '기본 화면'}</span>
-                                            <span className="fadedtext">인식 이름 데이터</span>
-                                            <span>{recognitionNameCount}개 등록됨</span>
+                                            <span className="min-w-0 truncate whitespace-nowrap">{isForced21By9 ? '강제 21:9 보정' : '기본 화면'}</span>
                                             <span className="fadedtext">처리 결과</span>
-                                            <span>{lastResult}</span>
-                                            <span className="fadedtext">최근 OCR{lastOcrAt ? ` (${lastOcrAt})` : ''}</span>
-                                            <span className="break-all">{recognizedText || '분석 대기 중'}</span>
+                                            <span className="min-w-0 break-words line-clamp-2">{lastResult}</span>
+                                            <span className="fadedtext">
+                                                최근 OCR
+                                                {lastOcrAt ? <span className="block text-xs">{lastOcrAt}</span> : null}
+                                            </span>
+                                            <span className="min-w-0 break-words line-clamp-3">{recognizedText || '분석 대기 중'}</span>
                                         </div>
                                     </div>
                                 </div>
