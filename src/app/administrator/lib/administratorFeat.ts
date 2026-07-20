@@ -91,6 +91,7 @@ export async function isAdministratorByToken(dispatch: AppDispatch, router: AppR
                 expedition: refreshData.userData.expeditions,
                 character: refreshData.userData.nickname ?? "",
                 apiKey: refreshData.userData.apiKey ?? null,
+                isSupporter: refreshData.userData.isSupporter === true,
                 };
                 sessionStorage.setItem("user", JSON.stringify(loginUser));
             }

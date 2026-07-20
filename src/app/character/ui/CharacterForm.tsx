@@ -323,7 +323,11 @@ export function ProfileComponent({ info, isBadge }: NewProfileComponentProps) {
                                     <span className="tail-box"></span>
                                 </span>
                             </div>
-                            <Tooltip showArrow content="후원자 뱃지"><div className="w-12 h-12"><VegaIcon/></div></Tooltip>
+                            <Tooltip showArrow content="후원자 뱃지">
+                                <div className="supporter-badge-emblem" aria-label="후원자 뱃지">
+                                    <VegaIcon className="supporter-badge-icon"/>
+                                </div>
+                            </Tooltip>
                         </div>
                     ) : <p className="text-2xl font-bold">{info.nickname}</p>}
                     <div className="mt-2 w-fit flex items-center rounded-full bg-white dark:bg-[#18181b] shadow-md">
@@ -379,7 +383,11 @@ export function ProfileComponent({ info, isBadge }: NewProfileComponentProps) {
                                     <span className="tail-box-mobile"></span>
                                 </span>
                             </div>
-                            <Tooltip showArrow content="후원자 뱃지"><div className="w-12 h-12 text-white"><VegaIcon/></div></Tooltip>
+                            <Tooltip showArrow content="후원자 뱃지">
+                                <div className="supporter-badge-emblem supporter-badge-emblem-mobile" aria-label="후원자 뱃지">
+                                    <VegaIcon className="supporter-badge-icon"/>
+                                </div>
+                            </Tooltip>
                         </div>
                     ) : <p className="text-xl font-bold text-white">{info.nickname}</p>}
                     <div className="grow w-full flex items-end mt-5">

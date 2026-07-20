@@ -20,8 +20,10 @@ import RaidIcon from "@/Icons/RaidIcon";
 import { useEffect, useState } from "react";
 import { isAdministratorByToken } from "../administrator/lib/administratorFeat";
 import JobAvatar from "@/Icons/JobAvatar";
+import VegaIcon from "@/Icons/VegaIcon";
 import { usePathname, useRouter } from "next/navigation";
 import clsx from "clsx";
+import "./profileEffects.css";
 
 // 헤더 메뉴
 const menuItems = [
@@ -264,6 +266,7 @@ function ProfileButton() {
     const isLogined = useSelector((state: RootState) => state.login.isLogined);
     const id = useSelector((state: RootState) => state.login.user.id);
     const nickname = useSelector((state: RootState) => state.login.user.character);
+    const isSupporter = useSelector((state: RootState) => state.login.user.isSupporter);
     const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
     const mainCharacter: Character | undefined = expedition.find(character => character.nickname === nickname);
     const [isAdministrator, setAdministrator] = useState(false);
@@ -297,21 +300,36 @@ function ProfileButton() {
                         <Button
                             radius="md"
                             variant="flat"
-                            className="h-10 border border-default-200/80 bg-default-50/80 px-3 text-sm font-semibold shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary-50/70 hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-primary-500/10">
+                            className={clsx(
+                                "h-10 border border-default-200/80 bg-default-50/80 px-3 text-sm font-semibold shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary-50/70 hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-primary-500/10",
+                                isSupporter && "supporter-profile"
+                            )}>
+                            {isSupporter ? <VegaIcon className="h-4 w-4 shrink-0 text-amber-500 dark:text-amber-300"/> : null}
                             {id}
                         </Button>
                     ) : (
                         <div
-                            className="group flex min-w-0 max-w-[230px] cursor-pointer items-center gap-2 rounded-xl border border-default-200/80 bg-default-50/80 px-2 py-1.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary-50/70 hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-primary-500/10"
+                            className={clsx(
+                                "group flex min-w-0 max-w-[230px] cursor-pointer items-center gap-2 rounded-xl border border-default-200/80 bg-default-50/80 px-2 py-1.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary-50/70 hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] dark:hover:bg-primary-500/10",
+                                isSupporter && "supporter-profile"
+                            )}
                             role="button"
                             tabIndex={0}
-                            aria-label="프로필 메뉴 열기">
+                            aria-label={isSupporter ? "후원자 프로필 메뉴 열기" : "프로필 메뉴 열기"}>
                             <div className="relative shrink-0">
                                 <JobAvatar size="md" job={mainCharacter.job}/>
                                 <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-success dark:border-[#171717]"/>
+                                {isSupporter ? (
+                                    <span className="supporter-profile-badge" title="후원자">
+                                        <VegaIcon className="h-3.5 w-3.5"/>
+                                    </span>
+                                ) : null}
                             </div>
                             <div className="min-w-0 text-left">
-                                <p className="truncate text-xs font-semibold leading-tight text-foreground">{id}</p>
+                                <p className={clsx(
+                                    "truncate text-xs font-semibold leading-tight text-foreground",
+                                    isSupporter && "supporter-profile-name"
+                                )}>{id}</p>
                                 <p className="mt-1 truncate text-[10pt] leading-tight fadedtext">{mainCharacter.nickname} · {mainCharacter.job}</p>
                             </div>
                             <svg aria-hidden="true" className="ml-0.5 h-4 w-4 shrink-0 text-default-400 transition-transform duration-200 group-hover:translate-y-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -326,8 +344,19 @@ function ProfileButton() {
                     onAction={onActionProfile}
                     className="min-w-[240px] p-2"
                     topContent={
-                        <div className="mx-0 mb-1 rounded-xl border border-primary-100/80 bg-primary-50/60 p-3 dark:border-primary-900/40 dark:bg-primary-500/[0.08]">
-                            <p className="text-xs font-medium text-primary">내 계정</p>
+                        <div className={clsx(
+                            "mx-0 mb-1 rounded-xl border border-primary-100/80 bg-primary-50/60 p-3 dark:border-primary-900/40 dark:bg-primary-500/[0.08]",
+                            isSupporter && "border-amber-300/70 bg-amber-50/70 dark:border-amber-500/30 dark:bg-amber-500/[0.08]"
+                        )}>
+                            <div className="flex items-center justify-between gap-3">
+                                <p className="text-xs font-medium text-primary">내 계정</p>
+                                {isSupporter ? (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">
+                                        <VegaIcon className="h-3 w-3"/>
+                                        후원자
+                                    </span>
+                                ) : null}
+                            </div>
                             <p className="mt-1 truncate text-sm font-semibold">{id}</p>
                             {mainCharacter ? (
                                 <p className="mt-1 truncate text-xs fadedtext">{mainCharacter.nickname} · {mainCharacter.job}</p>

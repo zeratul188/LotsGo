@@ -12,7 +12,8 @@ export type User = {
     email: string,
     expeditions: Array<Character>,
     nickname: string,
-    apiKey: string | null
+    apiKey: string | null,
+    isSupporter: boolean
 }
 
 export async function POST(req: NextRequest) {
@@ -31,14 +32,16 @@ export async function POST(req: NextRequest) {
             email: targetDoc.data().email,
             expeditions: targetDoc.data().expeditions,
             nickname: targetDoc.data().character,
-            apiKey: targetDoc.data().apiKey ? targetDoc.data().apiKey : null
+            apiKey: targetDoc.data().apiKey ? targetDoc.data().apiKey : null,
+            isSupporter: targetDoc.data().isSupporter === true
         } : {
             id: "",
             password: "",
             email: '',
             expeditions: [],
             nickname: "",
-            apiKey: null
+            apiKey: null,
+            isSupporter: false
         }
 
         if (!(await isMatchValue(password, userData.password))) {
