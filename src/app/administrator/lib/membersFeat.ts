@@ -140,6 +140,67 @@ export async function handleRemoveMember(
     setLoadingButton(false);
 }
 
+type ResetPasswordResponse = {
+    temporaryPassword?: string,
+    error?: string
+}
+
+// 특정 회원의 Firebase Authentication 및 회원 데이터 비밀번호 재생성
+export async function handleResetMemberPassword(
+    id: string,
+    setResettingMemberId: SetStateFn<string | null>
+): Promise<string | null> {
+    setResettingMemberId(id);
+    try {
+        const storedToken = sessionStorage.getItem('token');
+        if (!storedToken) throw new Error('로그인 토큰이 없습니다. 다시 로그인해주세요.');
+        let token = storedToken;
+
+        const request = (accessToken: string) => fetch('/api/administrator/resetpassword', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`
+            },
+            credentials: 'include',
+            body: JSON.stringify({ id })
+        });
+
+        let response = await request(token);
+        if (response.status === 401) {
+            const refreshResponse = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'include' });
+            const refreshData = await refreshResponse.json().catch(() => null);
+            if (refreshResponse.ok && typeof refreshData?.accessToken === 'string') {
+                token = refreshData.accessToken;
+                sessionStorage.setItem('token', token);
+                response = await request(token);
+            }
+        }
+
+        const data: ResetPasswordResponse = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error ?? '임시 비밀번호를 생성하지 못했습니다.');
+        if (typeof data.temporaryPassword !== 'string' || data.temporaryPassword.length !== 12) {
+            throw new Error('생성된 임시 비밀번호를 확인할 수 없습니다.');
+        }
+
+        addToast({
+            title: "재생성 완료",
+            description: `${id} 회원의 임시 비밀번호를 생성했습니다.`,
+            color: "success"
+        });
+        return data.temporaryPassword;
+    } catch (error) {
+        addToast({
+            title: "재생성 오류",
+            description: error instanceof Error ? error.message : '임시 비밀번호를 생성하지 못했습니다.',
+            color: "danger"
+        });
+        return null;
+    } finally {
+        setResettingMemberId(null);
+    }
+}
+
 // 선택한 userId를 통해 로그인 기록 불러오기
 export async function loadHistorys(
     userId: string,

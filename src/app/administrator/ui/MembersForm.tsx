@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 import { History, Member } from "../model/types";
 import { LoadingComponent } from "../../UtilsCompnents";
-import { getActivityRange, handleClickIp, handleMoreData, handleRemoveMember, handleRevorkHistory, handleSearchData, isLocked, loadData, loadHistorys } from "../lib/membersFeat";
-import { Button, Chip, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Pagination, Popover, PopoverContent, PopoverTrigger, Radio, RadioGroup, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react";
+import { getActivityRange, handleClickIp, handleMoreData, handleRemoveMember, handleResetMemberPassword, handleRevorkHistory, handleSearchData, isLocked, loadData, loadHistorys } from "../lib/membersFeat";
+import { addToast, Button, Chip, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Pagination, Popover, PopoverContent, PopoverTrigger, Radio, RadioGroup, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from "@heroui/react";
 import { formatDate, SetStateFn, useMobileQuery } from "@/utiils/utils";
 
 const memberFieldClassNames = {
@@ -35,6 +35,8 @@ export default function MembersComponent() {
     const [selectedFilter, setSelectedFilter] = useState('id');
     const [hasMore, setHasMore] = useState(false);
     const [isLoadingMore, setLoadingMore] = useState(false);
+    const [resettingMemberId, setResettingMemberId] = useState<string | null>(null);
+    const [temporaryPassword, setTemporaryPassword] = useState<{ id: string, password: string } | null>(null);
 
     const onClickMore = handleMoreData(members, search, selectedFilter, setLoadingMore, setHasMore, setMembers);
 
@@ -108,7 +110,7 @@ export default function MembersComponent() {
             </div>
             <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide">
                 {isLoading ? <LoadingComponent heightStyle={'h-[calc(100vh-105px)]'}/> : (
-                    <div className="w-[820px] sm:w-full">
+                    <div className="w-[980px] sm:w-full">
                         <Table
                             fullWidth 
                             isHeaderSticky
@@ -210,19 +212,37 @@ export default function MembersComponent() {
                                             </Popover>
                                         </TableCell>
                                         <TableCell>
-                                            <Button
-                                                size="sm"
-                                                radius="lg"
-                                                color="danger"
-                                                variant="flat"
-                                                isLoading={isLoadingButton}
-                                                onPress={async () => {
-                                                    if (confirm('데이터를 삭제하면 복구할 수 없습니다. 마지막 로그인으로부터 1년 이상 지난 회원이거나 삭제 요청 또는 삭제 대상인 경우에만 진행해주세요.\n데이터를 정말 삭제하시겠습니까?')) {
-                                                        await handleRemoveMember(member.uid, member.id, members, setMembers, setLoadingButton);
-                                                    }
-                                                }}>
-                                                삭제
-                                            </Button>
+                                            <div className="flex items-center gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    radius="lg"
+                                                    color="warning"
+                                                    variant="flat"
+                                                    isLoading={resettingMemberId === member.id}
+                                                    isDisabled={Boolean(resettingMemberId) || isLoadingButton}
+                                                    onPress={async () => {
+                                                        if (confirm(`${member.id} 회원의 기존 비밀번호를 사용할 수 없게 됩니다.\n임시 비밀번호를 재생성하시겠습니까?`)) {
+                                                            const password = await handleResetMemberPassword(member.id, setResettingMemberId);
+                                                            if (password) setTemporaryPassword({ id: member.id, password });
+                                                        }
+                                                    }}>
+                                                    비밀번호 재생성
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    radius="lg"
+                                                    color="danger"
+                                                    variant="flat"
+                                                    isLoading={isLoadingButton}
+                                                    isDisabled={Boolean(resettingMemberId)}
+                                                    onPress={async () => {
+                                                        if (confirm('데이터를 삭제하면 복구할 수 없습니다. 마지막 로그인으로부터 1년 이상 지난 회원이거나 삭제 요청 또는 삭제 대상인 경우에만 진행해주세요.\n데이터를 정말 삭제하시겠습니까?')) {
+                                                            await handleRemoveMember(member.uid, member.id, members, setMembers, setLoadingButton);
+                                                        }
+                                                    }}>
+                                                    삭제
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 )}
@@ -237,6 +257,48 @@ export default function MembersComponent() {
                 setSelectedUserId={setSelectedUserId}
                 isOpenSessionModal={isOpenSessionModal}
                 setOpenSessionModal={setOpenSessionModal}/>
+            <Modal
+                radius="lg"
+                isDismissable={false}
+                isOpen={temporaryPassword !== null}
+                onClose={() => setTemporaryPassword(null)}
+                classNames={historyModalClassNames}>
+                <ModalContent>
+                    {(onClose) => (
+                        <>
+                            <ModalHeader className="flex flex-col items-start gap-1">
+                                <h2 className="text-xl font-bold">임시 비밀번호 생성 완료</h2>
+                                <p className="text-sm font-normal text-default-500">{temporaryPassword?.id} 회원에게 안전한 방법으로 전달해주세요.</p>
+                            </ModalHeader>
+                            <ModalBody>
+                                <div className="rounded-xl border border-warning/30 bg-warning/10 p-4">
+                                    <p className="text-xs font-medium text-default-500">12자리 임시 비밀번호</p>
+                                    <p className="mt-2 select-all break-all font-mono text-2xl font-bold tracking-wider">{temporaryPassword?.password}</p>
+                                </div>
+                                <p className="text-sm text-default-500">이 창을 닫으면 임시 비밀번호를 다시 확인할 수 없습니다.</p>
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button
+                                    radius="lg"
+                                    color="primary"
+                                    variant="flat"
+                                    onPress={async () => {
+                                        if (!temporaryPassword) return;
+                                        try {
+                                            await navigator.clipboard.writeText(temporaryPassword.password);
+                                            addToast({ title: '복사 완료', description: '임시 비밀번호를 복사했습니다.', color: 'success' });
+                                        } catch {
+                                            addToast({ title: '복사 오류', description: '임시 비밀번호를 직접 선택해 복사해주세요.', color: 'danger' });
+                                        }
+                                    }}>
+                                    복사
+                                </Button>
+                                <Button radius="lg" color="primary" onPress={onClose}>확인</Button>
+                            </ModalFooter>
+                        </>
+                    )}
+                </ModalContent>
+            </Modal>
         </div>
     )
 }
