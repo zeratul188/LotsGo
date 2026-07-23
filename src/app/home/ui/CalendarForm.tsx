@@ -60,8 +60,10 @@ function EventComponent({ events }: EventComponentProps) {
             <ScrollShadow className="h-[600px] w-full p-4 sm:h-[500px]">
                 {events.length > 0 ? (
                     <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-                        {events.map((event, index) => (
-                            <Card 
+                        {events.map((event, index) => {
+                            const isEnded = !dayjs().isBefore(dayjs(event.endDate));
+
+                            return <Card
                                 key={index} 
                                 isPressable
                                 as={Link}
@@ -77,18 +79,20 @@ function EventComponent({ events }: EventComponentProps) {
                                     <Chip
                                         size="sm"
                                         radius="sm"
-                                        color="primary"
+                                        color={isEnded ? "danger" : "primary"}
                                         variant="flat"
                                         className="absolute left-3 top-3 bg-white/90 font-medium dark:bg-black/70">
-                                        진행 중
+                                        {isEnded ? "종료" : (
+                                            "진행 중"
+                                        )}
                                     </Chip>
                                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/55 to-transparent px-3 pb-3 pt-10 text-left text-white">
                                         <p className="truncate font-medium drop-shadow-sm">{event.title}</p>
                                         <p className="mt-0.5 truncate text-xs text-white/80">{getStringByDate(dayjs(event.startDate))} ~ {getStringByDate(dayjs(event.endDate))}</p>
                                     </div>
                                 </CardBody>
-                            </Card>
-                        ))}
+                            </Card>;
+                        })}
                     </div>
                 ) : (
                     <div className="flex h-[240px] w-full flex-col items-center justify-center">
