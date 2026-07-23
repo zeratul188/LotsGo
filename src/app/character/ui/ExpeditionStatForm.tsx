@@ -710,7 +710,7 @@ function ArkGridCard({ expeditionCharacters }: { expeditionCharacters: Expeditio
             ).length;
         }, 0)
     }));
-    const gemGradeSummary = coreGradeOrder.map((grade) => ({
+    const gemGradeSummary = coreGradeOrder.filter((grade) => grade !== '영웅').map((grade) => ({
         grade,
         count: expeditionCharacters.reduce((total, character) => {
             return total + character.arkgrid.cores.reduce((coreTotal, core) => {
