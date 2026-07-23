@@ -31,7 +31,7 @@ export default function FixedWeeklyContentStatus({ status }: FixedWeeklyContentS
                     )}/>
                     <div className="min-w-0">
                         <p className="truncate font-semibold">{status.title}</p>
-                        <p className="mt-0.5 text-xs fadedtext">Lv. {status.minimumLevel} 이상</p>
+                        <p className="mt-0.5 text-xs fadedtext">아직 완료하지 않은 캐릭터</p>
                     </div>
                 </div>
                 <Chip size="sm" radius="sm" variant="flat" color={color} className="shrink-0">
