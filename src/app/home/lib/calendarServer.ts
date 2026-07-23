@@ -242,7 +242,7 @@ export async function loadEvents(apikey: string | undefined): Promise<LostarkEve
     const cached = await redis.get('events');
     if (cached) {
         const data: LostarkEvent[] = JSON.parse(cached);
-        return data;
+        return data.filter(isActiveEvent);
     }
 
     let eventLostarkRes = null;
@@ -267,11 +267,16 @@ export async function loadEvents(apikey: string | undefined): Promise<LostarkEve
             events.push(newEvent);
         }
 
+        const activeEvents = events.filter(isActiveEvent);
         const TTL_TIME = 24 * 60 * 60; // 24시간 유효시간
-        await redis.set('events', JSON.stringify(events), "EX", TTL_TIME);
-        return events;
+        await redis.set('events', JSON.stringify(activeEvents), "EX", TTL_TIME);
+        return activeEvents;
     }
     return [];
+}
+
+function isActiveEvent(event: LostarkEvent): boolean {
+    return dayjs(event.endDate).isAfter(dayjs());
 }
 
 // 로스트아크 API로부터 공지사항 데이터를 가져오는 함수

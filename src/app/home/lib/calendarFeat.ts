@@ -150,6 +150,18 @@ export function filterIslandData(week: Dayjs) {
     return (data: IslandData) => data.dates.some(d => dayjs(d).isSame(week, 'day'));
 }
 
+// 토·일 모험섬의 오전/오후 시간대 반환
+export function getIslandTimePeriod(week: Dayjs, islandData: IslandData): '오전' | '오후' | null {
+    if (week.day() !== 0 && week.day() !== 6) return null;
+
+    const islandDate = islandData.dates
+        .map((date) => dayjs(date).tz('Asia/Seoul'))
+        .find((date) => date.isSame(week, 'day'));
+    if (!islandDate) return null;
+
+    return islandDate.hour() < 12 ? '오전' : '오후';
+}
+
 // 해당 날짜의 모험섬이 골드섬인지 확인
 export function isGoldIsland(targetDate: Dayjs, islandDaata: IslandData): boolean {
     return islandDaata.dates.some(d => {

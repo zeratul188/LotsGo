@@ -108,6 +108,49 @@ export async function POST(req: NextRequest) {
                 await updateDoc(docRef, { checklist: updatedStoredChecklist });
                 return NextResponse.json({ message: 'Halls hourglass checklist saved.' }, { status: 200 });
             }
+            case 'check-paradise': {
+                const nickname = typeof body.nickname === 'string' ? body.nickname : '';
+                const isCheck = body.isCheck === true;
+                const storedChecklist = (targetDoc.data().checklist ?? []) as CheckCharacter[];
+                const characterIndex = findIndexByNickname(storedChecklist, nickname);
+
+                if (!nickname || characterIndex === -1) {
+                    return NextResponse.json({ error: 'Character not found.' }, { status: 404 });
+                }
+                if (Number(storedChecklist[characterIndex].level) < 1640) {
+                    return NextResponse.json({ error: 'Character level is too low.' }, { status: 400 });
+                }
+
+                const updatedStoredChecklist = storedChecklist.map((character, index) => index === characterIndex ? {
+                    ...character,
+                    paradiseCheck: isCheck
+                } : character);
+                await updateDoc(docRef, { checklist: updatedStoredChecklist });
+                return NextResponse.json({ message: 'Paradise checklist saved.' }, { status: 200 });
+            }
+            case 'update-fixed-content-visibility': {
+                const nickname = typeof body.nickname === 'string' ? body.nickname : '';
+                const content = body.content;
+                const isVisible = body.isVisible;
+
+                if (!nickname || (content !== 'hallsHourglass' && content !== 'paradise') || typeof isVisible !== 'boolean') {
+                    return NextResponse.json({ error: 'Invalid fixed content visibility request.' }, { status: 400 });
+                }
+
+                const storedChecklist = (targetDoc.data().checklist ?? []) as CheckCharacter[];
+                const characterIndex = findIndexByNickname(storedChecklist, nickname);
+                if (characterIndex === -1) {
+                    return NextResponse.json({ error: 'Character not found.' }, { status: 404 });
+                }
+
+                const visibilityField = content === 'hallsHourglass' ? 'hallsHourglassVisible' : 'paradiseVisible';
+                const updatedStoredChecklist = storedChecklist.map((character, index) => index === characterIndex ? {
+                    ...character,
+                    [visibilityField]: isVisible
+                } : character);
+                await updateDoc(docRef, { checklist: updatedStoredChecklist });
+                return NextResponse.json({ message: 'Fixed content visibility saved.' }, { status: 200 });
+            }
             case 'init':
                 await updateDoc(docRef, {
                     checklist: checklist
@@ -184,6 +227,62 @@ export async function POST(req: NextRequest) {
                     checklist: updatedChecklist
                 });
                 return NextResponse.json({ message: '데이터 삭제 또는 추가가 정상적으로 처리도었습니다.' }, { status: 200 });
+            case 'reorder-content': {
+                const nickname = typeof body.nickname === 'string' ? body.nickname : '';
+                const contentType = body.contentType;
+                const orderedItems = body.orderedItems;
+
+                if (!nickname || !['checklist', 'weeklist', 'daylist'].includes(contentType) || !Array.isArray(orderedItems)) {
+                    return NextResponse.json({ error: 'Invalid content reorder request.' }, { status: 400 });
+                }
+
+                const storedChecklist = (targetDoc.data().checklist ?? []) as CheckCharacter[];
+                const targetIndex = findIndexByNickname(storedChecklist, nickname);
+                if (targetIndex === -1) {
+                    return NextResponse.json({ error: 'Character not found.' }, { status: 404 });
+                }
+
+                const storedUpdatedChecklist = [...storedChecklist];
+
+                const targetCharacter = storedChecklist[targetIndex];
+                const currentItems = contentType === 'checklist'
+                    ? (targetCharacter.checklist ?? [])
+                    : contentType === 'weeklist'
+                        ? (targetCharacter.weeklist ?? [])
+                        : (targetCharacter.daylist ?? []);
+
+                if (currentItems.length !== orderedItems.length) {
+                    return NextResponse.json({ error: 'Content list changed. Please reload and try again.' }, { status: 409 });
+                }
+
+                const currentCounts = countContentItems(currentItems, contentType);
+                const orderedCounts = countContentItems(orderedItems, contentType);
+                if (currentCounts.size !== orderedCounts.size || Array.from(currentCounts).some(([key, count]) => orderedCounts.get(key) !== count)) {
+                    return NextResponse.json({ error: 'Content list changed. Please reload and try again.' }, { status: 409 });
+                }
+
+                const storedItemsByKey = new Map<string, unknown[]>();
+                for (const item of currentItems) {
+                    const key = getContentItemKey(item, contentType);
+                    const itemsForKey = storedItemsByKey.get(key) ?? [];
+                    itemsForKey.push(item);
+                    storedItemsByKey.set(key, itemsForKey);
+                }
+                const reorderedStoredItems = orderedItems.map((item) => {
+                    const key = getContentItemKey(item, contentType);
+                    return storedItemsByKey.get(key)?.shift();
+                }).filter((item) => item !== undefined);
+
+                const nextCharacter = contentType === 'checklist'
+                    ? { ...targetCharacter, checklist: reorderedStoredItems as CheckCharacter['checklist'] }
+                    : contentType === 'weeklist'
+                        ? { ...targetCharacter, weeklist: reorderedStoredItems as CheckCharacter['weeklist'] }
+                        : { ...targetCharacter, daylist: reorderedStoredItems as CheckCharacter['daylist'] };
+                storedUpdatedChecklist[targetIndex] = nextCharacter;
+
+                await updateDoc(docRef, { checklist: storedUpdatedChecklist });
+                return NextResponse.json({ message: 'Content order saved.' }, { status: 200 });
+            }
             case 'edit-cube':
                 characterIndex = body.characterIndex;
                 const cubelist = body.cubelist;
@@ -250,4 +349,29 @@ function findIndexByNickname(
     nickname: string
 ): number {
     return characters.findIndex((item) => item.nickname === nickname);
+}
+
+function countContentItems(items: unknown[], contentType: 'checklist' | 'weeklist' | 'daylist'): Map<string, number> {
+    const counts = new Map<string, number>();
+    for (const item of items) {
+        const key = getContentItemKey(item, contentType);
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return counts;
+}
+
+function getContentItemKey(item: unknown, contentType: 'checklist' | 'weeklist' | 'daylist'): string {
+    if (!item || typeof item !== 'object') return JSON.stringify(item);
+
+    const value = item as Record<string, unknown>;
+    if (contentType !== 'checklist') return String(value.name ?? '');
+
+    const stages = Array.isArray(value.items)
+        ? value.items.map((stage) => {
+            if (!stage || typeof stage !== 'object') return String(stage);
+            const stageValue = stage as Record<string, unknown>;
+            return `${stageValue.difficulty ?? ''}:${stageValue.stage ?? ''}`;
+        }).join('|')
+        : '';
+    return `${value.name ?? ''}|${stages}`;
 }
