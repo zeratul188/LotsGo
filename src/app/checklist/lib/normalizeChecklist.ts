@@ -24,6 +24,9 @@ export function normalizeChecklist(value: unknown): CheckCharacter[] {
                 ? Math.max(0, Math.trunc(item.paradisePower))
                 : 0,
             hallsHourglassCheck: item.hallsHourglassCheck === true,
+            paradiseCheck: item.paradiseCheck === true,
+            hallsHourglassVisible: item.hallsHourglassVisible !== false,
+            paradiseVisible: item.paradiseVisible !== false,
             level: item.level ?? 0,
             job: item.job ?? '',
             server: item.server ?? '',

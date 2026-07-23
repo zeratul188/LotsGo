@@ -1,5 +1,5 @@
 import { AppDispatch } from "../../store/store";
-import type { CheckCharacter, Checklist, ChecklistItem, CubeList, Day, OtherList } from "../../store/checklistSlice";
+import type { CheckCharacter, Checklist, ChecklistItem, CubeList, Day, FixedContentType, OtherList } from "../../store/checklistSlice";
 import { 
     calculateOtherGold,
     checkDayList, 
@@ -18,7 +18,9 @@ import {
     updateAccount,
     updateMemo,
     updateParadisePower,
-    updateHallsHourglassCheck
+    updateParadiseCheck,
+    updateHallsHourglassCheck,
+    updateFixedContentVisibility
 } from "../../store/checklistSlice";
 import { SetStateFn } from "@/utiils/utils";
 import { addToast, Selection } from "@heroui/react";
@@ -206,6 +208,9 @@ export async function loadChecklist(
                 otherGold: 0,
                 paradisePower: 0,
                 hallsHourglassCheck: false,
+                paradiseCheck: false,
+                hallsHourglassVisible: true,
+                paradiseVisible: true,
                 position: 9999,
                 account: '본계정'
             }
@@ -2025,6 +2030,9 @@ export function useClickUpdatedCharacters(
                     character.hallsHourglassCheck = previousCharacter?.level && previousCharacter.level < 1730
                         ? false
                         : previousCharacter?.hallsHourglassCheck ?? false;
+                    character.paradiseCheck = previousCharacter?.level && previousCharacter.level < 1640
+                        ? false
+                        : previousCharacter?.paradiseCheck ?? false;
                     updatedCharacters.add(character.nickname);
                     updatedCount++;
                 }
@@ -2251,6 +2259,9 @@ export async function handleAddCharacter(
                 otherGold: 0,
                 paradisePower: 0,
                 hallsHourglassCheck: false,
+                paradiseCheck: false,
+                hallsHourglassVisible: true,
+                paradiseVisible: true,
                 position: 9999,
                 account: selected
             }
@@ -2435,6 +2446,71 @@ export async function handleHallsHourglassCheck(
         return false;
     }
     return true;
+}
+
+export async function handleParadiseCheck(
+    checklist: CheckCharacter[],
+    nickname: string,
+    isCheck: boolean,
+    dispatch: AppDispatch
+): Promise<boolean> {
+    const userStr = sessionStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser ? storedUser.id : '';
+    const character = checklist.find(item => item.nickname === nickname);
+    if (!character || character.level < 1640) return false;
+
+    const previousValue = character.paradiseCheck ?? false;
+    dispatch(updateParadiseCheck({ nickname, isCheck }));
+    const saveRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, nickname, isCheck, type: 'check-paradise' })
+    });
+    if (!saveRes.ok) {
+        dispatch(updateParadiseCheck({ nickname, isCheck: previousValue }));
+        addToast({ title: '낙원 저장 실패', description: '체크 상태를 저장하지 못했습니다.', color: 'danger' });
+        return false;
+    }
+    return true;
+}
+
+export async function handleFixedContentVisibility(
+    checklist: CheckCharacter[],
+    nickname: string,
+    content: FixedContentType,
+    isVisible: boolean,
+    dispatch: AppDispatch
+): Promise<boolean> {
+    const userStr = sessionStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser ? storedUser.id : '';
+    const character = checklist.find(item => item.nickname === nickname);
+    if (!character) return false;
+
+    const previousValue = content === 'hallsHourglass'
+        ? character.hallsHourglassVisible !== false
+        : character.paradiseVisible !== false;
+    dispatch(updateFixedContentVisibility({ nickname, content, isVisible }));
+
+    try {
+        const saveRes = await fetch(`/api/checklist/list`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, nickname, content, isVisible, type: 'update-fixed-content-visibility' })
+        });
+        if (saveRes.ok) return true;
+    } catch(error) {
+        console.error(error);
+    }
+
+    dispatch(updateFixedContentVisibility({ nickname, content, isVisible: previousValue }));
+    addToast({
+        title: '추가 콘텐츠 설정 저장 실패',
+        description: '표시 설정을 저장하지 못해 이전 상태로 되돌렸습니다.',
+        color: 'danger'
+    });
+    return false;
 }
 
 export function handleOnDragEnd(
@@ -2845,6 +2921,7 @@ export async function handleResetChecklist(
                 }),
                 otherGold: 0,
                 hallsHourglassCheck: false,
+                paradiseCheck: false,
                 weeklist: weeklist.map((list: any) => ({
                     ...list,
                     isCheck: false

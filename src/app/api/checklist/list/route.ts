@@ -108,6 +108,49 @@ export async function POST(req: NextRequest) {
                 await updateDoc(docRef, { checklist: updatedStoredChecklist });
                 return NextResponse.json({ message: 'Halls hourglass checklist saved.' }, { status: 200 });
             }
+            case 'check-paradise': {
+                const nickname = typeof body.nickname === 'string' ? body.nickname : '';
+                const isCheck = body.isCheck === true;
+                const storedChecklist = (targetDoc.data().checklist ?? []) as CheckCharacter[];
+                const characterIndex = findIndexByNickname(storedChecklist, nickname);
+
+                if (!nickname || characterIndex === -1) {
+                    return NextResponse.json({ error: 'Character not found.' }, { status: 404 });
+                }
+                if (Number(storedChecklist[characterIndex].level) < 1640) {
+                    return NextResponse.json({ error: 'Character level is too low.' }, { status: 400 });
+                }
+
+                const updatedStoredChecklist = storedChecklist.map((character, index) => index === characterIndex ? {
+                    ...character,
+                    paradiseCheck: isCheck
+                } : character);
+                await updateDoc(docRef, { checklist: updatedStoredChecklist });
+                return NextResponse.json({ message: 'Paradise checklist saved.' }, { status: 200 });
+            }
+            case 'update-fixed-content-visibility': {
+                const nickname = typeof body.nickname === 'string' ? body.nickname : '';
+                const content = body.content;
+                const isVisible = body.isVisible;
+
+                if (!nickname || (content !== 'hallsHourglass' && content !== 'paradise') || typeof isVisible !== 'boolean') {
+                    return NextResponse.json({ error: 'Invalid fixed content visibility request.' }, { status: 400 });
+                }
+
+                const storedChecklist = (targetDoc.data().checklist ?? []) as CheckCharacter[];
+                const characterIndex = findIndexByNickname(storedChecklist, nickname);
+                if (characterIndex === -1) {
+                    return NextResponse.json({ error: 'Character not found.' }, { status: 404 });
+                }
+
+                const visibilityField = content === 'hallsHourglass' ? 'hallsHourglassVisible' : 'paradiseVisible';
+                const updatedStoredChecklist = storedChecklist.map((character, index) => index === characterIndex ? {
+                    ...character,
+                    [visibilityField]: isVisible
+                } : character);
+                await updateDoc(docRef, { checklist: updatedStoredChecklist });
+                return NextResponse.json({ message: 'Fixed content visibility saved.' }, { status: 200 });
+            }
             case 'init':
                 await updateDoc(docRef, {
                     checklist: checklist

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { Boss } from "../../api/checklist/boss/route";
-import { CheckCharacter, Checklist, ChecklistItem, OtherList } from "../../store/checklistSlice";
+import { CheckCharacter, Checklist, ChecklistItem, FixedContentType, OtherList } from "../../store/checklistSlice";
 import { 
     Button, 
     Card, CardBody, CardHeader,
@@ -110,6 +110,8 @@ import {
     handleUpdateMemo,
     handleUpdateParadisePower,
     handleHallsHourglassCheck,
+    handleParadiseCheck,
+    handleFixedContentVisibility,
     handleSelectCharacter, 
     handleWeekBonusCheckStage, 
     handleWeekCheckStage, 
@@ -1694,7 +1696,7 @@ export function ChecklistComponent({
                                                 </button>
                                             </div>
                                          ))}
-                                         {character.level >= 1730 ? (
+                                         {character.level >= 1730 && character.hallsHourglassVisible !== false ? (
                                              <div className={clsx(
                                                  "mt-2 w-full rounded-lg border py-1",
                                                  character.hallsHourglassCheck ? 'border-warning-200 bg-warning-50/70 dark:border-warning-700/60 dark:bg-warning-500/10' : 'border-transparent hover:bg-warning-50/40 dark:hover:bg-warning-950/20',
@@ -1715,7 +1717,28 @@ export function ChecklistComponent({
                                                  </Checkbox>
                                              </div>
                                          ) : null}
-                                     </div>
+                                          {character.level >= 1640 && character.paradiseVisible !== false ? (
+                                              <div className={clsx(
+                                                  "mt-2 w-full rounded-lg border py-1",
+                                                  character.paradiseCheck ? 'border-warning-200 bg-warning-50/70 dark:border-warning-700/60 dark:bg-warning-500/10' : 'border-transparent hover:bg-warning-50/40 dark:hover:bg-warning-950/20',
+                                                  isHideCompleteContent && character.paradiseCheck ? 'hidden' : ''
+                                              )}>
+                                                  <Checkbox
+                                                      aria-label="낙원"
+                                                      color="warning"
+                                                      size="sm"
+                                                      radius="full"
+                                                      isSelected={character.paradiseCheck ?? false}
+                                                      classNames={{base: "w-full max-w-none", label: "flex min-w-0 flex-1 items-center justify-start text-left"}}
+                                                      className="box-border w-full max-w-none py-1.5 pl-4 pr-2.5"
+                                                      onValueChange={async (isCheck) => {
+                                                          await handleParadiseCheck(checklist, character.nickname, isCheck, dispatch);
+                                                      }}>
+                                                      <span className={character.paradiseCheck ? 'line-through fadedtext' : ''}>낙원</span>
+                                                  </Checkbox>
+                                              </div>
+                                          ) : null}
+                                      </div>
                                      <Button
                                         color="secondary"
                                         variant="flat"
@@ -2606,7 +2629,93 @@ function WeekModalContent({ checklist, index, dispatch, bosses, onClose }: WeekM
                         dispatch={dispatch}
                         onClose={onClose}/>
                 </Tab>
+                <Tab key="fixed-content" title="추가 콘텐츠">
+                    <FixedContentSettings
+                        checklist={checklist}
+                        index={index}
+                        dispatch={dispatch}/>
+                </Tab>
             </Tabs>
+        </div>
+    )
+}
+
+type FixedContentSettingsProps = {
+    checklist: CheckCharacter[],
+    index: number,
+    dispatch: AppDispatch
+}
+function FixedContentSettings({ checklist, index, dispatch }: FixedContentSettingsProps) {
+    const [savingContent, setSavingContent] = useState<FixedContentType | null>(null);
+    const character = checklist[index];
+
+    const updateVisibility = async (content: FixedContentType, isVisible: boolean) => {
+        if (savingContent) return;
+
+        setSavingContent(content);
+        try {
+            await handleFixedContentVisibility(checklist, character.nickname, content, isVisible, dispatch);
+        } finally {
+            setSavingContent(null);
+        }
+    }
+
+    const settings: Array<{
+        content: FixedContentType,
+        title: string,
+        description: string,
+        minimumLevel: number,
+        isVisible: boolean
+    }> = [
+        {
+            content: 'hallsHourglass',
+            title: '할의 모래시계',
+            description: '주간 숙제 목록에 할의 모래시계 체크 항목을 표시합니다.',
+            minimumLevel: 1730,
+            isVisible: character.hallsHourglassVisible !== false
+        },
+        {
+            content: 'paradise',
+            title: '낙원',
+            description: '주간 숙제 목록에 낙원 체크 항목을 표시합니다.',
+            minimumLevel: 1640,
+            isVisible: character.paradiseVisible !== false
+        }
+    ];
+
+    return (
+        <div className="space-y-4">
+            <div className="rounded-xl border border-secondary-200/70 bg-secondary-50/50 p-4 dark:border-secondary-900/70 dark:bg-secondary-950/20">
+                <p className="text-sm font-semibold">고정 추가 콘텐츠 표시</p>
+                <p className="mt-1 text-xs fadedtext">캐릭터 레벨 조건을 충족했을 때 주간 숙제에 표시할 콘텐츠를 설정합니다.</p>
+            </div>
+            <div className="space-y-3">
+                {settings.map((setting) => (
+                    <div
+                        key={setting.content}
+                        className="flex items-center justify-between gap-4 rounded-xl border border-gray-200/80 bg-white p-4 dark:border-gray-800 dark:bg-gray-950">
+                        <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <p className="text-sm font-semibold">{setting.title}</p>
+                                <Chip size="sm" variant="flat" color="secondary">Lv. {setting.minimumLevel} 이상</Chip>
+                            </div>
+                            <p className="mt-1 text-xs fadedtext">{setting.description}</p>
+                            {savingContent === setting.content ? (
+                                <p className="mt-1 text-xs text-secondary">설정 저장 중...</p>
+                            ) : null}
+                        </div>
+                        <Switch
+                            aria-label={`${setting.title} 표시`}
+                            color="secondary"
+                            size="sm"
+                            isSelected={setting.isVisible}
+                            isDisabled={savingContent !== null}
+                            onValueChange={(isVisible) => updateVisibility(setting.content, isVisible)}>
+                            <span className="text-xs">표시</span>
+                        </Switch>
+                    </div>
+                ))}
+            </div>
         </div>
     )
 }
