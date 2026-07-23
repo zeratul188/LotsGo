@@ -1573,15 +1573,17 @@ export function ChecklistComponent({
                                                                         </div>
                                                                     </Tooltip>
                                                                 ))
-                                                                : item.items.map((diff, ix) => (
-                                                                    <React.Fragment key={ix}>
-                                                                        {ix > 0 && (
-                                                                            <div className={clsx(
-                                                                                'w-2 h-[2px]',
-                                                                                getBackgroundByStage(diff.difficulty, diff.isDisable)
-                                                                            )} />
-                                                                        )}
-                                                                        <Tooltip showArrow delay={500} content={
+                                                                : (
+                                                                    <div className="flex items-stretch">
+                                                                        {item.items.map((diff, ix) => (
+                                                                            <React.Fragment key={ix}>
+                                                                                {ix > 0 && (
+                                                                                    <div className={clsx(
+                                                                                        "w-[2px] shrink-0 self-stretch",
+                                                                                        getBackgroundByStage(diff.difficulty, diff.isDisable)
+                                                                                    )}/>
+                                                                                )}
+                                                                                <Tooltip showArrow delay={500} content={
                                                                             <div className="w-full min-[281px]:w-[280px] p-2">
                                                                                 <h3 className="mb-3 font-semibold">{item.name}</h3>
                                                                                 <div className="w-full flex gap-2 items-center mb-1.5">
@@ -1650,23 +1652,38 @@ export function ChecklistComponent({
                                                                                     ) : null}
                                                                                 </div>
                                                                             </div>
-                                                                        }>
-                                                                            <div className={clsx(
-                                                                                'w-7 h-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none cursor-pointer',
-                                                                                getBorderByStage(diff.difficulty, diff.isDisable),
-                                                                                diff.isDisable ? 'bg-gray-300/30 dark:bg-gray-600/30 fadedtext' : '',
-                                                                                diff.isCheck ? getBackground50ByStage(diff.difficulty, diff.isDisable) : '',
-                                                                                diff.isBonus ? 'ring-3 ring-inset ring-yellow-500' : ''
-                                                                            )} onClick={async (e) => {
-                                                                                e.preventDefault();
-                                                                                e.stopPropagation();
-                                                                                await handleWeekCheckStage(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch, diff.stage, diff.isDisable)
-                                                                            }}>
-                                                                                {diff.stage}
-                                                                            </div>
-                                                                        </Tooltip>
-                                                                    </React.Fragment>
-                                                                ))}
+                                                                                }>
+                                                                                    <div
+                                                                                        aria-label={`${diff.stage}관문${diff.isBonus ? ' 더보기 사용 중' : ''}`}
+                                                                                        className={clsx(
+                                                                                            "relative flex h-7 w-7 cursor-pointer items-center justify-center border-y-2 leading-none first:rounded-l-[4px] first:border-l-2 last:rounded-r-[4px] last:border-r-2",
+                                                                                            getBorderByStage(diff.difficulty, diff.isDisable),
+                                                                                            diff.isDisable ? 'bg-gray-300/30 dark:bg-gray-600/30 fadedtext' : '',
+                                                                                            diff.isCheck ? getBackground50ByStage(diff.difficulty, diff.isDisable) : ''
+                                                                                        )}
+                                                                                        onClick={async (e) => {
+                                                                                            e.preventDefault();
+                                                                                            e.stopPropagation();
+                                                                                            await handleWeekCheckStage(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch, diff.stage, diff.isDisable)
+                                                                                        }}>
+                                                                                        <span>{diff.stage}</span>
+                                                                                        {diff.isBonus ? (
+                                                                                            <span
+                                                                                                aria-hidden="true"
+                                                                                                className={clsx(
+                                                                                                    "absolute -right-1.5 -top-1.5 z-10 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 text-[10px] font-black leading-[10px] text-center text-white shadow-sm",
+                                                                                                    getBorderByStage(diff.difficulty, diff.isDisable),
+                                                                                                    getBackgroundByStage(diff.difficulty, diff.isDisable)
+                                                                                                )}>
+                                                                                                +
+                                                                                            </span>
+                                                                                        ) : null}
+                                                                                    </div>
+                                                                                </Tooltip>
+                                                                            </React.Fragment>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>
