@@ -153,7 +153,7 @@ export function AvatarComponent({ info }: { info: CharacterInfo }) {
                                             {group.avatars.map((avatar, index) => (
                                                 <div
                                                     key={`${avatar.type}-${avatar.name}-${index}`}
-                                                    className={`flex gap-3 px-3.5 py-3 transition-colors hover:bg-default-100/70 dark:hover:bg-white/[0.05] ${avatar.dyes && avatar.dyes.length > 0 ? "items-start" : "items-center"}`}
+                                                    className="flex flex-wrap items-start gap-3 px-3.5 py-3 transition-colors hover:bg-default-100/70 dark:hover:bg-white/[0.05]"
                                                 >
                                                     <div className={`h-12 w-12 shrink-0 rounded-xl p-[2px] ${getBackgroundByGrade(avatar.grade)}`}>
                                                         <img
@@ -180,31 +180,31 @@ export function AvatarComponent({ info }: { info: CharacterInfo }) {
                                                             ) : null}
                                                         </div>
                                                         <p className="mt-1 text-xs text-default-500">{avatar.grade} · {group.label}</p>
-                                                        {avatar.dyes && avatar.dyes.length > 0 ? (
-                                                            <div className="mt-2 rounded-xl border border-default-200/70 bg-default-50/80 p-2 dark:border-white/10 dark:bg-black/10">
-                                                                <p className="mb-1.5 text-[10px] font-semibold text-default-500">염색 정보</p>
-                                                                <div className="space-y-1.5">
-                                                                    {avatar.dyes.map((dye, dyeIndex) => (
-                                                                        <div
-                                                                            key={`${dye.part}-${dyeIndex}`}
-                                                                            className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg bg-content1/80 px-2 py-1.5 dark:bg-white/[0.04]"
-                                                                        >
-                                                                            <span className="min-w-10 text-[10px] font-semibold text-default-600 dark:text-default-300">
-                                                                                {dye.part}
-                                                                            </span>
-                                                                            <DyeColorCode label="색상" color={dye.baseColor}/>
-                                                                            {dye.patternIcon ? (
-                                                                                <DyeColorCode label="패턴" color={dye.patternColor}/>
-                                                                            ) : null}
-                                                                            {dye.gloss ? (
-                                                                                <span className="whitespace-nowrap text-[10px] text-default-400">광택 {dye.gloss}</span>
-                                                                            ) : null}
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        ) : null}
                                                     </div>
+                                                    {avatar.dyes && avatar.dyes.length > 0 ? (
+                                                        <div className="basis-full min-w-0 rounded-xl border border-default-200/70 bg-default-50/80 p-2 dark:border-white/10 dark:bg-black/10">
+                                                            <p className="mb-1.5 text-[10px] font-semibold text-default-500">염색 정보</p>
+                                                            <div className="space-y-1.5">
+                                                                {avatar.dyes.map((dye, dyeIndex) => (
+                                                                    <div
+                                                                        key={`${dye.part}-${dyeIndex}`}
+                                                                        className="flex min-w-0 flex-nowrap items-center gap-x-2 overflow-x-auto rounded-lg bg-content1/80 px-2 py-1.5 scrollbar-hide dark:bg-white/[0.04]"
+                                                                    >
+                                                                        <span className="min-w-10 shrink-0 text-[10px] font-semibold text-default-600 dark:text-default-300">
+                                                                            {dye.part}
+                                                                        </span>
+                                                                        <DyeColorCode label="색상" color={dye.baseColor}/>
+                                                                        {dye.patternColor ? (
+                                                                            <DyeColorCode label="패턴" color={dye.patternColor}/>
+                                                                        ) : null}
+                                                                        {dye.gloss ? (
+                                                                            <span className="shrink-0 whitespace-nowrap text-[10px] text-default-400">광택 {dye.gloss}</span>
+                                                                        ) : null}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    ) : null}
                                                 </div>
                                             ))}
                                         </div>

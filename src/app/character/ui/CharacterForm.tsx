@@ -1217,6 +1217,8 @@ function GemComponent({ info }: { info: CharacterInfo }) {
     const cooldownGems = gems
         .filter(item => item.skillStr.includes('재사용 대기시간'))
         .sort((a, b) => b.level - a.level);
+    const attackGroupLabel = attackLength >= 3 ? '피해 및 지원 효과' : attackLength === 2 ? '피해·지원' : '피해';
+    const cooldownGroupLabel = cooldownLength >= 3 ? '쿨타임 감소' : cooldownLength === 2 ? '쿨타임' : '쿨';
     const emptySlotCount = Math.max(0, 11 - gems.length);
     const averageGemLevel = gems.length > 0
         ? gems.reduce((sum, gem) => sum + gem.level, 0) / gems.length
@@ -1263,7 +1265,7 @@ function GemComponent({ info }: { info: CharacterInfo }) {
             <CardHeader className="flex flex-col items-stretch gap-3 px-4 py-4 sm:flex-row sm:items-center sm:px-5">
                 <div className="min-w-0 grow">
                     <p className="text-lg font-semibold">보석</p>
-                    <p className="mt-0.5 text-[11px] text-default-500">겁화와 작열 보석의 장착 현황</p>
+                    <p className="mt-0.5 text-[11px] text-default-500">피해 및 지원 효과와 쿨타임 감소 보석의 장착 현황</p>
                 </div>
                 <div className="grid grid-cols-3 gap-1.5">
                     <div className="min-w-[72px] rounded-xl bg-default-100/80 px-2.5 py-2 text-center dark:bg-white/[0.05]">
@@ -1292,11 +1294,12 @@ function GemComponent({ info }: { info: CharacterInfo }) {
                         {attackLength > 0 ? (
                             <div
                                 className="min-w-0 rounded-2xl border border-danger/25 bg-danger/[0.025] p-2.5 dark:bg-danger/[0.045]"
+                                title="피해 및 지원 효과"
                                 style={{ gridColumn: `span ${attackLength} / span ${attackLength}` }}>
                                 <div className="mb-2 flex items-center gap-1.5">
-                                    <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-danger/10 text-[10px] font-bold text-danger">겁</span>
-                                    <p className="text-xs font-semibold">겁화 계열</p>
-                                    <span className="ml-auto rounded-full bg-danger/10 px-2 py-0.5 text-[10px] font-semibold text-danger">{attackLength}겁</span>
+                                    <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-danger/10 text-[10px] font-bold text-danger">피</span>
+                                    <p className={clsx("min-w-0 truncate text-xs font-semibold", attackLength === 1 && "sr-only")}>{attackGroupLabel}</p>
+                                    <span className="ml-auto shrink-0 rounded-full bg-danger/10 px-2 py-0.5 text-[10px] font-semibold text-danger">{attackLength}개</span>
                                 </div>
                                 <div
                                     className="grid justify-items-center gap-1.5"
@@ -1309,11 +1312,12 @@ function GemComponent({ info }: { info: CharacterInfo }) {
                         {cooldownLength > 0 ? (
                             <div
                                 className="min-w-0 rounded-2xl border border-success/25 bg-success/[0.025] p-2.5 dark:bg-success/[0.045]"
+                                title="쿨타임 감소"
                                 style={{ gridColumn: `span ${cooldownLength} / span ${cooldownLength}` }}>
                                 <div className="mb-2 flex items-center gap-1.5">
-                                    <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-success/10 text-[10px] font-bold text-success">작</span>
-                                    <p className="text-xs font-semibold">작열 계열</p>
-                                    <span className="ml-auto rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-semibold text-success">{cooldownLength}작</span>
+                                    <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-success/10 text-[10px] font-bold text-success">쿨</span>
+                                    <p className={clsx("min-w-0 truncate text-xs font-semibold", cooldownLength === 1 && "sr-only")}>{cooldownGroupLabel}</p>
+                                    <span className="ml-auto shrink-0 rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-semibold text-success">{cooldownLength}개</span>
                                 </div>
                                 <div
                                     className="grid justify-items-center gap-1.5"

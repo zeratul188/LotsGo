@@ -38,6 +38,9 @@ export type CheckCharacter = {
     memo?: string,
     paradisePower?: number,
     hallsHourglassCheck?: boolean,
+    paradiseCheck?: boolean,
+    hallsHourglassVisible?: boolean,
+    paradiseVisible?: boolean,
     level: number,
     job: string,
     server: string,
@@ -102,6 +105,12 @@ export type EditDayList = {
     characterIndex: number,
     daylist: OtherList[]
 }
+export type ReorderContentType = 'checklist' | 'weeklist' | 'daylist'
+export type ReorderContent = {
+    characterIndex: number,
+    contentType: ReorderContentType,
+    items: Checklist[] | OtherList[]
+}
 export type EditCube = {
     characterIndex: number,
     cublist: CubeList[]
@@ -130,6 +139,16 @@ export type UpdateHallsHourglassCheck = {
     nickname: string,
     isCheck: boolean
 }
+export type UpdateParadiseCheck = {
+    nickname: string,
+    isCheck: boolean
+}
+export type FixedContentType = 'hallsHourglass' | 'paradise'
+export type UpdateFixedContentVisibility = {
+    nickname: string,
+    content: FixedContentType,
+    isVisible: boolean
+}
 
 const checklistSlice = createSlice({
     name: 'checklist',
@@ -142,6 +161,9 @@ const checklistSlice = createSlice({
                 memo: charaacter.memo ?? '',
                 paradisePower: Number.isFinite(charaacter.paradisePower) ? Math.max(0, Math.trunc(charaacter.paradisePower)) : 0,
                 hallsHourglassCheck: charaacter.hallsHourglassCheck ?? false,
+                paradiseCheck: charaacter.paradiseCheck ?? false,
+                hallsHourglassVisible: charaacter.hallsHourglassVisible !== false,
+                paradiseVisible: charaacter.paradiseVisible !== false,
                 cubelist: charaacter.cubelist ?? [],
                 position: charaacter.position ?? 9999
             }));
@@ -182,6 +204,18 @@ const checklistSlice = createSlice({
         editDayList(state, action: PayloadAction<EditDayList>) {
             const characterIndex = action.payload.characterIndex;
             state.checklist[characterIndex].daylist = action.payload.daylist;
+        },
+        reorderContent(state, action: PayloadAction<ReorderContent>) {
+            const character = state.checklist[action.payload.characterIndex];
+            if (!character) return;
+
+            if (action.payload.contentType === 'checklist') {
+                character.checklist = action.payload.items as Checklist[];
+            } else if (action.payload.contentType === 'weeklist') {
+                character.weeklist = action.payload.items as OtherList[];
+            } else {
+                character.daylist = action.payload.items as OtherList[];
+            }
         },
         // 일일 목록 체크
         checkDayList(state, action: PayloadAction<CheckDayList>) {
@@ -237,6 +271,22 @@ const checklistSlice = createSlice({
             if (character) {
                 character.hallsHourglassCheck = action.payload.isCheck;
             }
+        },
+        updateParadiseCheck(state, action: PayloadAction<UpdateParadiseCheck>) {
+            const character = state.checklist.find(item => item.nickname === action.payload.nickname);
+            if (character) {
+                character.paradiseCheck = action.payload.isCheck;
+            }
+        },
+        updateFixedContentVisibility(state, action: PayloadAction<UpdateFixedContentVisibility>) {
+            const character = state.checklist.find(item => item.nickname === action.payload.nickname);
+            if (!character) return;
+
+            if (action.payload.content === 'hallsHourglass') {
+                character.hallsHourglassVisible = action.payload.isVisible;
+            } else {
+                character.paradiseVisible = action.payload.isVisible;
+            }
         }
     }
 })
@@ -250,6 +300,7 @@ export const {
     checkWeekList,
     saveRest,
     editDayList,
+    reorderContent,
     checkDayList,
     editCube,
     checkGold,
@@ -259,6 +310,8 @@ export const {
     updateAccount,
     updateMemo,
     updateParadisePower,
-    updateHallsHourglassCheck
+    updateHallsHourglassCheck,
+    updateParadiseCheck,
+    updateFixedContentVisibility
 } = checklistSlice.actions;
 export default checklistSlice.reducer;

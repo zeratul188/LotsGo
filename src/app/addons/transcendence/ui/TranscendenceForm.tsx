@@ -2,7 +2,7 @@
 
 import { addToast, Button, Card, CardBody, Chip, Select, SelectItem, Tooltip } from "@heroui/react";
 import clsx from "clsx";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import TranscendenceIcon from "@/Icons/TranscendenceIcon";
 import { useMobileQuery } from "@/utiils/utils";
@@ -35,6 +35,43 @@ import "./transcendence.css";
 const presets = presetData.preset as EquipmentPreset[];
 const levels = [1, 2, 3, 4, 5, 6, 7];
 const LOCAL_PROGRESS_KEY = "lostark-transcendence-progress";
+
+const refreshAccessToken = async () => {
+    const response = await fetch("/api/auth/refresh", {
+        method: "POST",
+        credentials: "include",
+    });
+    const data = await response.json().catch(() => null);
+    if (!response.ok || typeof data?.accessToken !== "string") return null;
+
+    sessionStorage.setItem("token", data.accessToken);
+    return data.accessToken as string;
+};
+
+const requestTranscendence = async (init?: RequestInit) => {
+    let token = sessionStorage.getItem("token");
+    if (!token) throw new Error("로그인 토큰이 없습니다. 다시 로그인해주세요.");
+
+    const request = (accessToken: string) => fetch("/api/addons/transcendence", {
+        ...init,
+        credentials: "include",
+        headers: {
+            ...(init?.headers ?? {}),
+            authorization: `Bearer ${accessToken}`,
+        },
+    });
+
+    let response = await request(token);
+    if (response.status === 401) {
+        const refreshedToken = await refreshAccessToken();
+        if (refreshedToken) {
+            token = refreshedToken;
+            response = await request(token);
+        }
+    }
+
+    return response;
+};
 
 const SPIRIT_STYLE: Record<string, string> = {
     "업화": "from-orange-600 to-red-950",
@@ -415,6 +452,12 @@ export default function TranscendenceForm() {
     const [destroyingEffects, setDestroyingEffects] = useState<Map<string, SpiritElement>>(() => new Map());
     const [progress, setProgress] = useState<TranscendenceProgress>(() => createEmptyTranscendenceProgress());
     const [progressStatus, setProgressStatus] = useState<ProgressStatus>("loading");
+    const progressRef = useRef(progress);
+    const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
+
+    useEffect(() => {
+        progressRef.current = progress;
+    }, [progress]);
 
     useEffect(() => {
         if (!isCheckedToken) return;
@@ -424,16 +467,18 @@ export default function TranscendenceForm() {
             setProgressStatus("loading");
             try {
                 if (isLogined) {
-                    const token = sessionStorage.getItem("token");
-                    if (!token) throw new Error("TOKEN_NOT_FOUND");
-
-                    const response = await fetch("/api/addons/transcendence", {
-                        headers: { authorization: `Bearer ${token}` },
-                    });
-                    if (!response.ok) throw new Error("LOAD_FAILED");
+                    const response = await requestTranscendence();
+                    if (!response.ok) {
+                        const data = await response.json().catch(() => null);
+                        throw new Error(data?.error ?? "초월 기록을 불러오지 못했습니다.");
+                    }
 
                     const data = await response.json();
-                    if (!cancelled) setProgress(normalizeTranscendenceProgress(data.progress));
+                    if (!cancelled) {
+                        const loadedProgress = normalizeTranscendenceProgress(data.progress);
+                        progressRef.current = loadedProgress;
+                        setProgress(loadedProgress);
+                    }
                 } else {
                     const stored = localStorage.getItem(LOCAL_PROGRESS_KEY);
                     const parsed = stored ? JSON.parse(stored) : null;
@@ -443,7 +488,9 @@ export default function TranscendenceForm() {
                 if (!cancelled) setProgressStatus("idle");
             } catch {
                 if (cancelled) return;
-                setProgress(createEmptyTranscendenceProgress());
+                const emptyProgress = createEmptyTranscendenceProgress();
+                progressRef.current = emptyProgress;
+                setProgress(emptyProgress);
                 setProgressStatus("error");
                 addToast({
                     title: "초월 기록 불러오기 실패",
@@ -493,41 +540,47 @@ export default function TranscendenceForm() {
         targetStage: number,
         grade: TranscendenceGrade,
     ) => {
-        const previous = progress;
+        const previousSave = saveQueueRef.current;
+        let releaseSave: () => void = () => undefined;
+        saveQueueRef.current = new Promise<void>((resolve) => {
+            releaseSave = resolve;
+        });
+        await previousSave;
+
+        try {
+        const previous = progressRef.current;
         const next = normalizeTranscendenceProgress(previous);
         next[targetEquipment][targetStage - 1] = Math.max(
             next[targetEquipment][targetStage - 1],
             grade,
         ) as TranscendenceGrade;
 
+        progressRef.current = next;
         setProgress(next);
         setProgressStatus("saving");
         try {
             if (isLogined) {
-                const token = sessionStorage.getItem("token");
-                if (!token) throw new Error("TOKEN_NOT_FOUND");
-
-                const response = await fetch("/api/addons/transcendence", {
+                const response = await requestTranscendence({
                     method: "PUT",
-                    headers: {
-                        authorization: `Bearer ${token}`,
-                        "content-type": "application/json",
-                    },
+                    headers: { "content-type": "application/json" },
                     body: JSON.stringify({
                         equipment: targetEquipment,
                         stage: targetStage,
                         grade,
                     }),
                 });
-                if (!response.ok) throw new Error("SAVE_FAILED");
+                const data = await response.json().catch(() => null);
+                if (!response.ok) throw new Error(data?.error ?? "초월 기록 저장에 실패했습니다.");
 
-                const data = await response.json();
-                setProgress(normalizeTranscendenceProgress(data.progress));
+                const savedProgress = normalizeTranscendenceProgress(data.progress);
+                progressRef.current = savedProgress;
+                setProgress(savedProgress);
             } else {
                 localStorage.setItem(LOCAL_PROGRESS_KEY, JSON.stringify(next));
             }
             setProgressStatus("idle");
         } catch {
+            progressRef.current = previous;
             setProgress(previous);
             setProgressStatus("error");
             addToast({
@@ -535,6 +588,9 @@ export default function TranscendenceForm() {
                 description: "완료 기록을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.",
                 color: "danger",
             });
+        }
+        } finally {
+            releaseSave();
         }
     };
 
@@ -546,24 +602,22 @@ export default function TranscendenceForm() {
         setProgressStatus("saving");
         try {
             if (isLogined) {
-                const token = sessionStorage.getItem("token");
-                if (!token) throw new Error("TOKEN_NOT_FOUND");
-
-                const response = await fetch("/api/addons/transcendence", {
+                const response = await requestTranscendence({
                     method: "PUT",
-                    headers: {
-                        authorization: `Bearer ${token}`,
-                        "content-type": "application/json",
-                    },
+                    headers: { "content-type": "application/json" },
                     body: JSON.stringify({ reset: true }),
                 });
-                if (!response.ok) throw new Error("RESET_FAILED");
+                const data = await response.json().catch(() => null);
+                if (!response.ok) throw new Error(data?.error ?? "초월 기록 초기화에 실패했습니다.");
 
-                const data = await response.json();
-                setProgress(normalizeTranscendenceProgress(data.progress));
+                const resetProgressData = normalizeTranscendenceProgress(data.progress);
+                progressRef.current = resetProgressData;
+                setProgress(resetProgressData);
             } else {
                 localStorage.removeItem(LOCAL_PROGRESS_KEY);
-                setProgress(createEmptyTranscendenceProgress());
+                const emptyProgress = createEmptyTranscendenceProgress();
+                progressRef.current = emptyProgress;
+                setProgress(emptyProgress);
             }
             setProgressStatus("idle");
             addToast({

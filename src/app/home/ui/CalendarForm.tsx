@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Island, IslandData, LostarkEvent, Notice } from "../model/types";
-import { filterIslandData, filterRewardItem, formatKoreanDate, formatTimeLeft, getNextIslandTime, initialWeek, isGoldIsland, isGoldIslands, isHaveGold } from "../lib/calendarFeat";
+import { filterIslandData, filterRewardItem, formatKoreanDate, formatTimeLeft, getIslandTimePeriod, getNextIslandTime, initialWeek, isGoldIsland, isGoldIslands, isHaveGold } from "../lib/calendarFeat";
 import { 
     Accordion,
     AccordionItem,
@@ -60,8 +60,10 @@ function EventComponent({ events }: EventComponentProps) {
             <ScrollShadow className="h-[600px] w-full p-4 sm:h-[500px]">
                 {events.length > 0 ? (
                     <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-                        {events.map((event, index) => (
-                            <Card 
+                        {events.map((event, index) => {
+                            const isEnded = !dayjs().isBefore(dayjs(event.endDate));
+
+                            return <Card
                                 key={index} 
                                 isPressable
                                 as={Link}
@@ -77,18 +79,20 @@ function EventComponent({ events }: EventComponentProps) {
                                     <Chip
                                         size="sm"
                                         radius="sm"
-                                        color="primary"
+                                        color={isEnded ? "danger" : "primary"}
                                         variant="flat"
                                         className="absolute left-3 top-3 bg-white/90 font-medium dark:bg-black/70">
-                                        진행 중
+                                        {isEnded ? "종료" : (
+                                            "진행 중"
+                                        )}
                                     </Chip>
                                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/55 to-transparent px-3 pb-3 pt-10 text-left text-white">
                                         <p className="truncate font-medium drop-shadow-sm">{event.title}</p>
                                         <p className="mt-0.5 truncate text-xs text-white/80">{getStringByDate(dayjs(event.startDate))} ~ {getStringByDate(dayjs(event.endDate))}</p>
                                     </div>
                                 </CardBody>
-                            </Card>
-                        ))}
+                            </Card>;
+                        })}
                     </div>
                 ) : (
                     <div className="flex h-[240px] w-full flex-col items-center justify-center">
@@ -335,7 +339,10 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
                                 }>
                                 {dayIslands.length > 0 ? (
                                     <Accordion fullWidth variant="splitted" className="grid grid-cols-1 items-start gap-2 px-0 sm:grid-cols-3">
-                                        {dayIslands.map((data, idx) => (
+                                        {dayIslands.map((data, idx) => {
+                                            const islandTimePeriod = getIslandTimePeriod(week, data);
+
+                                            return (
                                             <AccordionItem
                                                 key={`${week.format('YYYY-MM-DD')}-${data.name}-${idx}`}
                                                 aria-label={`${data.name} 보상 정보`}
@@ -348,6 +355,16 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
                                                         )}>{data.name}</p>
                                                         {isGoldIsland(week, data) && (
                                                             <Chip size="sm" radius="sm" color="warning" variant="flat" className="h-5 shrink-0">골드</Chip>
+                                                        )}
+                                                        {islandTimePeriod && (
+                                                            <Chip
+                                                                size="sm"
+                                                                radius="sm"
+                                                                color={islandTimePeriod === '오전' ? 'primary' : 'secondary'}
+                                                                variant="flat"
+                                                                className="h-5 shrink-0">
+                                                                {islandTimePeriod}
+                                                            </Chip>
                                                         )}
                                                     </div>
                                                 }
@@ -378,7 +395,8 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
                                                     ))}
                                                 </div>
                                             </AccordionItem>
-                                        ))}
+                                            );
+                                        })}
                                     </Accordion>
                                 ) : (
                                     <div className="flex h-[96px] items-center justify-center rounded-xl bg-gray-50/60 text-sm fadedtext dark:bg-white/[0.025]">

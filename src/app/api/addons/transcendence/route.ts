@@ -6,7 +6,7 @@ import {
     TranscendenceGrade,
 } from "@/app/addons/transcendence/model/types";
 import { firestore } from "@/utiils/firebase";
-import { collection, doc, getDoc, getDocs, limit, query, updateDoc, where } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, limit, query, runTransaction, where } from "firebase/firestore";
 import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -74,7 +74,10 @@ export async function PUT(req: NextRequest) {
 
         if (body.reset === true) {
             const progress = createEmptyTranscendenceProgress();
-            await updateDoc(memberDocument.ref, { transcendence: progress });
+            await runTransaction(firestore, async (transaction) => {
+                await transaction.get(memberDocument.ref);
+                transaction.update(memberDocument.ref, { transcendence: progress });
+            });
             return NextResponse.json({ progress });
         }
 
@@ -86,12 +89,16 @@ export async function PUT(req: NextRequest) {
             return NextResponse.json({ error: "올바르지 않은 초월 기록입니다." }, { status: 400 });
         }
 
-        const progress = normalizeTranscendenceProgress(memberDocument.data().transcendence);
-        progress[equipment][stage - 1] = Math.max(
-            progress[equipment][stage - 1],
+        const progress = await runTransaction(firestore, async (transaction) => {
+            const latestMemberDocument = await transaction.get(memberDocument.ref);
+            const nextProgress = normalizeTranscendenceProgress(latestMemberDocument.data()?.transcendence);
+            nextProgress[equipment][stage - 1] = Math.max(
+                nextProgress[equipment][stage - 1],
             grade,
-        ) as TranscendenceGrade;
-        await updateDoc(memberDocument.ref, { transcendence: progress });
+            ) as TranscendenceGrade;
+            transaction.update(memberDocument.ref, { transcendence: nextProgress });
+            return nextProgress;
+        });
         return NextResponse.json({ progress });
     } catch (error) {
         return errorResponse(error);

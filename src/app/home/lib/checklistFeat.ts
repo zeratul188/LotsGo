@@ -22,6 +22,58 @@ export type ChecklistDataDifficulty = {
     isComplete: boolean
 }
 
+export type FixedWeeklyContentType = 'hallsHourglass' | 'paradise'
+
+export type FixedWeeklyContentStatus = {
+    type: FixedWeeklyContentType,
+    title: string,
+    minimumLevel: number,
+    total: number,
+    completed: number,
+    incompleteCharacters: CheckCharacter[]
+}
+
+const fixedWeeklyContentSettings: Array<{
+    type: FixedWeeklyContentType,
+    title: string,
+    minimumLevel: number,
+    isVisible: (character: CheckCharacter) => boolean,
+    isComplete: (character: CheckCharacter) => boolean
+}> = [
+    {
+        type: 'hallsHourglass',
+        title: '할의 모래시계',
+        minimumLevel: 1730,
+        isVisible: (character) => character.hallsHourglassVisible !== false,
+        isComplete: (character) => character.hallsHourglassCheck === true
+    },
+    {
+        type: 'paradise',
+        title: '낙원',
+        minimumLevel: 1640,
+        isVisible: (character) => character.paradiseVisible !== false,
+        isComplete: (character) => character.paradiseCheck === true
+    }
+];
+
+export function getFixedWeeklyContentStatuses(checklist: CheckCharacter[]): FixedWeeklyContentStatus[] {
+    return fixedWeeklyContentSettings.map((setting) => {
+        const eligibleCharacters = checklist.filter((character) => (
+            character.level >= setting.minimumLevel && setting.isVisible(character)
+        ));
+        const incompleteCharacters = eligibleCharacters.filter((character) => !setting.isComplete(character));
+
+        return {
+            type: setting.type,
+            title: setting.title,
+            minimumLevel: setting.minimumLevel,
+            total: eligibleCharacters.length,
+            completed: eligibleCharacters.length - incompleteCharacters.length,
+            incompleteCharacters
+        };
+    });
+}
+
 // 로그인 여부 확인 함수
 export function isLogin(): boolean {
     const userStr = sessionStorage.getItem('user');

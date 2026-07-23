@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { CheckCharacter } from "../../store/checklistSlice";
-import { groupByLevel10, isCompleteHomeworkByCharacter, isLogin, loadChecklist } from "../lib/checklistFeat";
+import { getFixedWeeklyContentStatuses, groupByLevel10, isCompleteHomeworkByCharacter, isLogin, loadChecklist } from "../lib/checklistFeat";
 import { LoadingComponent } from "../../UtilsCompnents";
 import { Boss } from "../../api/checklist/boss/route";
 import {
@@ -28,6 +28,7 @@ import CutCircularProgress from "../../components/ui/CutCircularProgress";
 import PersonIcon from "@/Icons/PersonIcon";
 import clsx from "clsx";
 import JobAvatar from "@/Icons/JobAvatar";
+import FixedWeeklyContentStatus from "./FixedWeeklyContentStatus";
 
 // state 관리
 function useChecklistForm() {
@@ -89,6 +90,7 @@ export default function ChecklistComponent() {
     const totalHomework = getAllCountChecklistByStage(checklistForm.checklist);
     const pageChecklist = activeChecklist.slice((page - 1) * maxSize, page * maxSize);
     const groupedChecklist = Array.from(groupByLevel10(activeChecklist).entries());
+    const fixedWeeklyContentStatuses = getFixedWeeklyContentStatuses(checklistForm.checklist);
     const goldCharacters = activeChecklist.filter(character => character.isGold).length;
     const nonGoldCharacters = activeChecklist.length - goldCharacters;
 
@@ -248,6 +250,12 @@ export default function ChecklistComponent() {
                         </div>
                     </div>
                 </CardHeader>
+
+                <div className="grid grid-cols-1 gap-3 border-t border-gray-200/80 p-3 sm:p-4 md:grid-cols-2 dark:border-white/10">
+                    {fixedWeeklyContentStatuses.map((status) => (
+                        <FixedWeeklyContentStatus key={status.type} status={status}/>
+                    ))}
+                </div>
 
                 <CardBody className="border-t border-gray-200/80 p-0 dark:border-white/10">
                     <div className="flex flex-wrap items-center gap-2 px-4 py-3 sm:px-5">
