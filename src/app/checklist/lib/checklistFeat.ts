@@ -1,5 +1,5 @@
 import { AppDispatch } from "../../store/store";
-import type { CheckCharacter, Checklist, ChecklistItem, CubeList, Day, FixedContentType, OtherList } from "../../store/checklistSlice";
+import type { CheckCharacter, Checklist, ChecklistItem, CubeList, Day, FixedContentType, OtherList, ReorderContentType } from "../../store/checklistSlice";
 import { 
     calculateOtherGold,
     checkDayList, 
@@ -12,6 +12,7 @@ import {
     editWeekList, 
     removeCharacter, 
     removeWeek, 
+    reorderContent,
     resetCube, 
     saveData, 
     saveRest, 
@@ -156,23 +157,6 @@ export async function loadChecklist(
         return 0;
     });
     checklist.sort((a, b) => a.position - b.position);
-    const bossMaxLevelMap = new Map(
-        bosses.map((boss) => [boss.name, Math.max(...boss.difficulty.map((difficulty) => difficulty.level))])
-    );
-    for (const character of checklist) {
-        const sortedChecklist = character.checklist.sort((a, b) => {
-            const aMax = bossMaxLevelMap.get(a.name) ?? 0;
-            const bMax = bossMaxLevelMap.get(b.name) ?? 0;
-            if (!a.isGold && b.isGold) {
-                return 1;
-            } else if (a.isGold && !b.isGold) {
-                return -1;
-            } else {
-                return bMax - aMax;  
-            }
-        });
-        character.checklist = sortedChecklist;
-    }
 
     if (checklist.length !== 0) {
         dispatch(saveData(checklist));
@@ -1478,23 +1462,6 @@ export async function handleCheckGolds(
         checklistIndex: checklistIndex,
         checklist: updatedChecklist.checklist[checklistIndex]
     }));
-    updatedChecklist.checklist = updatedChecklist.checklist.sort((a, b) => {
-        const aBoss = bosses.find(item => item.name === a.name) ? bosses.find(item => item.name === a.name) : null;
-        const aMax = aBoss ? Math.max(...aBoss.difficulty.map(d => d.level)) : 0;
-        const bBoss = bosses.find(item => item.name === b.name) ? bosses.find(item => item.name === b.name) : null;
-        const bMax = bBoss ? Math.max(...bBoss.difficulty.map(d => d.level)) : 0;
-        if (!a.isGold && b.isGold) {
-            return 1;
-        } else if (a.isGold && !b.isGold) {
-            return -1;
-        } else {
-            return bMax - aMax;  
-        }
-    });
-    dispatch(removeWeek({
-        characterIndex: characterIndex,
-        checklist: updatedChecklist.checklist
-    }))
     const editRes = await fetch(`/api/checklist/list`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1579,19 +1546,6 @@ export async function useOnClickAddItem(
     let newChecklist = [...checklist[characterIndex].checklist];
     newChecklist.push(addChecklist);
     const copyChecklist = structuredClone(newChecklist);
-    newChecklist = newChecklist.sort((a, b) => {
-        const aBoss = bosses.find(item => item.name === a.name) ? bosses.find(item => item.name === a.name) : null;
-        const aMax = aBoss ? Math.max(...aBoss.difficulty.map(d => d.level)) : 0;
-        const bBoss = bosses.find(item => item.name === b.name) ? bosses.find(item => item.name === b.name) : null;
-        const bMax = bBoss ? Math.max(...bBoss.difficulty.map(d => d.level)) : 0;
-        if (!a.isGold && b.isGold) {
-            return 1;
-        } else if (a.isGold && !b.isGold) {
-            return -1;
-        } else {
-            return bMax - aMax;  
-        }
-    });
     dispatch(removeWeek({
         characterIndex: characterIndex,
         checklist: newChecklist
@@ -2572,6 +2526,66 @@ export async function handleApplyPositions(
 }
 
 // 이미 추가된 캐릭터인지 확인 여부
+export async function handleReorderContent(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    contentType: ReorderContentType,
+    orderedItems: Checklist[] | OtherList[],
+    dispatch: AppDispatch
+): Promise<boolean> {
+    const userStr = sessionStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser ? storedUser.id : '';
+    const character = checklist[characterIndex];
+
+    if (!character) return false;
+
+    let response: Response;
+    try {
+        response = await fetch(`/api/checklist/list`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id,
+                type: 'reorder-content',
+                nickname: character.nickname,
+                contentType,
+                orderedItems
+            })
+        });
+    } catch {
+        addToast({
+            title: "순서 저장 실패",
+            description: "네트워크 문제로 콘텐츠 순서를 저장하지 못했습니다.",
+            color: "danger"
+        });
+        return false;
+    }
+
+    if (!response.ok) {
+        addToast({
+            title: "순서 저장 실패",
+            description: response.status === 409
+                ? "목록이 변경되었습니다. 최신 목록을 확인한 뒤 다시 시도해주세요."
+                : "콘텐츠 순서를 저장하는 중 문제가 발생했습니다.",
+            color: "danger"
+        });
+        return false;
+    }
+
+    dispatch(reorderContent({
+        characterIndex,
+        contentType,
+        items: orderedItems
+    }));
+    addToast({
+        title: "순서 변경 완료",
+        description: "콘텐츠 순서가 저장되었습니다.",
+        color: "success"
+    });
+    return true;
+}
+
 export function isHaveCharacter(checklist: CheckCharacter[], nickname: string) {
     return checklist.findIndex(item => item.nickname === nickname) !== -1;
 }

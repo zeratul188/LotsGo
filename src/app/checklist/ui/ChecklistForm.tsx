@@ -106,6 +106,7 @@ import {
     handleRemoveDayList, 
     handleRemoveWeekList, 
     handleResetCube, 
+    handleReorderContent,
     handleSelectAccount, 
     handleUpdateMemo,
     handleUpdateParadisePower,
@@ -161,6 +162,18 @@ import JobAvatar from "@/Icons/JobAvatar";
 import { EditIcon } from "@/Icons/EditIcon";
 import SwitchCharacterIcon from "@/Icons/SwitchCharacterIcon";
 import AnimatedNumber from "./AnimatedNumber";
+
+type ReorderEntry<T> = {
+    id: string,
+    value: T
+}
+
+function createReorderEntries<T>(items: T[], prefix: string): ReorderEntry<T>[] {
+    return items.map((value, index) => ({
+        id: `${prefix}-${index}-${Math.random().toString(36).slice(2)}`,
+        value
+    }));
+}
 
 const AutoChecklistControl = dynamic(() => import("./AutoChecklistControl"), {
     ssr: false,
@@ -1433,18 +1446,44 @@ export function ChecklistComponent({
                                             <p className="text-sm font-semibold text-secondary-700 dark:text-secondary-700">주간 콘텐츠</p>
                                             <p className="text-[11px] text-gray-500 dark:text-gray-400">주간 초기화되는 숙제</p>
                                         </div>
-                                        <Tooltip showArrow content="더보기 관리 모드">
-                                            <Switch 
+                                        <Tooltip
+                                            showArrow
+                                            content={(isBonusMode[character.nickname] ?? false) ? "더보기 관리 모드를 종료합니다." : "관문별 더보기를 설정합니다."}>
+                                            <Button
                                                 size="sm"
-                                                color="primary"
-                                                isSelected={isBonusMode[character.nickname] ?? false}
-                                                onValueChange={(isSelected) => {
-                                                    setBonusMode(prev => ({...prev, [character.nickname]: isSelected}))
-                                                }}
-                                                thumbIcon={({ isSelected, className }) => <AddIcon className={className}/>}
+                                                radius="full"
+                                                variant="bordered"
+                                                disableRipple
+                                                disableAnimation
+                                                aria-pressed={isBonusMode[character.nickname] ?? false}
                                                 className={clsx(
+                                                    "group h-8 min-w-fit shrink-0 gap-1.5 overflow-visible px-2.5 text-xs font-semibold",
+                                                    (isBonusMode[character.nickname] ?? false)
+                                                        ? "!border-secondary-400 !bg-secondary-100 !text-secondary-800 shadow-[0_4px_14px_rgba(147,51,234,0.2)] dark:!border-secondary-500 dark:!bg-[#2b1740] dark:!text-[#f3e8ff] dark:shadow-[0_4px_14px_rgba(168,85,247,0.24)]"
+                                                        : "!border-secondary-200 !bg-secondary-50 !text-secondary-700 shadow-sm hover:!border-secondary-400 hover:!bg-secondary-100 dark:!border-secondary-700 dark:!bg-[#1d1724] dark:!text-secondary-200 dark:hover:!border-secondary-500 dark:hover:!bg-[#281b32]",
                                                     isHideBonusMode ? 'hidden' : ''
-                                                )}/>
+                                                )}
+                                                onPress={() => {
+                                                    setBonusMode(prev => ({
+                                                        ...prev,
+                                                        [character.nickname]: !(prev[character.nickname] ?? false)
+                                                    }));
+                                                }}>
+                                                <span className={clsx(
+                                                    "flex h-5 w-5 items-center justify-center rounded-full transition-colors",
+                                                    (isBonusMode[character.nickname] ?? false)
+                                                        ? "bg-secondary-500 text-white shadow-[0_0_0_3px_rgba(168,85,247,0.14)] dark:bg-secondary-400 dark:text-[#1d1028]"
+                                                        : "bg-secondary-200 text-secondary-700 group-hover:bg-secondary-300 dark:bg-secondary-800 dark:text-secondary-200 dark:group-hover:bg-secondary-700"
+                                                )}>
+                                                    {(isBonusMode[character.nickname] ?? false) ? <CheckIcon size={12}/> : <AddIcon size={12}/>}
+                                                </span>
+                                                <span className={(isBonusMode[character.nickname] ?? false) ? "!text-secondary-800 dark:!text-white" : "!text-secondary-700 dark:!text-[#f5e9ff]"}>
+                                                    {(isBonusMode[character.nickname] ?? false) ? "편집 중" : "더보기 편집"}
+                                                </span>
+                                                {(isBonusMode[character.nickname] ?? false) ? (
+                                                    <span className="h-1.5 w-1.5 rounded-full bg-secondary-500 shadow-[0_0_0_3px_rgba(168,85,247,0.12)] dark:bg-secondary-300"/>
+                                                ) : null}
+                                            </Button>
                                         </Tooltip>
                                      </div>
                                     <div className="px-1.5 py-1 sm:px-2">
@@ -2258,7 +2297,7 @@ function RestCheckButton({ checklist, character, type, dispatch }: RestCheckButt
     return (
         <div 
             className={clsx(
-                "mt-2 box-border w-full max-w-full rounded-lg border border-transparent px-2 py-1.5",
+                "mt-2 box-border w-full max-w-full rounded-lg border border-transparent",
                 type === '에포나' ? dayValue.value === 3 ? 'border-warning-200 bg-warning-50/70 dark:border-warning-900 dark:bg-warning-950/20' : 'hover:bg-gray-100/70 dark:hover:bg-gray-900/70' : dayValue.value === 1 ? 'border-warning-200 bg-warning-50/70 dark:border-warning-900 dark:bg-warning-950/20' : 'hover:bg-gray-100/70 dark:hover:bg-gray-900/70'
             )}>
             <Checkbox
@@ -2268,17 +2307,17 @@ function RestCheckButton({ checklist, character, type, dispatch }: RestCheckButt
                 lineThrough
                 radius="full"
                 isSelected={type === '에포나' ? dayValue.value === 3 : dayValue.value === 1}
-                className="p-0"
+                className="w-full p-0 px-2 py-1.5"
                 onChange={onClickDayCheck}>
                 {getDayName(type, character.level)} ({dayValue.value}/{type === '에포나' ? 3 : 1})
             </Checkbox>
             <div className={clsx(
-                "w-full h-[8px] mt-1",
+                "w-full h-[8px] mt-1 px-2",
                 type === '에포나' ? 'hidden' : 'block'
             )}>
                 <RestComponent restValue={dayValue.restValue} type={type}/>
             </div>
-            <div className="w-full flex gap-1 text-[10pt] mt-0.5">
+            <div className="w-full flex gap-1 text-[10pt] mt-0.5 px-2">
                 <p className="fadedtext">휴식 게이지</p>
                 <p className="ml-auto">{dayValue.restValue}</p>
             </div>
@@ -2317,12 +2356,30 @@ function RestComponent({ restValue, type }: RestComponentProps) {
 type ChecklistModalProps = {
     isOpen: boolean,
     modalData: ModalData,
-    onOpenChange: () => void,
+    onOpenChange: (isOpen: boolean) => void,
     checklist: CheckCharacter[],
     dispatch: AppDispatch,
     bosses: Boss[]
 }
 export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dispatch, bosses }: ChecklistModalProps) {
+    const [hasUnsavedOrder, setHasUnsavedOrder] = useState(false);
+
+    useEffect(() => {
+        if (!isOpen) setHasUnsavedOrder(false);
+    }, [isOpen]);
+
+    const requestClose = () => {
+        if (hasUnsavedOrder) {
+            addToast({
+                title: "저장되지 않은 순서 변경",
+                description: "순서 저장 또는 취소를 먼저 눌러주세요.",
+                color: "warning"
+            });
+            return;
+        }
+        onOpenChange(false);
+    };
+
     if (modalData.characterIndex !== -1) {
         return (
             <Modal
@@ -2331,7 +2388,10 @@ export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dis
                 scrollBehavior="inside"
                 isDismissable={false}
                 isOpen={isOpen}
-                onOpenChange={onOpenChange}>
+                onOpenChange={(open) => {
+                    if (open) onOpenChange(true);
+                    else requestClose();
+                }}>
                 <ModalContent className="border border-gray-200/80 bg-white dark:border-gray-800 dark:bg-gray-950">
                     {(onClose) => (
                         <>
@@ -2349,13 +2409,15 @@ export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dis
                                             checklist={checklist}
                                             index={modalData.characterIndex}
                                             dispatch={dispatch}
-                                            onClose={onClose}/> : 
+                                            onClose={requestClose}
+                                            onOrderDirtyChange={setHasUnsavedOrder}/> :
                                         <WeekModalContent 
                                             checklist={checklist} 
                                             index={modalData.characterIndex} 
                                             dispatch={dispatch}
                                             bosses={bosses}
-                                            onClose={onClose}/>}
+                                            onClose={requestClose}
+                                            onOrderDirtyChange={setHasUnsavedOrder}/>}
                                 </div>
                             </ModalBody>
                         </>
@@ -2373,12 +2435,33 @@ type DayModalContentProps = {
     checklist: CheckCharacter[],
     index: number,
     dispatch: AppDispatch,
-    onClose: () => void
+    onClose: () => void,
+    onOrderDirtyChange: (isDirty: boolean) => void
 }
-function DayModalContent({ checklist, index, dispatch, onClose }: DayModalContentProps) {
+function DayModalContent({ checklist, index, dispatch, onClose, onOrderDirtyChange }: DayModalContentProps) {
+    const [selectedKey, setSelectedKey] = useState('rest');
+    const [isOrderDirty, setOrderDirty] = useState(false);
+
+    useEffect(() => {
+        onOrderDirtyChange(isOrderDirty);
+    }, [isOrderDirty, onOrderDirtyChange]);
+
+    const handleTabChange = (key: React.Key) => {
+        const nextKey = String(key);
+        if (nextKey !== selectedKey && isOrderDirty) {
+            addToast({
+                title: "저장되지 않은 순서 변경",
+                description: "순서 저장 또는 취소를 먼저 눌러주세요.",
+                color: "warning"
+            });
+            return;
+        }
+        setSelectedKey(nextKey);
+    };
+
     return (
         <div className="w-full">
-            <Tabs aria-label="day-tab" fullWidth color="success" variant="underlined" classNames={{tabList: "gap-5", panel: "px-0 pb-1 pt-5"}}>
+            <Tabs aria-label="day-tab" fullWidth color="success" variant="underlined" selectedKey={selectedKey} onSelectionChange={handleTabChange} classNames={{tabList: "gap-5", panel: "px-0 pb-1 pt-5"}}>
                 <Tab key="rest" title="휴식 게이지">
                     <RestStatueComponent
                         checklist={checklist}
@@ -2391,7 +2474,8 @@ function DayModalContent({ checklist, index, dispatch, onClose }: DayModalConten
                         checklist={checklist}
                         dispatch={dispatch}
                         index={index}
-                        onClose={onClose}/>
+                        onClose={onClose}
+                        onOrderDirtyChange={setOrderDirty}/>
                 </Tab>
             </Tabs>
         </div>
@@ -2403,16 +2487,63 @@ type DayListComponentProps = {
     checklist: CheckCharacter[],
     index: number,
     dispatch: AppDispatch,
-    onClose: () => void
+    onClose: () => void,
+    onOrderDirtyChange: (isDirty: boolean) => void
 }
-function DayListComponent({ checklist, index, dispatch, onClose }: DayListComponentProps) {
+function DayListComponent({ checklist, index, dispatch, onClose, onOrderDirtyChange }: DayListComponentProps) {
     const [isLoadingAdd, setLoadingAdd] = useState(false);
+    const [isSavingOrder, setSavingOrder] = useState(false);
+    const [isOrderDirty, setOrderDirty] = useState(false);
+    const [entries, setEntries] = useState<ReorderEntry<OtherList>[]>([]);
+    const [originalEntries, setOriginalEntries] = useState<ReorderEntry<OtherList>[]>([]);
     const [inputValue, setInputValue] = useState('');
+    const isOrderLocked = isOrderDirty || isSavingOrder;
+
+    useEffect(() => {
+        onOrderDirtyChange(isOrderDirty);
+    }, [isOrderDirty, onOrderDirtyChange]);
     const otherItem: OtherList = {
         name: inputValue,
         isCheck: false
     }
     const onClickAddDayList = useOnClickAddDayList(checklist, index, dispatch, otherItem, setLoadingAdd, setInputValue);
+
+    useEffect(() => {
+        if (!isOrderLocked) {
+            const nextEntries = createReorderEntries(checklist[index]?.daylist ?? [], 'daylist');
+            setEntries(nextEntries);
+            setOriginalEntries(nextEntries);
+        }
+    }, [checklist, index, isOrderLocked]);
+
+    const handleDragEnd = (result: { source: { index: number }, destination?: { index: number } | null }) => {
+        if (!result.destination || result.source.index === result.destination.index) return;
+        const nextEntries = [...entries];
+        const [movedEntry] = nextEntries.splice(result.source.index, 1);
+        nextEntries.splice(result.destination.index, 0, movedEntry);
+        if (!isOrderDirty) setOriginalEntries(entries);
+        setEntries(nextEntries);
+        setOrderDirty(true);
+    };
+
+    const handleSaveOrder = async () => {
+        if (!isOrderDirty || isSavingOrder) return;
+        setSavingOrder(true);
+        const isSuccess = await handleReorderContent(checklist, index, 'daylist', entries.map((entry) => entry.value), dispatch);
+        if (isSuccess) {
+            setOrderDirty(false);
+        } else {
+            setEntries(originalEntries);
+            setOrderDirty(false);
+        }
+        setSavingOrder(false);
+    };
+
+    const handleCancelOrder = () => {
+        if (!isOrderDirty || isSavingOrder) return;
+        setEntries(originalEntries);
+        setOrderDirty(false);
+    };
     return (
         <div className="space-y-4">
             <div className="rounded-xl border border-gray-200/80 bg-gray-50/60 p-4 dark:border-gray-800 dark:bg-gray-900/50">
@@ -2426,36 +2557,98 @@ function DayListComponent({ checklist, index, dispatch, onClose }: DayListCompon
                 placeholder="2~15자 안으로 작성하세요."
                 maxLength={15}
                 value={inputValue}
-                onValueChange={setInputValue}/>
+                onValueChange={setInputValue}
+                isDisabled={isOrderLocked}/>
             <Button
                 fullWidth
                 isLoading={isLoadingAdd}
-                isDisabled={inputValue.trim() === ''}
+                isDisabled={isOrderLocked || inputValue.trim() === ''}
                 color="primary"
                 radius="md"
                 className="mt-3 font-medium"
                 onPress={onClickAddDayList}>추가</Button>
             </div>
-            <div className="overflow-hidden rounded-xl border border-gray-200/80 dark:border-gray-800">
-            <Table aria-label="day-list-table" removeWrapper>
-                <TableHeader>
-                    <TableColumn>숙제명</TableColumn>
-                    <TableColumn>삭제</TableColumn>
-                </TableHeader>
-                <TableBody emptyContent={"설정된 콘텐츠가 없습니다."}>
-                    {checklist[index].daylist.map((item, idx) => (
-                        <TableRow key={idx}>
-                            <TableCell>{item.name}</TableCell>
-                            <TableCell>
-                                <Button size="sm" radius="md" color="danger" variant="light" onPress={async () => {
-                                    if (confirm('해당 숙제를 삭제하시겠습니까? 삭제 후 되돌릴 수 없습니다.')) {
-                                        await handleRemoveDayList(checklist, index, idx, dispatch);
-                                    }
-                                }}>삭제</Button></TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-primary-200/70 bg-primary-50/50 px-4 py-3 dark:border-primary-900/60 dark:bg-primary-950/20">
+                <div className="min-w-0">
+                    <p className="text-sm font-semibold">숙제 순서</p>
+                    <p className="mt-0.5 text-xs fadedtext">왼쪽 그립을 끌어서 순서를 변경하세요.</p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                    {isOrderDirty ? (
+                        <Button
+                            size="sm"
+                            radius="md"
+                            variant="light"
+                            className="text-danger underline underline-offset-2"
+                            isDisabled={isSavingOrder}
+                            onPress={handleCancelOrder}>
+                            취소
+                        </Button>
+                    ) : null}
+                    <Button
+                        size="sm"
+                        color="primary"
+                        radius="md"
+                        isLoading={isSavingOrder}
+                        isDisabled={!isOrderDirty || isSavingOrder}
+                        onPress={handleSaveOrder}>
+                        순서 저장
+                    </Button>
+                </div>
+            </div>
+            <div className="mt-3 overflow-hidden rounded-xl border border-gray-200/80 dark:border-gray-800">
+                <div className="grid grid-cols-[3rem_1fr_auto] items-center gap-2 border-b border-gray-200/80 px-4 py-3 text-xs font-semibold fadedtext dark:border-gray-800">
+                    <span>이동</span>
+                    <span>숙제명</span>
+                    <span>삭제</span>
+                </div>
+                <DragDropContext onDragEnd={handleDragEnd}>
+                    <Droppable droppableId="daylist-order">
+                        {(provided) => (
+                            <div {...provided.droppableProps} ref={provided.innerRef}>
+                                {entries.map((entry, entryIndex) => (
+                                    <Draggable key={entry.id} draggableId={entry.id} index={entryIndex} isDragDisabled={isSavingOrder}>
+                                        {(providedDraggable) => (
+                                            <div ref={providedDraggable.innerRef} {...providedDraggable.draggableProps} className="grid grid-cols-[3rem_1fr_auto] items-center gap-2 border-b border-gray-200/80 px-4 py-3 last:border-b-0 dark:border-gray-800">
+                                                <span
+                                                    aria-label={`${entry.value.name} 순서 이동`}
+                                                    role="button"
+                                                    tabIndex={isSavingOrder ? -1 : 0}
+                                                    className={clsx(
+                                                        "inline-flex h-8 w-8 shrink-0 select-none items-center justify-center text-lg leading-none text-gray-500 dark:text-gray-400",
+                                                        isSavingOrder ? "cursor-default opacity-50" : "cursor-grab touch-none active:cursor-grabbing"
+                                                    )}
+                                                    {...providedDraggable.dragHandleProps}>
+                                                    ⠿
+                                                </span>
+                                                <span className="min-w-0 truncate text-sm">{entry.value.name}</span>
+                                                <Tooltip showArrow color="danger" content="삭제">
+                                                    <Button
+                                                        isIconOnly
+                                                        size="sm"
+                                                        variant="flat"
+                                                        radius="full"
+                                                        color="danger"
+                                                        aria-label={`${entry.value.name} 삭제`}
+                                                        className="h-8 min-h-8 w-8 min-w-8"
+                                                        isDisabled={isOrderLocked}
+                                                        onPress={async () => {
+                                                            if (confirm('해당 숙제를 삭제하시겠습니까? 삭제 후 되돌릴 수 없습니다.')) {
+                                                                await handleRemoveDayList(checklist, index, entryIndex, dispatch);
+                                                            }
+                                                        }}>
+                                                        <DeleteIcon className="h-4 w-4"/>
+                                                    </Button>
+                                                </Tooltip>
+                                            </div>
+                                        )}
+                                    </Draggable>
+                                ))}
+                                {provided.placeholder}
+                            </div>
+                        )}
+                    </Droppable>
+                </DragDropContext>
             </div>
         </div>
     )
@@ -2581,12 +2774,32 @@ type WeekModalContentProps = {
     index: number,
     dispatch: AppDispatch,
     bosses: Boss[],
-    onClose: () => void
+    onClose: () => void,
+    onOrderDirtyChange: (isDirty: boolean) => void
 }
-function WeekModalContent({ checklist, index, dispatch, bosses, onClose }: WeekModalContentProps) {
+function WeekModalContent({ checklist, index, dispatch, bosses, onClose, onOrderDirtyChange }: WeekModalContentProps) {
     const [content, setContent] = useState<Selection>(new Set([]));
     const [difficulty, setDifficulty] = useState<Selection>(new Set([]));
     const [isGold, setGold] = useState(false);
+    const [selectedKey, setSelectedKey] = useState('content');
+    const [isOrderDirty, setOrderDirty] = useState(false);
+
+    useEffect(() => {
+        onOrderDirtyChange(isOrderDirty);
+    }, [isOrderDirty, onOrderDirtyChange]);
+
+    const handleTabChange = (key: React.Key) => {
+        const nextKey = String(key);
+        if (nextKey !== selectedKey && isOrderDirty) {
+            addToast({
+                title: "저장되지 않은 순서 변경",
+                description: "순서 저장 또는 취소를 먼저 눌러주세요.",
+                color: "warning"
+            });
+            return;
+        }
+        setSelectedKey(nextKey);
+    };
 
     useEffect(() => {
         if (getTakeGold(checklist[index].checklist) >= 3) {
@@ -2624,7 +2837,7 @@ function WeekModalContent({ checklist, index, dispatch, bosses, onClose }: WeekM
 
     return (
         <div className="w-full">
-            <Tabs fullWidth aria-label="week-modal" color="secondary" variant="underlined" classNames={{tabList: "gap-5", panel: "px-0 pb-1 pt-5"}}>
+            <Tabs fullWidth aria-label="week-modal" color="secondary" variant="underlined" selectedKey={selectedKey} onSelectionChange={handleTabChange} classNames={{tabList: "gap-5", panel: "px-0 pb-1 pt-5"}}>
                 <Tab key="content" title="콘텐츠">
                     <WeekContentComponent
                         checklist={checklist}
@@ -2637,14 +2850,16 @@ function WeekModalContent({ checklist, index, dispatch, bosses, onClose }: WeekM
                         setContent={setContent}
                         setDifficulty={setDifficulty}
                         isGold={isGold}
-                        setGold={setGold}/>
+                        setGold={setGold}
+                        onOrderDirtyChange={setOrderDirty}/>
                 </Tab>
                 <Tab key="list" title="기타">
                     <WeekListComponent
                         checklist={checklist}
                         index={index}
                         dispatch={dispatch}
-                        onClose={onClose}/>
+                        onClose={onClose}
+                        onOrderDirtyChange={setOrderDirty}/>
                 </Tab>
                 <Tab key="fixed-content" title="추가 콘텐츠">
                     <FixedContentSettings
@@ -2742,16 +2957,63 @@ type WeekListComponentProps = {
     checklist: CheckCharacter[],
     index: number,
     dispatch: AppDispatch,
-    onClose: () => void
+    onClose: () => void,
+    onOrderDirtyChange: (isDirty: boolean) => void
 }
-function WeekListComponent({ checklist, index, dispatch, onClose }: WeekListComponentProps) {
+function WeekListComponent({ checklist, index, dispatch, onClose, onOrderDirtyChange }: WeekListComponentProps) {
     const [isLoadingAdd, setLoadingAdd] = useState(false);
+    const [isSavingOrder, setSavingOrder] = useState(false);
+    const [isOrderDirty, setOrderDirty] = useState(false);
+    const [entries, setEntries] = useState<ReorderEntry<OtherList>[]>([]);
+    const [originalEntries, setOriginalEntries] = useState<ReorderEntry<OtherList>[]>([]);
     const [inputValue, setInputValue] = useState('');
+    const isOrderLocked = isOrderDirty || isSavingOrder;
+
+    useEffect(() => {
+        onOrderDirtyChange(isOrderDirty);
+    }, [isOrderDirty, onOrderDirtyChange]);
     const otherItem: OtherList = {
         name: inputValue,
         isCheck: false
     }
     const onClickAddItem = useOnClickAddWeekList(checklist, index, dispatch, otherItem, setLoadingAdd, setInputValue);
+
+    useEffect(() => {
+        if (!isOrderLocked) {
+            const nextEntries = createReorderEntries(checklist[index]?.weeklist ?? [], 'weeklist');
+            setEntries(nextEntries);
+            setOriginalEntries(nextEntries);
+        }
+    }, [checklist, index, isOrderLocked]);
+
+    const handleDragEnd = (result: { source: { index: number }, destination?: { index: number } | null }) => {
+        if (!result.destination || result.source.index === result.destination.index) return;
+        const nextEntries = [...entries];
+        const [movedEntry] = nextEntries.splice(result.source.index, 1);
+        nextEntries.splice(result.destination.index, 0, movedEntry);
+        if (!isOrderDirty) setOriginalEntries(entries);
+        setEntries(nextEntries);
+        setOrderDirty(true);
+    };
+
+    const handleSaveOrder = async () => {
+        if (!isOrderDirty || isSavingOrder) return;
+        setSavingOrder(true);
+        const isSuccess = await handleReorderContent(checklist, index, 'weeklist', entries.map((entry) => entry.value), dispatch);
+        if (isSuccess) {
+            setOrderDirty(false);
+        } else {
+            setEntries(originalEntries);
+            setOrderDirty(false);
+        }
+        setSavingOrder(false);
+    };
+
+    const handleCancelOrder = () => {
+        if (!isOrderDirty || isSavingOrder) return;
+        setEntries(originalEntries);
+        setOrderDirty(false);
+    };
     return (
         <div className="space-y-4">
             <div className="rounded-xl border border-gray-200/80 bg-gray-50/60 p-4 dark:border-gray-800 dark:bg-gray-900/50">
@@ -2765,36 +3027,86 @@ function WeekListComponent({ checklist, index, dispatch, onClose }: WeekListComp
                 placeholder="2~15자 안으로 작성하세요."
                 maxLength={15}
                 value={inputValue}
-                onValueChange={setInputValue}/>
+                onValueChange={setInputValue}
+                isDisabled={isOrderLocked}/>
             <Button
                 fullWidth
                 radius="md"
                 isLoading={isLoadingAdd}
-                isDisabled={inputValue.trim() === ''}
+                isDisabled={isOrderLocked || inputValue.trim() === ''}
                 color="primary"
                 className="mt-3 font-medium"
                 onPress={onClickAddItem}>추가</Button>
             </div>
-            <div className="overflow-hidden rounded-xl border border-gray-200/80 dark:border-gray-800">
-            <Table aria-label="week-list-table" removeWrapper>
-                <TableHeader>
-                    <TableColumn>숙제명</TableColumn>
-                    <TableColumn>삭제</TableColumn>
-                </TableHeader>
-                <TableBody emptyContent={"설정된 콘텐츠가 없습니다."}>
-                    {checklist[index].weeklist.map((item, idx) => (
-                        <TableRow key={idx}>
-                            <TableCell>{item.name}</TableCell>
-                            <TableCell>
-                                <Button size="sm" radius="md" color="danger" variant="light" onPress={async () => {
-                                    if (confirm('해당 숙제를 삭제하시겠습니까? 삭제 후 되돌릴 수 없습니다.')) {
-                                        await handleRemoveWeekList(checklist, index, idx, dispatch);
-                                    }
-                                }}>삭제</Button></TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-primary-200/70 bg-primary-50/50 px-4 py-3 dark:border-primary-900/60 dark:bg-primary-950/20">
+                <div className="min-w-0">
+                    <p className="text-sm font-semibold">숙제 순서</p>
+                    <p className="mt-0.5 text-xs fadedtext">왼쪽 그립을 끌어서 순서를 변경하세요.</p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                    {isOrderDirty ? (
+                        <Button size="sm" radius="md" variant="light" className="text-danger underline underline-offset-2" isDisabled={isSavingOrder} onPress={handleCancelOrder}>
+                            취소
+                        </Button>
+                    ) : null}
+                    <Button size="sm" color="primary" radius="md" isLoading={isSavingOrder} isDisabled={!isOrderDirty || isSavingOrder} onPress={handleSaveOrder}>
+                        순서 저장
+                    </Button>
+                </div>
+            </div>
+            <div className="mt-3 overflow-hidden rounded-xl border border-gray-200/80 dark:border-gray-800">
+                <div className="grid grid-cols-[3rem_1fr_auto] items-center gap-2 border-b border-gray-200/80 px-4 py-3 text-xs font-semibold fadedtext dark:border-gray-800">
+                    <span>이동</span>
+                    <span>숙제명</span>
+                    <span>삭제</span>
+                </div>
+                <DragDropContext onDragEnd={handleDragEnd}>
+                    <Droppable droppableId="weeklist-order">
+                        {(provided) => (
+                            <div {...provided.droppableProps} ref={provided.innerRef}>
+                                {entries.map((entry, entryIndex) => (
+                                    <Draggable key={entry.id} draggableId={entry.id} index={entryIndex} isDragDisabled={isSavingOrder}>
+                                        {(providedDraggable) => (
+                                            <div ref={providedDraggable.innerRef} {...providedDraggable.draggableProps} className="grid grid-cols-[3rem_1fr_auto] items-center gap-2 border-b border-gray-200/80 px-4 py-3 last:border-b-0 dark:border-gray-800">
+                                                <span
+                                                    aria-label={`${entry.value.name} 순서 이동`}
+                                                    role="button"
+                                                    tabIndex={isSavingOrder ? -1 : 0}
+                                                    className={clsx(
+                                                        "inline-flex h-8 w-8 shrink-0 select-none items-center justify-center text-lg leading-none text-gray-500 dark:text-gray-400",
+                                                        isSavingOrder ? "cursor-default opacity-50" : "cursor-grab touch-none active:cursor-grabbing"
+                                                    )}
+                                                    {...providedDraggable.dragHandleProps}>
+                                                    ⠿
+                                                </span>
+                                                <span className="min-w-0 truncate text-sm">{entry.value.name}</span>
+                                                <Tooltip showArrow color="danger" content="삭제">
+                                                    <Button
+                                                        isIconOnly
+                                                        size="sm"
+                                                        variant="flat"
+                                                        radius="full"
+                                                        color="danger"
+                                                        aria-label={`${entry.value.name} 삭제`}
+                                                        className="h-8 min-h-8 w-8 min-w-8"
+                                                        isDisabled={isOrderLocked}
+                                                        onPress={async () => {
+                                                            if (confirm('해당 숙제를 삭제하시겠습니까? 삭제 후 되돌릴 수 없습니다.')) {
+                                                                await handleRemoveWeekList(checklist, index, entryIndex, dispatch);
+                                                            }
+                                                        }}>
+                                                        <DeleteIcon className="h-4 w-4"/>
+                                                    </Button>
+                                                </Tooltip>
+                                            </div>
+                                        )}
+                                    </Draggable>
+                                ))}
+                                {provided.placeholder}
+                            </div>
+                        )}
+                    </Droppable>
+                </DragDropContext>
             </div>
         </div>
     )
@@ -2812,7 +3124,8 @@ type WeekContentComponentProps = {
     setContent: SetStateFn<Selection>,
     setDifficulty : SetStateFn<Selection>,
     isGold: boolean,
-    setGold: SetStateFn<boolean>
+    setGold: SetStateFn<boolean>,
+    onOrderDirtyChange: (isDirty: boolean) => void
 }
 
 type WeekStageEditorProps = {
@@ -2870,14 +3183,61 @@ function WeekContentComponent({
     onClose,
     content, setContent,
     difficulty, setDifficulty,
-    isGold, setGold
+    isGold, setGold,
+    onOrderDirtyChange
 }: WeekContentComponentProps) {
     const [isLoadingAdd, setLoadingAdd] = useState(false);
     const [isLoadingEdit, setLoadingEdit] = useState(false);
+    const [isSavingOrder, setSavingOrder] = useState(false);
+    const [isOrderDirty, setOrderDirty] = useState(false);
+    const [entries, setEntries] = useState<ReorderEntry<Checklist>[]>([]);
+    const [originalEntries, setOriginalEntries] = useState<ReorderEntry<Checklist>[]>([]);
     const [stages, setStages] = useState<ControlStage[]>([]);
     const [isEditOpen, setEditOpen] = useState(false);
     const [editingIndex, setEditingIndex] = useState(-1);
     const [editStages, setEditStages] = useState<ControlStage[]>([]);
+    const isOrderLocked = isOrderDirty || isSavingOrder;
+
+    useEffect(() => {
+        onOrderDirtyChange(isOrderDirty);
+    }, [isOrderDirty, onOrderDirtyChange]);
+
+    useEffect(() => {
+        if (!isOrderLocked) {
+            const nextEntries = createReorderEntries(checklist[index]?.checklist ?? [], 'checklist');
+            setEntries(nextEntries);
+            setOriginalEntries(nextEntries);
+        }
+    }, [checklist, index, isOrderLocked]);
+
+    const handleDragEnd = (result: { source: { index: number }, destination?: { index: number } | null }) => {
+        if (!result.destination || result.source.index === result.destination.index) return;
+        const nextEntries = [...entries];
+        const [movedEntry] = nextEntries.splice(result.source.index, 1);
+        nextEntries.splice(result.destination.index, 0, movedEntry);
+        if (!isOrderDirty) setOriginalEntries(entries);
+        setEntries(nextEntries);
+        setOrderDirty(true);
+    };
+
+    const handleSaveOrder = async () => {
+        if (!isOrderDirty || isSavingOrder) return;
+        setSavingOrder(true);
+        const isSuccess = await handleReorderContent(checklist, index, 'checklist', entries.map((entry) => entry.value), dispatch);
+        if (isSuccess) {
+            setOrderDirty(false);
+        } else {
+            setEntries(originalEntries);
+            setOrderDirty(false);
+        }
+        setSavingOrder(false);
+    };
+
+    const handleCancelOrder = () => {
+        if (!isOrderDirty || isSavingOrder) return;
+        setEntries(originalEntries);
+        setOrderDirty(false);
+    };
 
     useEffect(() => {
         if (!Array.from(content)[0]) setStages([]);
@@ -2896,7 +3256,7 @@ function WeekContentComponent({
     };
 
     const handleOpenEdit = (checklistIndex: number) => {
-        const targetChecklist = checklist[index].checklist[checklistIndex];
+        const targetChecklist = entries[checklistIndex]?.value ?? checklist[index].checklist[checklistIndex];
         const findBoss = bosses.find((boss) => boss.name === targetChecklist.name);
         if (!findBoss) {
             addToast({
@@ -2914,9 +3274,43 @@ function WeekContentComponent({
 
     return (
         <>
-            <div className="flex w-full flex-col gap-2">
-                {checklist[index].checklist.map((item, idx) => (
-                    <div key={idx} className="flex w-full items-center gap-2 rounded-xl border border-gray-200/80 bg-gray-50/60 p-3 dark:border-gray-800 dark:bg-gray-900/50">
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-primary-200/70 bg-primary-50/50 px-4 py-3 dark:border-primary-900/60 dark:bg-primary-950/20">
+                <div className="min-w-0">
+                    <p className="text-sm font-semibold">콘텐츠 순서</p>
+                    <p className="mt-0.5 text-xs fadedtext">왼쪽 그립을 끌어서 순서를 변경하세요.</p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                    {isOrderDirty ? (
+                        <Button size="sm" radius="md" variant="light" className="text-danger underline underline-offset-2" isDisabled={isSavingOrder} onPress={handleCancelOrder}>
+                            취소
+                        </Button>
+                    ) : null}
+                    <Button size="sm" color="primary" radius="md" isLoading={isSavingOrder} isDisabled={!isOrderDirty || isSavingOrder} onPress={handleSaveOrder}>
+                        순서 저장
+                    </Button>
+                </div>
+            </div>
+            <DragDropContext onDragEnd={handleDragEnd}>
+                <Droppable droppableId="checklist-order">
+                    {(provided) => (
+                        <div className="mt-3 flex w-full flex-col gap-2" {...provided.droppableProps} ref={provided.innerRef}>
+                {entries.map((entry, idx) => {
+                    const item = entry.value;
+                    return (
+                    <Draggable key={entry.id} draggableId={entry.id} index={idx} isDragDisabled={isSavingOrder}>
+                        {(providedDraggable) => (
+                    <div ref={providedDraggable.innerRef} {...providedDraggable.draggableProps} className="flex w-full items-center gap-2 rounded-xl border border-gray-200/80 bg-gray-50/60 p-3 dark:border-gray-800 dark:bg-gray-900/50">
+                        <span
+                            aria-label={`${item.name} 순서 이동`}
+                            role="button"
+                            tabIndex={isSavingOrder ? -1 : 0}
+                            className={clsx(
+                                "inline-flex h-8 w-8 shrink-0 select-none items-center justify-center text-lg leading-none text-gray-500 dark:text-gray-400",
+                                isSavingOrder ? "cursor-default opacity-50" : "cursor-grab touch-none active:cursor-grabbing"
+                            )}
+                            {...providedDraggable.dragHandleProps}>
+                            ⠿
+                        </span>
                         <div className="grow">
                             <p className="text-sm font-medium">{item.name}</p>
                             <p className="mt-0.5 text-xs fadedtext">{printDifficulty(item.items)}</p>
@@ -2933,7 +3327,8 @@ function WeekContentComponent({
                                 : null}
                             onValueChange={async (isSelected) => {
                                 await handleCheckGolds(checklist, index, idx, dispatch, isSelected, bosses);
-                            }}/>
+                            }}
+                            isDisabled={isOrderLocked}/>
                         <div className="flex items-center gap-1">
                             <Tooltip showArrow content="콘텐츠 수정">
                                 <Button
@@ -2943,6 +3338,7 @@ function WeekContentComponent({
                                     radius="full"
                                     aria-label={`${item.name} 수정`}
                                     className="h-8 min-h-8 w-8 min-w-8"
+                                    isDisabled={isOrderLocked}
                                     onPress={() => handleOpenEdit(idx)}>
                                     <EditIcon title="수정" className="h-4 w-4"/>
                                 </Button>
@@ -2954,9 +3350,10 @@ function WeekContentComponent({
                                     variant="flat"
                                     radius="full"
                                     color="danger"
-                                    aria-label={`${item.name} 삭제`}
-                                    className="h-8 min-h-8 w-8 min-w-8"
-                                    onPress={async () => {
+                                     aria-label={`${item.name} 삭제`}
+                                     className="h-8 min-h-8 w-8 min-w-8"
+                                     isDisabled={isOrderLocked}
+                                     onPress={async () => {
                                         if (confirm('해당 콘텐츠를 삭제하시겠습니까? 삭제 후 되돌릴 수 없습니다.')) {
                                             await useOnClickRemoveItem(checklist, index, idx, dispatch);
                                         }
@@ -2966,8 +3363,15 @@ function WeekContentComponent({
                             </Tooltip>
                         </div>
                     </div>
-                ))}
-            </div>
+                        )}
+                    </Draggable>
+                    );
+                })}
+                {provided.placeholder}
+                        </div>
+                    )}
+                </Droppable>
+            </DragDropContext>
             <Modal
                 radius="lg"
                 size="lg"
@@ -3075,6 +3479,7 @@ function WeekContentComponent({
                     radius="md"
                     selectedKeys={content}
                     onSelectionChange={setContent}
+                    isDisabled={isOrderLocked}
                     className="mt-4">
                     {getWeekContents(bosses, checklist, index).map((item) => (
                         <SelectItem key={item.key}>{item.name}</SelectItem>
@@ -3093,6 +3498,7 @@ function WeekContentComponent({
                         color="warning"
                         className="rounded-lg bg-warning-50/70 px-2 py-1.5 dark:bg-warning-950/20"
                         isSelected={isGold}
+                        isDisabled={isOrderLocked}
                         onValueChange={setGold}>골드 체크</Checkbox>
                 </div>
                 <Button 
@@ -3100,7 +3506,7 @@ function WeekContentComponent({
                     radius="md"
                     color="primary"
                     isLoading={isLoadingAdd}
-                    isDisabled={stages.length > 0 ? stages[0].difficulty === EMPTY_STAGE_DIFFICULTY : true}
+                    isDisabled={isOrderLocked || (stages.length > 0 ? stages[0].difficulty === EMPTY_STAGE_DIFFICULTY : true)}
                     onPress={async () => {
                         if (Array.from(content)[0]) {
                             setLoadingAdd(true);

@@ -105,6 +105,12 @@ export type EditDayList = {
     characterIndex: number,
     daylist: OtherList[]
 }
+export type ReorderContentType = 'checklist' | 'weeklist' | 'daylist'
+export type ReorderContent = {
+    characterIndex: number,
+    contentType: ReorderContentType,
+    items: Checklist[] | OtherList[]
+}
 export type EditCube = {
     characterIndex: number,
     cublist: CubeList[]
@@ -199,6 +205,18 @@ const checklistSlice = createSlice({
             const characterIndex = action.payload.characterIndex;
             state.checklist[characterIndex].daylist = action.payload.daylist;
         },
+        reorderContent(state, action: PayloadAction<ReorderContent>) {
+            const character = state.checklist[action.payload.characterIndex];
+            if (!character) return;
+
+            if (action.payload.contentType === 'checklist') {
+                character.checklist = action.payload.items as Checklist[];
+            } else if (action.payload.contentType === 'weeklist') {
+                character.weeklist = action.payload.items as OtherList[];
+            } else {
+                character.daylist = action.payload.items as OtherList[];
+            }
+        },
         // 일일 목록 체크
         checkDayList(state, action: PayloadAction<CheckDayList>) {
             const characterIndex = action.payload.characterIndex;
@@ -282,6 +300,7 @@ export const {
     checkWeekList,
     saveRest,
     editDayList,
+    reorderContent,
     checkDayList,
     editCube,
     checkGold,
