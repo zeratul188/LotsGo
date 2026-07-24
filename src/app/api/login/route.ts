@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { firestore } from "@/utiils/firebase";
-import { isMatchValue } from "@/utiils/bcrypt";
 import type { Character } from "@/app/store/loginSlice";
 import { addDoc, collection, doc, getDocs, limit, query, Timestamp, updateDoc, where } from "firebase/firestore";
 import { generateRefreshToken, hashToken, signAccessToken } from "@/lib/auth";
@@ -12,7 +11,6 @@ const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_S
 
 export type User = {
     id: string,
-    password: string,
     email: string,
     expeditions: Array<Character>,
     nickname: string,
@@ -21,7 +19,7 @@ export type User = {
 }
 
 export async function POST(req: NextRequest) {
-    const { id, password, idToken } = await req.json();
+    const { id, idToken } = await req.json();
 
     try {
         const memberQuery = query(collection(firestore, 'members'), where('id', '==', id), limit(1));
@@ -32,7 +30,6 @@ export async function POST(req: NextRequest) {
         const targetDoc = memberSnapshot.docs[0];
         const userData: User = !memberSnapshot.empty ? {
             id: targetDoc.data().id,
-            password: targetDoc.data().password,
             email: targetDoc.data().email,
             expeditions: targetDoc.data().expeditions,
             nickname: targetDoc.data().character,
@@ -40,7 +37,6 @@ export async function POST(req: NextRequest) {
             isSupporter: targetDoc.data().isSupporter === true
         } : {
             id: "",
-            password: "",
             email: '',
             expeditions: [],
             nickname: "",
@@ -58,8 +54,8 @@ export async function POST(req: NextRequest) {
             if (!storedUid) {
                 await updateDoc(doc(firestore, "members", targetDoc.id), { uid: decodedToken.uid });
             }
-        } else if (typeof password !== 'string' || !userData.password || !(await isMatchValue(password, userData.password))) {
-            throw new Error("NOT_MATCH_PASSWORD");
+        } else {
+            throw new Error("INVALID_FIREBASE_ID_TOKEN");
         }
 
         const expedition: Array<Character> = !memberSnapshot.empty ? userData.expeditions : [];

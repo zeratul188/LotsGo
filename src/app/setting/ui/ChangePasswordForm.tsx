@@ -28,7 +28,7 @@ export default function ChangePasswordComponent() {
                 errorMessage="비밀번호가 일치하지 않습니다."
                 radius="lg"
                 placeholder="현재 비밀번호를 입력하세요."
-                maxLength={12}
+                maxLength={18}
                 value={nowPassworld}
                 onValueChange={setNowPassword}
                 className="w-full"/>
@@ -38,7 +38,7 @@ export default function ChangePasswordComponent() {
                 labelPlacement="outside"
                 placeholder="6 ~ 18글자 내로 입력하세요."
                 radius="lg"
-                maxLength={12}
+                maxLength={18}
                 value={newPassworld}
                 onValueChange={setNewPassword}
                 className="w-full"/>
@@ -48,7 +48,7 @@ export default function ChangePasswordComponent() {
                 labelPlacement="outside"
                 placeholder="새로운 비밀번호와 동일하게 입력하세요."
                 radius="lg"
-                maxLength={12}
+                maxLength={18}
                 value={confirmPassworld}
                 onValueChange={setConfirmPassword}
                 className="w-full"/>

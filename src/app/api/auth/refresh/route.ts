@@ -45,7 +45,6 @@ export async function POST(req: NextRequest) {
         const targetDoc = memberSnapshot.docs[0];
         const userData: User = {
             id: targetDoc.data().id,
-            password: targetDoc.data().password,
             email: targetDoc.data().email,
             expeditions: targetDoc.data().expeditions,
             nickname: targetDoc.data().character,

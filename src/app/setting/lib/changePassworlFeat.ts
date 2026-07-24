@@ -11,7 +11,7 @@ export function isDisableButton(
     confirmPassword: string
 ): boolean {
     const isNotEmpty = nowPassword !== '' && newPassword !== '' && confirmPassword !== '';
-    const isLimitLength = newPassword.length >= 6;
+    const isLimitLength = newPassword.length >= 6 && newPassword.length <= 18;
     const isSamePassword = newPassword === confirmPassword;
     return !(isNotEmpty && isSamePassword && isLimitLength);
 }
