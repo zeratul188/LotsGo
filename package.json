@@ -22,7 +22,6 @@
     "@vercel/analytics": "^1.5.0",
     "autoprefixer": "^10.4.21",
     "axios": "^1.8.4",
-    "bcryptjs": "^3.0.2",
     "cheerio": "^1.0.0",
     "clsx": "^2.1.1",
     "crypto-js": "^4.2.0",
