@@ -2,15 +2,38 @@
 
 import { useEffect, useState } from "react";
 import { Button, Input, Link, Spinner } from "@heroui/react";
-import { confirmPasswordReset, signOut, verifyPasswordResetCode } from "firebase/auth";
+import {
+    applyActionCode,
+    checkActionCode,
+    confirmPasswordReset,
+    signOut,
+    verifyPasswordResetCode
+} from "firebase/auth";
 import { auth } from "@/utiils/firebase";
 
-type ResetPasswordClientProps = {
+type AuthActionMode = "resetPassword" | "verifyEmail" | "recoverEmail";
+type ActionStatus = "checking" | "ready" | "success" | "invalid";
+
+type AuthActionClientProps = {
     mode?: string,
-    oobCode?: string,
+    oobCode?: string
 }
 
-type ResetStatus = 'checking' | 'ready' | 'success' | 'invalid';
+function isAuthActionMode(mode?: string): mode is AuthActionMode {
+    return mode === "resetPassword" || mode === "verifyEmail" || mode === "recoverEmail";
+}
+
+function getModeTitle(mode: AuthActionMode) {
+    if (mode === "resetPassword") return "비밀번호 재설정";
+    if (mode === "verifyEmail") return "이메일 인증";
+    return "이메일 변경 복구";
+}
+
+function getModeDescription(mode: AuthActionMode) {
+    if (mode === "resetPassword") return "새로운 비밀번호를 입력해주세요.";
+    if (mode === "verifyEmail") return "이메일 인증을 처리하고 있습니다.";
+    return "이메일 변경 요청을 확인하고 있습니다.";
+}
 
 function LogoComponent({ className }: { className: string }) {
     return (
@@ -18,59 +41,78 @@ function LogoComponent({ className }: { className: string }) {
             <img src="/title(L).png" className={`${className} dark:hidden`} alt="로츠고 로고"/>
             <img src="/title(D).png" className={`${className} hidden dark:block`} alt="로츠고 로고"/>
         </>
-    )
+    );
 }
 
-export default function ResetPasswordClient({ mode, oobCode }: ResetPasswordClientProps) {
-    const [status, setStatus] = useState<ResetStatus>('checking');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+export default function AuthActionClient({ mode, oobCode }: AuthActionClientProps) {
+    const [status, setStatus] = useState<ActionStatus>("checking");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [isLoading, setLoading] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState("");
 
+    const validMode = isAuthActionMode(mode) ? mode : undefined;
     const isPasswordLengthValid = password.length >= 6 && password.length <= 18;
     const isPasswordSame = password === confirmPassword;
     const isSubmitDisabled = !isPasswordLengthValid || !confirmPassword || !isPasswordSame || isLoading;
 
     useEffect(() => {
-        if (mode !== 'resetPassword' || !oobCode) {
-            setStatus('invalid');
+        if (!validMode || !oobCode) {
+            setStatus("invalid");
             return;
         }
 
-        verifyPasswordResetCode(auth, oobCode)
-            .then((verifiedEmail) => {
-                setEmail(verifiedEmail);
-                setStatus('ready');
+        setStatus("checking");
+        setErrorMessage("");
+
+        if (validMode === "resetPassword") {
+            verifyPasswordResetCode(auth, oobCode)
+                .then((verifiedEmail) => {
+                    setEmail(verifiedEmail);
+                    setStatus("ready");
+                })
+                .catch(() => setStatus("invalid"));
+            return;
+        }
+
+        checkActionCode(auth, oobCode)
+            .then((actionInfo) => {
+                const actionEmail = actionInfo.data.email;
+                if (typeof actionEmail === "string") setEmail(actionEmail);
+                return applyActionCode(auth, oobCode);
             })
-            .catch(() => setStatus('invalid'));
-    }, [mode, oobCode]);
+            .then(() => setStatus("success"))
+            .catch(() => setStatus("invalid"));
+    }, [validMode, oobCode]);
 
     async function handleResetPassword() {
-        if (!oobCode || isSubmitDisabled) return;
+        if (!oobCode || validMode !== "resetPassword" || isSubmitDisabled) return;
 
         setLoading(true);
-        setErrorMessage('');
+        setErrorMessage("");
 
         try {
             await confirmPasswordReset(auth, oobCode, password);
             await signOut(auth).catch(() => undefined);
-            setStatus('success');
-            setPassword('');
-            setConfirmPassword('');
+            setPassword("");
+            setConfirmPassword("");
+            setStatus("success");
         } catch (error: any) {
-            if (error?.code === 'auth/expired-action-code' || error?.code === 'auth/invalid-action-code') {
-                setStatus('invalid');
-            } else if (error?.code === 'auth/weak-password') {
-                setErrorMessage('비밀번호는 6글자 이상으로 설정해주세요.');
+            if (error?.code === "auth/expired-action-code" || error?.code === "auth/invalid-action-code") {
+                setStatus("invalid");
+            } else if (error?.code === "auth/weak-password") {
+                setErrorMessage("비밀번호는 6~18글자로 입력해주세요.");
             } else {
-                setErrorMessage('비밀번호를 변경하는 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                setErrorMessage("비밀번호를 변경하는 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
             }
         } finally {
             setLoading(false);
         }
     }
+
+    const title = validMode ? getModeTitle(validMode) : "인증 링크 확인";
+    const description = validMode ? getModeDescription(validMode) : "유효한 인증 링크인지 확인해주세요.";
 
     return (
         <main className="relative flex min-h-[calc(100vh-65px)] items-center justify-center overflow-hidden bg-gray-50/70 px-4 py-8 sm:px-6 lg:py-12 dark:bg-[#111111]">
@@ -83,14 +125,14 @@ export default function ResetPasswordClient({ mode, oobCode }: ResetPasswordClie
                     <div className="relative">
                         <LogoComponent className="w-[220px]"/>
                         <p className="mt-8 max-w-sm text-3xl font-bold leading-tight tracking-tight">
-                            새로운 비밀번호로<br/>계정을 안전하게 지켜주세요.
+                            계정 인증을 안전하게<br/>완료해주세요.
                         </p>
                         <p className="mt-4 max-w-sm text-sm leading-6 fadedtext">
-                            변경이 완료되면 기존 비밀번호는 사용할 수 없으며, 새 비밀번호로 다시 로그인할 수 있습니다.
+                            로츠고 계정의 이메일 인증과 비밀번호 작업을 안전하게 처리합니다.
                         </p>
                     </div>
                     <div className="relative mt-12 space-y-3">
-                        {['6~18글자의 새로운 비밀번호', '이메일로 확인된 안전한 변경', '변경 완료 후 로그인으로 복귀'].map((item) => (
+                        {["인증 코드 유효성 확인", "계정 정보 안전하게 보호", "완료 후 로그인 화면으로 이동"].map((item) => (
                             <div key={item} className="flex items-center gap-3 text-sm font-medium">
                                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">✓</span>
                                 {item}
@@ -105,18 +147,19 @@ export default function ResetPasswordClient({ mode, oobCode }: ResetPasswordClie
                             <LogoComponent className="w-[190px]"/>
                         </div>
 
-                        {status === 'checking' && (
+                        {status === "checking" && (
                             <div className="flex min-h-64 flex-col items-center justify-center text-center">
-                                <Spinner size="lg" label="재설정 링크를 확인하고 있습니다..." variant="wave" classNames={{ label: "mt-4 fadedtext" }}/>
+                                <Spinner size="lg" label="인증 작업을 확인하고 있습니다..." variant="wave" classNames={{ label: "mt-4 fadedtext" }}/>
                             </div>
                         )}
 
-                        {status === 'invalid' && (
+                        {status === "invalid" && (
                             <div className="text-center">
                                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-danger/10 text-2xl font-bold text-danger">!</div>
-                                <h1 className="mt-6 text-2xl font-semibold tracking-tight">재설정 링크를 사용할 수 없습니다</h1>
+                                <h1 className="mt-6 text-2xl font-semibold tracking-tight">인증 링크를 사용할 수 없습니다</h1>
                                 <p className="mt-3 text-sm leading-6 fadedtext">
-                                    링크가 만료되었거나 이미 사용되었습니다.<br/>로그인 화면에서 비밀번호 찾기를 다시 진행해주세요.
+                                    링크가 만료되었거나 이미 사용되었을 수 있습니다.<br/>
+                                    로그인 화면에서 필요한 작업을 다시 진행해주세요.
                                 </p>
                                 <Button as={Link} href="/login" fullWidth color="primary" size="lg" radius="sm" className="mt-8 font-semibold">
                                     로그인 화면으로 이동
@@ -124,27 +167,28 @@ export default function ResetPasswordClient({ mode, oobCode }: ResetPasswordClie
                             </div>
                         )}
 
-                        {status === 'success' && (
+                        {status === "success" && (
                             <div className="text-center">
                                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success/10 text-2xl font-bold text-success">✓</div>
-                                <h1 className="mt-6 text-2xl font-semibold tracking-tight">비밀번호 변경 완료</h1>
+                                <h1 className="mt-6 text-2xl font-semibold tracking-tight">{title} 완료</h1>
                                 <p className="mt-3 text-sm leading-6 fadedtext">
-                                    새로운 비밀번호가 안전하게 설정되었습니다.<br/>변경한 비밀번호로 로그인해주세요.
+                                    계정 작업이 정상적으로 완료되었습니다.<br/>
+                                    로츠고를 계속 이용하려면 로그인해주세요.
                                 </p>
                                 <Button as={Link} href="/login" fullWidth color="primary" size="lg" radius="sm" className="mt-8 font-semibold">
-                                    로그인하기
+                                    계속하기
                                 </Button>
                             </div>
                         )}
 
-                        {status === 'ready' && (
+                        {status === "ready" && validMode === "resetPassword" && (
                             <>
                                 <div className="mb-8">
                                     <div className="flex items-center gap-2">
                                         <span className="h-5 w-1 rounded-full bg-primary"/>
-                                        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">비밀번호 재설정</h1>
+                                        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h1>
                                     </div>
-                                    <p className="mt-2 pl-3 text-sm fadedtext">새로운 비밀번호를 입력해주세요.</p>
+                                    <p className="mt-2 pl-3 text-sm fadedtext">{description}</p>
                                 </div>
 
                                 <div className="mb-6 rounded-xl border border-primary/15 bg-primary/[0.04] p-4">
@@ -166,15 +210,11 @@ export default function ResetPasswordClient({ mode, oobCode }: ResetPasswordClie
                                         value={password}
                                         onValueChange={(value) => {
                                             setPassword(value);
-                                            setErrorMessage('');
+                                            setErrorMessage("");
                                         }}
                                         isInvalid={Boolean(password) && !isPasswordLengthValid}
                                         errorMessage="비밀번호는 6~18글자로 입력해주세요."
-                                        variant="bordered"
-                                        classNames={{
-                                            label: "mb-1.5 font-medium",
-                                            inputWrapper: "border-gray-200 bg-gray-50/50 transition-colors hover:border-primary/50 dark:border-white/10 dark:bg-white/[0.03]"
-                                        }}/>
+                                        variant="bordered"/>
                                     <Input
                                         fullWidth
                                         type="password"
@@ -187,18 +227,14 @@ export default function ResetPasswordClient({ mode, oobCode }: ResetPasswordClie
                                         value={confirmPassword}
                                         onValueChange={(value) => {
                                             setConfirmPassword(value);
-                                            setErrorMessage('');
+                                            setErrorMessage("");
                                         }}
                                         isInvalid={Boolean(confirmPassword) && !isPasswordSame}
                                         errorMessage="새 비밀번호와 일치하지 않습니다."
                                         onKeyDown={(event) => {
-                                            if (event.key === 'Enter') void handleResetPassword();
+                                            if (event.key === "Enter") void handleResetPassword();
                                         }}
-                                        variant="bordered"
-                                        classNames={{
-                                            label: "mb-1.5 font-medium",
-                                            inputWrapper: "border-gray-200 bg-gray-50/50 transition-colors hover:border-primary/50 dark:border-white/10 dark:bg-white/[0.03]"
-                                        }}/>
+                                        variant="bordered"/>
                                 </div>
 
                                 {errorMessage && (
@@ -226,5 +262,5 @@ export default function ResetPasswordClient({ mode, oobCode }: ResetPasswordClie
                 </section>
             </div>
         </main>
-    )
+    );
 }
