@@ -6,9 +6,9 @@ import { addToast } from "@heroui/react";
 import { logined, LoginUser } from "../store/loginSlice";
 import type { AppDispatch } from "../store/store";
 import { useDispatch } from "react-redux";
-import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import { onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
 import { auth, firestore } from "@/utiils/firebase";
-import { collection, doc, getDocs, limit, query, updateDoc, where } from "firebase/firestore";
+import { collection, getDocs, limit, query, updateDoc, where } from "firebase/firestore";
 import { hashValue } from "@/utiils/bcrypt";
 import { decrypt } from "@/utiils/crypto";
 import Cookies from 'js-cookie';
@@ -62,11 +62,43 @@ export async function login(
         return;
     }
 
-    const res = await fetch('/api/login', {
-        method: 'POST',
-        body: JSON.stringify({ id: user.id, password: user.password })
-    });
-    const data = await res.json();
+    let res: Response;
+    let data: any;
+    let hasFirebaseAuth = false;
+    let firebaseLoginFailed = false;
+    let firebaseCredentialVerified = false;
+
+    try {
+        const identityRes = await fetch('/api/login/identity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: user.id })
+        });
+
+        if (!identityRes.ok) throw new Error('IDENTITY_LOOKUP_FAILED');
+        const identityData = await identityRes.json();
+        hasFirebaseAuth = identityData.hasFirebaseAuth === true;
+        const firebaseCredential = await signInWithEmailAndPassword(auth, identityData.email, user.password.trim());
+        firebaseCredentialVerified = true;
+        const idToken = await firebaseCredential.user.getIdToken();
+
+        res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: user.id, idToken })
+        });
+
+        if (!res.ok) throw new Error('FIREBASE_LOGIN_FAILED');
+    } catch {
+        firebaseLoginFailed = hasFirebaseAuth && !firebaseCredentialVerified;
+        res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: user.id, password: user.password })
+        });
+    }
+
+    data = await res.json();
 
     // 아이디 없음 또는 비밀번호 일치하지 않을 경우
     if (!res.ok) {
@@ -91,6 +123,13 @@ export async function login(
 
     // 로그인 성공 시
     const decryptedEmail = decrypt(data.userData.email, secretKey);
+
+    if (firebaseLoginFailed && hasFirebaseAuth) {
+        setIdDuplicated(false);
+        setPasswordNotMatch(true);
+        setLoading(false);
+        return;
+    }
 
     await signInWithEmailAndPassword(auth, decryptedEmail, user.password.trim())
         .then(() => {
@@ -160,27 +199,10 @@ export async function login(
                     color: "danger"
                 });
             } else {
-                addToast({
-                    title: "재인증",
-                    description: `인증된 사용자 데이터가 없어 재인증을 진행합니다.`,
-                    color: "warning"
-                });
-                createUserWithEmailAndPassword(auth, decryptedEmail, user.password.trim())
-                    .then(async (userCredential) => {
-                        const uid = userCredential.user.uid;
-                        const q = query(collection(firestore, 'members'), where("id", "==", user.id));
-                        const snapshot = await getDocs(q);
-                        const targetDoc = snapshot.docs[0];
-                        const docRef = doc(firestore, "members", targetDoc.id);
-                        await updateDoc(docRef, {
-                            uid: uid
-                        });
-                        addToast({
-                            title: "인증 완료",
-                            description: `인증 데이터 생성에 성공하였습니다. 다시 로그인해주시기 바랍니다.`,
-                            color: "success"
-                        });
-                    })
+                setIdDuplicated(false);
+                setPasswordNotMatch(true);
+                setLoading(false);
+                return;
             }
             setLoading(false);
         })
@@ -240,11 +262,6 @@ export async function handleSendPasswordReset(
         setLoading(false);
         return;
     }
-
-    const docRef = snapshot.docs[0].ref;
-    await updateDoc(docRef, {
-        password: 'null'
-    });
 
     const res = await fetch('/api/auth/resetpassword', {
         method: 'POST',

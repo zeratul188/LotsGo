@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { firestore } from "@/utiils/firebase";
 import { isMatchValue } from "@/utiils/bcrypt";
 import type { Character } from "@/app/store/loginSlice";
-import { addDoc, collection, getDocs, limit, query, Timestamp, where } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, limit, query, Timestamp, updateDoc, where } from "firebase/firestore";
 import { generateRefreshToken, hashToken, signAccessToken } from "@/lib/auth";
 import { getClientIp } from "./loginFeat";
+import { adminAuth } from "@/utiils/firebaseAdmin";
+import { decrypt } from "@/utiils/crypto";
+
+const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
 export type User = {
     id: string,
@@ -17,7 +21,7 @@ export type User = {
 }
 
 export async function POST(req: NextRequest) {
-    const { id, password } = await req.json();
+    const { id, password, idToken } = await req.json();
 
     try {
         const memberQuery = query(collection(firestore, 'members'), where('id', '==', id), limit(1));
@@ -44,7 +48,17 @@ export async function POST(req: NextRequest) {
             isSupporter: false
         }
 
-        if (!(await isMatchValue(password, userData.password))) {
+        if (typeof idToken === 'string' && idToken) {
+            const decodedToken = await adminAuth.verifyIdToken(idToken);
+            const memberEmail = decrypt(userData.email, secretKey);
+            const storedUid = targetDoc.data().uid;
+            if ((storedUid && decodedToken.uid !== storedUid) || decodedToken.email !== memberEmail) {
+                throw new Error("INVALID_FIREBASE_ID_TOKEN");
+            }
+            if (!storedUid) {
+                await updateDoc(doc(firestore, "members", targetDoc.id), { uid: decodedToken.uid });
+            }
+        } else if (typeof password !== 'string' || !userData.password || !(await isMatchValue(password, userData.password))) {
             throw new Error("NOT_MATCH_PASSWORD");
         }
 
@@ -92,6 +106,9 @@ export async function POST(req: NextRequest) {
         }
         if (e.message === "NOT_MATCH_PASSWORD") {
             return NextResponse.json({ type: 'password', error: '비밀번호가 일치하지 않습니다.' }, { status: 400 });
+        }
+        if (e.message === "INVALID_FIREBASE_ID_TOKEN") {
+            return NextResponse.json({ type: 'password', error: 'Firebase 인증 정보가 유효하지 않습니다.' }, { status: 401 });
         }
         return NextResponse.json({ type: 'null', error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
     }
