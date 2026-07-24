@@ -4,7 +4,6 @@ import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
 import { database, firestore, auth } from "@/utiils/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { addToast } from "@heroui/react";
-import { hashValue } from "@/utiils/bcrypt";
 import { useRouter } from "next/navigation";
 import type { SetStateFn } from "@/utiils/utils";
 import { decrypt, encrypt } from "@/utiils/crypto";
@@ -379,7 +378,6 @@ export function useOnClickSignup(
             return;
          }
 
-        const hashedPassword = await hashValue(member.password);
         const q = query(collection(firestore, 'members'), where("id", '==', member.id));
         const snapshot = await getDocs(q);
 
@@ -400,7 +398,6 @@ export function useOnClickSignup(
                     id: member.id,
                     email: encrypt(member.email.trim(), secretKey),
                     character: member.character,
-                    password: hashedPassword,
                     expeditions: expedition
                 });
                 addToast({

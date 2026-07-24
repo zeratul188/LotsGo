@@ -1,9 +1,7 @@
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import { FieldValue } from "firebase-admin/firestore";
 import { NextRequest, NextResponse } from "next/server";
 import { decrypt } from "@/utiils/crypto";
-import { hashValue } from "@/utiils/bcrypt";
 
 const JWT_SECRET = process.env.LOSTARK_JWT_SECRET!;
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ?? 'null';
@@ -82,23 +80,10 @@ export async function POST(req: NextRequest) {
         if (!firebaseUser) throw new Error('AUTH_USER_NOT_FOUND');
 
         const temporaryPassword = generateTemporaryPassword();
-        const hashedPassword = await hashValue(temporaryPassword);
-        const previousPassword = memberData.password;
-        const previousUid = memberData.uid;
+        await adminAuth.updateUser(firebaseUser.uid, { password: temporaryPassword });
 
-        await memberDoc.ref.update({
-            password: hashedPassword,
-            uid: firebaseUser.uid
-        });
-
-        try {
-            await adminAuth.updateUser(firebaseUser.uid, { password: temporaryPassword });
-        } catch (error) {
-            await memberDoc.ref.update({
-                password: previousPassword === undefined ? FieldValue.delete() : previousPassword,
-                uid: previousUid === undefined ? FieldValue.delete() : previousUid
-            });
-            throw error;
+        if (memberData.uid !== firebaseUser.uid) {
+            await memberDoc.ref.update({ uid: firebaseUser.uid });
         }
 
         try {

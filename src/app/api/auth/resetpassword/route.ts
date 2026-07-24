@@ -11,7 +11,11 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await sendPasswordResetEmail(auth, email);
+    auth.languageCode = 'ko';
+    await sendPasswordResetEmail(auth, email, {
+      url: new URL('/login', req.nextUrl.origin).toString(),
+      handleCodeInApp: false,
+    });
     return NextResponse.json({ message: '재설정 이메일이 전송되었습니다.' }, { status: 200 });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
