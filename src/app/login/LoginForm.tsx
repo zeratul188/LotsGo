@@ -208,8 +208,8 @@ export function FindPasswordModal({ isOpen, onOpenChange }: FindPasswordModalPro
                             <div className="rounded-xl bg-warning/10 p-4 text-sm">
                                 <p className="font-semibold text-warning-700 dark:text-warning">비밀번호 재설정 안내</p>
                                 <ul className="ml-5 mt-2 list-disc space-y-1 leading-5 fadedtext">
-                                <li>이메일로 비밀번호 재설정을 보내면 기존에 존재하던 비밀번호는 사용하실 수 없습니다.</li>
-                                <li>이메일로 보내진 비밀번호 재설정 이후 로그인을 마치면 정상적으로 비밀번호가 재설정됩니다.</li>
+                                <li>메일의 링크에서 변경을 완료하기 전까지 기존 비밀번호를 사용할 수 있습니다.</li>
+                                <li>변경을 완료한 이후에는 새 비밀번호로 로그인해주세요.</li>
                                 </ul>
                             </div>
                         </ModalBody>

@@ -6,16 +6,14 @@ import { addToast } from "@heroui/react";
 import { logined, LoginUser } from "../store/loginSlice";
 import type { AppDispatch } from "../store/store";
 import { useDispatch } from "react-redux";
-import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, firestore } from "@/utiils/firebase";
-import { collection, doc, getDocs, limit, query, updateDoc, where } from "firebase/firestore";
-import { hashValue } from "@/utiils/bcrypt";
+import { collection, getDocs, limit, query, where } from "firebase/firestore";
 import { decrypt } from "@/utiils/crypto";
-import Cookies from 'js-cookie';
+import Cookies from "js-cookie";
 
-const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
+const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : "null";
 
-// 값 수정 이벤트 핸들링
 export function useLoginHandlers(setUser: SetStateFn<User>) {
     const updateUserData = useCallback((updated: Partial<User>) => {
         setUser(prev => ({
@@ -32,7 +30,6 @@ export function useLoginHandlers(setUser: SetStateFn<User>) {
 
 type RouterType = ReturnType<typeof useRouter>;
 
-// 로그인 함수
 export async function login(
     user: User,
     setLoading: SetStateFn<boolean>,
@@ -43,150 +40,71 @@ export async function login(
 ) {
     setLoading(true);
 
-    if (user.id.trim() === '') {
-        addToast({
-            title: "아이디 비어있음",
-            description: `아이디 입력란이 비어있습니다.`,
-            color: "danger"
-        });
+    if (user.id.trim() === "") {
+        addToast({ title: "아이디 입력 필요", description: "아이디를 입력해주세요.", color: "danger" });
         setLoading(false);
         return;
     }
-    if (user.password.trim() === '') {
-        addToast({
-            title: "비밀번호 비어있음",
-            description: `비밀번호 입력란이 비어있습니다.`,
-            color: "danger"
-        });
+    if (user.password.trim() === "") {
+        addToast({ title: "비밀번호 입력 필요", description: "비밀번호를 입력해주세요.", color: "danger" });
         setLoading(false);
         return;
     }
 
-    const res = await fetch('/api/login', {
-        method: 'POST',
-        body: JSON.stringify({ id: user.id, password: user.password })
-    });
-    const data = await res.json();
+    try {
+        const identityRes = await fetch("/api/login/identity", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: user.id })
+        });
 
-    // 아이디 없음 또는 비밀번호 일치하지 않을 경우
-    if (!res.ok) {
-        try {
-            const type = data.type;
-            const msg = data.error;
-            if (type === 'id') {
-                setIdDuplicated(true);
-                setPasswordNotMatch(false);
-            } else if (type === 'password') {
-                setIdDuplicated(false);
-                setPasswordNotMatch(true);
-            }
-            setLoading(false);
-            return;
-        } catch (e) {
-            console.warn("JSON 파싱 실패", e);
-            setLoading(false);
+        if (!identityRes.ok) {
+            setIdDuplicated(true);
+            setPasswordNotMatch(false);
             return;
         }
+
+        const identityData = await identityRes.json();
+        const firebaseCredential = await signInWithEmailAndPassword(auth, identityData.email, user.password.trim());
+        const idToken = await firebaseCredential.user.getIdToken();
+        const res = await fetch("/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: user.id, idToken })
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || "FIREBASE_LOGIN_FAILED");
+
+        const loginUser: LoginUser = {
+            id: user.id,
+            expedition: data.expedition,
+            character: data.userData?.nickname ?? "",
+            apiKey: data.userData?.apiKey ?? null,
+            isSupporter: data.userData?.isSupporter === true
+        };
+        dispatch(logined(loginUser));
+        sessionStorage.setItem("token", data.accessToken);
+        sessionStorage.setItem("user", JSON.stringify(loginUser));
+        localStorage.setItem("sessionExpiresAt", data.sessionExpiresAt);
+        Cookies.set("userApiKey", loginUser.apiKey ?? "", {
+            path: "/",
+            secure: true,
+            sameSite: "lax"
+        });
+
+        setIdDuplicated(false);
+        setPasswordNotMatch(false);
+        addToast({ title: "로그인 성공", description: "로그인되었습니다.", color: "success" });
+        router.push("/");
+    } catch {
+        setIdDuplicated(false);
+        setPasswordNotMatch(true);
+    } finally {
+        setLoading(false);
     }
-
-    // 로그인 성공 시
-    const decryptedEmail = decrypt(data.userData.email, secretKey);
-
-    await signInWithEmailAndPassword(auth, decryptedEmail, user.password.trim())
-        .then(() => {
-            onAuthStateChanged(auth, async (userState) => {
-                if (userState) {
-                    if (data.userData.password === 'null') {
-                        const q = query(collection(firestore, 'members'), where("id", "==", user.id), limit(1));
-                        const snapshot = await getDocs(q);
-                        const docRef = snapshot.docs[0].ref;
-                        const hashedPassword = await hashValue(user.password);
-                        await updateDoc(docRef, {
-                            password: hashedPassword
-                        });
-                    }
-                    const loginUser: LoginUser = {
-                        id: user.id,
-                        expedition: data.expedition,
-                        character: data.userData ? data.userData.nickname : '',
-                        apiKey: data.userData ? data.userData.apiKey ? data.userData.apiKey : null : null,
-                        isSupporter: data.userData?.isSupporter === true
-                    }
-                    dispatch(logined(loginUser));
-                    sessionStorage.setItem('token', data.accessToken);
-                    sessionStorage.setItem('user', JSON.stringify(loginUser));
-                    localStorage.setItem('sessionExpiresAt', data.sessionExpiresAt);
-                    Cookies.set('userApiKey', loginUser.apiKey ?? '', {
-                        path: '/',
-                        secure: true,
-                        sameSite: 'lax',
-                    });
-
-                    setIdDuplicated(false);
-                    setPasswordNotMatch(false);
-
-                    addToast({
-                        title: "로그인 성공",
-                        description: `로그인에 성공하였습니다. 30일 후에 자동으로 로그아웃됩니다.`,
-                        color: "success"
-                    });
-                    router.push('/');
-                } else {
-                    addToast({
-                        title: "인증 오류",
-                        description: `인증하는데 문제가 발생하였습니다.`,
-                        color: "danger"
-                    });
-                }
-            })
-        })
-        .catch((error: any) => {
-            if (error.code === 'auth/wrong-password' && data.userData.password === 'null') {
-                addToast({
-                    title: "비밀번호 미일치",
-                    description: `비밀번호가 일치하지 않습니다.`,
-                    color: "danger"
-                });
-            } else if (error.code === 'auth/user-not-found' && data.userData.password === 'null') {
-                addToast({
-                    title: "이메일 없음",
-                    description: `해당 이메일의 계정이 존재하지 않습니다.`,
-                    color: "danger"
-                });
-            } else if (error.code === 'auth/invalid-credential' && data.userData.password === 'null') {
-                addToast({
-                    title: "인증 정보 없음",
-                    description: `비밀번호가 일치하지 않거나 해당 이메일의 계정이 존재하지 않습니다.`,
-                    color: "danger"
-                });
-            } else {
-                addToast({
-                    title: "재인증",
-                    description: `인증된 사용자 데이터가 없어 재인증을 진행합니다.`,
-                    color: "warning"
-                });
-                createUserWithEmailAndPassword(auth, decryptedEmail, user.password.trim())
-                    .then(async (userCredential) => {
-                        const uid = userCredential.user.uid;
-                        const q = query(collection(firestore, 'members'), where("id", "==", user.id));
-                        const snapshot = await getDocs(q);
-                        const targetDoc = snapshot.docs[0];
-                        const docRef = doc(firestore, "members", targetDoc.id);
-                        await updateDoc(docRef, {
-                            uid: uid
-                        });
-                        addToast({
-                            title: "인증 완료",
-                            description: `인증 데이터 생성에 성공하였습니다. 다시 로그인해주시기 바랍니다.`,
-                            color: "success"
-                        });
-                    })
-            }
-            setLoading(false);
-        })
 }
 
-// 로그인 이벤트
 export function useLoginHandler(
     user: User,
     setLoading: SetStateFn<boolean>,
@@ -197,77 +115,62 @@ export function useLoginHandler(
     const dispatch = useDispatch<AppDispatch>();
 
     return async () => {
-        login(user, setLoading, setIdDuplicated, setPasswordNotMatch, router, dispatch);
-    }
+        await login(user, setLoading, setIdDuplicated, setPasswordNotMatch, router, dispatch);
+    };
 }
 
-// 비밀번호 재설정 메일 전송 함수
 export async function handleSendPasswordReset(
-    id: string, 
-    email: string, 
+    id: string,
+    email: string,
     setIdDuplicated: SetStateFn<boolean>,
     onClose: () => void,
     setLoading: SetStateFn<boolean>
 ) {
     setLoading(true);
     setIdDuplicated(false);
-    const q = query(collection(firestore, 'members'), where("id", "==", id), limit(1));
-    const snapshot = await getDocs(q);
 
-    if (snapshot.empty) {
-        setIdDuplicated(true);
-        setLoading(false);
-        return;
-    }
+    try {
+        const q = query(collection(firestore, "members"), where("id", "==", id), limit(1));
+        const snapshot = await getDocs(q);
 
-    if (snapshot.docs[0].data().email) {
-        const decryptEmail = decrypt(snapshot.docs[0].data().email, secretKey);
-        if (email !== decryptEmail) {
-            addToast({
-                title: "이메일 일치 오류",
-                description: `해당 ID를 가진 계정의 이메일이 입력한 이메일과 일치하지 않습니다.`,
-                color: "danger"
-            });
-            setLoading(false);
+        if (snapshot.empty) {
+            setIdDuplicated(true);
             return;
         }
-    } else {
-        addToast({
-            title: "데이터 불러오기 실패",
-            description: `데이터를 불러오는데 문제가 발생하였습니다.`,
-            color: "danger"
+
+        const encryptedEmail = snapshot.docs[0].data().email;
+        if (typeof encryptedEmail !== "string" || decrypt(encryptedEmail, secretKey) !== email) {
+            addToast({
+                title: "이메일 불일치",
+                description: "입력한 이메일이 해당 ID의 이메일과 일치하지 않습니다.",
+                color: "danger"
+            });
+            return;
+        }
+
+        const res = await fetch("/api/auth/resetpassword", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email })
         });
-        setLoading(false);
-        return;
-    }
+        const data = await res.json();
 
-    const docRef = snapshot.docs[0].ref;
-    await updateDoc(docRef, {
-        password: 'null'
-    });
+        if (!res.ok) throw new Error(data.error || "PASSWORD_RESET_EMAIL_FAILED");
 
-    const res = await fetch('/api/auth/resetpassword', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-    });
-
-    const data = await res.json();
-    if (res.ok) {
         addToast({
             title: "전송 완료",
-            description: `비밀번호 재설정 메일이 전송되었습니다. 메일함을 확인해주세요.`,
+            description: "비밀번호 재설정 메일을 확인해주세요.",
             color: "success"
         });
-        setLoading(false);
         onClose();
-    } else {
+    } catch (error) {
+        console.error("Password reset email failed", error);
         addToast({
             title: "전송 실패",
-            description: `비밀번호 재설정 메일이 전송을 실패하였습니다.`,
+            description: "비밀번호 재설정 메일을 보내지 못했습니다.",
             color: "danger"
         });
+    } finally {
         setLoading(false);
-        console.error(data.error);
     }
 }
