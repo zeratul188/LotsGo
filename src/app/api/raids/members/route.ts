@@ -3,6 +3,7 @@ import { Character } from "@/app/store/loginSlice"
 import { firestore } from "@/utiils/firebase"
 import { collection, getDocs, limit, query, where } from "firebase/firestore"
 import { NextRequest, NextResponse } from "next/server"
+import { getOtherGoldTotal } from "@/app/checklist/lib/otherGold"
 
 export type RaidMember = {
     id: string,
@@ -60,7 +61,7 @@ export async function GET(req: NextRequest) {
                         level: Number(item.level),
                         job: item.job,
                         isGold: item.isGold,
-                        otherGold: item.otherGold,
+                        otherGold: getOtherGoldTotal(item),
                         contents: item.checklist.map((content: any) => ({
                             name: content.name,
                             isGold: content.isGold,
@@ -106,7 +107,7 @@ export async function POST(req: NextRequest) {
                 level: Number(item.level),
                 job: item.job,
                 isGold: item.isGold,
-                otherGold: item.otherGold,
+                otherGold: getOtherGoldTotal(item),
                 contents: item.checklist.map((content: any) => ({
                     name: content.name,
                     isGold: content.isGold,
