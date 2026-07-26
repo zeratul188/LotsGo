@@ -1505,7 +1505,7 @@ export function ChecklistComponent({
                                             </Button>
                                         </Tooltip>
                                      </div>
-                                    <div className="px-1.5 py-1 sm:px-2">
+                                    <div className="px-0 py-0">
                                         {character.checklist.length === 0 ? (
                                             <div className="w-full h-[140px] flex items-center justify-center">
                                                 <p className="fadedtext">등록된 숙제가 없습니다.</p>
@@ -1538,13 +1538,14 @@ export function ChecklistComponent({
                                                     size="sm"
                                                     radius="full"
                                                     isSelected={isCheckHomework(item)}
-                                                    classNames={{base: "w-full max-w-none", label: "flex min-w-0 flex-1 items-center justify-start text-left"}}
-                                                    className="box-border w-full max-w-none py-1.5 pl-4 pr-2.5"
+                                                     classNames={{base: "box-border m-0 w-full max-w-none p-0 pl-2", label: "flex min-w-0 flex-1 items-center justify-start text-left"}}
+                                                     className="py-0.5 pr-2"
                                                     onValueChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                     <div className="w-full flex items-center gap-1">
-                                                        <div>
+                                                        <div className="min-w-0">
                                                             <div className="flex gap-1 items-center">
                                                                 <p className={clsx(
+                                                                    "whitespace-nowrap",
                                                                     isCheckHomework(item) ? 'line-through fadedtext' : ''
                                                                 )}>{getSimpleBossName(bosses, item.name)}</p>
                                                                 {item.isGold ? <img 
@@ -1619,7 +1620,7 @@ export function ChecklistComponent({
                                                                         </div>
                                                                     }>
                                                                         <div className={clsx(
-                                                                            'w-7 h-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none',
+                                                                            'h-7 w-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none',
                                                                             diff.isDisable ? 'bg-gray-300/30 dark:bg-gray-600/30 fadedtext' : 'cursor-pointer',
                                                                             diff.isBonus ? 'border-yellow-600 dark:border-yellow-400 bg-yellow-600/50 dark:bg-yellow-400/50 text-white' : 'border-gray-400 dark:border-gray-600'
                                                                         )} onClick={async (e) => {
