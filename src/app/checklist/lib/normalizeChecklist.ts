@@ -1,4 +1,5 @@
 import type { CheckCharacter, Day } from "@/app/store/checklistSlice";
+import { normalizeOtherGoldRecords } from "@/app/checklist/lib/otherGold";
 
 export function normalizeChecklist(value: unknown): CheckCharacter[] {
     if (!Array.isArray(value)) return [];
@@ -16,6 +17,11 @@ export function normalizeChecklist(value: unknown): CheckCharacter[] {
             questBonus: 0,
             questUsing: 0
         };
+
+        const otherGoldRecords = normalizeOtherGoldRecords(
+            item.otherGoldRecords,
+            item.otherGold
+        );
 
         return {
             nickname: item.nickname ?? '',
@@ -51,7 +57,8 @@ export function normalizeChecklist(value: unknown): CheckCharacter[] {
             cube: item.cube ?? 0,
             cubelist: item.cubelist ?? [],
             isGold: item.isGold ?? false,
-            otherGold: item.otherGold ?? 0,
+            otherGold: otherGoldRecords.reduce((sum, record) => sum + record.gold, 0),
+            otherGoldRecords,
             position: item.position ?? 9999,
             account: item.account ?? '본계정'
         };

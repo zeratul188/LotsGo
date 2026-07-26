@@ -21,6 +21,7 @@ import { Boss } from "../api/checklist/boss/route";
 import { Cube } from "../api/checklist/cube/route";
 import FixedLineAd from "../ad/FixedLineAd";
 import { Settings } from "../api/setting/route";
+import { normalizeChecklist } from "./lib/normalizeChecklist";
 
 
 export const defaultSettings: Settings = {
@@ -36,7 +37,7 @@ const LineAd = dynamic(() => import('../ad/LineAd'), { ssr: false });
 export default function ChecklistClient() {
     const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
 
-    const initialChecklist: CheckCharacter[] = iChecklist;
+    const initialChecklist: CheckCharacter[] = normalizeChecklist(iChecklist);
     const initialBosses: Boss[] = iBosses;
     const initialCubes: Cube[] = iCubes;
 
@@ -327,17 +328,37 @@ export default function ChecklistClient() {
                         bosses={checklistForm.bosses}/>
                 </div>
             )}
-            <div className="w-full max-w-[1280px] mx-auto">
-                <p className="fadedtext text-sm mt-8">수요일 6시에 초기화되지 않았나요?<br/>초기화되지 않았을 경우 한번 새로고침을 해보신 후 그래도 초기화가 되지 않았다면 아래 버튼을 눌러주세요.</p>
-                <Button
-                    radius="sm"
-                    color="danger"
-                    size="sm"
-                    className="mt-2"
-                    isLoading={isLoadingReset}
-                    onPress={async () => await handleResetChecklist(checklist, checklistForm.biweekly, dispatch, setLoadingReset)}>
-                    수동 초기화
-                </Button>
+            <div className="mx-auto w-full max-w-[1280px]">
+                <div className="mx-4 mt-8 flex flex-col gap-4 rounded-2xl border border-danger/20 bg-danger/[0.025] p-4 shadow-sm dark:border-danger/30 dark:bg-danger/[0.06] sm:flex-row sm:items-start sm:p-5">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-danger/10 text-lg font-bold text-danger dark:bg-danger/15">
+                        !
+                    </div>
+                    <div className="min-w-0 grow">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <h2 className="text-sm font-semibold text-foreground">주간 초기화가 되지 않았나요?</h2>
+                            <span className="rounded-full bg-danger/10 px-2 py-0.5 text-[11px] font-medium text-danger dark:bg-danger/15">
+                                수동 초기화
+                            </span>
+                        </div>
+                        <p className="mt-1 text-xs leading-5 text-default-500 dark:text-default-400">
+                            수요일 오전 6시 이후에도 초기화되지 않았다면 페이지를 새로고침한 뒤 다시 시도해주세요.
+                        </p>
+                        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <p className="text-[11px] text-default-400 dark:text-default-500">
+                                모든 숙제와 이번 주 부수입 기록이 초기화됩니다.
+                            </p>
+                            <Button
+                                radius="md"
+                                color="danger"
+                                size="sm"
+                                className="w-full font-semibold sm:w-auto"
+                                isLoading={isLoadingReset}
+                                onPress={async () => await handleResetChecklist(checklist, checklistForm.biweekly, dispatch, setLoadingReset)}>
+                                수동으로 초기화
+                            </Button>
+                        </div>
+                    </div>
+                </div>
                 {!checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
                     <div className="w-full flex justify-center px-4">
                         <div className="w-full max-w-[360px] min-h-[100px] mt-8">

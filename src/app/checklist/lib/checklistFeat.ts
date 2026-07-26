@@ -21,7 +21,8 @@ import {
     updateParadisePower,
     updateParadiseCheck,
     updateHallsHourglassCheck,
-    updateFixedContentVisibility
+    updateFixedContentVisibility,
+    updateOtherGoldRecords
 } from "../../store/checklistSlice";
 import { SetStateFn } from "@/utiils/utils";
 import { addToast, Selection } from "@heroui/react";
@@ -32,7 +33,8 @@ import { collection, getDocs } from "firebase/firestore";
 import { firestore } from "@/utiils/firebase";
 import { decrypt } from "@/utiils/crypto";
 import { ChecklistData, ChecklistDataDifficulty, getLevelByContent } from "../../home/lib/checklistFeat";
-import { ControlStage } from "../model/types";
+import { ControlStage, OtherGoldIconType, OtherGoldRecord } from "../model/types";
+import { getOtherGoldTotal } from "./otherGold";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
@@ -190,6 +192,7 @@ export async function loadChecklist(
                 cube: 0,
                 isGold: true,
                 otherGold: 0,
+                otherGoldRecords: [],
                 paradisePower: 0,
                 hallsHourglassCheck: false,
                 paradiseCheck: false,
@@ -506,7 +509,7 @@ export function getAllGolds(
         return total + goldFromChecklist;
     }, 0);
     for (const character of checklist) {
-        sum += character.otherGold;
+        sum += getOtherGoldTotal(character);
     }
     return sum;
 }
@@ -536,7 +539,7 @@ export function getHaveGolds(
         return total + goldFromChecklist;
     }, 0);
     for (const character of checklist) {
-        sum += character.otherGold;
+        sum += getOtherGoldTotal(character);
     }
     return sum;
 }
@@ -562,7 +565,7 @@ export function getHaveSharedGolds(
         return total + goldFromChecklist;
     }, 0);
     for (const character of checklist) {
-        sum += character.otherGold;
+        sum += getOtherGoldTotal(character);
     }
     return sum;
 }
@@ -582,7 +585,7 @@ export function getHaveBoundGolds(
         return total + goldFromChecklist;
     }, 0);
     for (const character of checklist) {
-        sum += character.otherGold;
+        sum += getOtherGoldTotal(character);
     }
     return sum;
 }
@@ -2211,6 +2214,7 @@ export async function handleAddCharacter(
                 cube: 0,
                 isGold: isGold,
                 otherGold: 0,
+                otherGoldRecords: [],
                 paradisePower: 0,
                 hallsHourglassCheck: false,
                 paradiseCheck: false,
@@ -2300,6 +2304,64 @@ export async function handleCalculateOtherGold(
         }));
         return;
     }
+}
+
+export type OtherGoldRecordPayload = {
+    action: "add" | "update" | "delete";
+    nickname: string;
+    recordId?: string;
+    icon?: OtherGoldIconType;
+    source?: string;
+    gold?: number;
+};
+
+export async function handleOtherGoldRecord(
+    payload: OtherGoldRecordPayload,
+    dispatch: AppDispatch
+): Promise<OtherGoldRecord[]> {
+    const userStr = sessionStorage.getItem("user");
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    let token = sessionStorage.getItem("token");
+    if (!storedUser || !token) throw new Error("로그인이 만료되었습니다. 다시 로그인해주세요.");
+
+    const requestBody = JSON.stringify({
+        id: storedUser.id,
+        ...payload
+    });
+    const request = (accessToken: string) => fetch("/api/checklist/other-gold", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            authorization: `Bearer ${accessToken}`
+        },
+        body: requestBody
+    });
+
+    let response = await request(token);
+    if (response.status === 401) {
+        const refreshResponse = await fetch("/api/auth/refresh", {
+            method: "POST",
+            credentials: "include"
+        });
+        const refreshData = await refreshResponse.json().catch(() => null);
+        if (refreshResponse.ok && typeof refreshData?.accessToken === "string") {
+            const refreshedToken: string = refreshData.accessToken;
+            token = refreshedToken;
+            sessionStorage.setItem("token", refreshedToken);
+            response = await request(refreshedToken);
+        }
+    }
+
+    const result = await response.json().catch(() => null);
+    if (!response.ok || !Array.isArray(result?.records)) {
+        throw new Error(result?.error ?? "부수입 기록을 저장하지 못했습니다.");
+    }
+
+    dispatch(updateOtherGoldRecords({
+        nickname: result.nickname,
+        records: result.records
+    }));
+    return result.records;
 }
 
 // 순서 변경 드래그 이벤트 함수
@@ -2625,7 +2687,7 @@ export function getAllBoundGold(bosses: Boss[], checklist: CheckCharacter[]): nu
 export function getAllContentOtherGold(bosses: Boss[], checklist: CheckCharacter[]): number {
     let sumGold = 0;
     for (const character of checklist) {
-        sumGold += character.otherGold;
+        sumGold += getOtherGoldTotal(character);
     }
     return sumGold
 }
@@ -2934,6 +2996,7 @@ export async function handleResetChecklist(
                     }
                 }),
                 otherGold: 0,
+                otherGoldRecords: [],
                 hallsHourglassCheck: false,
                 paradiseCheck: false,
                 weeklist: weeklist.map((list: any) => ({

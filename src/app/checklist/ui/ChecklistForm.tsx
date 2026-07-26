@@ -95,7 +95,6 @@ import {
     getWeekStages, 
     handleAddCharacter, 
     handleApplyPositions, 
-    handleCalculateOtherGold, 
     handleCheckGold, 
     handleCheckGolds, 
     handleControlCube, 
@@ -162,6 +161,11 @@ import JobAvatar from "@/Icons/JobAvatar";
 import { EditIcon } from "@/Icons/EditIcon";
 import SwitchCharacterIcon from "@/Icons/SwitchCharacterIcon";
 import AnimatedNumber from "./AnimatedNumber";
+import OtherGoldManager from "./OtherGoldManager";
+import OtherGoldOverviewTable from "./OtherGoldOverviewTable";
+import {
+    getOtherGoldTotal
+} from "../lib/otherGold";
 
 type ReorderEntry<T> = {
     id: string,
@@ -694,7 +698,7 @@ export function ChecklistStatue({
                                         </Button>
                                     </PopoverTrigger>
                                 <PopoverContent className="border border-gray-200/80 bg-white/95 p-0 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#171717]/95">
-                                    <div className="w-[calc(100vw-40px)] p-4 min-[501px]:max-w-[520px]">
+                                    <div className="w-[calc(100vw-40px)] p-4 min-[701px]:max-w-[760px]">
                                         <div className="mb-3 flex items-start justify-between gap-3 border-b border-gray-200/80 pb-3 dark:border-white/10">
                                             <div>
                                                 <p className="font-semibold">주간 골드 상세</p>
@@ -702,6 +706,17 @@ export function ChecklistStatue({
                                             </div>
                                             <Chip size="sm" radius="sm" color="warning" variant="flat">{filteredChecklist.length}명</Chip>
                                         </div>
+                                        <Tabs
+                                            aria-label="주간 골드 상세 탭"
+                                            variant="underlined"
+                                            color="warning"
+                                            classNames={{
+                                                tabList: "gap-5 p-0",
+                                                cursor: "w-full",
+                                                tab: "h-9 px-0",
+                                                panel: "px-0 pb-0"
+                                            }}>
+                                            <Tab key="gold-detail" title="골드 상세">
                                         <div className="w-full overflow-x-auto rounded-xl border border-gray-200/80 dark:border-white/10 scrollbar-hide">
                                             <div className="max-h-[360px] w-[440px] overflow-y-auto min-[501px]:w-full">
                                                 <Table removeWrapper>
@@ -717,7 +732,7 @@ export function ChecklistStatue({
                                                                 <TableCell>{character.nickname}</TableCell>
                                                                 <TableCell>{getCompleteSharedGoldCharacter(bosses, character).toLocaleString()}</TableCell>
                                                                 <TableCell>{getCompleteBoundGoldCharacter(bosses, character).toLocaleString()}</TableCell>
-                                                                <TableCell>{character.otherGold.toLocaleString()}</TableCell>
+                                                                <TableCell>{getOtherGoldTotal(character).toLocaleString()}</TableCell>
                                                             </TableRow>
                                                         ))}
                                                     </TableBody>
@@ -783,6 +798,11 @@ export function ChecklistStatue({
                                                 <div className="absolute top-0 left-0 h-full bg-green-500" style={{ width: `${getHaveGolds(bosses, filteredChecklist) !== 0 ? Math.round(getAllContentGold(bosses, filteredChecklist) / getHaveGolds(bosses, filteredChecklist) * 1000) / 10 : 0}%` }}></div>
                                             </div>
                                         ) : <></>}
+                                            </Tab>
+                                            <Tab key="other-gold-records" title="부수입 내역">
+                                                <OtherGoldOverviewTable checklist={checklist}/>
+                                            </Tab>
+                                        </Tabs>
                                     </div>
                                 </PopoverContent>
                                 </Popover>
@@ -1180,7 +1200,6 @@ export function ChecklistComponent({
     isAutoChecklistSharing,
     setAutoChecklistNickname
 }: ChecklistProps) {
-    const [inputOtherGold, setInputOtherGold] = useState<{ [nickname: string]: number }>({});
     const [inputCubeControl, setInputCubeControl] = useState<{ [nickname: string]: number }>({});
     const [isBonusMode, setBonusMode] = useState<{ [nickname: string]: boolean }>({});
     const isMobile = useMobileQuery();
@@ -1318,13 +1337,13 @@ export function ChecklistComponent({
                                                             src="/icons/gold.png" 
                                                             alt="goldicon"
                                                             className="w-[16px] h-[16px]"/>
-                                                        <span className="ml-1 text-md"><AnimatedNumber value={getCompleteGoldCharacter(bosses, character) + character.otherGold}/> / <AnimatedNumber value={getAllGoldCharacter(bosses, character) + character.otherGold}/></span>
+                                                        <span className="ml-1 text-md"><AnimatedNumber value={getCompleteGoldCharacter(bosses, character) + getOtherGoldTotal(character)}/> / <AnimatedNumber value={getAllGoldCharacter(bosses, character) + getOtherGoldTotal(character)}/></span>
                                                     </div>
                                                 )}
-                                                showValueLabel={getAllGoldCharacter(bosses, character)+character.otherGold > 0}
+                                                showValueLabel={getAllGoldCharacter(bosses, character)+getOtherGoldTotal(character) > 0}
                                                 radius="md"
-                                                value={getCompleteGoldCharacter(bosses, character)+character.otherGold}
-                                                maxValue={getAllGoldCharacter(bosses, character)+character.otherGold}
+                                                value={Math.max(0, getCompleteGoldCharacter(bosses, character)+getOtherGoldTotal(character))}
+                                                maxValue={Math.max(1, getAllGoldCharacter(bosses, character)+getOtherGoldTotal(character))}
                                                 className="w-full cursor-pointer [&_[data-slot=label]]:mb-1"/>
                                         </PopoverTrigger>
                                         <PopoverContent className="border border-gray-200/80 bg-white/95 p-0 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#171717]/95">
@@ -1363,14 +1382,14 @@ export function ChecklistComponent({
                                                             src="/icons/gold.png"  
                                                             alt="goldicon"
                                                             className="w-[16px] h-[16px]"/>
-                                                        <span className="ml-1 text-md">{character.otherGold.toLocaleString()}</span>
+                                                        <span className="ml-1 text-md">{getOtherGoldTotal(character).toLocaleString()}</span>
                                                     </div>
                                                 </div>
                                                 <div className="relative mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-200">
                                                     <div className="absolute top-0 left-0 h-full bg-[#dddddd] dark:bg-[#444444]" style={{ width: '100%' }}></div>
-                                                    <div className="absolute top-0 left-0 h-full bg-purple-600" style={{ width: `${getAllGoldCharacter(bosses, character)+character.otherGold !== 0 ? Math.round(getCompleteSharedGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 + Math.round(getCompleteBoundGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 + Math.round(character.otherGold / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 : 0}%` }}></div>
-                                                    <div className="absolute top-0 left-0 h-full bg-yellow-500" style={{ width: `${getAllGoldCharacter(bosses, character)+character.otherGold !== 0 ? Math.round(getCompleteSharedGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 + Math.round(getCompleteBoundGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 : 0}%` }}></div>
-                                                    <div className="absolute top-0 left-0 h-full bg-green-500" style={{ width: `${getAllGoldCharacter(bosses, character)+character.otherGold !== 0 ? Math.round(getCompleteSharedGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+character.otherGold) * 1000) / 10 : 0}%` }}></div>
+                                                    <div className="absolute top-0 left-0 h-full bg-purple-600" style={{ width: `${getAllGoldCharacter(bosses, character)+getOtherGoldTotal(character) > 0 ? Math.max(0, Math.min(100, Math.round((getCompleteSharedGoldCharacter(bosses, character) + getCompleteBoundGoldCharacter(bosses, character) + getOtherGoldTotal(character)) / (getAllGoldCharacter(bosses, character)+getOtherGoldTotal(character)) * 1000) / 10)) : 0}%` }}></div>
+                                                    <div className="absolute top-0 left-0 h-full bg-yellow-500" style={{ width: `${getAllGoldCharacter(bosses, character)+getOtherGoldTotal(character) > 0 ? Math.max(0, Math.min(100, Math.round((getCompleteSharedGoldCharacter(bosses, character) + getCompleteBoundGoldCharacter(bosses, character)) / (getAllGoldCharacter(bosses, character)+getOtherGoldTotal(character)) * 1000) / 10)) : 0}%` }}></div>
+                                                    <div className="absolute top-0 left-0 h-full bg-green-500" style={{ width: `${getAllGoldCharacter(bosses, character)+getOtherGoldTotal(character) > 0 ? Math.max(0, Math.min(100, Math.round(getCompleteSharedGoldCharacter(bosses, character) / (getAllGoldCharacter(bosses, character)+getOtherGoldTotal(character)) * 1000) / 10)) : 0}%` }}></div>
                                                 </div>
                                             </div>
                                         </PopoverContent>
@@ -1486,7 +1505,7 @@ export function ChecklistComponent({
                                             </Button>
                                         </Tooltip>
                                      </div>
-                                    <div className="px-1.5 py-1 sm:px-2">
+                                    <div className="px-0 py-0">
                                         {character.checklist.length === 0 ? (
                                             <div className="w-full h-[140px] flex items-center justify-center">
                                                 <p className="fadedtext">등록된 숙제가 없습니다.</p>
@@ -1519,13 +1538,14 @@ export function ChecklistComponent({
                                                     size="sm"
                                                     radius="full"
                                                     isSelected={isCheckHomework(item)}
-                                                    classNames={{base: "w-full max-w-none", label: "flex min-w-0 flex-1 items-center justify-start text-left"}}
-                                                    className="box-border w-full max-w-none py-1.5 pl-4 pr-2.5"
+                                                     classNames={{base: "box-border m-0 w-full max-w-none p-0 pl-2", label: "flex min-w-0 flex-1 items-center justify-start text-left"}}
+                                                     className="py-0.5 pr-2"
                                                     onValueChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                     <div className="w-full flex items-center gap-1">
-                                                        <div>
+                                                        <div className="min-w-0">
                                                             <div className="flex gap-1 items-center">
                                                                 <p className={clsx(
+                                                                    "whitespace-nowrap",
                                                                     isCheckHomework(item) ? 'line-through fadedtext' : ''
                                                                 )}>{getSimpleBossName(bosses, item.name)}</p>
                                                                 {item.isGold ? <img 
@@ -1600,7 +1620,7 @@ export function ChecklistComponent({
                                                                         </div>
                                                                     }>
                                                                         <div className={clsx(
-                                                                            'w-7 h-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none',
+                                                                            'h-7 w-7 flex justify-center items-center p-0.5 rounded-md border-2 leading-none',
                                                                             diff.isDisable ? 'bg-gray-300/30 dark:bg-gray-600/30 fadedtext' : 'cursor-pointer',
                                                                             diff.isBonus ? 'border-yellow-600 dark:border-yellow-400 bg-yellow-600/50 dark:bg-yellow-400/50 text-white' : 'border-gray-400 dark:border-gray-600'
                                                                         )} onClick={async (e) => {
@@ -1816,38 +1836,8 @@ export function ChecklistComponent({
                         <Divider/>
                         <CardFooter className="pt-0 pb-0">
                             <div className="w-full pt-3">
-                                <div className="mb-2 flex gap-2 items-end">
-                                    <NumberInput
-                                        fullWidth
-                                        label="부수입 설정"
-                                        labelPlacement="outside"
-                                        placeholder="0 ~ 999999999"
-                                        maxValue={999999999}
-                                        size="sm"
-                                        value={inputOtherGold[character.nickname] ?? 0}
-                                        onValueChange={(value: number) => {
-                                            setInputOtherGold(prev => ({...prev, [character.nickname]: value}));
-                                        }}/>
-                                    <Tooltip showArrow content="부수입 빼기">
-                                        <Button
-                                            variant="flat"
-                                            color="danger"
-                                            size="sm"
-                                            className="w-8 h-8 min-w-8 min-h-0 p-0 text-sm"
-                                            onPress={async () => {
-                                                await handleCalculateOtherGold(checklist, getIndexByNickname(checklist, character.nickname), 'minus', inputOtherGold[character.nickname] ?? 0, dispatch);
-                                            }}>-</Button>
-                                    </Tooltip>
-                                    <Tooltip showArrow content="부수입 더하기">
-                                        <Button
-                                            variant="flat"
-                                            color="success"
-                                            size="sm"
-                                            className="w-8 h-8 min-w-8 min-h-0 p-0 text-sm"
-                                            onPress={async () => {
-                                                await handleCalculateOtherGold(checklist, getIndexByNickname(checklist, character.nickname), 'add', inputOtherGold[character.nickname] ?? 0, dispatch);
-                                            }}>+</Button>
-                                    </Tooltip>
+                                <div className="mb-3">
+                                    <OtherGoldManager character={character} dispatch={dispatch}/>
                                 </div>
                                 <CharacterParadisePower checklist={checklist} nickname={character.nickname} dispatch={dispatch}/>
                                 <Divider/>
