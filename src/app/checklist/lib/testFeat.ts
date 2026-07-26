@@ -131,6 +131,16 @@ export function handleSetOtherGold(
             updatedChecklist[index].otherGold += gold;
             break;
     }
+    const nextOtherGold = updatedChecklist[index].otherGold;
+    updatedChecklist[index].otherGoldRecords = nextOtherGold === 0
+        ? []
+        : [{
+            id: "not-login-other-gold",
+            icon: "other",
+            source: "",
+            createdAt: null,
+            gold: nextOtherGold
+        }];
     setChecklist(updatedChecklist);
 }
 

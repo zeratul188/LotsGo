@@ -1,4 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit"
+import type { OtherGoldRecord } from "@/app/checklist/model/types"
+import { normalizeOtherGoldRecords } from "@/app/checklist/lib/otherGold"
 
 export type Day = {
     dungeon: number,
@@ -52,6 +54,7 @@ export type CheckCharacter = {
     cubelist: CubeList[],
     isGold: boolean,
     otherGold: number,
+    otherGoldRecords: OtherGoldRecord[],
     position: number,
     account: string
 }
@@ -123,6 +126,10 @@ export type CalculateOtherGold = {
     characterIndex: number,
     otherGold: number
 }
+export type UpdateOtherGoldRecords = {
+    nickname: string,
+    records: OtherGoldRecord[]
+}
 export type UpdateAccount = {
     characterIndex: number,
     account: string
@@ -165,6 +172,9 @@ const checklistSlice = createSlice({
                 hallsHourglassVisible: charaacter.hallsHourglassVisible !== false,
                 paradiseVisible: charaacter.paradiseVisible !== false,
                 cubelist: charaacter.cubelist ?? [],
+                otherGoldRecords: normalizeOtherGoldRecords(charaacter.otherGoldRecords, charaacter.otherGold),
+                otherGold: normalizeOtherGoldRecords(charaacter.otherGoldRecords, charaacter.otherGold)
+                    .reduce((sum, record) => sum + record.gold, 0),
                 position: charaacter.position ?? 9999
             }));
             state.checklist = newChecklist;
@@ -243,6 +253,12 @@ const checklistSlice = createSlice({
             const characterIndex = action.payload.characterIndex;
             state.checklist[characterIndex].otherGold = action.payload.otherGold;
         },
+        updateOtherGoldRecords(state, action: PayloadAction<UpdateOtherGoldRecords>) {
+            const character = state.checklist.find(item => item.nickname === action.payload.nickname);
+            if (!character) return;
+            character.otherGoldRecords = action.payload.records;
+            character.otherGold = action.payload.records.reduce((sum, record) => sum + record.gold, 0);
+        },
         // 큐브 초기화
         resetCube(state, action: PayloadAction<number>) {
             const characterIndex = action.payload;
@@ -306,6 +322,7 @@ export const {
     checkGold,
     removeCharacter,
     calculateOtherGold,
+    updateOtherGoldRecords,
     resetCube,
     updateAccount,
     updateMemo,

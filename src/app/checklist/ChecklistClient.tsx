@@ -21,6 +21,7 @@ import { Boss } from "../api/checklist/boss/route";
 import { Cube } from "../api/checklist/cube/route";
 import FixedLineAd from "../ad/FixedLineAd";
 import { Settings } from "../api/setting/route";
+import { normalizeChecklist } from "./lib/normalizeChecklist";
 
 
 export const defaultSettings: Settings = {
@@ -36,7 +37,7 @@ const LineAd = dynamic(() => import('../ad/LineAd'), { ssr: false });
 export default function ChecklistClient() {
     const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
 
-    const initialChecklist: CheckCharacter[] = iChecklist;
+    const initialChecklist: CheckCharacter[] = normalizeChecklist(iChecklist);
     const initialBosses: Boss[] = iBosses;
     const initialCubes: Cube[] = iCubes;
 
