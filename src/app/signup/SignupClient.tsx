@@ -25,8 +25,8 @@ export default function SignupClient() {
             <div className="pointer-events-none absolute -left-32 -top-32 h-80 w-80 rounded-full bg-primary/10 blur-3xl"/>
             <div className="pointer-events-none absolute -bottom-40 -right-24 h-96 w-96 rounded-full bg-secondary/10 blur-3xl"/>
 
-            <div className="relative mx-auto grid w-full max-w-6xl overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)] lg:grid-cols-[0.78fr_1.22fr] dark:border-white/10 dark:bg-[#171717] dark:shadow-none">
-                <section className="relative hidden flex-col justify-between overflow-hidden border-r border-gray-200/80 bg-primary/[0.04] p-10 lg:flex dark:border-white/10 dark:bg-primary/[0.07]">
+            <div className="relative mx-auto grid min-w-0 w-full max-w-6xl overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)] lg:grid-cols-[0.78fr_1.22fr] dark:border-white/10 dark:bg-[#171717] dark:shadow-none">
+                <section className="relative hidden min-w-0 flex-col justify-between overflow-hidden border-r border-gray-200/80 bg-primary/[0.04] p-10 lg:flex dark:border-white/10 dark:bg-primary/[0.07]">
                     <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full border-[32px] border-primary/[0.06]"/>
                     <div className="relative">
                         <LogoComponent className="w-[220px]"/>
@@ -47,8 +47,8 @@ export default function SignupClient() {
                     </div>
                 </section>
 
-                <section className="px-5 py-8 sm:px-10 sm:py-12 lg:px-14">
-                    <div className="mx-auto w-full max-w-[640px]">
+                <section className="min-w-0 px-5 py-8 sm:px-10 sm:py-12 lg:px-14">
+                    <div className="mx-auto min-w-0 w-full max-w-[640px]">
                         <div className="mb-8 lg:hidden">
                             <LogoComponent className="w-[190px]"/>
                         </div>
