@@ -4,6 +4,7 @@ import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Checkb
 import { useClickDuplicateEmailCheck, useOnClickDuplicateCheck, useOnClickExpeditionCheck, useOnClickSignup, useOnValueChangePrivacy } from "./signupFeat";
 import { useSignupHandlers } from "./signupFeat";
 import type { Character, Member, DuplicateChecked, ExpeditionChecked, DuplicateEmail } from "./signupFeat";
+import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 
 // state 관리
 export function useSignupForm() {
@@ -52,41 +53,68 @@ function ExpeditionComponent({ expedition }: {expedition: Character[]}) {
     if (expedition.length === 0) return null;
 
     return (
-        <div className="rounded-xl border border-gray-200/80 bg-gray-50/60 p-3 dark:border-white/10 dark:bg-white/[0.025]">
-            <div className="mb-3 flex flex-wrap items-center gap-2">
+        <section className="min-w-0 rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/[0.06] via-white to-gray-50 p-3 shadow-sm dark:border-primary/20 dark:from-primary/[0.12] dark:via-[#171717] dark:to-[#1d1d1d] sm:p-4">
+            <div className="mb-3 flex items-center gap-2">
                 <p className="font-semibold">확인된 원정대</p>
                 <Chip size="sm" radius="sm" color="primary" variant="flat">{expedition.length}명</Chip>
-                <p className="ml-auto text-xs fadedtext">목록 안에서 스크롤할 수 있습니다.</p>
+                <p className="ml-auto hidden text-xs fadedtext sm:block">원정대 캐릭터 목록</p>
             </div>
-            <div className="max-h-[320px] overflow-auto rounded-lg border border-gray-200/80 dark:border-white/10">
+            <div className="flex max-h-[360px] flex-col gap-2 overflow-y-auto sm:hidden">
+                {expedition.map((character) => (
+                    <article
+                        key={`${character.server}-${character.nickname}`}
+                        className="rounded-xl border border-gray-200/80 bg-white/80 px-3 py-2.5 dark:border-white/10 dark:bg-white/[0.04]">
+                        <div className="flex min-w-0 items-center gap-2.5">
+                            <JobEmblemIcon job={character.job} size={22} className="text-foreground" />
+                            <div className="min-w-0 grow">
+                                <p className="truncate text-sm font-semibold">{character.nickname}</p>
+                                <p className="mt-0.5 truncate text-xs fadedtext">{character.job}</p>
+                            </div>
+                            <span className="shrink-0 rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold tabular-nums text-primary dark:bg-primary/20">
+                                Lv. {character.level.toLocaleString()}
+                            </span>
+                        </div>
+                        <p className="mt-2 border-t border-gray-200/70 pt-1.5 text-[11px] fadedtext dark:border-white/10">
+                            {character.server}
+                        </p>
+                    </article>
+                ))}
+            </div>
+            <div className="hidden overflow-hidden rounded-xl border border-gray-200/80 bg-white/70 sm:block dark:border-white/10 dark:bg-white/[0.03]">
                 <Table
                     removeWrapper
                     isHeaderSticky
                     aria-label="원정대 캐릭터 목록"
                     classNames={{
-                        base: "min-w-[560px]",
-                        th: "bg-gray-100/95 text-xs dark:bg-[#242424]",
-                        td: "py-3"
+                        base: "w-full min-w-0",
+                        table: "w-full table-fixed",
+                        th: "h-9 bg-gray-100/95 text-xs text-default-500 dark:bg-[#242424]",
+                        td: "max-w-0 truncate py-3 text-sm"
                     }}>
                     <TableHeader>
-                        <TableColumn>이름</TableColumn>
-                        <TableColumn>레벨</TableColumn>
-                        <TableColumn>클래스</TableColumn>
-                        <TableColumn>서버</TableColumn>
+                        <TableColumn className="w-[30%]">이름</TableColumn>
+                        <TableColumn className="w-[18%]">레벨</TableColumn>
+                        <TableColumn className="w-[32%]">클래스</TableColumn>
+                        <TableColumn className="w-[20%]">서버</TableColumn>
                     </TableHeader>
                     <TableBody>
                         {expedition.map((character) => (
                             <TableRow key={`${character.server}-${character.nickname}`}>
-                                <TableCell>{character.nickname}</TableCell>
-                                <TableCell>{character.level}</TableCell>
-                                <TableCell>{character.job}</TableCell>
+                                <TableCell className="font-medium">{character.nickname}</TableCell>
+                                <TableCell className="tabular-nums">{character.level.toLocaleString()}</TableCell>
+                                <TableCell>
+                                    <span className="flex min-w-0 items-center gap-1.5">
+                                        <JobEmblemIcon job={character.job} size={18} className="text-foreground" />
+                                        <span className="truncate">{character.job}</span>
+                                    </span>
+                                </TableCell>
                                 <TableCell>{character.server}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
             </div>
-        </div>
+        </section>
     )
 }
 
@@ -122,7 +150,7 @@ export function InputsComponent({
     const onClickDuplicateEmailCheck = useClickDuplicateEmailCheck(member, setEmailChecked);
 
     return (
-        <div className="space-y-7">
+        <div className="min-w-0 space-y-7">
             <div className="space-y-2">
                 <p className="font-medium">아이디</p>
                 <div className="flex flex-col items-start gap-2 sm:flex-row">
