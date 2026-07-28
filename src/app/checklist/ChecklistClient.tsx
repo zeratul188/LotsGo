@@ -1,5 +1,5 @@
 'use client'
-import { ChecklistStatue, useChecklistForm, ChecklistComponent, SelectServer, ChecklistModal, CubeDetailComponent, RemainChecklistComponent, FilterComponent, BossInfoModal } from "./ui/ChecklistForm"
+import { ChecklistStatue, useChecklistForm, ChecklistComponent, ChecklistModal, CubeDetailComponent, RemainChecklistComponent, FilterComponent, BossInfoModal } from "./ui/ChecklistForm"
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
 import { checkLogin, getBosses, getCubes, handleResetChecklist, loadChecklist, settingFilter } from "./lib/checklistFeat";
@@ -219,12 +219,6 @@ export default function ChecklistClient() {
                                 <h2 className="text-lg font-semibold">숙제 조회 설정</h2>
                                 <p className="text-sm fadedtext">서버와 필터를 선택하고 필요한 현황을 빠르게 확인하세요.</p>
                             </div>
-                            <div className="p-4 sm:p-5">
-                                <SelectServer 
-                                    checklist={checklist} 
-                                    server={checklistForm.server}
-                                    setServer={checklistForm.setServer}/>
-                            </div>
                             <div className="flex flex-col gap-3 border-t border-gray-200/80 bg-gray-50/50 px-4 py-3 dark:border-white/10 dark:bg-white/[0.025] sm:flex-row sm:items-center sm:justify-between sm:px-5">
                                 <div className="shrink-0">
                                     <p className="text-sm font-semibold">정보 및 현황</p>
@@ -267,20 +261,22 @@ export default function ChecklistClient() {
                             </div>
                             <div className="border-t border-gray-200/80 px-4 pb-4 sm:px-5 sm:pb-5 dark:border-white/10">
                                 <FilterComponent
-                            filterContent={checklistForm.filterContent}
-                            setFilterContent={checklistForm.setFilterContent}
-                            bosses={checklistForm.bosses}
-                            checklist={checklist}
-                            isRemainHomework={checklistForm.isRemainHomework}
-                            setRemainHomework={checklistForm.setRemainHomework}
-                            isShowGoldCharacter={checklistForm.isShowGoldCharacter}
-                            setShowGoldCharacter={checklistForm.setShowGoldCharacter}
-                            filterAccount={checklistForm.filterAccount}
-                            setFilterAccount={checklistForm.setFilterAccount}
-                            isHideCompleteContent={checklistForm.isHideCompleteContent}
-                            setHideCompleteContent={checklistForm.setHideCompleteContent}
-                            isHideDayContent={checklistForm.isHideDayContent}
-                            setHideDayContent={checklistForm.setHideDayContent}/>
+                                    server={checklistForm.server}
+                                    setServer={checklistForm.setServer}
+                                    filterContent={checklistForm.filterContent}
+                                    setFilterContent={checklistForm.setFilterContent}
+                                    bosses={checklistForm.bosses}
+                                    checklist={checklist}
+                                    isRemainHomework={checklistForm.isRemainHomework}
+                                    setRemainHomework={checklistForm.setRemainHomework}
+                                    isShowGoldCharacter={checklistForm.isShowGoldCharacter}
+                                    setShowGoldCharacter={checklistForm.setShowGoldCharacter}
+                                    filterAccount={checklistForm.filterAccount}
+                                    setFilterAccount={checklistForm.setFilterAccount}
+                                    isHideCompleteContent={checklistForm.isHideCompleteContent}
+                                    setHideCompleteContent={checklistForm.setHideCompleteContent}
+                                    isHideDayContent={checklistForm.isHideDayContent}
+                                    setHideDayContent={checklistForm.setHideDayContent}/>
                             </div>
                         </section>
                         <div className={clsx(

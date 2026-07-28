@@ -13,6 +13,7 @@ export default function FixedWeeklyContentStatus({ status }: FixedWeeklyContentS
     const [page, setPage] = useState(1);
     const isComplete = status.total > 0 && status.completed === status.total;
     const color = status.type === 'hallsHourglass' ? 'warning' : 'secondary';
+    const completionLabel = status.type === 'hallsHourglass' ? '할의 모래시계를' : '낙원을';
     const progressValue = status.total > 0 ? status.completed / status.total * 100 : 0;
     const totalPages = Math.ceil(status.incompleteCharacters.length / pageSize);
     const pageCharacters = status.incompleteCharacters.slice((page - 1) * pageSize, page * pageSize);
@@ -54,7 +55,7 @@ export default function FixedWeeklyContentStatus({ status }: FixedWeeklyContentS
                 </div>
             ) : isComplete ? (
                 <div className="mt-3 rounded-lg border border-success-200/70 bg-success-50/70 px-3 py-3 text-center text-sm text-success-700 dark:border-success-900/60 dark:bg-success-950/20 dark:text-success-300">
-                    모든 캐릭터가 {status.title}을(를) 완료했습니다.
+                    모든 캐릭터가 {completionLabel} 완료했습니다.
                 </div>
             ) : (
                 <div className="mt-3 grid grid-cols-1 gap-2 min-[420px]:grid-cols-2">

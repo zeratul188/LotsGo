@@ -1116,7 +1116,7 @@ type SelectServerProps = {
     server: string,
     setServer: SetStateFn<string>
 }
-export function SelectServer({ checklist, server, setServer }: SelectServerProps) {
+function LegacySelectServer({ checklist, server, setServer }: SelectServerProps) {
     return (
         <RadioGroup
             description="서버를 선택하면 해당 서버인 캐릭터만 조회됩니다." 
@@ -1138,6 +1138,30 @@ export function SelectServer({ checklist, server, setServer }: SelectServerProps
 }
 
 // 커스텀 라디오 요소
+export function SelectServer({ checklist, server, setServer }: SelectServerProps) {
+    return (
+        <Select
+            label="서버 선택"
+            placeholder="서버를 선택하세요"
+            selectedKeys={new Set([server])}
+            radius="md"
+            variant="bordered"
+            disallowEmptySelection
+            onSelectionChange={(keys) => {
+                const selectedServer = Array.from(keys)[0];
+                if (selectedServer !== undefined) {
+                    setServer(String(selectedServer));
+                }
+            }}
+            className="w-full"
+        >
+            {['전체', ...getServerList(checklist)].map((serverName) => (
+                <SelectItem key={serverName}>{serverName}</SelectItem>
+            ))}
+        </Select>
+    );
+}
+
 function CustomRadio(props: RadioProps) {
     const { children, ...otherProps } = props;
     return (
@@ -4130,6 +4154,8 @@ export function NotLoginedComponent() {
 
 // 캐릭터 필터 컴포넌트
 type FilterComponentProps = {
+    server: string,
+    setServer: SetStateFn<string>,
     filterContent: Selection,
     setFilterContent: SetStateFn<Selection>,
     bosses: Boss[],
@@ -4146,6 +4172,8 @@ type FilterComponentProps = {
     setHideDayContent: SetStateFn<boolean>
 }
 export function FilterComponent({ 
+    server,
+    setServer,
     filterContent, 
     setFilterContent, 
     bosses, 
@@ -4163,26 +4191,31 @@ export function FilterComponent({
 }: FilterComponentProps) {
 
     return (
-        <div className="w-full pt-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="mt-4 w-full rounded-xl border border-gray-200/80 bg-gray-50/60 p-3 dark:border-white/10 dark:bg-white/[0.025] sm:p-4">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h3 className="text-sm font-semibold">검색 필터</h3>
-                    <p className="mt-0.5 text-xs fadedtext">표시할 계정과 콘텐츠를 세부적으로 설정합니다.</p>
+                    <h3 className="font-semibold">검색 필터</h3>
+                    <p className="mt-1 text-xs fadedtext">계정, 서버, 콘텐츠를 조합해 필요한 캐릭터만 확인하세요.</p>
                 </div>
-                <Tooltip showArrow content="설정값을 유지하려면 프로필 설정에서 설정하세요.">
-                    <Checkbox
-                        size="sm"
-                        isSelected={isHideDayContent}
-                        onValueChange={setHideDayContent}
-                        classNames={{
-                            base: "shrink-0 rounded-md px-1 py-1",
-                            label: "text-sm text-foreground",
-                        }}>
-                        일일 콘텐츠 숨기기
-                    </Checkbox>
-                </Tooltip>
+                <div className="flex items-center justify-between gap-4 rounded-xl border border-gray-200/80 bg-white px-3.5 py-2.5 shadow-sm dark:border-white/10 dark:bg-white/[0.04] sm:min-w-[260px]">
+                    <div className="min-w-0">
+                        <p className="text-sm font-medium">일일 콘텐츠</p>
+                        <p className="mt-0.5 text-xs fadedtext">
+                            {isHideDayContent ? '캐릭터 목록에서 숨김' : '캐릭터 목록에 함께 표시'}
+                        </p>
+                    </div>
+                    <Tooltip showArrow content="설정값을 유지하려면 프로필 설정에서 설정하세요.">
+                        <Switch
+                            aria-label="일일 콘텐츠 숨기기"
+                            color="primary"
+                            size="sm"
+                            isSelected={isHideDayContent}
+                            onValueChange={setHideDayContent}
+                            className="shrink-0"/>
+                    </Tooltip>
+                </div>
             </div>
-            <div className="grid w-full gap-3 sm:grid-cols-2 md960:grid-cols-[minmax(200px,1fr)_minmax(200px,1fr)_auto_auto] md960:items-end">
+            <div className="grid w-full gap-3 sm:grid-cols-2 md960:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] md960:items-end">
                 <Select
                     label="계정 검색"
                     placeholder="계정을 선택하세요."
@@ -4195,6 +4228,10 @@ export function FilterComponent({
                         <SelectItem key={index}>{account}</SelectItem>
                     ))}
                 </Select>
+                <SelectServer
+                    checklist={checklist}
+                    server={server}
+                    setServer={setServer}/>
                 <Select
                     label="콘텐츠로 검색"
                     placeholder="콘텐츠를 선택하세요."
@@ -4207,88 +4244,90 @@ export function FilterComponent({
                         <SelectItem key={index}>{boss}</SelectItem>
                     ))}
                 </Select>
-                <Popover showArrow placement="bottom-end">
-                    <PopoverTrigger>
-                        <Button
-                            radius="md"
-                            color="primary"
-                            variant="flat"
-                            className="w-full font-medium md960:w-auto">
-                            필터 추가 옵션
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="border border-gray-200/80 p-0 shadow-lg dark:border-gray-800">
-                        <div className="w-full min-[301px]:w-[330px] p-4">
-                            <div className="mb-3">
-                                <p className="font-semibold">추가 필터</p>
-                                <p className="mt-0.5 text-xs fadedtext">캐릭터와 콘텐츠 표시 조건을 설정합니다.</p>
+                <div className="flex gap-2 sm:col-span-2 md960:col-span-1">
+                    <Popover showArrow placement="bottom-end">
+                        <PopoverTrigger>
+                            <Button
+                                radius="md"
+                                color="primary"
+                                variant="flat"
+                                className="h-14 flex-1 whitespace-nowrap px-4 font-medium">
+                                추가 옵션
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="border border-gray-200/80 p-0 shadow-lg dark:border-gray-800">
+                            <div className="w-full min-[301px]:w-[330px] p-4">
+                                <div className="mb-3">
+                                    <p className="font-semibold">추가 필터</p>
+                                    <p className="mt-0.5 text-xs fadedtext">캐릭터와 콘텐츠 표시 조건을 설정합니다.</p>
+                                </div>
+                                <div className="flex w-full flex-col gap-2">
+                                    <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-white/[0.05]">
+                                    <p className="cursor-pointer text-sm" onClick={() => {
+                                        localStorage.setItem('isRemainHomework', String(!isRemainHomework));
+                                        setRemainHomework(!isRemainHomework);
+                                    }}>주간 숙제를 완료한 캐릭터 숨기기</p>
+                                    <Switch
+                                        size="sm"
+                                        isSelected={isRemainHomework}
+                                        onValueChange={(isSelected) => {
+                                            localStorage.setItem('isRemainHomework', String(isSelected));
+                                            setRemainHomework(isSelected);
+                                        }}/>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-white/[0.05]">
+                                    <p className="cursor-pointer text-sm" onClick={() => {
+                                        localStorage.setItem('isShowGoldCharacter', String(!isShowGoldCharacter));
+                                        setShowGoldCharacter(!isShowGoldCharacter);
+                                    }}>골드 지정 캐릭터만 표시하기</p>
+                                    <Switch
+                                        size="sm"
+                                        isSelected={isShowGoldCharacter}
+                                        onValueChange={(isSelected) => {
+                                            localStorage.setItem('isShowGoldCharacter', String(isSelected));
+                                            setShowGoldCharacter(isSelected);
+                                        }}/>
+                                    </div>
+                                    <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-white/[0.05]">
+                                    <p className="cursor-pointer text-sm" onClick={() => {
+                                        localStorage.setItem('isHideCompleteContent', String(!isHideCompleteContent));
+                                        setHideCompleteContent(!isHideCompleteContent);
+                                    }}>숙제 완료한 콘텐츠 숨기기</p>
+                                    <Switch
+                                        size="sm"
+                                        isSelected={isHideCompleteContent}
+                                        onValueChange={(isSelected) => {
+                                            localStorage.setItem('isHideCompleteContent', String(isSelected));
+                                            setHideCompleteContent(isSelected);
+                                        }}/>
+                                    </div>
+                                </div>
+                                <Divider className="mt-3"/>
+                                <p className="mt-3 text-xs fadedtext">해당 설정값은 브라우저에 저장됩니다.</p>
                             </div>
-                            <div className="flex w-full flex-col gap-2">
-                                <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-white/[0.05]">
-                                <p className="cursor-pointer text-sm" onClick={() => {
-                                    localStorage.setItem('isRemainHomework', String(!isRemainHomework));
-                                    setRemainHomework(!isRemainHomework);
-                                }}>주간 숙제를 완료한 캐릭터 숨기기</p>
-                                <Switch
-                                    size="sm"
-                                    isSelected={isRemainHomework}
-                                    onValueChange={(isSelected) => {
-                                        localStorage.setItem('isRemainHomework', String(isSelected));
-                                        setRemainHomework(isSelected);
-                                    }}/>
-                                </div>
-                                <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-white/[0.05]">
-                                <p className="cursor-pointer text-sm" onClick={() => {
-                                    localStorage.setItem('isShowGoldCharacter', String(!isShowGoldCharacter));
-                                    setShowGoldCharacter(!isShowGoldCharacter);
-                                }}>골드 지정 캐릭터만 표시하기</p>
-                                <Switch
-                                    size="sm"
-                                    isSelected={isShowGoldCharacter}
-                                    onValueChange={(isSelected) => {
-                                        localStorage.setItem('isShowGoldCharacter', String(isSelected));
-                                        setShowGoldCharacter(isSelected);
-                                    }}/>
-                                </div>
-                                <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-white/[0.05]">
-                                <p className="cursor-pointer text-sm" onClick={() => {
-                                    localStorage.setItem('isHideCompleteContent', String(!isHideCompleteContent));
-                                    setHideCompleteContent(!isHideCompleteContent);
-                                }}>숙제 완료한 콘텐츠 숨기기</p>
-                                <Switch
-                                    size="sm"
-                                    isSelected={isHideCompleteContent}
-                                    onValueChange={(isSelected) => {
-                                        localStorage.setItem('isHideCompleteContent', String(isSelected));
-                                        setHideCompleteContent(isSelected);
-                                    }}/>
-                                </div>
-                            </div>
-                            <Divider className="mt-3"/>
-                            <p className="mt-3 text-xs fadedtext">해당 설정값은 브라우저에 저장됩니다.</p>
-                        </div>
-                    </PopoverContent>
-                </Popover>
-                <Button 
-                    radius="md"
-                    color="danger"
-                    variant="flat"
-                    className="w-full font-medium md960:w-auto"
-                    onPress={() => {
-                        setFilterAccount(new Set([]));
-                        setFilterContent(new Set([]));
-                        localStorage.removeItem('isRemainHomework');
-                        setRemainHomework(false);
-                        localStorage.removeItem('isShowGoldCharacter');
-                        setShowGoldCharacter(false);
-                        addToast({
-                            title: "필터 해제",
-                            description: `모든 필터를 제거하였습니다.`,
-                            color: "success"
-                        });
-                    }}>
-                    필터 해제
-                </Button>
+                        </PopoverContent>
+                    </Popover>
+                    <Button
+                        radius="md"
+                        color="danger"
+                        variant="light"
+                        className="h-14 flex-1 whitespace-nowrap px-4 font-medium"
+                        onPress={() => {
+                            setFilterAccount(new Set([]));
+                            setFilterContent(new Set([]));
+                            localStorage.removeItem('isRemainHomework');
+                            setRemainHomework(false);
+                            localStorage.removeItem('isShowGoldCharacter');
+                            setShowGoldCharacter(false);
+                            addToast({
+                                title: "필터 해제",
+                                description: `모든 필터를 제거하였습니다.`,
+                                color: "success"
+                            });
+                        }}>
+                        필터 해제
+                    </Button>
+                </div>
             </div>
         </div>
     )

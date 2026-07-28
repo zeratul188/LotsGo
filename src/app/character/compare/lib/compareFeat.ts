@@ -47,6 +47,39 @@ export type EquipmentDiffRow = {
     rightText: string;
 };
 
+export type EquipmentCompareSide = {
+    enhanceLevel: number;
+    effectiveItemLevel: number;
+    highUpgrade: number;
+    isEsther: boolean;
+    quality: number;
+};
+
+export type EquipmentComparisonRow = {
+    type: string;
+    left: EquipmentCompareSide | null;
+    right: EquipmentCompareSide | null;
+    levelDiff: number;
+    levelWinner: "left" | "right" | "equal" | "special" | "unavailable";
+    qualityDiff: number;
+    qualityWinner: "left" | "right" | "equal" | "unavailable";
+};
+
+export type ComparisonDifference = {
+    label: string;
+    value: string;
+    winner: "left" | "right";
+    tone: "primary" | "warning" | "secondary";
+};
+
+export type ComparisonMetricRow = {
+    key: string;
+    label: string;
+    leftValue: string;
+    rightValue: string;
+    differences: ComparisonDifference[];
+};
+
 // 특정 특성의 수치를 찾아 비교용 숫자로 반환한다.
 function getStatValue(character: ExpeditionCharacter | null, type: string): number | null {
     return character?.stats.find((stat) => stat.type === type)?.value ?? null;
@@ -240,6 +273,78 @@ function getEquipmentCompareValue(character: ExpeditionCharacter | null, type: s
     }
 
     return getEquipmentStartLevel(equipment.name) + enhanceLevel * 5 + Math.max(equipment.highUpgrade, 0);
+}
+
+// 장비 부위별 실제 강화 상태를 비교 화면에서 사용할 수 있는 형태로 정리한다.
+function getEquipmentCompareSide(
+    character: ExpeditionCharacter | null,
+    type: string
+): EquipmentCompareSide | null {
+    const equipment = getCharacterEquipment(character, type);
+    const effectiveItemLevel = getEquipmentCompareValue(character, type);
+    if (!equipment || effectiveItemLevel === null) {
+        return null;
+    }
+
+    const enhanceLevel = Number(getEnhanceLevel(equipment.name).replace("+", ""));
+    if (Number.isNaN(enhanceLevel)) {
+        return null;
+    }
+
+    return {
+        enhanceLevel,
+        effectiveItemLevel,
+        highUpgrade: Math.max(equipment.highUpgrade, 0),
+        isEsther: equipment.grade === "에스더",
+        quality: equipment.quality,
+    };
+}
+
+// 강화 단계, 장비 티어, 상급 재련을 합산한 환산 장비 레벨과 품질을 별도로 비교한다.
+export function getEquipmentComparisonRows(
+    leftCharacter: ExpeditionCharacter | null,
+    rightCharacter: ExpeditionCharacter | null
+): EquipmentComparisonRow[] {
+    return COMPARE_EQUIPMENT_TYPES.map((type) => {
+        const left = getEquipmentCompareSide(leftCharacter, type);
+        const right = getEquipmentCompareSide(rightCharacter, type);
+        const isDifferentWeaponType =
+            type === "무기" &&
+            left !== null &&
+            right !== null &&
+            left.isEsther !== right.isEsther;
+
+        const levelDiff = left && right
+            ? Math.abs(left.effectiveItemLevel - right.effectiveItemLevel)
+            : 0;
+        const qualityDiff = left && right
+            ? Math.abs(left.quality - right.quality)
+            : 0;
+
+        return {
+            type,
+            left,
+            right,
+            levelDiff,
+            levelWinner: !left || !right
+                ? "unavailable"
+                : isDifferentWeaponType
+                    ? "special"
+                    : left.effectiveItemLevel === right.effectiveItemLevel
+                        ? "equal"
+                        : left.effectiveItemLevel > right.effectiveItemLevel
+                            ? "left"
+                            : "right",
+            qualityDiff,
+            qualityWinner: !left || !right
+                ? "unavailable"
+                : left.quality === right.quality
+                    ? "equal"
+                    : left.quality > right.quality
+                        ? "left"
+                        : "right",
+        };
+    });
 }
 
 // 좌우 캐릭터의 6부위 장비를 비교해서 더 높은 쪽에만 표시할 문구를 만든다.
@@ -574,6 +679,329 @@ export function getArkgridDiffRows(
     }];
 
     return { coreRows, optionRows };
+}
+
+function createDifference(
+    label: string,
+    leftValue: number,
+    rightValue: number,
+    formatValue: (value: number) => string,
+    tone: ComparisonDifference["tone"] = "primary"
+): ComparisonDifference | null {
+    if (leftValue === rightValue) {
+        return null;
+    }
+
+    return {
+        label,
+        value: formatValue(Math.abs(leftValue - rightValue)),
+        winner: leftValue > rightValue ? "left" : "right",
+        tone,
+    };
+}
+
+// 악세서리는 역할별 유효 옵션 등급 점수와 품질을 분리해 비교한다.
+export function getAccessoryComparisonRows(
+    leftCharacter: ExpeditionCharacter | null,
+    rightCharacter: ExpeditionCharacter | null
+): ComparisonMetricRow[] {
+    if (!leftCharacter || !rightCharacter) {
+        return [];
+    }
+
+    const leftAccessories = leftCharacter.equipment.accessories;
+    const rightAccessories = rightCharacter.equipment.accessories;
+    const accessoryLength = Math.max(leftAccessories.length, rightAccessories.length);
+    const typeCounts: Record<string, number> = {};
+    const rows: ComparisonMetricRow[] = [];
+
+    for (let index = 0; index < accessoryLength; index += 1) {
+        const leftAccessory = leftAccessories[index];
+        const rightAccessory = rightAccessories[index];
+        if (!leftAccessory || !rightAccessory) {
+            continue;
+        }
+
+        const type = leftAccessory.type || rightAccessory.type || `악세${index + 1}`;
+        typeCounts[type] = (typeCounts[type] ?? 0) + 1;
+        const label = getAccessoryLineLabel(type, typeCounts[type]);
+        const leftScore = getAccessoryCompareValue(leftCharacter, index) ?? 0;
+        const rightScore = getAccessoryCompareValue(rightCharacter, index) ?? 0;
+        const differences = [
+            createDifference("유효 옵션", leftScore, rightScore, (value) => `+${value}점`),
+            createDifference("품질", leftAccessory.quality, rightAccessory.quality, (value) => `+${value}`, "warning"),
+        ].filter((item): item is ComparisonDifference => item !== null);
+
+        if (differences.length > 0) {
+            rows.push({
+                key: `accessory-${index}`,
+                label,
+                leftValue: `유효 ${leftScore}점 · 품질 ${leftAccessory.quality}`,
+                rightValue: `유효 ${rightScore}점 · 품질 ${rightAccessory.quality}`,
+                differences,
+            });
+        }
+    }
+
+    const extraMetrics = [
+        {
+            key: "arm",
+            label: "팔찌",
+            leftValue: getArmCompareValue(leftCharacter),
+            rightValue: getArmCompareValue(rightCharacter),
+            valueLabel: "유효 옵션",
+        },
+        {
+            key: "stone",
+            label: "스톤",
+            leftValue: getStoneCompareValue(leftCharacter),
+            rightValue: getStoneCompareValue(rightCharacter),
+            valueLabel: "각인 균형",
+        },
+    ];
+
+    extraMetrics.forEach((metric) => {
+        if (metric.leftValue === null || metric.rightValue === null) {
+            return;
+        }
+
+        const difference = createDifference(
+            metric.valueLabel,
+            metric.leftValue,
+            metric.rightValue,
+            (value) => `+${value}점`
+        );
+        if (!difference) {
+            return;
+        }
+
+        rows.push({
+            key: metric.key,
+            label: metric.label,
+            leftValue: `${metric.valueLabel} ${metric.leftValue}점`,
+            rightValue: `${metric.valueLabel} ${metric.rightValue}점`,
+            differences: [difference],
+        });
+    });
+
+    return rows;
+}
+
+// 공격력, 생명력, 주특성 합은 실제 수치와 차이를 함께 표시한다.
+export function getStatComparisonRows(
+    leftCharacter: ExpeditionCharacter | null,
+    rightCharacter: ExpeditionCharacter | null
+): ComparisonMetricRow[] {
+    const metrics = [
+        {
+            key: "attack-power",
+            label: "공격력",
+            leftValue: getStatValue(leftCharacter, "공격력"),
+            rightValue: getStatValue(rightCharacter, "공격력"),
+        },
+        {
+            key: "max-hp",
+            label: "최대 생명력",
+            leftValue: getStatValue(leftCharacter, "최대 생명력"),
+            rightValue: getStatValue(rightCharacter, "최대 생명력"),
+        },
+        {
+            key: "highlighted-stats",
+            label: "주특성 합",
+            leftValue: getHighlightedStatSum(leftCharacter),
+            rightValue: getHighlightedStatSum(rightCharacter),
+        },
+    ];
+
+    return metrics.flatMap((metric) => {
+        if (metric.leftValue === null || metric.rightValue === null) {
+            return [];
+        }
+
+        const difference = createDifference(
+            metric.label,
+            metric.leftValue,
+            metric.rightValue,
+            (value) => `+${value.toLocaleString()}`
+        );
+        if (!difference) {
+            return [];
+        }
+
+        return [{
+            key: metric.key,
+            label: metric.label,
+            leftValue: metric.leftValue.toLocaleString(),
+            rightValue: metric.rightValue.toLocaleString(),
+            differences: [difference],
+        }];
+    });
+}
+
+// 카르마는 타입별 레벨과 포인트를 각각 비교하고 둘 다 같으면 행을 숨긴다.
+export function getKarmaComparisonRows(
+    leftCharacter: ExpeditionCharacter | null,
+    rightCharacter: ExpeditionCharacter | null
+): ComparisonMetricRow[] {
+    return ["진화", "깨달음", "도약"].flatMap((type) => {
+        const leftLevel = getKarmaLevelValue(leftCharacter, type);
+        const rightLevel = getKarmaLevelValue(rightCharacter, type);
+        const leftPoint = getKarmaPointValue(leftCharacter, type);
+        const rightPoint = getKarmaPointValue(rightCharacter, type);
+        if (leftLevel === null || rightLevel === null || leftPoint === null || rightPoint === null) {
+            return [];
+        }
+
+        const differences = [
+            createDifference("레벨", leftLevel, rightLevel, (value) => `+${value}`),
+            createDifference("포인트", leftPoint, rightPoint, (value) => `+${value}P`, "warning"),
+        ].filter((item): item is ComparisonDifference => item !== null);
+        if (differences.length === 0) {
+            return [];
+        }
+
+        return [{
+            key: `karma-${type}`,
+            label: type,
+            leftValue: `Lv.${leftLevel} · ${leftPoint}P`,
+            rightValue: `Lv.${rightLevel} · ${rightPoint}P`,
+            differences,
+        }];
+    });
+}
+
+function getEngravingCompareValue(character: ExpeditionCharacter | null): number | null {
+    return character?.engravings.reduce(
+        (sum, engraving) => sum + engraving.level + (ENGRAVING_GRADE_OFFSET[engraving.grade] ?? 0),
+        0
+    ) ?? null;
+}
+
+// 각인은 등급 보정을 포함한 총합 점수를 같은 기준으로 비교한다.
+export function getEngravingComparisonRows(
+    leftCharacter: ExpeditionCharacter | null,
+    rightCharacter: ExpeditionCharacter | null
+): ComparisonMetricRow[] {
+    const leftValue = getEngravingCompareValue(leftCharacter);
+    const rightValue = getEngravingCompareValue(rightCharacter);
+    if (leftValue === null || rightValue === null) {
+        return [];
+    }
+
+    const difference = createDifference("보정 점수", leftValue, rightValue, (value) => `+${value}점`);
+    if (!difference) {
+        return [];
+    }
+
+    return [{
+        key: "engraving-score",
+        label: "각인 합",
+        leftValue: `${leftValue}점`,
+        rightValue: `${rightValue}점`,
+        differences: [difference],
+    }];
+}
+
+// 보석은 티어 보정 레벨 합과 기본 공격력 증가량을 별도로 비교한다.
+export function getGemComparisonRows(
+    leftCharacter: ExpeditionCharacter | null,
+    rightCharacter: ExpeditionCharacter | null
+): ComparisonMetricRow[] {
+    if (!leftCharacter || !rightCharacter) {
+        return [];
+    }
+
+    const leftLevel = leftCharacter.gems.reduce((sum, gem) => sum + getGemCompareLevel(gem.name, gem.level), 0);
+    const rightLevel = rightCharacter.gems.reduce((sum, gem) => sum + getGemCompareLevel(gem.name, gem.level), 0);
+    const leftAttack = leftCharacter.gems.reduce((sum, gem) => sum + gem.attack, 0);
+    const rightAttack = rightCharacter.gems.reduce((sum, gem) => sum + gem.attack, 0);
+    const metrics = [
+        {
+            key: "gem-level",
+            label: "보석 레벨 합",
+            leftValue: leftLevel,
+            rightValue: rightLevel,
+            displayValue: (value: number) => `${value}점`,
+            formatDiff: (value: number) => `+${value}점`,
+            tone: "primary" as const,
+        },
+        {
+            key: "gem-attack",
+            label: "기본 공격력",
+            leftValue: leftAttack,
+            rightValue: rightAttack,
+            displayValue: (value: number) => `${value.toFixed(1)}%`,
+            formatDiff: (value: number) => `+${value.toFixed(1)}%`,
+            tone: "warning" as const,
+        },
+    ];
+
+    return metrics.flatMap((metric) => {
+        const difference = createDifference(
+            metric.label,
+            metric.leftValue,
+            metric.rightValue,
+            metric.formatDiff,
+            metric.tone
+        );
+        if (!difference) {
+            return [];
+        }
+
+        return [{
+            key: metric.key,
+            label: metric.label,
+            leftValue: metric.displayValue(metric.leftValue),
+            rightValue: metric.displayValue(metric.rightValue),
+            differences: [difference],
+        }];
+    });
+}
+
+// 아크그리드는 코어 등급 합과 역할별 유효 옵션 레벨 합을 비교한다.
+export function getArkgridComparisonRows(
+    leftCharacter: ExpeditionCharacter | null,
+    rightCharacter: ExpeditionCharacter | null
+): ComparisonMetricRow[] {
+    if (!leftCharacter || !rightCharacter) {
+        return [];
+    }
+
+    const leftCore = leftCharacter.arkgrid.cores.reduce(
+        (sum, core) => sum + (ARKGRID_CORE_GRADE_SCORE[core.grade] ?? 0),
+        0
+    );
+    const rightCore = rightCharacter.arkgrid.cores.reduce(
+        (sum, core) => sum + (ARKGRID_CORE_GRADE_SCORE[core.grade] ?? 0),
+        0
+    );
+    const leftOption = getFilteredArkgridOptions(leftCharacter).reduce((sum, item) => sum + item.level, 0);
+    const rightOption = getFilteredArkgridOptions(rightCharacter).reduce((sum, item) => sum + item.level, 0);
+    const metrics = [
+        { key: "arkgrid-core", label: "코어 등급 합", leftValue: leftCore, rightValue: rightCore, tone: "primary" as const },
+        { key: "arkgrid-option", label: "유효 효과 합", leftValue: leftOption, rightValue: rightOption, tone: "warning" as const },
+    ];
+
+    return metrics.flatMap((metric) => {
+        const difference = createDifference(
+            metric.label,
+            metric.leftValue,
+            metric.rightValue,
+            (value) => `+${value}점`,
+            metric.tone
+        );
+        if (!difference) {
+            return [];
+        }
+
+        return [{
+            key: metric.key,
+            label: metric.label,
+            leftValue: `${metric.leftValue}점`,
+            rightValue: `${metric.rightValue}점`,
+            differences: [difference],
+        }];
+    });
 }
 
 // 카르마 이름 색상

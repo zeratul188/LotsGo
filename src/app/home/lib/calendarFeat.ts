@@ -6,6 +6,43 @@ import type { Island, IslandData, IslandItem, RewardItem } from '../model/types'
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
+export const islandNearbyRegions: Record<string, string> = {
+    '고요한 안식의 섬': '로웬',
+    '기회의 섬': '아르데타인',
+    '라일라이 아일랜드': '볼다이크',
+    '메데이아': '슈샤이어',
+    '몬테 섬': '베른 남부',
+    '블루홀 섬': '베른 남부',
+    '볼라르 섬': '베른 북부',
+    '수라도': '로웬',
+    '스노우팡 아일랜드': '슈샤이어',
+    '우거진 갈대의 섬': '아르데타인',
+    '잔혹한 장난감 성': '슈샤이어',
+    '죽음의 협곡': '아르데타인',
+    '태초의 섬': '로헨델',
+    '포르페': '애니츠',
+    '하모니 섬': '로헨델',
+    '환영 나비 섬': '로헨델',
+    '쿵덕쿵 아일랜드': '베른 북부'
+};
+
+export function getIslandNearbyRegion(islandName: string): string | null {
+    return islandNearbyRegions[islandName] ?? null;
+}
+
+export function getIslandNearbyParticle(region: string): '과' | '와' {
+    const lastCharacterCode = region.charCodeAt(region.length - 1);
+    const hasFinalConsonant = lastCharacterCode >= 0xAC00 && lastCharacterCode <= 0xD7A3
+        ? (lastCharacterCode - 0xAC00) % 28 !== 0
+        : false;
+
+    return hasFinalConsonant ? '과' : '와';
+}
+
+export function formatIslandNearbyRegion(region: string): string {
+    return `${region}${getIslandNearbyParticle(region)} 가까움`;
+}
+
 // 오늘의 모험섬인지 확인하는 필터
 export function filterTodayIslands(island: any): boolean {
     let isFinded = false;
@@ -160,6 +197,20 @@ export function getIslandTimePeriod(week: Dayjs, islandData: IslandData): '오�
     if (!islandDate) return null;
 
     return islandDate.hour() < 12 ? '오전' : '오후';
+}
+
+// 토·일 모험섬을 오전 일정부터 표시하도록 정렬
+export function sortIslandDataByTimePeriod(week: Dayjs, islandDatas: IslandData[]): IslandData[] {
+    if (week.day() !== 0 && week.day() !== 6) return islandDatas;
+
+    const periodOrder = (islandData: IslandData) => {
+        const period = getIslandTimePeriod(week, islandData);
+        if (period === '오전') return 0;
+        if (period === '오후') return 1;
+        return 2;
+    };
+
+    return [...islandDatas].sort((a, b) => periodOrder(a) - periodOrder(b));
 }
 
 // 해당 날짜의 모험섬이 골드섬인지 확인
