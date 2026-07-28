@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { CheckCharacter } from "../../store/checklistSlice";
-import { getFixedWeeklyContentStatuses, getIncompleteHomeworkNames, groupByLevel10, isCompleteHomeworkByCharacter, isLogin, loadChecklist } from "../lib/checklistFeat";
+import {
+    getFixedWeeklyContentStatuses,
+    getIncompleteHomeworkNames,
+    getIncompleteRaidStatuses,
+    groupByLevel10,
+    isCompleteHomeworkByCharacter,
+    isLogin,
+    loadChecklist
+} from "../lib/checklistFeat";
 import { LoadingComponent } from "../../UtilsCompnents";
 import { Boss } from "../../api/checklist/boss/route";
 import {
@@ -20,6 +28,10 @@ import {
     Chip,
     Pagination,
     Progress,
+    Select,
+    SelectItem,
+    Tab,
+    Tabs,
     Tooltip
 } from "@heroui/react";
 import { ContentChip } from "../../raids/ui/PartyForm";
@@ -49,6 +61,9 @@ function useChecklistForm() {
 export default function ChecklistComponent() {
     const checklistForm = useChecklistForm();
     const [page, setPage] = useState(1);
+    const [statusView, setStatusView] = useState<'overview' | 'incomplete'>('incomplete');
+    const [selectedRaid, setSelectedRaid] = useState('all');
+    const [remainingPage, setRemainingPage] = useState(1);
     const isMobile = useMobileQuery();
     const maxSize = isMobile ? 3 : 5;
 
@@ -93,6 +108,37 @@ export default function ChecklistComponent() {
     const fixedWeeklyContentStatuses = getFixedWeeklyContentStatuses(checklistForm.checklist);
     const goldCharacters = activeChecklist.filter(character => character.isGold).length;
     const nonGoldCharacters = activeChecklist.length - goldCharacters;
+    const incompleteCharacterEntries = activeChecklist
+        .map(character => ({
+            character,
+            raids: getIncompleteRaidStatuses(character, checklistForm.bosses)
+        }))
+        .filter(entry => entry.raids.length > 0);
+    const incompleteRaidOptions = Array.from(new Set(
+        incompleteCharacterEntries.flatMap(entry => entry.raids.map(raid => raid.name))
+    )).map((name, index) => ({
+        key: `raid-${index}`,
+        name
+    }));
+    const raidSelectOptions = [
+        { key: 'all', name: '모든 레이드' },
+        ...incompleteRaidOptions
+    ];
+    const selectedRaidName = incompleteRaidOptions.find(raid => raid.key === selectedRaid)?.name;
+    const filteredIncompleteEntries = incompleteCharacterEntries
+        .map(entry => ({
+            ...entry,
+            raids: selectedRaid === 'all'
+                ? entry.raids
+                : entry.raids.filter(raid => raid.name === selectedRaidName)
+        }))
+        .filter(entry => entry.raids.length > 0);
+    const remainingRaidCount = filteredIncompleteEntries.reduce((total, entry) => total + entry.raids.length, 0);
+    const remainingPageCount = Math.ceil(filteredIncompleteEntries.length / maxSize);
+    const pageIncompleteEntries = filteredIncompleteEntries.slice(
+        (remainingPage - 1) * maxSize,
+        remainingPage * maxSize
+    );
 
     return (
         <div className="mb-6 w-full">
@@ -299,43 +345,182 @@ export default function ChecklistComponent() {
                     <div className="flex flex-wrap items-center gap-2 px-4 py-3 sm:px-5">
                         <p className="font-semibold">캐릭터별 숙제 현황</p>
                         <Chip size="sm" radius="sm" variant="flat">{completedHomework} / {totalHomework}</Chip>
-                        <div className="ml-auto flex items-center gap-2 text-xs fadedtext">
-                            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-success"/>완료</span>
-                            <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-danger"/>미완료</span>
-                        </div>
+                        {statusView === 'overview' ? (
+                            <div className="ml-auto flex items-center gap-2 text-xs fadedtext">
+                                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-success"/>완료</span>
+                                <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-danger"/>미완료</span>
+                            </div>
+                        ) : null}
                     </div>
-                    <div className="space-y-2 px-3 sm:px-4">
-                        {pageChecklist.map((item) => (
-                            <div key={item.nickname} className="flex w-full flex-col items-center gap-3 rounded-xl border border-gray-200/80 bg-gray-50/60 px-3 py-3 sm:flex-row sm:gap-5 dark:border-white/10 dark:bg-white/[0.025]">
-                                <div className="flex min-w-full items-center gap-3 sm:min-w-[240px]">
-                                    <JobAvatar size="sm" job={item.job}/>
-                                    <div className="min-w-0 grow">
-                                        <div className="flex items-center gap-1">
-                                            <p className="truncate text-sm font-medium">{item.nickname}</p>
-                                            {item.isGold ? (
-                                                <img src="/icons/gold.png" alt="goldicon" className="h-[12px] w-[12px]"/>
-                                            ) : null}
+                    <div className="px-3 pb-3 sm:px-4">
+                        <Tabs
+                            aria-label="캐릭터별 숙제 현황 보기"
+                            selectedKey={statusView}
+                            onSelectionChange={(key) => {
+                                setStatusView(String(key) as 'overview' | 'incomplete');
+                            }}
+                            radius="lg"
+                            color="primary"
+                            variant="light"
+                            classNames={{
+                                base: "w-full sm:w-[320px]",
+                                tabList: "grid w-full grid-cols-2 gap-1 rounded-xl border border-gray-200/80 bg-gray-50/80 p-1 dark:border-white/10 dark:bg-white/[0.035]",
+                                cursor: "rounded-lg bg-white shadow-sm dark:bg-primary-500/15 dark:shadow-none",
+                                tab: "h-9 px-3",
+                                tabContent: "text-sm font-medium text-gray-500 group-data-[selected=true]:text-primary dark:text-gray-400 dark:group-data-[selected=true]:text-primary-300"
+                            }}>
+                            <Tab key="incomplete" title="남은 레이드"/>
+                            <Tab key="overview" title="전체 현황"/>
+                        </Tabs>
+                    </div>
+
+                    {statusView === 'overview' ? (
+                        <>
+                            <div className="space-y-2 px-3 sm:px-4">
+                                {pageChecklist.map((item) => (
+                                    <div key={item.nickname} className="flex w-full flex-col items-center gap-3 rounded-xl border border-gray-200/80 bg-gray-50/60 px-3 py-3 sm:flex-row sm:gap-5 dark:border-white/10 dark:bg-white/[0.025]">
+                                        <div className="flex min-w-full items-center gap-3 sm:min-w-[240px]">
+                                            <JobAvatar size="sm" job={item.job}/>
+                                            <div className="min-w-0 grow">
+                                                <div className="flex items-center gap-1">
+                                                    <p className="truncate text-sm font-medium">{item.nickname}</p>
+                                                    {item.isGold ? (
+                                                        <img src="/icons/gold.png" alt="goldicon" className="h-[12px] w-[12px]"/>
+                                                    ) : null}
+                                                </div>
+                                                <p className="text-xs fadedtext">{item.job} · Lv.{item.level.toLocaleString()}</p>
+                                            </div>
                                         </div>
-                                        <p className="text-xs fadedtext">{item.job} · Lv.{item.level.toLocaleString()}</p>
+                                        <div className="flex w-full grow flex-col gap-3 sm:flex-row sm:overflow-x-auto scrollbar-hide">
+                                            {item.checklist.map((content, contentIndex) => (
+                                                <ContentChip key={contentIndex} bosses={checklistForm.bosses} content={content} isMemberGold={item.isGold}/>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="flex w-full grow flex-col gap-3 sm:flex-row sm:overflow-x-auto scrollbar-hide">
-                                    {item.checklist.map((content, contentIndex) => (
-                                        <ContentChip key={contentIndex} bosses={checklistForm.bosses} content={content} isMemberGold={item.isGold}/>
-                                    ))}
+                                ))}
+                            </div>
+                            <div className="flex w-full flex-col items-end justify-center gap-3 px-4 pb-4 pt-3 sm:flex-row sm:justify-start">
+                                <Pagination
+                                    showControls
+                                    color="primary"
+                                    page={page}
+                                    onChange={setPage}
+                                    total={Math.ceil(activeChecklist.length / maxSize)}/>
+                                <p className="ml-auto hidden text-[10pt] fadedtext sm:block">좌우 스크롤은 Shift키를 누르며 마우스 휠로 조작하세요.</p>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="mx-3 mb-3 flex flex-col gap-3 rounded-xl border border-gray-200/80 bg-gray-50/70 p-3 sm:mx-4 sm:flex-row sm:items-center sm:justify-between dark:border-white/10 dark:bg-white/[0.025]">
+                                <Select
+                                    aria-label="남은 레이드 필터"
+                                    label="레이드 필터"
+                                    size="sm"
+                                    radius="lg"
+                                    variant="bordered"
+                                    items={raidSelectOptions}
+                                    selectedKeys={new Set([selectedRaid])}
+                                    onChange={(event) => {
+                                        setSelectedRaid(event.target.value || 'all');
+                                        setRemainingPage(1);
+                                    }}
+                                    className="w-full sm:max-w-[280px]"
+                                    classNames={{
+                                        trigger: "border-gray-200 bg-white shadow-none dark:border-white/10 dark:bg-white/[0.035]",
+                                        label: "fadedtext"
+                                    }}>
+                                    {(item) => (
+                                        <SelectItem key={item.key}>{item.name}</SelectItem>
+                                    )}
+                                </Select>
+                                <div className="flex flex-wrap items-center gap-2 text-xs sm:justify-end">
+                                    <Chip size="sm" radius="sm" color="danger" variant="flat">미완료 {remainingRaidCount}건</Chip>
+                                    <span className="fadedtext">대상 캐릭터 {filteredIncompleteEntries.length}명</span>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                    <div className="flex w-full flex-col items-end justify-center gap-3 px-4 pb-4 pt-3 sm:flex-row sm:justify-start">
-                        <Pagination
-                            showControls
-                            color="primary"
-                            page={page}
-                            onChange={setPage}
-                            total={Math.ceil(activeChecklist.length / maxSize)}/>
-                        <p className="ml-auto hidden text-[10pt] fadedtext sm:block">좌우 스크롤은 Shift키를 누르며 마우스 휠로 조작하세요.</p>
-                    </div>
+
+                            {pageIncompleteEntries.length > 0 ? (
+                                <div className="space-y-2 px-3 sm:px-4">
+                                    {pageIncompleteEntries.map(({ character, raids }) => (
+                                        <div
+                                            key={character.nickname}
+                                            className="flex w-full flex-col gap-3 rounded-xl border border-gray-200/80 bg-white px-3 py-3 shadow-[0_2px_10px_rgba(15,23,42,0.03)] sm:flex-row sm:items-center sm:px-4 dark:border-white/10 dark:bg-white/[0.025] dark:shadow-none">
+                                            <div className="flex min-w-0 items-center gap-2.5 sm:w-[240px] sm:shrink-0">
+                                                <JobAvatar size="sm" job={character.job}/>
+                                                <div className="min-w-0 grow">
+                                                    <div className="flex min-w-0 items-center gap-1">
+                                                        <p className="truncate text-sm font-semibold">{character.nickname}</p>
+                                                        {character.isGold ? (
+                                                            <img src="/icons/gold.png" alt="goldicon" className="h-[12px] w-[12px] shrink-0"/>
+                                                        ) : null}
+                                                    </div>
+                                                    <p className="truncate text-[11px] fadedtext">Lv.{character.level.toLocaleString()} · {character.job}</p>
+                                                </div>
+                                                <Chip
+                                                    size="sm"
+                                                    radius="sm"
+                                                    color="danger"
+                                                    variant="flat"
+                                                    className="shrink-0 sm:hidden">
+                                                    {raids.length}개
+                                                </Chip>
+                                            </div>
+                                            <div className="flex min-w-0 grow flex-wrap gap-1.5">
+                                                {raids.map(raid => (
+                                                    <Chip
+                                                        key={raid.name}
+                                                        size="sm"
+                                                        radius="sm"
+                                                        color="danger"
+                                                        variant="flat"
+                                                        classNames={{
+                                                            base: "max-w-full border border-danger-100 bg-danger-50/80 dark:border-danger-500/20 dark:bg-danger-500/10",
+                                                            content: "truncate text-xs font-medium text-danger-600 dark:text-danger-300"
+                                                        }}>
+                                                        {raid.name}
+                                                    </Chip>
+                                                ))}
+                                            </div>
+                                            <Chip
+                                                size="sm"
+                                                radius="sm"
+                                                color="danger"
+                                                variant="flat"
+                                                className="hidden shrink-0 sm:flex">
+                                                미완료 {raids.length}개
+                                            </Chip>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="mx-3 flex min-h-48 flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50/50 px-4 py-8 text-center sm:mx-4 dark:border-white/10 dark:bg-white/[0.02]">
+                                    <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-success-50 text-xl font-semibold text-success-600 dark:bg-success-500/10 dark:text-success-300">✓</div>
+                                    <p className="text-sm font-semibold">
+                                        {selectedRaid === 'all'
+                                            ? '이번 주 남은 레이드가 없습니다.'
+                                            : '선택한 레이드가 남은 캐릭터가 없습니다.'}
+                                    </p>
+                                    <p className="mt-1 text-xs fadedtext">
+                                        {selectedRaid === 'all'
+                                            ? '모든 캐릭터의 레이드 숙제를 완료했어요.'
+                                            : '다른 레이드를 선택하거나 전체 목록을 확인해 보세요.'}
+                                    </p>
+                                </div>
+                            )}
+
+                            <div className="flex w-full items-center px-4 pb-4 pt-3">
+                                {remainingPageCount > 1 ? (
+                                    <Pagination
+                                        showControls
+                                        color="primary"
+                                        page={remainingPage}
+                                        onChange={setRemainingPage}
+                                        total={remainingPageCount}/>
+                                ) : null}
+                                <p className="ml-auto text-xs fadedtext">총 {filteredIncompleteEntries.length}명의 캐릭터</p>
+                            </div>
+                        </>
+                    )}
                 </CardBody>
             </Card>
         </div>
