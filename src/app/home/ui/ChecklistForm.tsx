@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { CheckCharacter } from "../../store/checklistSlice";
-import { getFixedWeeklyContentStatuses, groupByLevel10, isCompleteHomeworkByCharacter, isLogin, loadChecklist } from "../lib/checklistFeat";
+import { getFixedWeeklyContentStatuses, getIncompleteHomeworkNames, groupByLevel10, isCompleteHomeworkByCharacter, isLogin, loadChecklist } from "../lib/checklistFeat";
 import { LoadingComponent } from "../../UtilsCompnents";
 import { Boss } from "../../api/checklist/boss/route";
 import {
@@ -229,13 +229,51 @@ export default function ChecklistComponent() {
                                         <div className="ml-auto flex items-center gap-1">
                                             {list.slice(0, 10).map((character) => (
                                                 <Tooltip
+                                                    showArrow
                                                     key={character.nickname}
                                                     content={
-                                                        <span className="flex items-center gap-1 py-1">
-                                                            <p>{character.nickname}</p>
-                                                            <p className="mr-2 text-[8pt] fadedtext">Lv.{character.level}</p>
-                                                            <Chip size="sm" variant="flat" radius="sm" color={isCompleteHomeworkByCharacter(character) ? 'success' : 'danger'}>{isCompleteHomeworkByCharacter(character) ? '완료' : '미완료'}</Chip>
-                                                        </span>
+                                                        <div className="w-[230px] p-1">
+                                                            <div className="flex items-center justify-between gap-2">
+                                                                <div className="flex min-w-0 items-center gap-1.5">
+                                                                    <JobAvatar size={24} job={character.job} className="shrink-0"/>
+                                                                    <div className="min-w-0">
+                                                                        <p className="truncate text-xs font-semibold">{character.nickname}</p>
+                                                                        <p className="mt-0.5 truncate text-[10px] leading-tight fadedtext">
+                                                                            Lv.{character.level.toLocaleString()} · {character.job}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                {isCompleteHomeworkByCharacter(character) ? (
+                                                                    <Chip size="sm" variant="flat" radius="sm" color="success" className="shrink-0">
+                                                                        완료
+                                                                    </Chip>
+                                                                ) : (
+                                                                    <Chip size="sm" variant="flat" radius="sm" color="danger" className="shrink-0">
+                                                                        미완료
+                                                                    </Chip>
+                                                                )}
+                                                            </div>
+                                                            {!isCompleteHomeworkByCharacter(character) ? (
+                                                                <div className="mt-2.5 rounded-lg bg-default-100/70 p-2 dark:bg-white/[0.055]">
+                                                                    <div className="mb-1.5 flex items-center justify-between gap-2">
+                                                                        <p className="text-[11px] font-medium text-default-500 dark:text-default-400">남은 레이드</p>
+                                                                        <span className="text-[10px] font-semibold tabular-nums text-danger">
+                                                                            {getIncompleteHomeworkNames(character).length}개
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="space-y-1">
+                                                                        {getIncompleteHomeworkNames(character).map((contentName) => (
+                                                                            <div
+                                                                                key={contentName}
+                                                                                className="flex min-w-0 items-center gap-2 rounded-md border border-default-200/70 bg-content1 px-2 py-1.5 dark:border-white/10 dark:bg-white/[0.035]">
+                                                                                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-danger"/>
+                                                                                <span className="min-w-0 truncate text-xs font-medium">{contentName}</span>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            ) : null}
+                                                        </div>
                                                     }>
                                                     <PersonIcon className={clsx(
                                                         "h-[25px] w-[15px] fill-current",

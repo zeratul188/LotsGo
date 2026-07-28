@@ -158,3 +158,17 @@ export function getHighestBucket(
 export function isCompleteHomeworkByCharacter(character: CheckCharacter): boolean {
     return character.checklist.every(checkItem => checkItem.items.every(item => item.isDisable || item.isCheck));
 }
+
+// 캐릭터별 미완료 레이드의 간단한 이름 반환
+export function getIncompleteHomeworkNames(character: CheckCharacter): string[] {
+    return Array.from(new Set(
+        character.checklist
+            .filter(checkItem => !checkItem.items.every(item => item.isDisable || item.isCheck))
+            .map((checkItem) => {
+                const [, ...simpleNameParts] = checkItem.name.split(' - ');
+                return simpleNameParts.length > 0
+                    ? simpleNameParts.join(' - ').trim()
+                    : checkItem.name.trim();
+            })
+    ));
+}
