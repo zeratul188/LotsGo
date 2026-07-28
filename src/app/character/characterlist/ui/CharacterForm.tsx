@@ -13,10 +13,10 @@ import { getColorByEquipmentName, getTitleByEquipmentName } from "../lib/charact
 // 장비 컴포넌트
 export function EquipmentComponent({ character }: { character: ExpeditionCharacter }) {
     return (
-        <div className="w-full grid grid-cols-6 gap-1">
+        <div className="grid w-full grid-cols-3 gap-2 sm:grid-cols-6">
             {character.equipment.equipments.map((equipment, index) => (
-                <div key={index} className="flex flex-col items-center">
-                    <p className="fadedtext text-[9pt]">{equipment.type}</p>
+                <div key={index} className="flex min-w-0 flex-col items-center">
+                    <p className="whitespace-nowrap text-[9pt] fadedtext">{equipment.type}</p>
                     <p className={clsx(
                         "text-xl",
                         equipment.type === "무기" ? 
@@ -26,7 +26,7 @@ export function EquipmentComponent({ character }: { character: ExpeditionCharact
                             : "",
                         getEnhanceLevel(equipment.name) === "-" ? "fadedtext" : "font-bold"
                     )}>{getEnhanceLevel(equipment.name)}</p>
-                    <p className="text-[9pt]">{equipment.quality} / {equipment.highUpgrade !== -1 ? equipment.highUpgrade : "-"}</p>
+                    <p className="whitespace-nowrap text-[9pt]">{equipment.quality} / {equipment.highUpgrade !== -1 ? equipment.highUpgrade : "-"}</p>
                     <Chip 
                         size="sm"  
                         variant="flat"
@@ -42,7 +42,7 @@ export function EquipmentComponent({ character }: { character: ExpeditionCharact
 // 악세서리 컴포넌트
 export function AccessoriesComponent({ character }: { character: ExpeditionCharacter }) {
     return (
-        <div className="w-full flex flex-col gap-1">
+        <div className="flex w-full flex-col gap-2">
             {character.equipment.accessories.map((accessory, index) => {
                 let parsedEquipment;
                 try {
@@ -52,10 +52,10 @@ export function AccessoriesComponent({ character }: { character: ExpeditionChara
                     return null;
                 }
                 return (
-                    <div key={index} className="w-full flex gap-1 items-center">
+                    <div key={index} className="grid w-full grid-cols-[34px_minmax(0,1fr)] items-start gap-2">
                         <Popover showArrow radius="sm">
                             <PopoverTrigger>
-                                <p className={`w-[34px] text-[9pt] cursor-pointer ${getColorTextByGrade(accessory.grade)}`}>{accessory.type}</p>
+                                <p className={`w-[34px] cursor-pointer whitespace-nowrap text-[9pt] ${getColorTextByGrade(accessory.grade)}`}>{accessory.type}</p>
                             </PopoverTrigger>
                             <PopoverContent>
                                 <div className="min-w-[140px] text-[9pt]">
@@ -75,9 +75,9 @@ export function AccessoriesComponent({ character }: { character: ExpeditionChara
                                 </div>
                             </PopoverContent>
                         </Popover>
-                        <div className="grow grid grid-cols-3 gap-[1px]">
+                        <div className="grid min-w-0 grid-cols-1 gap-1 sm:grid-cols-3">
                             {accessory.items.map((item, idx) => (
-                                <div key={idx} className="flex gap-1 text-[9pt] items-center">
+                                <div key={idx} className="flex min-w-0 items-center gap-1 whitespace-nowrap text-[9pt]">
                                     <img
                                         src={getSrcByGrade(getSmallGradeByAccessory(accessory.type, item).grade)}
                                         alt={`effect-${idx}`}
@@ -94,12 +94,12 @@ export function AccessoriesComponent({ character }: { character: ExpeditionChara
             })}
             {character.equipment.arm || character.equipment.stone ? <Divider/> : null}
             {character.equipment.arm ? printEffectInTooltip(character.equipment.arm.tooltip).length > 0 ? (
-                <div className="w-full flex gap-1 text-[9pt] items-center">
-                    <p className={`w-[34px] ${getColorTextByGrade(character.equipment.arm.grade)}`}>{character.equipment.arm.type}</p>
-                    <div className="grow grid grid-cols-3 gap-[1px]">
+                <div className="grid w-full grid-cols-[34px_minmax(0,1fr)] items-start gap-2 text-[9pt]">
+                    <p className={`w-[34px] whitespace-nowrap ${getColorTextByGrade(character.equipment.arm.grade)}`}>{character.equipment.arm.type}</p>
+                    <div className="grid min-w-0 grid-cols-1 gap-1 sm:grid-cols-3">
                         {printEffectInTooltip(character.equipment.arm.tooltip).map((item, idx) => (
                             <div key={idx} className={clsx(
-                                "flex gap-1 items-center",
+                                "flex min-w-0 items-center gap-1 whitespace-nowrap",
                                 getSmallGradeByArm(item).name !== "null" ? "" : "hidden"
                             )}>
                                 <img
@@ -116,11 +116,12 @@ export function AccessoriesComponent({ character }: { character: ExpeditionChara
                 </div>
             ) : null : null}
             {character.equipment.stone ? character.equipment.stone.effects.length > 0 ? (
-                <div className="w-full flex gap-1 text-[9pt] items-center">
-                    <p className={`w-[34px] ${getColorTextByGrade(character.equipment.stone.grade)}`}>스톤</p>
-                    <div className="grow grid grid-cols-3 gap-[1px]">
+                <div className="grid w-full grid-cols-[34px_minmax(0,1fr)] items-start gap-2 text-[9pt]">
+                    <p className={`w-[34px] whitespace-nowrap ${getColorTextByGrade(character.equipment.stone.grade)}`}>스톤</p>
+                    <div className="grid min-w-0 grid-cols-1 gap-1 sm:grid-cols-3">
                         {character.equipment.stone.effects.map((effect, idx) => (
                             <p key={idx} className={clsx(
+                                "whitespace-nowrap",
                                 idx === 2 ? "text-red-700 dark:text-red-300" : "",
                                 effect.level !== 0 ? "" : "hidden"
                             )}>
@@ -138,22 +139,22 @@ export function AccessoriesComponent({ character }: { character: ExpeditionChara
 export function StatComponent({ character }: { character: ExpeditionCharacter }) {
     return (
         <div className="w-full text-[9pt]">
-            <div className="w-full grid grid-cols-2 gap-1 mb-2">
-                <div className="w-full flex gap-2 items-center">
+            <div className="mb-2 grid w-full grid-cols-1 gap-1 sm:grid-cols-2">
+                <div className="flex w-full items-center gap-2 whitespace-nowrap">
                     <p className="fadedtext">공격력</p>
                     <p>{getStatByType(character.stats, "공격력") ? getStatByType(character.stats, "공격력")?.value.toLocaleString() : 0}</p>
                 </div>
-                <div className="w-full flex gap-2 items-center">
+                <div className="flex w-full items-center gap-2 whitespace-nowrap">
                     <p className="fadedtext">최대 생명력</p>
                     <p>{getStatByType(character.stats, "최대 생명력") ? getStatByType(character.stats, "최대 생명력")?.value.toLocaleString() : 0}</p>
                 </div>
             </div>
-            <div className="w-full grid grid-cols-6 gap-1">
+            <div className="grid w-full grid-cols-3 gap-2 sm:grid-cols-6">
                 {character.stats
                     .sort((a, b) => b.value - a.value)
                     .filter(item => item.type !== "최대 생명력" && item.type !== "공격력")
                     .map((item, idx) => (
-                    <div key={idx} className="w-full flex items-center gap-1">
+                    <div key={idx} className="flex w-full items-center gap-1 whitespace-nowrap">
                         <p className="fadedtext text-[9pt]">{item.type}</p>
                         <p className={clsx(
                             "text-sm",
@@ -193,12 +194,12 @@ export function GemComponent({ character }: { character: ExpeditionCharacter }) 
 
     return (
         <div className="w-full text-[9pt]">
-            <div className="w-full flex gap-1 mb-1">
-                <p>보석</p>
-                <div className="flex gap-2 items-center ml-auto">
-                    <p className="fadedtext text-md">{atkGemCount}겁 {dekGemCount}작</p>
+            <div className="mb-2 flex w-full items-center justify-between gap-2">
+                <p className="whitespace-nowrap font-medium">보석</p>
+                <div className="flex items-center gap-2 whitespace-nowrap">
+                    <p className="text-[8pt] fadedtext sm:text-[9pt]">{atkGemCount}겁 {dekGemCount}작</p>
                     <Divider orientation="vertical" className="h-5"/>
-                    <p className="fadedtext text-md">기본 공격력: {attack.toFixed(1)}%</p>
+                    <p className="text-[8pt] fadedtext sm:text-[9pt]">기본 공격력 {attack.toFixed(1)}%</p>
                 </div>
             </div>
             <div className="w-full grid grid-cols-11 gap-1">
@@ -237,12 +238,12 @@ export function GemComponent({ character }: { character: ExpeditionCharacter }) 
 // 아크패시브
 export function ArkpassiveComponent({ character }: { character: ExpeditionCharacter }) {
     return (
-        <div className="w-full grid grid-cols-3 gap-1 text-[9pt]">
+        <div className="grid w-full grid-cols-3 gap-2 text-[9pt]">
             {character.arkpassive.points.map((point, idx) => {
                 const parsed = point.description?.match(/^(\d+)(랭크)\s+(\d+)(레벨)$/);
                 return (
-                    <div key={idx} className="w-full flex gap-1">
-                        <p className={getColorByType(point.type)}>{point.type}</p>
+                    <div key={idx} className="flex w-full items-center gap-1 whitespace-nowrap">
+                        <p className={clsx("font-medium", getColorByType(point.type))}>{point.type}</p>
                         {!point.description ? (
                             <p className="fadedtext">미개방</p>
                         ) : parsed ? (
@@ -265,9 +266,9 @@ export function ArkpassiveComponent({ character }: { character: ExpeditionCharac
 // 각인 컴포넌트
 export function EngravingComponent({ character }: { character: ExpeditionCharacter }) {
     return (
-        <div className="w-full grid grid-cols-5 gap-1 text-[9pt]">
+        <div className="grid w-full grid-cols-3 gap-2 text-[9pt] sm:grid-cols-5">
             {character.engravings.map((engraving, idx) => (
-                <div key={idx} className="w-full flex items-center gap-1">
+                <div key={idx} className="flex w-full items-center gap-1 whitespace-nowrap">
                     <Tooltip showArrow content={engraving.name}>
                         <img
                             src={getEngravingSrcByName(engraving.name)}
@@ -293,9 +294,9 @@ export function EngravingComponent({ character }: { character: ExpeditionCharact
 export function ArkgridComponent({ character }: { character: ExpeditionCharacter }) {
     const cores = character.arkgrid.cores;
     return (
-        <div className="w-full grid grid-cols-6 gap-1 text-[9pt]">
+        <div className="grid w-full grid-cols-3 gap-3 text-[9pt] sm:grid-cols-6">
             {Array.from({ length: 6 }).map((_, idx) => (
-                <div key={idx} className="w-full flex flex-col items-center">
+                <div key={idx} className="flex w-full min-w-0 flex-col items-center">
                     <Popover showArrow>
                         <PopoverTrigger>
                             <div className="w-[44px]">
@@ -382,8 +383,8 @@ export function ArkgridComponent({ character }: { character: ExpeditionCharacter
                             </div>
                         </PopoverContent>
                     </Popover>
-                    <p className={clsx("w-full text-center truncate", getColorTextByGrade(getCore(cores, idx)?.grade ?? ''))}>{getCore(cores, idx)?.name.split(':')[1].trim() ?? '-'}</p>
-                    <p>{getCore(cores, idx)?.point ?? 0}P</p>
+                    <p className={clsx("w-full whitespace-nowrap text-center text-[8pt]", getColorTextByGrade(getCore(cores, idx)?.grade ?? ''))}>{getCore(cores, idx)?.name.split(':')[1].trim() ?? '-'}</p>
+                    <p className="whitespace-nowrap">{getCore(cores, idx)?.point ?? 0}P</p>
                 </div>
             ))}
         </div>
@@ -395,11 +396,11 @@ export function CardComponent({ character }: { character: ExpeditionCharacter })
     const cards = character.card.cards;
     const cardSet = character.card.sets;
     return (
-        <div className="w-full flex flex-col gap-1 text-[9pt]">
+        <div className="flex w-full flex-col gap-2 text-[9pt]">
             {cardSet.map((sets, idx) => (
-                <div key={idx} className="w-full flex gap-1">
-                    <p>{sets.name}</p>
-                    <p className="text-orange-700 dark:text-orange-300 ml-auto">{getCardGems(sets, cards)}각</p>
+                <div key={idx} className="flex w-full items-center justify-between gap-3 rounded-lg bg-white px-3 py-2 dark:bg-white/[0.04]">
+                    <p className="whitespace-nowrap">{sets.name}</p>
+                    <p className="whitespace-nowrap font-semibold text-orange-700 dark:text-orange-300">{getCardGems(sets, cards)}각</p>
                 </div>
             ))}
         </div>
