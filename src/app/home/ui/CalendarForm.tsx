@@ -33,7 +33,7 @@ function EventComponent({ events }: EventComponentProps) {
         return `${date.year()}년 ${date.month()+1}월 ${date.date()}일`;
     };
     return (
-        <section className="col-span-2 overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-[#171717] dark:shadow-none">
+        <section className="col-span-1 sm:col-span-2 overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-[#171717] dark:shadow-none">
             <div className="flex items-center gap-3 border-b border-gray-200/80 px-4 py-4 dark:border-white/10">
                 <div className="min-w-0 grow">
                     <div className="flex items-center gap-2">
@@ -71,10 +71,10 @@ function EventComponent({ events }: EventComponentProps) {
                                 radius="lg"
                                 className="group border border-gray-200/80 bg-gray-50/60 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-white/10 dark:bg-white/[0.025]"
                                 href={event.link}>
-                                <CardBody className="relative h-[180px] overflow-hidden p-0">
+                                <CardBody className="relative overflow-hidden bg-slate-900/5 p-0 dark:bg-white/[0.03]">
                                     <img
                                         alt={event.title}
-                                        className="h-[180px] w-full rounded-md object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                                        className="block h-auto w-full rounded-md object-contain transition-transform duration-300 group-hover:scale-[1.02]"
                                         src={event.thumbnail}/>
                                     <Chip
                                         size="sm"
