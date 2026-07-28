@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Island, IslandData, LostarkEvent, Notice } from "../model/types";
-import { filterIslandData, filterRewardItem, formatKoreanDate, formatTimeLeft, getIslandTimePeriod, getNextIslandTime, initialWeek, isGoldIsland, isGoldIslands, isHaveGold } from "../lib/calendarFeat";
+import { filterIslandData, filterRewardItem, formatKoreanDate, formatTimeLeft, getIslandNearbyParticle, getIslandNearbyRegion, getIslandTimePeriod, getNextIslandTime, initialWeek, isGoldIsland, isGoldIslands, isHaveGold, sortIslandDataByTimePeriod } from "../lib/calendarFeat";
 import { 
     Accordion,
     AccordionItem,
@@ -238,10 +238,14 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
             </div>
             <div className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-3 sm:p-4">
                 {islands.length !== 0 ? (
-                    islands.map((island, index) => (
+                    islands.map((island, index) => {
+                        const isGold = isHaveGold(island);
+                        const nearbyRegion = getIslandNearbyRegion(island.name);
+
+                        return (
                         <Card key={index} radius="lg" shadow="none" className={clsx(
                             "border border-gray-200/80 bg-gray-50/60 dark:border-white/10 dark:bg-white/[0.025]",
-                            isHaveGold(island) ? "border-amber-300 bg-amber-50/80 dark:border-amber-500/50 dark:bg-amber-500/10" : ""
+                            isGold ? "border-amber-300 bg-amber-50/80 dark:border-amber-500/50 dark:bg-amber-500/10" : ""
                         )}>
                             <CardBody className="p-3">
                                 <div className="w-full flex gap-2 items-center">
@@ -251,17 +255,19 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
                                         className="h-10 w-10 shrink-0 rounded-lg"/>
                                     <div className="min-w-0 grow">
                                         <p className="truncate font-medium">{island.name}</p>
-                                        <Chip 
-                                            size="sm"
-                                            radius="sm"
-                                            variant="flat"
-                                            color="warning"
-                                            className={clsx(
-                                                "mt-1 h-5",
-                                                isHaveGold(island) ? 'flex' : 'hidden'
-                                            )}>
-                                            골드 보상
-                                        </Chip>
+                                        <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1.5">
+                                            {isGold && (
+                                                <Chip size="sm" radius="sm" variant="flat" color="warning" className="h-5 shrink-0">
+                                                    골드 보상
+                                                </Chip>
+                                            )}
+                                            {nearbyRegion && (
+                                                <span className="truncate text-[11px] text-gray-500 dark:text-gray-400">
+                                                    <span className="font-semibold text-primary-600 dark:text-[#BFE8FF]">{nearbyRegion}</span>
+                                                    {getIslandNearbyParticle(nearbyRegion)} 가까움
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="flex shrink-0 items-center gap-1">
                                         {island.items.map((item, idx) => (
@@ -299,7 +305,8 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
                                 </div>
                             </CardBody>
                         </Card>
-                    ))
+                        );
+                    })
                 ) : (
                     <div className="col-span-3 flex h-[140px] w-full items-center justify-center text-lg fadedtext">오늘의 모험섬 일정은 없습니다.</div>
                 )}
@@ -320,7 +327,7 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
                         panel: "px-0 pb-1 pt-3"
                     }}>
                     {weeks.map((week) => {
-                        const dayIslands = islandDatas.filter(filterIslandData(week));
+                        const dayIslands = sortIslandDataByTimePeriod(week, islandDatas.filter(filterIslandData(week)));
                         const isToday = week.isSame(now, 'day');
                         const hasGoldIsland = isGoldIslands(week, islandDatas);
 
