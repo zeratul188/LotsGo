@@ -36,16 +36,25 @@ export default function CompareClient() {
     };
 
     return (
-        <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
-            <h1 className="text-3xl font-bold">캐릭터 비교하기</h1>
-            <div className="mt-2">
-                <p className="text-sm fadedtext">2명의 캐릭터들의 스펙을 비교 확인할 수 있습니다.</p>
-                <p className="text-xs fadedtext">불러온 캐릭터 정보가 갱신이 되지 않았을 경우 전투정보실에서 갱신해주시기 바랍니다.</p>
-            </div>
-            <CharacterInputComponent
-                leftInput={leftInput}
-                rightInput={rightInput}
-            />
+        <div className="mx-auto min-h-[calc(100vh-65px)] w-full max-w-[1280px] p-4 sm:p-5">
+            <section className="relative overflow-hidden rounded-2xl border border-gray-200/80 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#171717] sm:p-6">
+                <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-primary/10 blur-3xl"/>
+                <div className="relative">
+                    <div className="flex items-center gap-2">
+                        <span className="h-7 w-1 rounded-full bg-primary"/>
+                        <h1 className="whitespace-nowrap text-2xl font-bold tracking-tight sm:text-3xl">캐릭터 비교하기</h1>
+                        <span className="rounded-full bg-primary-50 px-2 py-1 text-[10px] font-semibold text-primary dark:bg-primary/10">1 : 1</span>
+                    </div>
+                    <div className="mt-3 space-y-1">
+                        <p className="text-sm text-default-600 dark:text-default-400">두 캐릭터의 주요 전투 세팅과 수치 차이를 같은 기준으로 비교해 보세요.</p>
+                        <p className="text-xs fadedtext">정보가 최신 상태가 아니라면 전투정보실에서 캐릭터 정보를 먼저 갱신해 주세요.</p>
+                    </div>
+                    <CharacterInputComponent
+                        leftInput={leftInput}
+                        rightInput={rightInput}
+                    />
+                </div>
+            </section>
             {isMobile ? null : (
                 <div className="w-full flex justify-center mt-8 overflow-hidden mb-8">
                     <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-4 mx-4">

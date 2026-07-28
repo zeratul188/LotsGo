@@ -33,6 +33,11 @@ export type FixedWeeklyContentStatus = {
     incompleteCharacters: CheckCharacter[]
 }
 
+export type IncompleteRaidStatus = {
+    name: string,
+    remainingStageCount: number
+}
+
 const fixedWeeklyContentSettings: Array<{
     type: FixedWeeklyContentType,
     title: string,
@@ -157,4 +162,43 @@ export function getHighestBucket(
 // 해당 캐릭터가 숙제를 완료했는지 확인하는 함수
 export function isCompleteHomeworkByCharacter(character: CheckCharacter): boolean {
     return character.checklist.every(checkItem => checkItem.items.every(item => item.isDisable || item.isCheck));
+}
+
+// 캐릭터별 미완료 레이드의 간단한 이름 반환
+export function getIncompleteHomeworkNames(character: CheckCharacter): string[] {
+    return Array.from(new Set(
+        character.checklist
+            .filter(checkItem => !checkItem.items.every(item => item.isDisable || item.isCheck))
+            .map((checkItem) => {
+                const [, ...simpleNameParts] = checkItem.name.split(' - ');
+                return simpleNameParts.length > 0
+                    ? simpleNameParts.join(' - ').trim()
+                    : checkItem.name.trim();
+            })
+    ));
+}
+
+// 캐릭터별 미완료 레이드의 간단한 이름과 남은 관문 수 반환
+export function getIncompleteRaidStatuses(character: CheckCharacter, bosses: Boss[]): IncompleteRaidStatus[] {
+    const incompleteRaids = new Map<string, IncompleteRaidStatus>();
+
+    character.checklist.forEach((checkItem) => {
+        const remainingStageCount = checkItem.items.filter(item => !item.isDisable && !item.isCheck).length;
+        if (remainingStageCount === 0) return;
+
+        const boss = bosses.find(item => item.name === checkItem.name);
+        const [, ...simpleNameParts] = checkItem.name.split(' - ');
+        const fallbackName = simpleNameParts.length > 0
+            ? simpleNameParts.join(' - ').trim()
+            : checkItem.name.trim();
+        const name = boss?.simple || fallbackName || '알 수 없는 콘텐츠';
+        const existingRaid = incompleteRaids.get(name);
+
+        incompleteRaids.set(name, {
+            name,
+            remainingStageCount: (existingRaid?.remainingStageCount || 0) + remainingStageCount
+        });
+    });
+
+    return Array.from(incompleteRaids.values());
 }
