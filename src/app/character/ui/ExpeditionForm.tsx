@@ -62,7 +62,9 @@ export function ExpeditionsComponent({ expeditions }: ExpeditionComponentProps) 
                 </div>
             </section>
             {serverNames.map((server) => {
-                const serverCharacters = expeditions.filter((character) => character.server === server);
+                const serverCharacters = expeditions
+                    .filter((character) => character.server === server)
+                    .sort((a, b) => b.level - a.level);
 
                 return (
                 <section key={server} className="overflow-hidden rounded-2xl border border-default-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]">

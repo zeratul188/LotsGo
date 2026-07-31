@@ -1039,7 +1039,7 @@ export function renderArkPassiveDescription(description?: string): ReactNode {
         .filter(Boolean)
         .map((part, index) =>
             part === '랭크' || part === '레벨'
-                ? createElement('span', { key: index, className: "text-xs fadedtext" }, part)
+                ? createElement('span', { key: index, className: "align-baseline text-[10px] leading-none fadedtext" }, part)
                 : part
         );
 }

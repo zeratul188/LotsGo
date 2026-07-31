@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
-import { ComparisonMetricRow, EquipmentCompareSide, EquipmentComparisonRow, getAccessoryComparisonRows, getArkgridComparisonRows, getColorChipByKarmaType, getEngravingComparisonRows, getEquipmentComparisonRows, getGemComparisonRows, getKarmaComparisonRows, getStatComparisonRows, loadCompareCharacterInfo, toExpeditionCharacter } from "../lib/compareFeat";
-import { getColorTextByGrade, SetStateFn, useMobileQuery } from "@/utiils/utils";
-import { Button, Card, CardBody, Chip, Divider, Input, Spinner } from "@heroui/react";
-import data from "@/data/characters/data.json";
+import { ComparisonMetricRow, EquipmentCompareSide, EquipmentComparisonRow, getAccessoryComparisonRows, getArkgridComparisonRows, getColorChipByKarmaType, getEngravingComparisonRows, getEquipmentComparisonRows, getGemComparisonRows, getKarmaComparisonRows, getStatComparisonRows, toExpeditionCharacter } from "../lib/compareFeat";
+import { getColorTextByGrade, useMobileQuery } from "@/utiils/utils";
+import { Card, CardBody, Chip, Divider } from "@heroui/react";
 import { CharacterInfo } from "../../model/types";
 import SearchEmptyIcon from "@/Icons/SearchEmptyIcon";
 import clsx from "clsx";
@@ -10,169 +8,7 @@ import { getColorByType, getEngravingSrcByName, getParsedText, getTitleData, pri
 import SupportorIcon from "@/Icons/SupportorIcon";
 import AttackIcon from "@/Icons/AttackIcon";
 import { AccessoriesComponent, ArkgridComponent, EquipmentComponent, GemComponent, StatComponent } from "../../characterlist/ui/CharacterForm";
-
-type CharacterInputState = {
-    value: string;
-    setValue: SetStateFn<string>;
-    isLoading: boolean;
-    setLoading: SetStateFn<boolean>;
-    setInfo: SetStateFn<CharacterInfo | null>;
-};
-
-type CharacterInputComponentProps = {
-    leftInput: CharacterInputState;
-    rightInput: CharacterInputState;
-};
-
-const COOLDOWN_SECONDS = 10;
-
-export function CharacterInputComponent({
-    leftInput,
-    rightInput,
-}: CharacterInputComponentProps) {
-    const [leftCooldown, setLeftCooldown] = useState(0);
-    const [rightCooldown, setRightCooldown] = useState(0);
-
-    useEffect(() => {
-        if (leftCooldown <= 0) {
-            return;
-        }
-
-        const timer = window.setTimeout(() => {
-            setLeftCooldown((prev) => Math.max(prev - 1, 0));
-        }, 1000);
-
-        return () => window.clearTimeout(timer);
-    }, [leftCooldown]);
-
-    useEffect(() => {
-        if (rightCooldown <= 0) {
-            return;
-        }
-
-        const timer = window.setTimeout(() => {
-            setRightCooldown((prev) => Math.max(prev - 1, 0));
-        }, 1000);
-
-        return () => window.clearTimeout(timer);
-    }, [rightCooldown]);
-
-    const handleSubmit = async (
-        input: CharacterInputState,
-        cooldown: number,
-        setCooldown: SetStateFn<number>
-    ) => {
-        if (cooldown > 0 || input.isLoading) {
-            return;
-        }
-
-        const nickname = input.value.trim();
-        if (!nickname) {
-            input.setInfo(null);
-            return;
-        }
-
-        input.setLoading(true);
-        setCooldown(COOLDOWN_SECONDS);
-        try {
-            const info = await loadCompareCharacterInfo(nickname);
-            input.setInfo(info);
-        } finally {
-            input.setLoading(false);
-        }
-    };
-
-    return (
-        <div className="mt-5 grid w-full grid-cols-2 gap-2 sm:gap-3">
-            <div className="rounded-xl border border-primary-100 bg-primary-50/40 p-2.5 dark:border-primary/20 dark:bg-primary/5 sm:p-3">
-                <div className="mb-2 flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-primary"/>
-                    <p className="whitespace-nowrap text-[11px] font-semibold text-primary">왼쪽 캐릭터</p>
-                </div>
-                <form
-                    className="flex w-full flex-col items-start gap-2 sm:flex-row sm:items-end"
-                    onSubmit={(event) => {
-                        event.preventDefault();
-                        void handleSubmit(leftInput, leftCooldown, setLeftCooldown);
-                    }}
-                >
-                    <Input
-                        radius="md"
-                        variant="bordered"
-                        placeholder="왼쪽 캐릭터 이름"
-                        maxLength={data.maxCharacterNameLength}
-                        value={leftInput.value}
-                        onValueChange={leftInput.setValue}
-                        isDisabled={leftInput.isLoading || leftCooldown > 0}
-                        className="w-full sm:min-w-0 sm:flex-1"
-                        classNames={{ inputWrapper: "bg-white shadow-sm dark:bg-white/[0.04]" }}
-                    />
-                    <Button
-                        type="submit"
-                        radius="md"
-                        color="primary"
-                        isDisabled={leftInput.isLoading || leftCooldown > 0}
-                        className="w-full shrink-0 font-semibold sm:w-fit"
-                    >
-                        조회
-                    </Button>
-                    {leftInput.isLoading ? (
-                        <div className="flex items-center gap-2 sm:ml-1">
-                            <Spinner size="sm" color="primary" />
-                            <p className="fadedtext text-xs">캐릭터를 조회 중입니다...</p>
-                        </div>
-                    ) : null}
-                    {!leftInput.isLoading && leftCooldown > 0 ? (
-                        <p className="fadedtext text-xs sm:ml-1">{leftCooldown}초 후 다시 조회할 수 있습니다.</p>
-                    ) : null}
-                </form>
-            </div>
-            <div className="rounded-xl border border-orange-100 bg-orange-50/40 p-2.5 dark:border-orange-400/20 dark:bg-orange-400/5 sm:p-3">
-                <div className="mb-2 flex items-center justify-end gap-1.5">
-                    <p className="whitespace-nowrap text-[11px] font-semibold text-orange-600 dark:text-orange-300">오른쪽 캐릭터</p>
-                    <span className="h-2 w-2 rounded-full bg-orange-500"/>
-                </div>
-                <form
-                    className="flex w-full flex-col items-end justify-end gap-2 sm:flex-row"
-                    onSubmit={(event) => {
-                        event.preventDefault();
-                        void handleSubmit(rightInput, rightCooldown, setRightCooldown);
-                    }}
-                >
-                    {rightInput.isLoading ? (
-                        <div className="flex items-center gap-2 sm:ml-1">
-                            <Spinner size="sm" color="primary" />
-                            <p className="fadedtext text-xs">캐릭터를 조회 중입니다...</p>
-                        </div>
-                    ) : null}
-                    {!rightInput.isLoading && rightCooldown > 0 ? (
-                        <p className="fadedtext text-xs sm:ml-1">{rightCooldown}초 후 다시 조회할 수 있습니다.</p>
-                    ) : null}
-                    <Input
-                        radius="md"
-                        variant="bordered"
-                        placeholder="오른쪽 캐릭터 이름"
-                        maxLength={data.maxCharacterNameLength}
-                        value={rightInput.value}
-                        onValueChange={rightInput.setValue}
-                        isDisabled={rightInput.isLoading || rightCooldown > 0}
-                        className="w-full sm:min-w-0 sm:flex-1"
-                        classNames={{ inputWrapper: "bg-white shadow-sm dark:bg-white/[0.04]" }}
-                    />
-                    <Button
-                        type="submit"
-                        radius="md"
-                        color="primary"
-                        isDisabled={rightInput.isLoading || rightCooldown > 0}
-                        className="w-full shrink-0 font-semibold sm:w-fit"
-                    >
-                        조회
-                    </Button>
-                </form>
-            </div>
-        </div>
-    );
-}
+import { CompareProfile } from "./CompareProfile";
 
 // 검색되지 않았을 때 표시되는 내용
 function NotSearchComponent() {
@@ -211,7 +47,7 @@ export function CharactersComponent({ leftInfo, rightInfo }: CharactersComponent
     const isMobile = useMobileQuery();
     return (
         <div className="mt-8 flex w-full flex-col gap-5 [&_[data-slot=base]]:border [&_[data-slot=base]]:border-gray-200/80 [&_[data-slot=base]]:shadow-sm dark:[&_[data-slot=base]]:border-white/10 [&_h2]:flex [&_h2]:items-center [&_h2]:justify-center [&_h2]:gap-2 [&_h2]:tracking-tight [&_h2]:before:h-4 [&_h2]:before:w-1 [&_h2]:before:rounded-full [&_h2]:before:bg-primary [&_h2]:before:content-['']">
-            <ProfileComponent leftInfo={leftInfo} rightInfo={rightInfo}/>
+            <CompareProfile leftInfo={leftInfo} rightInfo={rightInfo}/>
             <Equipments leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
             <Accessories leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
             <Stats leftInfo={leftInfo} rightInfo={rightInfo} isMobile={isMobile}/>
@@ -244,92 +80,6 @@ function getFilteredArkgridOptions(info: CharacterInfo | null) {
     }
 
     return sortedOptions.filter((item) => !ATTACK_ARKGRID_OPTION_NAMES.includes(item.name));
-}
-
-// 프로필 영역
-function ProfileComponent({ leftInfo, rightInfo }: CharactersComponentProps) {
-    return (
-        <div className="w-full grid min-[1257px]:grid-cols-[420px_1fr_420px] gap-2">
-            <CharacterProfile info={leftInfo} />
-            <div />
-            <CharacterProfile info={rightInfo} />
-        </div>
-    );
-}
-
-const upperClass = ["환수사", "기상술사", "도화가"];
-
-function CharacterProfile({ info }: { info: CharacterInfo | null }) {
-    return (
-        <Card
-            radius="lg"
-            shadow="sm"
-            className={clsx(
-                "overflow-hidden border border-gray-200/80 shadow-sm dark:border-white/10",
-                info ? "bg-[#15181d] text-white" : "bg-white dark:bg-[#171717]"
-            )}>
-            <CardBody className="p-0">
-                {info ? (
-                    <div className="relative min-h-[204px] w-full overflow-hidden">
-                        <div className="absolute top-0 right-0 z-0 h-[204px] w-[320px] overflow-hidden bg-[#15181d] sm:bg-transparent [mask-image:linear-gradient(to_right,transparent,black,black,black)]">
-                            <img
-                                src={info.profile.characterImageUrl}
-                                alt="character-image"
-                                className={clsx(
-                                    "h-[400px] w-[100vw] origin-top scale-130 object-cover translate-x-[20%]",
-                                    upperClass.includes(info.profile.className) ? "translate-y-[-28%]" : "translate-y-[-13%]"
-                                )}
-                            />
-                        </div>
-                        <div className="relative z-10 flex h-full flex-1 flex-col p-4">
-                            <p className="fadedtext text-xs">
-                                @{info.profile.server} · {info.profile.className} [{info.profile.arkpassiveTitle}]
-                            </p>
-                            <p
-                                className={clsx(
-                                    "mt-1 text-xs",
-                                    getColorTextByGrade(getTitleData(getParsedText(info.profile.title))?.grade ?? "default")
-                                )}
-                            >
-                                {getParsedText(info.profile.title)}
-                            </p>
-                            <h3 className="font-semibold text-lg">{info.nickname}</h3>
-                            <div className="grid grid-cols-[56px_1fr] gap-1 text-xs mt-1">
-                                <p className="fadedtext text-right">아이템 레벨</p>
-                                <p>{info.profile.itemLevel}</p>
-                                <p className="fadedtext text-right">전투 레벨</p>
-                                <p>{info.profile.characterLevel}</p>
-                                <p className="fadedtext text-right">원정대 레벨</p>
-                                <p>{info.profile.expeditionLevel}</p>
-                                <p className="fadedtext text-right">명예</p>
-                                <p>{info.profile.honorPoint.toLocaleString()}</p>
-                            </div>
-                            <div className="w-full flex gap-1 items-center mt-auto">
-                                <div className="flex items-center">
-                                    {info.profile.characterType === "supportor" ? <SupportorIcon size={18} /> : <AttackIcon size={16} />}
-                                    <p
-                                        className={clsx(
-                                            "font-bold",
-                                            info.profile.characterType === "supportor" ? "text-green-300" : "text-red-300 ml-0.5"
-                                        )}
-                                    >
-                                        {info.profile.combatPower}
-                                    </p>
-                                </div>
-                                <div className="flex gap-1 ml-auto">
-                                    {info.profile.emblems.map((emblem, idx) => (
-                                        <img key={idx} src={emblem} alt={`emblem-${idx}`} className="w-[24px] h-[24px]" />
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    <NotSearchComponent />
-                )}
-            </CardBody>
-        </Card>
-    );
 }
 
 function EquipmentSideValue({

@@ -1,5 +1,7 @@
 'use client'
-import { ChecklistStatue, useChecklistForm, ChecklistComponent, ChecklistModal, CubeDetailComponent, RemainChecklistComponent, FilterComponent, BossInfoModal } from "./ui/ChecklistForm"
+import { ChecklistStatue, useChecklistForm, ChecklistComponent, ChecklistModal, RemainChecklistComponent, FilterComponent } from "./ui/ChecklistForm"
+import BossInfoModal from "./ui/BossInfoModal"
+import { CubeDetailComponent } from "./ui/CubeComponents"
 import { useSelector } from "react-redux";
 import { LoadingComponent } from "../UtilsCompnents";
 import { checkLogin, getBosses, getCubes, handleResetChecklist, loadChecklist, settingFilter } from "./lib/checklistFeat";

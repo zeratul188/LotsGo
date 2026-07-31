@@ -12,10 +12,7 @@ import {
     Progress, 
     Tooltip 
 } from "@heroui/react";
-import { Fragment, useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { RootState } from "../../store/store";
-import { Character } from "../../store/loginSlice";
+import { useEffect, useState } from "react";
 import {  
     getAccessoryStatPercentColor,
     getAccessoryStatSummary,
@@ -58,17 +55,12 @@ import clsx from "clsx";
 import { printDefaultInTooltip, printListInTooltip, printPointInTooltip, printUseInTooltip } from "../lib/accessoryPrints";
 import { printArmPointInTooltip, printArmUseInTooltip, printBooleanInTooltip, printEffectInTooltip } from "../lib/armPrints";
 import { printBonusStoneInTooltip, printDefaultStoneInTooltip, printStoneUseInTooltip } from "../lib/stonePrints";
-import { CharacterHistory } from "../lib/history";
 import '../css/effects.css';
-import VegaIcon from "@/Icons/VegaIcon";
 import AttackIcon from "@/Icons/AttackIcon";
 import SupportorIcon from "@/Icons/SupportorIcon";
 import { CardPiece, CharacterInfo, ExpeditionCharacterInfo } from "../model/types";
-import { ItemLevelIcon } from "@/Icons/ItemLevelIcon";
-import { useRouter } from "next/navigation";
 import { getCore } from "../lib/arkGridPrints";
 import data from "@/data/characters/data.json";
-import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 
 // state 관리
 export function useCharacterForm() {
@@ -99,329 +91,6 @@ export function useCharacterForm() {
         attackPieces, setAttackPieces,
         supporterPieces, setSupporterPieces
     }
-}
-
-// 초기 화면 - 검색하지 않은 상태
-type SearchComponentProps = {
-    setSearched: SetStateFn<boolean>,
-    setLoading: SetStateFn<boolean>,
-    setNickname: SetStateFn<string>
-}
-export function SearchComponent({ setSearched, setLoading, setNickname }: SearchComponentProps) {
-    const [search, setSearch] = useState('');
-    const router = useRouter();
-    const isMobile = useMobileQuery();
-    return (
-        <section className="mx-auto w-full max-w-[820px] py-10 sm:py-14">
-            <div className="text-center">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Character Search</p>
-                <h1 className="mt-2 text-3xl font-bold sm:text-4xl">전투 정보실</h1>
-                <p className="mx-auto mt-3 max-w-[560px] text-sm leading-6 text-default-500 sm:text-base">캐릭터의 장비, 각인, 보석과 전투 정보를 한곳에서 확인하세요.</p>
-            </div>
-            <div className="mt-8 rounded-2xl border border-divider bg-content1 p-4 shadow-sm sm:p-5">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                    <Input
-                        size="lg"
-                        radius="lg"
-                        placeholder="캐릭터명을 입력하세요."
-                        maxLength={12}
-                        value={search}
-                        onValueChange={setSearch}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                handleSearch(search, setSearched, setLoading, setNickname);
-                                const params = new URLSearchParams(window.location.search);
-                                params.set("nickname", search);
-                                const newUrl = `${window.location.pathname}?${params.toString()}`;
-                                window.history.pushState({}, "", newUrl);
-                            }
-                        }}
-                        className="w-full"
-                        startContent={<span className="text-lg text-default-400">⌕</span>}/>
-                    <Button
-                        size="lg"
-                        radius="lg"
-                        color="primary"
-                        className="w-full shrink-0 sm:w-[112px]"
-                        onPress={() => handleSearch(search, setSearched, setLoading, setNickname)}>
-                        검색
-                    </Button>
-                </div>
-                <p className="mt-2 text-xs text-default-400">캐릭터명을 입력한 뒤 Enter 키를 눌러도 검색할 수 있습니다.</p>
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                    <Button
-                        fullWidth={isMobile}
-                        size="sm"
-                        radius="lg"
-                        color="default"
-                        variant="flat"
-                        onPress={() => router.push('/character/characterlist')}>
-                        원정대 모아보기
-                    </Button>
-                    <Button
-                        fullWidth={isMobile}
-                        size="sm"
-                        radius="lg"
-                        color="default"
-                        variant="flat"
-                        onPress={() => router.push('/character/compare')}>
-                        캐릭터 비교
-                    </Button>
-                </div>
-            </div>
-        </section>
-    )
-}
-
-function CharacterListRow({
-    nickname,
-    job,
-    server,
-    level,
-    meta,
-    onPress,
-}: {
-    nickname: string;
-    job: string;
-    server: string;
-    level: number;
-    meta: string;
-    onPress: () => void;
-}) {
-    return (
-        <button
-            type="button"
-            onClick={onPress}
-            className="group flex w-full cursor-pointer items-center gap-3 rounded-xl border border-transparent px-3 py-3 text-left transition hover:border-primary/30 hover:bg-primary/5 sm:px-4"
-        >
-            <JobEmblemIcon job={job} size={40}/>
-            <span className="min-w-0 flex-1">
-                <span className="block truncate text-base font-semibold">{nickname}</span>
-                <span className="mt-0.5 block truncate text-xs text-default-500">{server} · {job} · {meta}</span>
-            </span>
-            <span className="shrink-0 text-right">
-                <span className="block text-[10px] text-default-400">아이템 레벨</span>
-                <span className="mt-0.5 block text-sm font-bold tabular-nums text-primary">{level}</span>
-            </span>
-        </button>
-    );
-}
-
-function ListSectionHeader({ title, count, subtitle }: { title: string; count: number; subtitle: string }) {
-    return (
-        <div className="flex items-start justify-between gap-3">
-            <div>
-                <h2 className="text-lg font-bold sm:text-xl">{title}</h2>
-                <p className="mt-1 text-xs text-default-500">{subtitle}</p>
-            </div>
-            <Chip size="sm" radius="full" variant="flat" color="primary">{count}명</Chip>
-        </div>
-    );
-}
-
-// 저장된 히스토리 가져오기
-export function HistoryComponent({ setSearched, setLoading, setNickname }: SearchComponentProps) {
-    const [historys, setHistorys] = useState<CharacterHistory[]>([]);
-    
-    useEffect(() => {
-        const storedHistorys = localStorage.getItem('historys');
-        const now = new Date();
-        const oneWeekAgo = new Date(now.getTime() - 7*24*60*60*1000);
-        if (storedHistorys) {
-            const parsed = JSON.parse(storedHistorys) as CharacterHistory[];
-            const restored = parsed.map(item => ({
-                ...item,
-                date: new Date(item.date)
-            }));
-            let resultArray = restored.filter(item => item.date >= oneWeekAgo);
-            resultArray = resultArray.reverse();
-            setHistorys(resultArray);
-        }
-    }, [])
-
-    return (
-        <section className="w-full rounded-2xl border border-divider bg-content1 p-4 sm:p-5">
-            <ListSectionHeader title="최근 기록" count={historys.length} subtitle="최근 7일 동안 검색한 캐릭터" />
-            <div className="mt-4 max-h-[460px] space-y-1 overflow-y-auto pr-1">
-                {historys.length ? historys.map((character, index) => (
-                    <CharacterListRow
-                        key={`${character.nickname}-${index}`}
-                        nickname={character.nickname}
-                        job={character.job}
-                        server={`@${character.server}`}
-                        level={character.level}
-                        meta={`${character.date.getMonth() + 1}/${character.date.getDate()} 검색`}
-                        onPress={() => handleSearch(character.nickname, setSearched, setLoading, setNickname)}
-                    />
-                )) : (
-                    <div className="flex min-h-[180px] flex-col items-center justify-center rounded-xl border border-dashed border-divider px-4 text-center">
-                        <span className="text-2xl text-default-400">⌕</span>
-                        <p className="mt-2 text-sm text-default-500">최근에 검색한 캐릭터가 없습니다.</p>
-                    </div>
-                )}
-            </div>
-        </section>
-    )
-}
-
-// 로그인된 원정대 목록 가져오기
-export function ExpeditionComponent({ setSearched, setLoading, setNickname }: SearchComponentProps) {
-    const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
-    return (
-        <section className="w-full rounded-2xl border border-divider bg-content1 p-4 sm:p-5">
-            <ListSectionHeader title="내 원정대 목록" count={expedition.length} subtitle="등록된 캐릭터를 빠르게 확인" />
-            <div className="mt-4 max-h-[460px] space-y-1 overflow-y-auto pr-1">
-                {expedition.length ? expedition.map((character, index) => (
-                    <CharacterListRow
-                        key={`${character.nickname}-${index}`}
-                        nickname={character.nickname}
-                        job={character.job}
-                        server={character.server}
-                        level={character.level}
-                        meta="원정대 캐릭터"
-                        onPress={() => handleSearch(character.nickname, setSearched, setLoading, setNickname)}
-                    />
-                )) : (
-                    <div className="flex min-h-[180px] flex-col items-center justify-center rounded-xl border border-dashed border-divider px-4 text-center">
-                        <span className="text-2xl text-default-400">♙</span>
-                        <p className="mt-2 text-sm text-default-500">로그인이 되어있지 않거나 등록된 원정대 캐릭터가 없습니다.</p>
-                    </div>
-                )}
-            </div>
-        </section>
-    )
-}
-
-// 캐릭터 이미지 위로 올릴 직업 목록
-const upperClass = ['도화가', '기상술사', '환수사'];
-
-// 캐릭터 프로파일
-type NewProfileComponentProps = {
-    info: CharacterInfo,
-    isBadge: boolean
-}
-export function ProfileComponent({ info, isBadge }: NewProfileComponentProps) {
-    const isMobile = useMobileQuery();
-    return (
-        <div className="w-full h-[max-content] sm:h-[300px] border-b-1 border-[#dddddd] dark:border-[#333333] bg-[#F6F6F6] dark:bg-[#111111]">
-            <div className="w-full h-full max-w-[1280px] mx-auto flex flex-col-reverse sm:flex-row relative">
-                <div className="p-5 h-full hidden sm:flex flex-col">
-                    <div className="flex gap-2">
-                        <Chip color="secondary" variant="solid" radius="sm">{info.profile.server}</Chip>
-                        <Chip color="warning" variant="solid" radius="sm">{info.profile.className}</Chip>
-                        <Chip color="primary" variant="solid" radius="sm" className={clsx(info.profile.arkpassiveTitle ? 'flex' : 'hidden')}>{info.profile.arkpassiveTitle}</Chip>
-                    </div>
-                    <p className="mt-2">{info.profile.title ? getParsedText(info.profile.title) : '-'}{info.profile.guildName !== '-' ?` · ${info.profile.guildName} 길드` : ''}</p>
-                    {isBadge ? (
-                        <div className="flex gap-2 items-center">
-                            <div className="tag-container">
-                                <div className="flex">
-                                    <span className="battletag">{info.nickname}</span>
-                                    <div className="empty-box"></div>
-                                </div>
-                                <span className="tail-wrapper">
-                                    <span className="tail-box"></span>
-                                </span>
-                            </div>
-                            <Tooltip showArrow content="후원자 뱃지">
-                                <div className="supporter-badge-emblem" aria-label="후원자 뱃지">
-                                    <VegaIcon className="supporter-badge-icon"/>
-                                </div>
-                            </Tooltip>
-                        </div>
-                    ) : <p className="text-2xl font-bold">{info.nickname}</p>}
-                    <div className="mt-2 w-fit flex items-center rounded-full bg-white dark:bg-[#18181b] shadow-md">
-                        <p className="rounded-l-full h-full flex items-center bg-gradient-to-r from-orange-500 to-red-500 py-0.5 pl-2 pr-1.5 text-xs text-white">전투 레벨</p>
-                        <p className="py-0.5 pl-2.5 pr-3 text-sm">{info.profile.characterLevel.toLocaleString()}</p>
-                    </div>
-                    <div className="mt-2 w-fit flex items-center rounded-full bg-white dark:bg-[#18181b] shadow-md">
-                        <p className="rounded-l-full h-full flex items-center bg-gradient-to-r from-pink-500 to-purple-500 py-0.5 pl-2 pr-1.5 text-xs text-white">원정대 레벨</p>
-                        <p className="py-0.5 pl-2.5 pr-3 text-sm">{info.profile.expeditionLevel}</p>
-                    </div>
-                    <div className="mt-2 w-fit flex items-center rounded-full bg-white dark:bg-[#18181b] shadow-md">
-                        <p className="rounded-l-full h-full flex items-center bg-gradient-to-r from-sky-500 to-blue-500 py-0.5 pl-2 pr-1.5 text-xs text-white">영지</p>
-                        <p className="py-0.5 pl-2.5 pr-3 text-sm">Lv.{info.profile.townLevel} {info.profile.townName}</p>
-                    </div>
-                    <div className="grow flex flex-row items-center gap-3 mt-5">
-                        <Tooltip showArrow content="아이템 레벨">
-                            <Card radius="sm" shadow="sm" isBlurred>
-                                <CardBody className="px-3 py-1">
-                                    <div className="flex items-center gap-1">
-                                        <ItemLevelIcon size={34}/>
-                                        <p className="text-3xl font-bold">{info.profile.itemLevel.toFixed(2)}</p>
-                                    </div>
-                                </CardBody>
-                            </Card>
-                        </Tooltip>
-                        {info.profile.emblems.map((emblem, idx) => (
-                            <img key={idx} src={emblem} alt={`emblem-${idx}`} className="w-[40px] h-[40px]"/>
-                        ))}
-                    </div>
-                </div>
-                <div className="flex sm:hidden p-5 flex-col z-1 h-[300px] bg-gradient-to-r from-[#15181d] via-[#15181d]/25 to-transparent">
-                    <div className="flex gap-2">
-                        <Chip color="secondary" variant="solid" radius="sm">{info.profile.server}</Chip>
-                        <Chip color="warning" variant="solid" radius="sm">{info.profile.className}</Chip>
-                    </div>
-                    <Chip 
-                        color="primary" 
-                        variant="solid" 
-                        radius="sm" 
-                        className={clsx(
-                            'mt-2',
-                            info.profile.arkpassiveTitle ? 'flex' : 'hidden')
-                        }>{info.profile.arkpassiveTitle}</Chip>
-                    <p className="text-[#dddddd] text-sm mt-4">{getParsedText(info.profile.title)}{info.profile.guildName !== '-' ?` · ${info.profile.guildName} 길드` : ''}</p>
-                    {isBadge ? (
-                        <div className="flex gap-2 items-center">
-                            <div className="tag-container-mobile mt-2">
-                                <div className="flex">
-                                    <span className="battletag">{info.nickname}</span>
-                                    <div className="empty-box-mobile"></div>
-                                </div>
-                                <span className="tail-wrapper">
-                                    <span className="tail-box-mobile"></span>
-                                </span>
-                            </div>
-                            <Tooltip showArrow content="후원자 뱃지">
-                                <div className="supporter-badge-emblem supporter-badge-emblem-mobile" aria-label="후원자 뱃지">
-                                    <VegaIcon className="supporter-badge-icon"/>
-                                </div>
-                            </Tooltip>
-                        </div>
-                    ) : <p className="text-xl font-bold text-white">{info.nickname}</p>}
-                    <div className="grow w-full flex items-end mt-5">
-                        <div className="grow grid grid-cols-[75px_1fr] gap-y-1.5">
-                            <p className="fadedtext text-sm">아이템 레벨</p>
-                            <p className="text-sm text-white">{info.profile.itemLevel.toLocaleString()}</p>
-                            <p className="fadedtext text-sm">전투 레벨</p>
-                            <p className="text-sm text-white">{info.profile.characterLevel.toLocaleString()}</p>
-                            <p className="fadedtext text-sm">원정대 레벨</p>
-                            <p className="text-sm text-white">{info.profile.expeditionLevel.toLocaleString()}</p>
-                            <p className="fadedtext text-sm">영지</p>
-                            <p className="text-sm text-white">Lv.{info.profile.townLevel} {info.profile.townName}</p>
-                        </div>
-                        <div className="flex gap-1">
-                            {info.profile.emblems.map((emblem, idx) => (
-                                <img key={idx} src={emblem} alt={`emblem-${idx}`} className="w-[28px] h-[28px]"/>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-                <div className="grow hidden sm:block"/>
-                <div className="absolute sm:static top-0 left-0 z-0 bg-[#15181d] sm:bg-transparent w-[100vw] sm:w-[440px] h-full sm:h-[300px] overflow-hidden sm:[mask-image:linear-gradient(to_right,transparent,black,black,black)] lg1280:[mask-image:linear-gradient(to_right,transparent,black,black,transparent)]">
-                    <img
-                        src={info.profile.characterImageUrl}
-                        alt="character-image"
-                        className={clsx(
-                            "w-[100vw] h-[500px] object-cover scale-130 origin-top",
-                            isMobile ? "translate-x-[20%]" : "",
-                            upperClass.includes(info.profile.className) ? "translate-y-[-28%]" : "translate-y-[-13%]"
-                        )}/>
-                </div>
-            </div>
-        </div>
-    )
 }
 
 // 능력치 컴포넌트
@@ -527,25 +196,25 @@ function TitleComponent({titles}: { titles: string[] }) {
 
     return (
         <Card fullWidth radius="lg" className={clsx("mt-5", abilityCardClass)}>
-            <CardHeader className="px-5 py-4">
+            <CardHeader className="px-4 py-3">
                 <div className="w-full flex items-center">
                     <h3 className="text-lg font-semibold">보유 칭호</h3>
                     <p className="fadedtext ml-auto text-sm">총 {titles.length}개</p>
                 </div>
             </CardHeader>
             <Divider/>
-            <CardBody className="px-5 pb-5 pt-4">
+            <CardBody className="px-3 pb-3 pt-3">
                 {paginatedTitles.map((title, index) => (
-                    <div key={index} className="mb-1 rounded-lg px-2 py-1.5 transition-colors hover:bg-default-100 dark:hover:bg-white/[0.05]">
+                    <div key={index} className="mb-0.5 rounded-lg px-1.5 py-1 transition-colors hover:bg-default-100 dark:hover:bg-white/[0.05]">
                         <p className={clsx(
-                            'text-sm',
+                            'text-sm leading-tight',
                             getColorTextByGrade(getTitleData(title)?.grade ?? 'default')
                         )}>{title}</p>
-                        <p className="fadedtext text-[9pt]">{getTitleData(title)?.condition ?? '-'}</p>
+                        <p className="fadedtext text-[9pt] leading-tight">{getTitleData(title)?.condition ?? '-'}</p>
                     </div>
                 ))}
                 {totalPages > 1 ? (
-                    <div className="mt-2 flex">
+                    <div className="mt-1 flex">
                         <Pagination
                             showControls 
                             page={page}
@@ -719,7 +388,7 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                                 return (
                                     <Popover key={index} showArrow disableAnimation>
                                         <PopoverTrigger>
-                                            <div className="group flex min-h-[68px] cursor-pointer items-center gap-3 rounded-xl border border-default-200/80 bg-default-50/70 p-2.5 transition-all hover:-translate-y-0.5 hover:border-primary/35 hover:bg-primary/[0.035] hover:shadow-sm dark:border-white/10 dark:bg-white/[0.025] dark:hover:border-primary/40 dark:hover:bg-primary/[0.07]">
+                                            <div className="group flex min-h-[72px] cursor-pointer items-center gap-3 rounded-xl border border-default-200/80 bg-default-50/70 p-2.5 transition-all hover:-translate-y-0.5 hover:border-primary/35 hover:bg-primary/[0.035] hover:shadow-sm dark:border-white/10 dark:bg-white/[0.025] dark:hover:border-primary/40 dark:hover:bg-primary/[0.07]">
                                                 <div className={`h-[50px] w-[50px] shrink-0 rounded-lg p-[4px] shadow-sm ${getBackgroundByGrade(equip.grade)}`}>
                                                     <img
                                                         src={equip.icon}
@@ -727,24 +396,34 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                                                         className="h-[42px] w-[42px]"/>
                                                 </div>
                                                 <div className="min-w-0 grow">
-                                                    <div className="flex items-center gap-1">
-                                                        <p className={`${getColorTextByGrade(equip.grade)} truncate font-medium`}>{equip.name}</p>
-                                                    </div>
-                                                    <div className="mt-1 flex items-center gap-1.5">
-                                                        <Chip size="sm" radius="sm" variant="flat">{equip.type}</Chip>
+                                                    <p className={`${getColorTextByGrade(equip.grade)} truncate font-medium`}>{equip.name}</p>
+                                                    <div className="mt-0.5 flex items-center gap-1.5">
+                                                        <Chip size="sm" radius="sm" variant="flat" className="h-5">{equip.type}</Chip>
                                                         {equip.highUpgrade > 0 ? <Tooltip showArrow content={`상급 재련 +${equip.highUpgrade}`}>
-                                                            <Chip size="sm" radius="sm" variant="flat" color="warning">
-                                                                <p>+{equip.highUpgrade}</p>
-                                                            </Chip>
+                                                            <span className="inline-flex h-5 items-center rounded-md border border-amber-300/80 bg-gradient-to-r from-amber-50 to-orange-50 px-1.5 text-[10px] font-semibold text-amber-700 shadow-sm dark:border-amber-500/35 dark:from-amber-500/15 dark:to-orange-500/10 dark:text-amber-300">
+                                                                상급 +{equip.highUpgrade}
+                                                            </span>
                                                         </Tooltip> : <></>}
                                                     </div>
+                                                    {equip.quality >= 0 ? (
+                                                        <div className="mt-1 flex items-center gap-2">
+                                                            <span className="shrink-0 text-[10px] font-medium text-default-500">품질</span>
+                                                            <Progress
+                                                                aria-label={`${equip.type} 품질 ${equip.quality}`}
+                                                                value={equip.quality}
+                                                                maxValue={100}
+                                                                size="sm"
+                                                                className="min-w-0 grow"
+                                                                classNames={{
+                                                                    track: "h-1.5 bg-default-200/80 dark:bg-white/10",
+                                                                    indicator: getColorByQuality(equip.quality),
+                                                                }}/>
+                                                            <span className={clsx("w-6 shrink-0 text-right text-xs font-bold tabular-nums", getTextColorByQuality(equip.quality))}>
+                                                                {equip.quality}
+                                                            </span>
+                                                        </div>
+                                                    ) : null}
                                                 </div>
-                                                {equip.quality >= 0 ? (
-                                                    <div className={clsx("flex h-11 min-w-11 shrink-0 flex-col items-center justify-center rounded-xl px-2 text-white shadow-sm", getColorByQuality(equip.quality))}>
-                                                        <span className="text-[9px] leading-none opacity-80">품질</span>
-                                                        <span className="mt-1 text-sm font-bold leading-none tabular-nums">{equip.quality}</span>
-                                                    </div>
-                                                ) : null}
                                             </div>
                                         </PopoverTrigger>
                                         <PopoverContent className={abilityPopoverClass}>
@@ -837,13 +516,34 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                                                                 className="h-[42px] w-[42px]"/>
                                                         </div>
                                                         <div className="min-w-0 grow">
-                                                            <div className="flex gap-1 items-center">
-                                                                <p className={`${getColorTextByGrade(equip.grade)} grow truncate font-medium`}>{equip.grade} {equip.type}</p>
+                                                            <div className="flex min-w-0 items-center gap-1.5">
+                                                                <p className={`${getColorTextByGrade(equip.grade)} min-w-0 grow truncate font-medium`}>{equip.grade} {equip.type}</p>
+                                                                {equip.point > 0 ? (
+                                                                    <Tooltip showArrow content={`깨달음 포인트 +${equip.point}`}>
+                                                                        <span className="inline-flex h-5 shrink-0 items-center gap-1 rounded-md border border-sky-300/70 bg-sky-50 px-1.5 text-[10px] font-semibold text-sky-700 shadow-sm dark:border-sky-500/35 dark:bg-sky-500/10 dark:text-sky-300">
+                                                                            깨달음 +{equip.point}
+                                                                        </span>
+                                                                    </Tooltip>
+                                                                ) : null}
                                                             </div>
-                                                            <div className="mt-1 flex items-center gap-1.5">
-                                                                {equip.quality >= 0 ? <Chip size="sm" radius="sm" className={`${getColorByQuality(equip.quality)} text-white`}>{equip.quality}</Chip> : <></>}
-                                                                {equip.point > 0 ? <Chip size="sm" radius="sm" variant="flat" color="primary">+{equip.point}</Chip> : <></>}
-                                                            </div>
+                                                            {equip.quality >= 0 ? (
+                                                                <div className="mt-1.5 flex items-center gap-2">
+                                                                    <span className="shrink-0 text-[10px] font-medium text-default-500">품질</span>
+                                                                    <Progress
+                                                                        aria-label={`${equip.type} 품질 ${equip.quality}`}
+                                                                        value={equip.quality}
+                                                                        maxValue={100}
+                                                                        size="sm"
+                                                                        className="min-w-0 grow"
+                                                                        classNames={{
+                                                                            track: "h-1.5 bg-default-200/80 dark:bg-white/10",
+                                                                            indicator: getColorByQuality(equip.quality),
+                                                                        }}/>
+                                                                    <span className={clsx("w-6 shrink-0 text-right text-xs font-bold tabular-nums", getTextColorByQuality(equip.quality))}>
+                                                                        {equip.quality}
+                                                                    </span>
+                                                                </div>
+                                                            ) : null}
                                                         </div>
                                                     </div>
                                                     <div className="mt-2 flex w-full items-center gap-1 text-xs text-default-600 dark:text-default-500">
@@ -856,21 +556,21 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                                                     </div>
                                                 </div>
                                                 {equip.items.length > 0 ? (
-                                                    <div className="flex w-[112px] shrink-0 flex-col items-start gap-1">
+                                                    <div className="flex w-[112px] shrink-0 flex-col items-start gap-0.5">
                                                         {equip.items.map((item: any, idx: number) => {
                                                             const accessoryGrade = getSmallGradeByAccessory(equip.type, item);
                                                             const isEffectedAccessory = effectedAccessoryNames.includes(accessoryGrade.name);
 
                                                             return (
                                                                 <div key={idx} className={clsx(
-                                                                    "flex h-7 w-full min-w-0 items-center gap-1 rounded-lg border bg-content1/90 px-2 py-1 text-[11px] shadow-sm transition-colors",
+                                                                    "flex h-6 w-full min-w-0 items-center gap-1 rounded-md border bg-content1/90 px-1.5 py-0.5 text-[10px] shadow-sm transition-colors",
                                                                     isEffectedAccessory ? clsx(getBorderByGrade(accessoryGrade.grade), "dark:bg-white/[0.045]") : "border-[#aaaaaa]/70 bg-default-100/70 dark:border-[#555555] dark:bg-white/[0.035]"
                                                                 )}>
                                                                     <img
                                                                         src={getSrcByGrade(accessoryGrade.grade)}
                                                                         alt={`effect-${idx}`}
                                                                         className={clsx(
-                                                                            "h-3.5 w-3.5 shrink-0",
+                                                                            "h-3 w-3 shrink-0",
                                                                             !isEffectedAccessory && "opacity-40 grayscale brightness-75"
                                                                         )}/>
                                                                     <p className={clsx(
@@ -1178,7 +878,7 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                     </CardHeader>
                     <Divider/>
                     <CardBody className="p-3 sm:p-4">
-                        <div className="flex h-full flex-col justify-center gap-1.5">
+                        <div className="flex h-full flex-col justify-start gap-1.5">
                             {equipmentSummary.map((item, index) => (
                                 <div key={item.label} className={clsx(
                                     "flex min-h-[39px] items-center gap-2 rounded-lg border border-default-200/70 bg-default-50/75 px-2.5 py-1.5 dark:border-white/10 dark:bg-white/[0.045]",
@@ -1364,21 +1064,24 @@ function CardComponent({ info, attackPieces, supportorPieces }: CardComponentPro
             <CardHeader className="px-5 py-4">
                 <div className="w-full flex flex-col sm:flex-row gap-2 items-start sm:items-center">
                     <p className="text-lg font-semibold">카드</p>
-                    <div className="sm:ml-auto w-full sm:w-fit flex items-center justify-between sm:justify-start sm:gap-2 px-1.5 sm:px-0">
+                    <div className="sm:ml-auto grid w-full grid-cols-3 gap-1.5 sm:w-fit sm:grid-cols-6 sm:gap-1.5">
                         {pieces.map((piece, index) => (
-                            <Fragment key={index}>
-                                <div className="flex flex-col items-center">
-                                    <p className="fadedtext text-[8pt]">{piece.name}</p>
-                                    <p className={clsx(
-                                        "text-md",
-                                        piece.pieces >= 30 ? 'text-orange-700 dark:text-orange-400' : '',
-                                        piece.pieces === 0 ? 'fadedtext' : ''
-                                    )}>{piece.pieces > 0 ? piece.pieces : '-'}</p>
-                                </div>
-                                {index < pieces.length - 1 ? (
-                                    <Divider orientation="vertical" className="h-8"/>
-                                ) : null}
-                            </Fragment>
+                            <div key={index} className={clsx(
+                                "relative min-w-0 rounded-lg border px-2 py-1.5 text-center shadow-sm",
+                                piece.pieces >= 30
+                                    ? "border-orange-200/80 bg-orange-50/80 dark:border-orange-500/25 dark:bg-orange-500/10"
+                                    : "border-default-200/70 bg-default-50/75 dark:border-white/10 dark:bg-white/[0.04]"
+                            )}>
+                                <span className={clsx(
+                                    "absolute inset-x-2 top-0 h-0.5 rounded-full",
+                                    piece.pieces >= 30 ? "bg-orange-500" : "bg-default-300 dark:bg-white/20"
+                                )}/>
+                                <p className="truncate text-[9px] font-medium text-default-500">{piece.name}</p>
+                                <p className={clsx(
+                                    "text-sm font-bold tabular-nums",
+                                    piece.pieces >= 30 ? 'text-orange-700 dark:text-orange-300' : 'text-default-500'
+                                )}>{piece.pieces > 0 ? piece.pieces : '-'}</p>
+                            </div>
                         ))}
                     </div>
                 </div>
@@ -1406,13 +1109,12 @@ function CardComponent({ info, attackPieces, supportorPieces }: CardComponentPro
                                         alt="outside"
                                         className="w-full h-full absolute top-0 left-0 pointer-events-none z-[2]"/>
                                 </div>
-                                <Chip
-                                    radius="sm"
-                                    variant="flat"
-                                    size="sm"
-                                    className="mt-2">
-                                    <p className={`${gradeCard}`}>{getCardByIndex(cards, index) ? getCardByIndex(cards, index)!.name : '-'}</p>
-                                </Chip>
+                                <div className="mt-2 flex h-7 w-full max-w-[112px] items-center justify-center rounded-md border border-default-200/80 bg-default-50/80 px-2 shadow-sm dark:border-white/10 dark:bg-white/[0.05]">
+                                    <p className={clsx(
+                                        "w-full truncate text-center text-[10px] font-semibold",
+                                        gradeCard || "text-default-500"
+                                    )}>{getCardByIndex(cards, index) ? getCardByIndex(cards, index)!.name : '-'}</p>
+                                </div>
                             </div>
                         )
                     })}
@@ -1470,7 +1172,7 @@ function StatComponent({ info }: { info: CharacterInfo }) {
     const distributionStats = [...combatStats].reverse();
 
     return (
-        <Card radius="lg" className={abilityCardClass}>
+        <Card radius="md" className={abilityCardClass}>
             <CardHeader className="flex items-center justify-between px-5 py-4">
                 <div>
                     <p className="text-lg font-semibold">특성</p>
@@ -1478,7 +1180,7 @@ function StatComponent({ info }: { info: CharacterInfo }) {
                 </div>
             </CardHeader>
             <Divider/>
-            <CardBody className="px-4 pb-4 pt-4 sm:px-5 sm:pb-5">
+            <CardBody className="px-[15px] py-[10px]">
                 <div className="grid w-full grid-cols-1 gap-2.5 sm:grid-cols-2">
                     <Tooltip
                         showArrow
@@ -1490,15 +1192,15 @@ function StatComponent({ info }: { info: CharacterInfo }) {
                                 )) : <></>}
                             </ul>
                         </div>}>
-                        <div className="relative flex min-h-[70px] w-full cursor-help items-center justify-between overflow-hidden rounded-2xl border border-rose-200/70 bg-gradient-to-br from-rose-50/90 to-white px-4 py-3 dark:border-rose-900/50 dark:from-rose-950/35 dark:to-[#18181b]">
+                        <div className="relative flex min-h-[56px] w-full cursor-help items-center gap-2.5 overflow-hidden rounded-lg border border-rose-200/70 bg-gradient-to-br from-rose-50/90 to-white px-3.5 py-2 dark:border-rose-900/50 dark:from-rose-950/35 dark:to-[#18181b]">
                             <span className="absolute inset-y-0 left-0 w-1 bg-rose-500"/>
-                            <div>
-                                <p className="whitespace-nowrap text-[11px] font-medium text-default-500">기본 공격력</p>
-                                <p className="mt-1 text-lg font-bold tabular-nums text-rose-700 dark:text-rose-300">{getStatByType(stat, '공격력') ? getStatByType(stat, '공격력')?.value.toLocaleString() : 0}</p>
-                            </div>
-                            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-300">
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-300">
                                 <AttackIcon size={17} color="currentColor"/>
                             </span>
+                            <div>
+                                <p className="whitespace-nowrap text-[11px] font-medium text-default-500">기본 공격력</p>
+                                <p className="mt-0 text-lg font-bold tabular-nums text-rose-700 dark:text-rose-300">{getStatByType(stat, '공격력') ? getStatByType(stat, '공격력')?.value.toLocaleString() : 0}</p>
+                            </div>
                         </div>
                     </Tooltip>
                     <Tooltip
@@ -1512,13 +1214,13 @@ function StatComponent({ info }: { info: CharacterInfo }) {
                             </ul>
                         </div>}>
                         <div className="flex w-full gap-2 items-center">
-                            <div className="relative flex min-h-[70px] w-full cursor-help items-center justify-between overflow-hidden rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50/90 to-white px-4 py-3 dark:border-emerald-900/50 dark:from-emerald-950/35 dark:to-[#18181b]">
+                            <div className="relative flex min-h-[56px] w-full cursor-help items-center gap-2.5 overflow-hidden rounded-lg border border-emerald-200/70 bg-gradient-to-br from-emerald-50/90 to-white px-3.5 py-2 dark:border-emerald-900/50 dark:from-emerald-950/35 dark:to-[#18181b]">
                                 <span className="absolute inset-y-0 left-0 w-1 bg-emerald-500"/>
+                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-lg text-emerald-600 dark:text-emerald-300">♥</span>
                                 <div>
                                     <p className="whitespace-nowrap text-[11px] font-medium text-default-500">최대 생명력</p>
-                                    <p className="mt-1 text-lg font-bold tabular-nums text-emerald-700 dark:text-emerald-300">{getStatByType(stat, '최대 생명력') ? getStatByType(stat, '최대 생명력')?.value.toLocaleString() : 0}</p>
+                                    <p className="mt-0 text-lg font-bold tabular-nums text-emerald-700 dark:text-emerald-300">{getStatByType(stat, '최대 생명력') ? getStatByType(stat, '최대 생명력')?.value.toLocaleString() : 0}</p>
                                 </div>
-                                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-lg text-emerald-600 dark:text-emerald-300">♥</span>
                             </div>
                         </div>
                     </Tooltip>
@@ -1540,10 +1242,10 @@ function StatComponent({ info }: { info: CharacterInfo }) {
                                     ))}
                                 </ul>
                             </div>}>
-                            <div className="group relative flex min-h-[46px] w-full cursor-help items-center justify-between gap-2 overflow-hidden rounded-xl border border-default-200/80 bg-default-50/70 px-3 py-2 transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-sm dark:border-white/10 dark:bg-white/[0.035] dark:hover:bg-white/[0.06]">
+                            <div className="group relative flex min-h-[46px] w-full cursor-help items-center justify-between gap-2 overflow-hidden rounded-lg border border-default-200/80 bg-default-50/70 px-3 py-2 transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-sm dark:border-white/10 dark:bg-white/[0.035] dark:hover:bg-white/[0.06]">
                                 <div className={clsx("absolute inset-y-0 left-0 w-1", getBackgroundColorByStat(item.type))}/>
-                                <div className={clsx("ml-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-opacity-10", getBackgroundColorByStat(item.type))}>
-                                    <span className="h-2 w-2 rounded-full bg-white/90 shadow-sm"/>
+                                <div className={clsx("ml-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-opacity-10", getBackgroundColorByStat(item.type))}>
+                                    <span className="h-1.5 w-1.5 rounded-full bg-white/90 shadow-sm"/>
                                 </div>
                                 <p className="min-w-0 flex-1 whitespace-nowrap text-xs font-medium text-default-600 dark:text-default-400">{item.type}</p>
                                 <p className={clsx(
@@ -1554,7 +1256,7 @@ function StatComponent({ info }: { info: CharacterInfo }) {
                         </Tooltip>
                     ))}
                 </div>
-                <div className="mt-3 rounded-xl border border-default-200/70 bg-default-50/60 px-3 py-2.5 dark:border-white/10 dark:bg-white/[0.025]">
+                <div className="mt-3 rounded-lg border border-default-200/70 bg-default-50/60 px-3 py-2.5 dark:border-white/10 dark:bg-white/[0.025]">
                     <div className="mb-2 flex items-center justify-between text-[10px] text-default-500">
                         <span>특성 분포</span>
                         <span className="tabular-nums">합계 {getSumStat(stat).toLocaleString()}</span>
@@ -1576,24 +1278,24 @@ function StatComponent({ info }: { info: CharacterInfo }) {
 // 각인 컴포넌트
 function EngravingComponent({ info }: { info: CharacterInfo }) {
     const engravings = info.engravings;
+    const sortedEngravings = [...engravings].sort((a, b) => b.level - a.level);
+    const completedEngravings = sortedEngravings.filter((engraving) => engraving.level >= 4).length;
     const isMobile = useMobileQuery();
 
     return (
         <Card radius="lg" className={clsx("mt-5", abilityCardClass)}>
-            <CardHeader className="px-5 py-4">
-                <div className="w-full flex gap-1 item-centers">
+            <CardHeader className="px-4 py-3">
+                <div className="flex w-full items-center gap-2">
                     <p className="grow text-lg font-semibold">각인</p>
-                    <div className="flex">
-                        {engravings.sort((a, b) => b.level - a.level).map((engraving, index) => (
-                            <p key={index} className={getColorTextByGrade(engraving.grade)}>{engraving.level}</p>
-                        ))}
-                    </div>
+                    <span className="rounded-full border border-orange-200/80 bg-orange-50/80 px-2.5 py-1 text-xs font-semibold text-orange-700 dark:border-orange-500/25 dark:bg-orange-500/10 dark:text-orange-300">
+                        4단계 {completedEngravings}개
+                    </span>
                 </div>
             </CardHeader>
             <Divider/>
-            <CardBody className="px-3 pb-4 pt-3">
-                <div>
-                    {engravings.sort((a, b) => b.level - a.level).map((engraving, index) => (
+            <CardBody className="px-3 pb-3 pt-3">
+                <div className="flex flex-col gap-1.5">
+                    {sortedEngravings.map((engraving, index) => (
                         <Tooltip 
                             key={index} 
                             showArrow
@@ -1601,21 +1303,29 @@ function EngravingComponent({ info }: { info: CharacterInfo }) {
                             content={<div className="p-2">
                                 <p className="max-w-[320px] leading-6">{renderEffectValueText(engraving.description)}</p>
                             </div>}>
-                            <div className={clsx(
-                                "mb-1 flex cursor-help items-center gap-2 rounded-xl px-3 py-2 transition-colors hover:bg-default-100 dark:hover:bg-white/[0.05]",
-                                engraving.level >= 4 ? `${getBackgroundRightByGrade(engraving.grade)}` : ""
-                            )}>
-                                <img
-                                    src={getEngravingSrcByName(engraving.name)}
-                                    alt={engraving.name}
-                                    className="w-6 h-6 rounded-md"/>
-                                <p className={`grow ${getColorTextByGrade(engraving.grade)}`}>{engraving.name}</p>
-                                {engraving.stoneLevel > 0 ? (
-                                    <Chip size="sm" radius="sm" variant="faded" color="primary" className="min-w-[48px]">
-                                        <p className="w-full text-center font-semibold">Lv.{engraving.stoneLevel}</p>
-                                    </Chip>
-                                ) : <></>}
-                                <p className={`${getColorTextByGrade(engraving.grade)}`}>{printEngravingLevel(engraving.level)}</p>
+                            <div className="group relative flex min-h-[58px] cursor-help items-center gap-2.5 overflow-hidden rounded-lg border border-default-200/80 bg-default-50/70 px-2.5 py-2 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/[0.035] dark:border-white/10 dark:bg-white/[0.035] dark:hover:border-primary/35 dark:hover:bg-primary/[0.07]">
+                                <span className={clsx(
+                                    "absolute inset-y-0 left-0 w-1",
+                                    engraving.level >= 4 ? "bg-orange-500" : "bg-primary"
+                                )}/>
+                                <span className="ml-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-default-100 p-1 shadow-sm ring-1 ring-default-200/80 dark:bg-white/[0.06] dark:ring-white/10">
+                                    <img
+                                        src={getEngravingSrcByName(engraving.name)}
+                                        alt={engraving.name}
+                                        className="h-7 w-7 rounded-md"/>
+                                </span>
+                                <div className="min-w-0 grow">
+                                    <p className={clsx("truncate text-sm font-semibold", getColorTextByGrade(engraving.grade))}>{engraving.name}</p>
+                                    <p className="mt-0.5 text-[10px] text-default-500">활성 단계 {engraving.level}/4</p>
+                                </div>
+                                <div className="flex shrink-0 flex-col items-end gap-1">
+                                    {engraving.stoneLevel > 0 ? (
+                                        <span className="rounded-md border border-blue-200/80 bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 dark:border-blue-500/30 dark:bg-blue-500/10 dark:text-blue-300">
+                                            스톤 Lv.{engraving.stoneLevel}
+                                        </span>
+                                    ) : null}
+                                    <p className={clsx("text-xs font-semibold tracking-[0.08em]", getColorTextByGrade(engraving.grade))}>{printEngravingLevel(engraving.level)}</p>
+                                </div>
                             </div>
                         </Tooltip>
                     ))}
@@ -1631,12 +1341,12 @@ function ArkGridSimple({ info }: { info: CharacterInfo }) {
 
     return (
         <Card radius="lg" shadow="sm" className={clsx("mt-5", abilityCardClass)}>
-            <CardHeader className="px-5 py-4 text-lg font-semibold">아크그리드</CardHeader>
+            <CardHeader className="px-4 py-3 text-lg font-semibold">아크그리드</CardHeader>
             <Divider/>
-            <CardBody className="px-5 pb-5 pt-4">
-                <div className="w-full flex flex-col gap-2">
+            <CardBody className="px-3 pb-3 pt-3">
+                <div className="w-full flex flex-col gap-1.5">
                     {Array.from({ length: 6 }).map((_, index) => (
-                        <div key={index} className="flex w-full items-center gap-2 rounded-xl px-2 py-1.5 transition-colors hover:bg-default-100 dark:hover:bg-white/[0.05]">
+                        <div key={index} className="flex w-full items-center gap-2 rounded-lg px-1.5 py-1 transition-colors hover:bg-default-100 dark:hover:bg-white/[0.05]">
                             <div className={`w-[36px] h-[36px] p-[2px] aspect-square rounded-md ${getBackgroundByGrade(getCore(cores, index)?.grade ?? '')}`}>
                                 {getCore(cores, index) ? (
                                     <img
@@ -1660,6 +1370,57 @@ function ArkGridSimple({ info }: { info: CharacterInfo }) {
     )
 }
 
+const arkPassiveSectionStyle = {
+    진화: {
+        container: 'border-amber-200/80 bg-gradient-to-r from-amber-50/95 via-amber-50/45 to-transparent dark:border-amber-500/25 dark:from-amber-500/15 dark:via-amber-500/5 dark:to-transparent',
+        accent: 'bg-amber-500',
+        symbol: 'bg-amber-500/15 text-amber-700 ring-amber-500/20 dark:text-amber-300',
+        meta: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
+    },
+    깨달음: {
+        container: 'border-blue-200/80 bg-gradient-to-r from-blue-50/95 via-blue-50/45 to-transparent dark:border-blue-500/25 dark:from-blue-500/15 dark:via-blue-500/5 dark:to-transparent',
+        accent: 'bg-blue-500',
+        symbol: 'bg-blue-500/15 text-blue-700 ring-blue-500/20 dark:text-blue-300',
+        meta: 'bg-blue-500/10 text-blue-700 dark:text-blue-300',
+    },
+    도약: {
+        container: 'border-emerald-200/80 bg-gradient-to-r from-emerald-50/95 via-emerald-50/45 to-transparent dark:border-emerald-500/25 dark:from-emerald-500/15 dark:via-emerald-500/5 dark:to-transparent',
+        accent: 'bg-emerald-500',
+        symbol: 'bg-emerald-500/15 text-emerald-700 ring-emerald-500/20 dark:text-emerald-300',
+        meta: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+    },
+} as const;
+
+function ArkPassiveSectionHeader({ type, description }: { type: keyof typeof arkPassiveSectionStyle, description?: string }) {
+    const style = arkPassiveSectionStyle[type];
+
+    return (
+        <div className={clsx(
+            'relative mb-2 flex min-h-11 items-center gap-2.5 overflow-hidden rounded-lg border px-2.5 py-2',
+            style.container
+        )}>
+            <span className={clsx('absolute inset-y-0 left-0 w-1', style.accent)}/>
+            <span className={clsx(
+                'ml-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs font-bold ring-1',
+                style.symbol
+            )}>{type.slice(0, 1)}</span>
+            <p className="min-w-0 grow text-sm font-bold text-default-800 dark:text-white">{type}</p>
+            <span className={clsx('flex shrink-0 items-center gap-0.5 rounded-md px-2 py-1.5 text-sm font-semibold leading-none tabular-nums', style.meta)}>
+                {renderArkPassiveDescription(description)}
+            </span>
+        </div>
+    );
+}
+
+function ArkPassiveLevel({ level }: { level: number }) {
+    return (
+        <p className="ml-auto flex shrink-0 items-end font-semibold leading-none">
+            <span className="mr-0.5 pb-px text-[9px] leading-none text-default-500">Lv.</span>
+            <span className="text-sm leading-none">{level}</span>
+        </p>
+    );
+}
+
 // 아크패시브 컴포넌트
 function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
     const points = info.arkpassive.points;
@@ -1671,33 +1432,8 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
     return (
         <Card radius="lg" shadow="sm" className={clsx("mt-5", abilityCardClass)}>
             <CardHeader className="px-5 py-4">
-                <div className="w-full flex gap-3 items-center">
-                    <p className="grow text-lg font-semibold">아크패시브</p>
-                    {isMobile ? null : points.map((point, index) => (
-                        <Progress
-                            key={index}
-                            label={
-                                <div className="w-[178px] flex gap-1.5 items-center">
-                                    <Chip 
-                                        size="sm" 
-                                        radius="sm" 
-                                        color={getColorProgressArkpassive(point.type)}
-                                        variant="flat">
-                                        {point.type}
-                                    </Chip>
-                                    <p className={clsx(
-                                        "truncate",
-                                        point.description ? '' : 'fadedtext'
-                                    )}>{renderArkPassiveDescription(point.description)}</p>
-                                    <p className={`ml-auto font-bold ${getColorByType(point.type)}`}>{point.point}</p>
-                                </div>
-                            }
-                            size="sm"
-                            color={getColorProgressArkpassive(point.type)}
-                            value={point.point}
-                            maxValue={point.max}
-                            className="w-[180px]"/>
-                    ))}
+                <div className="w-full flex items-center">
+                    <p className="text-lg font-semibold">아크패시브</p>
                 </div>
             </CardHeader>
             <Divider/>
@@ -1726,14 +1462,9 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                 <div className="w-full grid sm:grid-cols-[1fr_1px_1fr_1px_1fr] gap-2 mt-1">
                     <div className="min-w-0">
                         {evolution.length > 0 ? (
-                            <Chip
-                                color="warning"
-                                size="md"
-                                radius="sm"
-                                variant="flat"
-                                 className="min-w-full text-center mb-2">
-                                진화
-                            </Chip>
+                            <ArkPassiveSectionHeader
+                                type="진화"
+                                description={points.find((point) => point.type === '진화')?.description}/>
                         ) : null}
                         {evolution.map((item, index) => (
                             <Tooltip 
@@ -1748,10 +1479,10 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                                         src={item.icon}
                                         alt="arkpassvie-icon"
                                         className="w-6 h-6 rounded-md"/>
-                                    <Chip size="sm" radius="sm" variant="flat">{item.tier}티어</Chip>
+                                    <Chip size="sm" radius="sm" variant="flat">{item.tier}T</Chip>
                                     <p className="text-sm shrink-0">{item.name}</p>
                                     <div className="grow border-b border-dotted border-default-300" />
-                                    <p className="text-sm ml-auto font-semibold shrink-0">Lv.{item.level}</p>
+                                    <ArkPassiveLevel level={item.level}/>
                                 </div>
                             </Tooltip>
                         ))}
@@ -1759,14 +1490,9 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                     {isMobile ? null : <Divider orientation="horizontal" className="h-full"/>}
                     <div className="min-w-0">
                         {enlightenment.length > 0 ? (
-                            <Chip
-                                color="primary"
-                                size="md"
-                                radius="sm"
-                                variant="flat"
-                                 className="min-w-full text-center mb-2">
-                                깨달음
-                            </Chip>
+                            <ArkPassiveSectionHeader
+                                type="깨달음"
+                                description={points.find((point) => point.type === '깨달음')?.description}/>
                         ) : null}
                         {enlightenment.map((item, index) => (
                             <Tooltip 
@@ -1781,10 +1507,10 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                                         src={item.icon}
                                         alt="arkpassvie-icon"
                                         className="w-6 h-6 rounded-md"/>
-                                    <Chip size="sm" radius="sm" variant="flat">{item.tier}티어</Chip>
+                                    <Chip size="sm" radius="sm" variant="flat">{item.tier}T</Chip>
                                     <p className="text-sm shrink-0">{item.name}</p>
                                     <div className="grow border-b border-dotted border-default-300" />
-                                    <p className="text-sm ml-auto font-semibold shrink-0">Lv.{item.level}</p>
+                                    <ArkPassiveLevel level={item.level}/>
                                 </div>
                             </Tooltip>
                         ))}
@@ -1792,14 +1518,9 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                     {isMobile ? null : <Divider orientation="horizontal" className="h-full"/>}
                     <div className="min-w-0">
                         {jump.length > 0 ? (
-                            <Chip
-                                color="success"
-                                size="md"
-                                radius="sm"
-                                variant="flat"
-                                 className="min-w-full text-center mb-2">
-                                도약
-                            </Chip>
+                            <ArkPassiveSectionHeader
+                                type="도약"
+                                description={points.find((point) => point.type === '도약')?.description}/>
                         ) : null}
                         {jump.map((item, index) => (
                             <Tooltip 
@@ -1814,10 +1535,10 @@ function ArkpassiveComponent({ info }: { info: CharacterInfo }) {
                                         src={item.icon}
                                         alt="arkpassvie-icon"
                                         className="w-6 h-6 rounded-md"/>
-                                    <Chip size="sm" radius="sm" variant="flat">{item.tier}티어</Chip>
+                                    <Chip size="sm" radius="sm" variant="flat">{item.tier}T</Chip>
                                     <p className="text-sm shrink-0">{item.name}</p>
                                     <div className="grow border-b border-dotted border-default-300" />
-                                    <p className="text-sm ml-auto font-semibold shrink-0">Lv.{item.level}</p>
+                                    <ArkPassiveLevel level={item.level}/>
                                 </div>
                             </Tooltip>
                         ))}
