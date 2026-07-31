@@ -21,7 +21,8 @@ import {
 } from "@heroui/react"
 import { Boss } from "../../api/checklist/boss/route";
 import { DayValue, getAllBoundGold, getAllContentGold, getAllContentOtherGold, getAllCountChecklist, getAllCubeCount, getAllGoldCharacter, getAllGolds, getBackground50ByStage, getBackgroundByStage, getBorderByStage, getCompleteBoundGoldCharacter, getCompleteChecklist, getCompleteGoldCharacter, getCompleteSharedGoldCharacter, getCountCube, getCubeList, getDayName, getDiffByContent, getHaveBoundGolds, getHaveGolds, getHaveSharedGolds, getIndexByNickname, getMaxRestValue, getSimpleBossName, getTypeDayValue, isCheckHomework, printDifficulty } from "../lib/checklistFeat";
-import { CubeDetailComponent, CubeStatueComponent, RemainChecklistComponent, SelectServer } from "./ChecklistForm";
+import { RemainChecklistComponent, SelectServer } from "./ChecklistForm";
+import { CubeDetailComponent, CubeStatueComponent } from "./CubeComponents";
 import clsx from "clsx";
 import { Cube } from "../../api/checklist/cube/route";
 import { SettingIcon } from "../../icons/SettingIcon";
