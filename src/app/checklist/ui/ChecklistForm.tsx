@@ -36,7 +36,6 @@ import {
     addToast
 } from "@heroui/react";
 import { 
-    CubeStatue,
     DayValue, 
     filterChecklist, 
     getAccounts, 
@@ -59,26 +58,15 @@ import {
     getBossesByHaveContent, 
     getBossesById, 
     getBossGoldByContent, 
-    getBoundGoldByDifficulty, 
     getCheckedResult, 
-    getColumnsByCubeTiers, 
     getCompleteBoundGoldCharacter, 
     getCompleteChecklist, 
     getCompleteChecklistByGold, 
     getCompleteChecklistByStage, 
     getCompleteGoldCharacter, 
     getCompleteSharedGoldCharacter, 
-    getCountCube, 
-    getCubeCountByCharacter, 
-    getCubeCountByChecklist, 
-    getCubeList, 
-    getCubeStatues, 
     getDayName, 
-    getDifficultyByBosses, 
     getDifficultyByStage, 
-    getGemCountByCharacter, 
-    getGemCountByChecklist, 
-    getGoldByDifficulty, 
     getHaveBoundGolds, 
     getHaveGolds, 
     getHaveSharedGolds, 
@@ -87,7 +75,6 @@ import {
     getMissedBonusGoldByGoldCharacter,
     getServerList, 
     getSimpleBossName, 
-    getSumGoldByDifficulty, 
     getTakeGold, 
     getTextColorByDifficulty, 
     getTypeDayValue, 
@@ -97,7 +84,6 @@ import {
     handleApplyPositions, 
     handleCheckGold, 
     handleCheckGolds, 
-    handleControlCube, 
     handleDayListCheck, 
     handleEditBusGold, 
     handleOnDragEnd, 
@@ -166,6 +152,10 @@ import OtherGoldOverviewTable from "./OtherGoldOverviewTable";
 import {
     getOtherGoldTotal
 } from "../lib/otherGold";
+import {
+    CubeCountComponent,
+    CubeStatueComponent
+} from "./CubeComponents";
 
 type ReorderEntry<T> = {
     id: string,
@@ -253,209 +243,6 @@ export function useChecklistForm(initialBosses: Boss[] = [], initialCubes: Cube[
         isHideCompleteContent, setHideCompleteContent,
         isHideBonusMode, setHideBonusMode
     }
-}
-
-// 콘텐츠 골드량 체크 Modal
-type BossInfoModalProps = {
-    isOpenBosses: boolean,
-    onOpenBosses: (isOpen: boolean) => void,
-    bosses: Boss[]
-}
-export function BossInfoModal({ isOpenBosses, onOpenBosses, bosses }: BossInfoModalProps) {
-    const [value, setValue] = useState<Selection>(new Set(['0']));
-    const [boss, setBoss] = useState<Boss>(
-        bosses.sort((a, b) => {
-            const bDiff = bosses.find(boss => boss.name === b.name);
-            const aDiff = bosses.find(boss => boss.name === a.name);
-            let bValue = 0, aValue = 0;
-            if (bDiff){
-                bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
-            }
-            if (aDiff) {
-                aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
-            }
-            return bValue - aValue;
-        })[0]
-    )
-
-    useEffect(() => {
-        const valueList = Array.from(value);
-        if (valueList.length === 0) {
-            setBoss(bosses.sort((a, b) => {
-                const bDiff = bosses.find(boss => boss.name === b.name);
-                const aDiff = bosses.find(boss => boss.name === a.name);
-                let bValue = 0, aValue = 0;
-                if (bDiff){
-                    bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
-                }
-                if (aDiff) {
-                    aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
-                }
-                return bValue - aValue;
-            })[0]);
-        } else {
-            const selectedIndex = Number(valueList[0]);
-            setBoss(bosses.sort((a, b) => {
-                const bDiff = bosses.find(boss => boss.name === b.name);
-                const aDiff = bosses.find(boss => boss.name === a.name);
-                let bValue = 0, aValue = 0;
-                if (bDiff){
-                    bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
-                }
-                if (aDiff) {
-                    aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
-                }
-                return bValue - aValue;
-            })[selectedIndex]);
-        }
-    }, [value]);
-
-    return (
-        <Modal
-            radius="lg"
-            size="2xl"
-            scrollBehavior="inside"
-            isOpen={isOpenBosses}
-            onOpenChange={onOpenBosses}>
-            <ModalContent className="border border-gray-200/80 bg-white dark:border-gray-800 dark:bg-gray-950">
-                {(onClose) => (
-                    <>
-                        <ModalHeader className="flex flex-col gap-1 border-b border-gray-200/80 px-6 py-5 dark:border-gray-800">
-                            <div className="flex items-center gap-2">
-                                <span className="h-5 w-1 rounded-full bg-secondary"/>
-                                <p className="text-xl font-semibold">콘텐츠 정보</p>
-                            </div>
-                            <p className="pl-3 text-sm font-normal fadedtext">레이드별 관문 보상과 획득 골드를 확인하세요.</p>
-                        </ModalHeader>
-                        <ModalBody className="gap-4 px-6 py-5">
-                            <div className="w-full">
-                                <Select
-                                    fullWidth
-                                    label="콘텐츠 선택"
-                                    placeholder="콘텐츠를 선택하세요."
-                                    selectedKeys={value}
-                                    radius="md"
-                                    variant="bordered"
-                                    defaultSelectedKeys={'0'}
-                                    onSelectionChange={setValue}>
-                                    {bosses.sort((a, b) => {
-                                        const bDiff = bosses.find(boss => boss.name === b.name);
-                                        const aDiff = bosses.find(boss => boss.name === a.name);
-                                        let bValue = 0, aValue = 0;
-                                        if (bDiff){
-                                            bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
-                                        }
-                                        if (aDiff) {
-                                            aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
-                                        }
-                                        return bValue - aValue;
-                                    }).map(boss => boss.name).map((boss, index) => (
-                                        <SelectItem key={index}>{boss}</SelectItem>
-                                    ))}
-                                </Select>
-                                <div className="mt-5 w-full">
-                                    <h3 className="text-lg font-semibold">{boss.name}</h3>
-                                    {getDifficultyByBosses(boss).map((diff, idx) => (
-                                        <div key={idx} className="mt-3 rounded-xl border border-gray-200/80 bg-gray-50/60 p-3 dark:border-gray-800 dark:bg-gray-900/50 sm:p-4">
-                                            <div className="flex items-center justify-between gap-3">
-                                                <p className="text-sm font-medium fadedtext">난이도</p>
-                                                <Chip
-                                                variant="flat"
-                                                radius="md"
-                                                color={getTextColorByDifficulty(diff)}
-                                                className="font-medium">
-                                                {diff}
-                                            </Chip>
-                                            </div>
-                                            <div className="mt-3 grid grid-cols-1 gap-2 min-[420px]:grid-cols-3">
-                                                        <div className="rounded-lg bg-white p-3 dark:bg-gray-950/70">
-                                                            <p className="fadedtext text-sm">총 골드량</p>
-                                                            <div className="mt-1 flex items-center gap-1.5 font-semibold">
-                                                                <img
-                                                                    src="/icons/gold.png" 
-                                                                    alt="goldicon"
-                                                                    className="w-[14px] h-[14px]"/>
-                                                                <p>{getSumGoldByDifficulty(boss, diff).toLocaleString()}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="rounded-lg bg-white p-3 dark:bg-gray-950/70">
-                                                            <p className="fadedtext text-sm">골드량</p>
-                                                            <div className="mt-1 flex items-center gap-1.5 font-semibold">
-                                                                <img
-                                                                    src="/icons/gold.png" 
-                                                                    alt="goldicon"
-                                                                    className="w-[14px] h-[14px]"/>
-                                                                <p>{getGoldByDifficulty(boss, diff).toLocaleString()}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div className="rounded-lg bg-white p-3 dark:bg-gray-950/70">
-                                                            <p className="fadedtext text-sm">귀속 골드</p>
-                                                            <div className="mt-1 flex items-center gap-1.5 font-semibold">
-                                                                <img
-                                                                    src="/icons/gold.png" 
-                                                                    alt="goldicon"
-                                                                    className="w-[14px] h-[14px]"/>
-                                                                <p>{getBoundGoldByDifficulty(boss, diff).toLocaleString()}</p>
-                                                            </div>
-                                                        </div>
-                                            </div>
-                                            <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200/80 bg-white dark:border-gray-800 dark:bg-gray-950/70">
-                                            <Table removeWrapper aria-label={`${boss.name} ${diff} 골드 정보`} className="min-w-[480px]">
-                                                <TableHeader>
-                                                    <TableColumn>관문</TableColumn>
-                                                    <TableColumn>골드</TableColumn>
-                                                    <TableColumn>귀속 골드</TableColumn>
-                                                    <TableColumn>더보기</TableColumn>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {boss.difficulty.filter(d => d.difficulty === diff).map((item, ix) => (
-                                                        <TableRow key={ix}>
-                                                            <TableCell>{item.stage}관문</TableCell>
-                                                            <TableCell>
-                                                                <div className="flex gap-1 items-center">
-                                                                    <img
-                                                                        src="/icons/gold.png" 
-                                                                        alt="goldicon"
-                                                                        className="w-[14px] h-[14px]"/>
-                                                                    <p>{item.gold.toLocaleString()}</p>
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <div className="flex gap-1 items-center">
-                                                                    <img
-                                                                        src="/icons/gold.png" 
-                                                                        alt="goldicon"
-                                                                        className="w-[14px] h-[14px]"/>
-                                                                    <p>{item.boundGold.toLocaleString()}</p>
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell>
-                                                                <div className="flex gap-1 items-center">
-                                                                    <img
-                                                                        src="/icons/gold.png" 
-                                                                        alt="goldicon"
-                                                                        className="w-[14px] h-[14px]"/>
-                                                                    <p>{item.bonus.toLocaleString()}</p>
-                                                                </div>
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                            </Table>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </ModalBody>
-                        <ModalFooter className="border-t border-gray-200/80 px-6 py-4 dark:border-gray-800">
-                            <Button radius="md" variant="flat" onPress={onClose}>닫기</Button>
-                        </ModalFooter>
-                    </>
-                )}
-            </ModalContent>
-        </Modal>
-    )
 }
 
 // 순서 변경 Modal
@@ -3543,299 +3330,6 @@ function WeekContentComponent({
                     )}>추가</Button>
             </div>
         </>
-    )
-}
-
-// 큐브 갯수 확인 컴포넌트
-type CubeCountComponentProps = {
-    checklist: CheckCharacter[],
-    character: CheckCharacter,
-    cubes: Cube[],
-    dispatch: AppDispatch,
-    count: number
-}
-function CubeCountComponent({ checklist, character, cubes, dispatch, count }: CubeCountComponentProps) {
-    return (
-        <Table removeWrapper>
-            <TableHeader>
-                <TableColumn>큐브명</TableColumn>
-                <TableColumn>개수</TableColumn>
-                <TableColumn className="w-[10px]">관리</TableColumn>
-            </TableHeader>
-            <TableBody>
-                {getCubeList(character.level, cubes).map((cube, idx) => (
-                    <TableRow key={idx}>
-                        <TableCell>{cube.name}</TableCell>
-                        <TableCell>{getCountCube(character.cubelist, cube.id).toLocaleString()}장</TableCell>
-                        <TableCell>
-                            <div className="flex gap-2">
-                                <Button
-                                    size="sm"
-                                    variant="flat"
-                                    color="danger"
-                                    isDisabled={getCountCube(character.cubelist, cube.id) <= 0}
-                                    className="w-8 h-8 min-w-0 min-h-0 p-0 text-sm"
-                                    onPress={async () => {
-                                        await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, false, count);
-                                    }}>-</Button>
-                                <Button
-                                    size="sm"
-                                    variant="flat"
-                                    color="success"
-                                    isDisabled={getCountCube(character.cubelist, cube.id) >= 9999}
-                                    className="w-8 h-8 min-w-0 min-h-0 p-0 text-sm"
-                                    onPress={async () => {
-                                        await handleControlCube(checklist, getIndexByNickname(checklist, character.nickname), cube.id, dispatch, true, count);
-                                    }}>+</Button>
-                            </div>
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-    )
-}
-
-// 큐브 현황 컴포넌트
-type CubeStatueComponentProps = {
-    character: CheckCharacter,
-    cubes: Cube[]
-}
-export function CubeStatueComponent({ character, cubes }: CubeStatueComponentProps) {
-    const cells: any = (statue: CubeStatue) => {
-        return [
-            <TableCell key="level">Lv.{statue.level}</TableCell>,
-            ...statue.cubeCount.map((count, idx) => (
-            <TableCell key={idx}>{count.count}개</TableCell>
-            )),
-        ];
-    }
-    const columns: any = () => {
-        return (
-            <>
-                <TableColumn>보석 레벨</TableColumn>
-                {getColumnsByCubeTiers(cubes).map((tier: number, index: number) => (
-                    <TableColumn key={index}>T{tier}</TableColumn>
-                ))}
-            </>
-        )
-    }
-    return (
-        <Table removeWrapper>
-            <TableHeader>
-                {columns()}
-            </TableHeader>
-            <TableBody>
-                {getCubeStatues(character, cubes).map((statue, index) => (
-                    <TableRow key={index}>
-                        {cells(statue)}
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-    )
-}
-
-// 큐브 현황 컴포넌트
-type CubeDetailComponentProps = {
-    checklist: CheckCharacter[],
-    cubes: Cube[]
-}
-export function CubeDetailComponent({ checklist, cubes }: CubeDetailComponentProps) {
-    return (
-        <section className="mt-4 w-full overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950/60">
-            <div className="flex flex-col gap-1 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-gray-800">
-                <div className="flex items-center justify-between gap-3">
-                    <h2 className="text-lg font-semibold">큐브 전체 현황</h2>
-                    <Chip size="sm" variant="flat" color="primary">{checklist.length}명</Chip>
-                </div>
-                <p className="text-sm fadedtext">보유 입장권과 예상 보석 보상을 한 번에 확인하세요.</p>
-            </div>
-            <Tabs
-                aria-label="cube-detail"
-                color="primary"
-                variant="underlined"
-                classNames={{
-                    base: "w-full px-4 pt-2 sm:px-5",
-                    tabList: "gap-5",
-                    panel: "px-4 pb-5 pt-3 sm:px-5",
-                }}>
-                <Tab key="setting" title="개수">
-                    <div className="max-w-full w-full overflow-x-auto rounded-xl border border-gray-200/80 dark:border-gray-800">
-                        <CubeDetailCount checklist={checklist} cubes={cubes}/>
-                    </div>
-                </Tab>
-                <Tab key="statue" title="보상">
-                    <div className="max-w-full w-full overflow-x-auto rounded-xl border border-gray-200/80 p-3 dark:border-gray-800">
-                        <CubeDetailGems checklist={checklist} cubes={cubes}/>
-                    </div>
-                </Tab>
-            </Tabs>
-        </section>
-    )
-}
-
-// 완성되는 보석 개수 가져오기
-function CubeDetailGems({ checklist, cubes }: CubeDetailComponentProps) {
-    const [tier, setTier] = useState(0);
-    const [selected, setSelected] = useState('');
-
-    useEffect(() => {
-        if (getColumnsByCubeTiers(cubes).length > 0) {
-            setTier(getColumnsByCubeTiers(cubes).reverse()[0]);
-            setSelected(`${getColumnsByCubeTiers(cubes).reverse()[0]}`);
-        }
-    }, []);
-
-    useEffect(() => {
-        setTier(Number(selected));
-    }, [selected])
-
-    const columns: any = () => {
-        return (
-            <>
-                <TableColumn>캐릭터 명</TableColumn>
-                {[...Array(10)].map((_, index) => (
-                    <TableColumn key={index}>{index+1}레벨 보석</TableColumn>
-                ))}
-            </>
-        )
-    }
-    const cells: any = (character: CheckCharacter) => {
-        return [
-            <TableCell key="level">{character.nickname}</TableCell>,
-            ...getGemCountByCharacter(character, cubes, tier).map((gem, idx) => (
-                <TableCell key={idx}>
-                    <Chip 
-                        size="sm" 
-                        color={gem > 0 ? 'primary' : 'default'} 
-                        variant="flat" 
-                        className="min-w-full text-center">
-                        {gem}
-                    </Chip>
-                </TableCell>
-            )),
-        ];
-    }
-    const allCells: any = () => {
-        return [
-            <TableCell key="all">전체</TableCell>,
-            ...getGemCountByChecklist(checklist, cubes, tier).map((gem, idx) => (
-                <TableCell key={idx}>
-                    <Chip 
-                        size="sm" 
-                        color={gem > 0 ? 'success' : 'default'} 
-                        variant="flat" 
-                        className="min-w-full text-center">
-                        {gem}
-                    </Chip>
-                </TableCell>
-            )),
-        ];
-    }
-    return (
-        <>
-            <RadioGroup 
-                color="primary" 
-                label="보석 티어 선택" 
-                defaultValue={getColumnsByCubeTiers(cubes).reverse()[0].toString()}
-                orientation="horizontal"
-                value={selected}
-                onValueChange={setSelected}>
-                {getColumnsByCubeTiers(cubes).reverse().map((t, index) => (
-                    <Radio key={index} value={`${t}`}>{t}티어</Radio>
-                ))}
-            </RadioGroup>
-            <div className="max-w-full w-full overflow-x-auto mt-4">
-                <Table 
-                    removeWrapper 
-                    className="min-w-full w-[1120px]">
-                    <TableHeader>
-                        {columns()}
-                    </TableHeader>
-                    <TableBody>
-                        <>
-                            {checklist.map((character, index) => (
-                                <TableRow key={index}>
-                                    {cells(character)}
-                                </TableRow>
-                            ))}
-                            <TableRow key="all" className="border-t-1 border-[#dddddd] dark:border-[#333333]">
-                                {allCells()}
-                            </TableRow>
-                        </>
-                    </TableBody>
-                </Table>
-            </div>
-        </>
-    )
-}
-
-// 전체 큐브 갯수 가져오기
-function CubeDetailCount({ checklist, cubes }: CubeDetailComponentProps) {
-    const columns: any = () => {
-        return (
-            <>
-                <TableColumn>캐릭터 명</TableColumn>
-                {cubes.map((cube, index) => (
-                    <TableColumn key={index}>{cube.name}</TableColumn>
-                ))}
-            </>
-        )
-    }
-    const cells: any = (character: CheckCharacter) => {
-        return [
-            <TableCell key="level">{character.nickname}</TableCell>,
-            ...cubes.map((cube, idx) => (
-                <TableCell key={idx}>
-                    <Chip 
-                        size="sm" 
-                        color={getCubeCountByCharacter(character, cube) > 0 ? 'primary' : 'default'} 
-                        variant="flat" 
-                        className="min-w-full text-center">
-                        {getCubeCountByCharacter(character, cube)}
-                    </Chip>
-                </TableCell>
-            )),
-        ];
-    }
-    const allCells: any = () => {
-        return [
-            <TableCell key="all">전체</TableCell>,
-            ...cubes.map((cube, idx) => (
-                <TableCell key={idx}>
-                    <Chip 
-                        size="sm" 
-                        color={getCubeCountByChecklist(checklist, cube) > 0 ? 'success' : 'default'} 
-                        variant="flat" 
-                        className="min-w-full text-center">
-                        {getCubeCountByChecklist(checklist, cube)}
-                    </Chip>
-                </TableCell>
-            )),
-        ];
-    }
-    return (
-        <Table 
-            removeWrapper 
-            className="min-w-full"
-            style={{ width: `${(cubes.length+1) * 100}px` }}>
-            <TableHeader>
-                {columns()}
-            </TableHeader>
-            <TableBody>
-                <>
-                    {checklist.map((character, index) => (
-                        <TableRow key={index}>
-                            {cells(character)}
-                        </TableRow>
-                    ))}
-                    <TableRow key="all" className="border-t-1 border-[#dddddd] dark:border-[#333333]">
-                        {allCells()}
-                    </TableRow>
-                </>
-            </TableBody>
-        </Table>
     )
 }
 

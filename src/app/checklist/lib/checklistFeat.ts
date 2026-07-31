@@ -36,6 +36,16 @@ import { ChecklistData, ChecklistDataDifficulty, getLevelByContent } from "../..
 import { ControlStage, OtherGoldIconType, OtherGoldRecord } from "../model/types";
 import { getOtherGoldTotal } from "./otherGold";
 
+export {
+    getColumnsByCubeTiers,
+    getCubeCountByCharacter,
+    getCubeCountByChecklist,
+    getCubeStatues,
+    getGemCountByCharacter,
+    getGemCountByChecklist
+} from "./cubeCalculations";
+export type { CubeStatue } from "./cubeCalculations";
+
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
 // 닉네임으로 index 찾기 함수
@@ -2692,97 +2702,6 @@ export function getAllContentOtherGold(bosses: Boss[], checklist: CheckCharacter
     return sumGold
 }
 
-// 티어 칼럼의 배열을 반환하는 함수
-export function getColumnsByCubeTiers(cubes: Cube[]): number[] {
-    const results: number[] = [];
-    for (const cube of cubes) {
-        if (!results.includes(cube.tier)) {
-            results.push(cube.tier);
-        }
-    }
-    return results;
-}
-
-// 큐브 현황 가져오기
-export type CubeStatue = {
-    level: number,
-    cubeCount: CubeCount[]
-}
-type CubeCount = {
-    tier: number,
-    count: number
-}
-export function getCubeStatues(character: CheckCharacter, cubes: Cube[]): CubeStatue[] {
-    const tiers: number[] = getColumnsByCubeTiers(cubes);
-    const allCounts: CubeCount[] = [];
-    for (const tier of tiers) {
-        const newCount: CubeCount = {
-            tier: tier,
-            count: 0
-        }
-        allCounts.push(newCount);
-    }
-    for (const data of character.cubelist) {
-        if (data.count > 0) {
-            const item = getCubeCountByID(cubes, data.id);
-            if (item) {
-                const index = allCounts.findIndex(c => c.tier === item.tier);
-                if (index !== -1) {
-                    const all = item.count * data.count;
-                    allCounts[index].count += all;
-                }
-            }
-        }
-    }
-    const statues: CubeStatue[] = [];
-    for (let i = 1; i <= 10; i++) {
-        const cubeCount: CubeCount[] = [];
-        for (const count of allCounts) {
-            const newCount: CubeCount = {
-                tier: count.tier,
-                count: 0
-            }
-            if (count.count > 0) {
-                const remainGems = count.count % 3;
-                newCount.count = remainGems;
-                count.count = Math.floor(count.count / 3);
-            }
-            cubeCount.push(newCount);
-        }
-        if (!isNotRemainGems(cubeCount)) {
-            const newStatue: CubeStatue = {
-                level: i,
-                cubeCount: cubeCount
-            }
-            statues.push(newStatue);
-        }
-    }
-    return statues;
-}
-
-// 보석 개수가 모든 티어가 0일 경우
-function isNotRemainGems(counts: CubeCount[]): boolean {
-    for (const count of counts) {
-        if (count.count > 0) {
-            return false;
-        }
-    }
-    return true;
-}
-
-// 큐브 ID로 보석 티어와 개수 가져오기
-function getCubeCountByID(cubes: Cube[], id: string): CubeCount | null {
-    const cube = cubes.find(item => item.id === id);
-    if (cube) {
-        const cubeCount: CubeCount = {
-            tier: cube.tier,
-            count: cube.reward
-        }
-        return cubeCount;
-    }
-    return null;
-}
-
 // 큐브 초기화
 export async function handleResetCube(
     checklist: CheckCharacter[],
@@ -2810,73 +2729,6 @@ export async function handleResetCube(
             color: "danger"
         });
     }
-}
-
-// 특정 캐릭터의 특정 큐브 갯수 반환 함수
-export function getCubeCountByCharacter(character: CheckCharacter, cube: Cube): number {
-    const cubeItem = character.cubelist.find(item => item.id === cube.id);
-    if (cubeItem) {
-        return cubeItem.count;
-    }
-    return 0;
-}
-
-// 특정 큐브의 전체 캐릭터의 큐브 개수를 반환하는 함수
-export function getCubeCountByChecklist(checklist: CheckCharacter[], cube: Cube): number {
-    let sum = 0;
-    for (const character of checklist) {
-        const cubeItem = character.cubelist.find(item => item.id === cube.id);
-        if (cubeItem) {
-            sum += cubeItem.count;
-        }
-    }
-    return sum;
-}
-
-// 보석 레벨 별 보석 개수 반환 함수
-export function getGemCountByCharacter(character: CheckCharacter, cubes: Cube[], tier: number): number[] {
-    let sum = 0;
-    for (const data of character.cubelist) {
-        if (data.count > 0) {
-            const item = getCubeCountByID(cubes, data.id);
-            if (item) {
-                if (item.tier === tier) {
-                    const all = item.count * data.count;
-                    sum += all;
-                }
-            }
-        }
-    }
-    const gems: number[] = [];
-    for (let i = 1; i <= 10; i++) {
-        gems.push(i === 10 ? sum : sum % 3);
-        sum = Math.floor(sum / 3);
-    }
-    return gems;
-}
-
-// 보석 레벨 별 전체 캐릭터의 보석 개수 반환 함수
-export function getGemCountByChecklist(checklist: CheckCharacter[], cubes: Cube[], tier: number): number[] {
-    let sum = 0;
-    for (const character of checklist) {
-        for (const data of character.cubelist) {
-            if (data.count > 0) {
-                const item = getCubeCountByID(cubes, data.id);
-                if (item) {
-                    if (item.tier === tier) {
-                        const all = item.count * data.count;
-                        sum += all;
-                    }
-                }
-            }
-        }
-    }
-    const gems: number[] = [];
-    for (let i = 1; i <= 10; i++) {
-        gems.push(i === 10 ? sum : sum % 3);
-        sum = Math.floor(sum / 3);
-    }
-    return gems;
 }
 
 // 남은 숙제 데이터 불러오기

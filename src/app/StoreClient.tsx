@@ -71,10 +71,7 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
                             authorization: `Bearer ${token}`
                         }
                     });
-                    const sessionExpiresAt = localStorage.getItem('sessionExpiresAt');
-                    const hasKnownExpiration = sessionExpiresAt !== null
-                        && !Number.isNaN(new Date(sessionExpiresAt).getTime());
-                    if (res.ok && hasKnownExpiration && restoreStoredUser(storedUser)) return;
+                    if (res.ok && restoreStoredUser(storedUser)) return;
                 } catch {
                     // 오프라인 상태는 세션 만료가 아니므로 현재 로그인 정보를 유지합니다.
                     if (restoreStoredUser(storedUser)) return;
@@ -149,7 +146,17 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
         };
 
         const verifySession = () => {
-            dispatch(setCheckToken(false));
+            const token = sessionStorage.getItem('token');
+            const storedUser = sessionStorage.getItem('user');
+
+            // Keep the existing session visible while the server verification runs.
+            // Protected APIs still perform their own authorization checks.
+            if (token && storedUser) {
+                restoreStoredUser(storedUser);
+            } else {
+                dispatch(setCheckToken(false));
+            }
+
             checkToken().catch(() => {
                 const storedUser = sessionStorage.getItem('user');
                 if (!restoreStoredUser(storedUser)) finishWithoutSession();

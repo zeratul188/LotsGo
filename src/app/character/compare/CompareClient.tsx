@@ -1,7 +1,8 @@
 'use client'
 import { useState } from "react"
 import { CharacterInfo } from "../model/types"
-import { CharacterInputComponent, CharactersComponent } from "./ui/CompareForm";
+import { CharactersComponent } from "./ui/CompareForm";
+import { CharacterInputComponent } from "./ui/CharacterCompareSearch";
 import Script from "next/script";
 import dynamic from "next/dynamic";
 import { useMobileQuery } from "@/utiils/utils";

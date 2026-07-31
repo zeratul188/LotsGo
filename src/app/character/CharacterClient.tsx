@@ -1,7 +1,9 @@
 'use client'
 import { useEffect, useState } from "react";
 import { LoadingComponent } from "../UtilsCompnents";
-import { AbilityComponent, ExpeditionComponent, HistoryComponent, InfomationComponent, NotFoundComponent, ProfileComponent, SearchComponent, useCharacterForm } from "./ui/CharacterForm"
+import { AbilityComponent, InfomationComponent, NotFoundComponent, useCharacterForm } from "./ui/CharacterForm"
+import { ExpeditionComponent, HistoryComponent, SearchComponent } from "./ui/CharacterSearchSections"
+import { ProfileComponent } from "./ui/CharacterProfile"
 import { useSearchParams } from "next/navigation";
 import { Button, Divider, Input, Tooltip } from "@heroui/react";
 import { handleSearch, loadProfile, LoadProfileUI, UpdatePayload, UpdateUI, useClickUpdate } from "./lib/characterFeat";
