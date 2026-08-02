@@ -93,6 +93,36 @@ export async function handleHideBonusMode(
     }
 }
 
+export async function handleAutoDeleteUnselectedRaids(
+    settings: Settings | null,
+    setSettings: SetStateFn<Settings | null>
+) {
+    const userStr = sessionStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    if (storedUser && settings) {
+        const cloneSettings = structuredClone(settings);
+        cloneSettings.isAutoDeleteUnselectedRaids = !cloneSettings.isAutoDeleteUnselectedRaids;
+        const res = await fetch('/api/setting', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: storedUser.id,
+                settings: cloneSettings
+            })
+        });
+        if (res.ok) {
+            localStorage.setItem('userSettings', JSON.stringify(cloneSettings));
+            setSettings(cloneSettings);
+        } else {
+            addToast({
+                title: "저장 오류",
+                description: "자동 삭제 설정을 저장하지 못했습니다.",
+                color: "danger"
+            });
+        }
+    }
+}
+
 // 모든 기기 로그아웃 이벤트 함수
 export function useAllLogout(setLoadingAllLogout: SetStateFn<boolean>) {
     return async () => {

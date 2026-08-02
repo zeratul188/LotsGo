@@ -4,7 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 export type Settings = {
     isHideDayContent: boolean,
-    isHideBonusMode: boolean
+    isHideBonusMode: boolean,
+    isAutoDeleteUnselectedRaids: boolean
 }
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
@@ -23,7 +24,8 @@ export async function GET(req: NextRequest) {
 
         const defaultSettings: Settings = {
             isHideDayContent: false,
-            isHideBonusMode: false
+            isHideBonusMode: false,
+            isAutoDeleteUnselectedRaids: false
         }
         const settings: Settings = {
             ...defaultSettings,

@@ -144,6 +144,7 @@ import CheckIcon from "@/Icons/CheckIcon";
 import CharacterIcon from "@/Icons/CharacterIcon";
 import BusIcon from "@/Icons/BusIcon";
 import JobEmblemIcon from "@/Icons/JobEmblemIcon";
+import RaidIcon from "@/Icons/RaidIcon";
 import JobAvatar from "@/Icons/JobAvatar";
 import { EditIcon } from "@/Icons/EditIcon";
 import SwitchCharacterIcon from "@/Icons/SwitchCharacterIcon";
@@ -215,6 +216,7 @@ export function useChecklistForm(initialBosses: Boss[] = [], initialCubes: Cube[
     // 설정
     const [isHideDayContent, setHideDayContent] = useState(false);
     const [isHideBonusMode, setHideBonusMode] = useState(false);
+    const [isAutoDeleteUnselectedRaids, setAutoDeleteUnselectedRaids] = useState(false);
 
     // 필터 설정값
     const [isRemainHomework, setRemainHomework] = useState(false);
@@ -242,7 +244,8 @@ export function useChecklistForm(initialBosses: Boss[] = [], initialCubes: Cube[
         accounts, setAccounts,
         filterAccount, setFilterAccount,
         isHideCompleteContent, setHideCompleteContent,
-        isHideBonusMode, setHideBonusMode
+        isHideBonusMode, setHideBonusMode,
+        isAutoDeleteUnselectedRaids, setAutoDeleteUnselectedRaids
     }
 }
 
@@ -990,7 +993,9 @@ type ChecklistProps = {
     isHideBonusMode: boolean,
     autoChecklistNickname: string,
     isAutoChecklistSharing: boolean,
-    setAutoChecklistNickname: (nickname: string) => void
+    setAutoChecklistNickname: (nickname: string) => void,
+    isAutoRegisteringRaids: boolean,
+    onRaidAutoRegistration: (nickname?: string) => Promise<void>
 }
 export function ChecklistComponent({ 
     checklist, 
@@ -1012,7 +1017,9 @@ export function ChecklistComponent({
     isHideBonusMode,
     autoChecklistNickname,
     isAutoChecklistSharing,
-    setAutoChecklistNickname
+    setAutoChecklistNickname,
+    isAutoRegisteringRaids,
+    onRaidAutoRegistration
 }: ChecklistProps) {
     const [inputCubeControl, setInputCubeControl] = useState<{ [nickname: string]: number }>({});
     const [isBonusMode, setBonusMode] = useState<{ [nickname: string]: boolean }>({});
@@ -1078,7 +1085,9 @@ export function ChecklistComponent({
                                                         characterIndex={getIndexByNickname(checklist, character.nickname)}
                                                         dispatch={dispatch}
                                                         accounts={accounts}
-                                                        setAccounts={setAccounts}/>
+                                                        setAccounts={setAccounts}
+                                                        isAutoRegisteringRaids={isAutoRegisteringRaids}
+                                                        onRaidAutoRegistration={onRaidAutoRegistration}/>
                                                     <AutoChecklistCharacterButton
                                                         size={14}
                                                         nickname={character.nickname}
@@ -1095,7 +1104,9 @@ export function ChecklistComponent({
                                                 characterIndex={getIndexByNickname(checklist, character.nickname)}
                                                 dispatch={dispatch}
                                                 accounts={accounts}
-                                                setAccounts={setAccounts}/>
+                                                setAccounts={setAccounts}
+                                                isAutoRegisteringRaids={isAutoRegisteringRaids}
+                                                onRaidAutoRegistration={onRaidAutoRegistration}/>
                                         </div>
                                     </div>
                                     </div>
@@ -2010,9 +2021,21 @@ type SettingButtonProps = {
     dispatch: AppDispatch,
     accounts: string[],
     setAccounts: SetStateFn<string[]>,
-    compact?: boolean
+    compact?: boolean,
+    isAutoRegisteringRaids: boolean,
+    onRaidAutoRegistration: (nickname?: string) => Promise<void>
 }
-function SettingButton({ size, checklist, characterIndex, dispatch, accounts, setAccounts, compact = false }: SettingButtonProps) {
+function SettingButton({
+    size,
+    checklist,
+    characterIndex,
+    dispatch,
+    accounts,
+    setAccounts,
+    compact = false,
+    isAutoRegisteringRaids,
+    onRaidAutoRegistration
+}: SettingButtonProps) {
     const [isOpenAccount, setOpenAccount] = useState(false);
     const onOpenChangeAccount = (isOpen: boolean) => setOpenAccount(isOpen);
     return (
@@ -2049,6 +2072,13 @@ function SettingButton({ size, checklist, characterIndex, dispatch, accounts, se
                         onPress={async () => {
                             setOpenAccount(true);
                         }}>계정 선택</DropdownItem>
+                    <DropdownItem
+                        key="auto-register-raids"
+                        isDisabled={isAutoRegisteringRaids}
+                        startContent={<RaidIcon size={16}/>}
+                        onPress={async () => {
+                            await onRaidAutoRegistration(checklist[characterIndex].nickname);
+                        }}>레이드 자동 등록</DropdownItem>
                     <DropdownItem 
                         key="reset-cube"
                         startContent={

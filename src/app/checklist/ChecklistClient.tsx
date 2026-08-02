@@ -26,11 +26,15 @@ import { Settings } from "../api/setting/route";
 import { normalizeChecklist } from "./lib/normalizeChecklist";
 import HomeworkIcon from "@/Icons/HomeworkIcon";
 import ChecklistLoadingSkeleton from "./ui/ChecklistLoadingSkeleton";
+import RaidIcon from "@/Icons/RaidIcon";
+import { registerRaidsAutomatically } from "./lib/raidAutoRegistration";
+import { useLoadingTask } from "../components/loading/LoadingProgress";
 
 
 export const defaultSettings: Settings = {
     isHideDayContent: false,
-    isHideBonusMode: false
+    isHideBonusMode: false,
+    isAutoDeleteUnselectedRaids: false
 }
 
 
@@ -88,12 +92,34 @@ export default function ChecklistClient() {
     const checklist: CheckCharacter[] = useSelector((state: RootState) => state.checklist.checklist);
     const isMobile = useMobileQuery();
     const [isLoadingReset, setLoadingReset] = useState(false);
+    const [isAutoRegisteringRaids, setAutoRegisteringRaids] = useState(false);
     const [autoChecklistNickname, setAutoChecklistNickname] = useState('');
     const [isAutoChecklistSharing, setAutoChecklistSharing] = useState(false);
     const lastFetchRef = useRef(Date.now());
     
     const [isOpenBosses, setOpenBosses] = useState(false);
     const onOpenChangeBosses = (isOpen: boolean) => setOpenBosses(isOpen);
+    useLoadingTask("레이드를 자동 등록하고 있어요", isAutoRegisteringRaids);
+
+    const handleRaidAutoRegistration = async (nickname?: string) => {
+        const autoDeleteMessage = checklistForm.isAutoDeleteUnselectedRaids
+            ? "골드 지정에서 밀려난 기존 레이드는 설정에 따라 목록에서도 삭제됩니다."
+            : "골드 지정에서 밀려난 기존 레이드는 목록에 유지되고 골드 지정만 해제됩니다.";
+        const targetMessage = nickname
+            ? `${nickname} 캐릭터의 레이드를 자동 등록하시겠습니까?`
+            : `저장된 전체 캐릭터의 레이드를 자동 등록하시겠습니까?`;
+        if (!confirm(`${targetMessage}\n${autoDeleteMessage}`)) return;
+
+        setAutoRegisteringRaids(true);
+        try {
+            await registerRaidsAutomatically(checklist, checklistForm.bosses, dispatch, {
+                autoDeleteUnselectedRaids: checklistForm.isAutoDeleteUnselectedRaids,
+                targetNickname: nickname
+            });
+        } finally {
+            setAutoRegisteringRaids(false);
+        }
+    };
 
     useEffect(() => {
         if (!expedition || expedition.length === 0) return;
@@ -168,6 +194,7 @@ export default function ChecklistClient() {
                 const settings: Settings = { ...defaultSettings, ...localSetting};
                 checklistForm.setHideDayContent(settings.isHideDayContent);
                 checklistForm.setHideBonusMode(settings.isHideBonusMode);
+                checklistForm.setAutoDeleteUnselectedRaids(settings.isAutoDeleteUnselectedRaids);
                 return;
             }
             const userStr = sessionStorage.getItem('user');
@@ -180,6 +207,7 @@ export default function ChecklistClient() {
                     localStorage.setItem('userSettings', JSON.stringify(settings));
                     checklistForm.setHideDayContent(settings.isHideDayContent);
                     checklistForm.setHideBonusMode(settings.isHideBonusMode);
+                    checklistForm.setAutoDeleteUnselectedRaids(settings.isAutoDeleteUnselectedRaids);
                 } else {
                     addToast({
                         title: "로드 오류",
@@ -265,7 +293,21 @@ export default function ChecklistClient() {
                                     <p className="text-sm font-semibold">정보 및 현황</p>
                                     <p className="text-xs fadedtext">필요한 상세 정보를 별도로 열어봅니다.</p>
                                 </div>
-                                <div className="flex h-8 w-full shrink-0 divide-x divide-gray-200/80 overflow-hidden rounded-lg border border-gray-200/80 bg-white shadow-sm dark:divide-white/10 dark:border-white/10 dark:bg-[#171717] sm:w-auto">
+                                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                                    <Button
+                                        aria-label="전체 캐릭터 레이드 자동 등록"
+                                        size="sm"
+                                        radius="sm"
+                                        variant="bordered"
+                                        color="primary"
+                                        isLoading={isAutoRegisteringRaids}
+                                        isDisabled={checklistForm.isLoading || checklist.length === 0}
+                                        className="h-8 min-h-0 w-full shrink-0 gap-1.5 border-primary-200 bg-white px-3 text-xs font-semibold text-primary-700 shadow-sm dark:border-primary-400/30 dark:bg-[#171717] dark:text-primary-300 sm:w-auto"
+                                        startContent={!isAutoRegisteringRaids ? <RaidIcon size={15}/> : null}
+                                        onPress={() => handleRaidAutoRegistration()}>
+                                        전체 자동 등록
+                                    </Button>
+                                    <div className="flex h-8 w-full shrink-0 divide-x divide-gray-200/80 overflow-hidden rounded-lg border border-gray-200/80 bg-white shadow-sm dark:divide-white/10 dark:border-white/10 dark:bg-[#171717] sm:w-auto">
                                     <Button
                                         aria-label="콘텐츠 정보 열기"
                                         size="sm"
@@ -316,9 +358,10 @@ export default function ChecklistClient() {
                                             checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail);
                                         }}>
                                         큐브 현황
-                                    </Button>
+                                     </Button>
+                                 </div>
                                 </div>
-                            </div>
+                             </div>
                             <div className="border-t border-gray-200/80 px-4 pb-4 sm:px-5 sm:pb-5 dark:border-white/10">
                                 <FilterComponent
                                     server={checklistForm.server}
@@ -374,7 +417,9 @@ export default function ChecklistClient() {
                                 isHideBonusMode={checklistForm.isHideBonusMode}
                                 autoChecklistNickname={autoChecklistNickname}
                                 isAutoChecklistSharing={isAutoChecklistSharing}
-                                setAutoChecklistNickname={setAutoChecklistNickname}/>
+                                setAutoChecklistNickname={setAutoChecklistNickname}
+                                isAutoRegisteringRaids={isAutoRegisteringRaids}
+                                onRaidAutoRegistration={handleRaidAutoRegistration}/>
                             <ChecklistModal
                                 isOpen={checklistForm.isOpen}
                                 modalData={checklistForm.modalData}
