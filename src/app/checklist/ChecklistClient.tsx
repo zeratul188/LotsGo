@@ -24,6 +24,7 @@ import { Cube } from "../api/checklist/cube/route";
 import FixedLineAd from "../ad/FixedLineAd";
 import { Settings } from "../api/setting/route";
 import { normalizeChecklist } from "./lib/normalizeChecklist";
+import HomeworkIcon from "@/Icons/HomeworkIcon";
 
 
 export const defaultSettings: Settings = {
@@ -34,6 +35,43 @@ export const defaultSettings: Settings = {
 
 const BoxAd = dynamic(() => import('../ad/BoxAd'), { ssr: false });
 const LineAd = dynamic(() => import('../ad/LineAd'), { ssr: false });
+
+function ContentInfoIcon() {
+    return (
+        <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 11v5"/>
+            <path d="M12 8h.01"/>
+        </svg>
+    )
+}
+
+function CubeIcon() {
+    return (
+        <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/>
+            <path d="m4.4 7.7 7.6 4.4 7.6-4.4M12 21v-8.9"/>
+        </svg>
+    )
+}
+
+function ActionChevron({ isOpen = false }: { isOpen?: boolean }) {
+    return (
+        <svg
+            aria-hidden="true"
+            className={clsx("transition-transform duration-200", isOpen && "rotate-180")}
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round">
+            <path d="m7 10 5 5 5-5"/>
+        </svg>
+    )
+}
 
 
 export default function ChecklistClient() {
@@ -232,39 +270,58 @@ export default function ChecklistClient() {
                                     <p className="text-sm font-semibold">정보 및 현황</p>
                                     <p className="text-xs fadedtext">필요한 상세 정보를 별도로 열어봅니다.</p>
                                 </div>
-                                <div className="flex flex-wrap gap-2">
-                                <Button
-                                    size="sm"
-                                    radius="md"
-                                    variant="bordered"
-                                    className="grow font-medium sm:grow-0"
-                                    onPress={() => {
-                                        setOpenBosses(true);
-                                    }}>
-                                    콘텐츠 정보
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    radius="md"
-                                    color="primary"
-                                    variant={checklistForm.isShowList ? 'flat' : 'bordered'}
-                                    className="grow font-medium sm:grow-0"
-                                    onPress={() => {
-                                        checklistForm.setShowList(!checklistForm.isShowList);
-                                    }}>
-                                    남은 숙제 현황 {checklistForm.isShowList ? '닫기' : "보기"}
-                                </Button>
-                                <Button
-                                    size="sm"
-                                    radius="md"
-                                    color="primary"
-                                    variant={checklistForm.isShowCubeDetail ? 'flat' : 'bordered'}
-                                    className="grow font-medium sm:grow-0"
-                                    onPress={() => {
-                                        checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail);
-                                    }}>
-                                    큐브 현황 {checklistForm.isShowCubeDetail ? '닫기' : "보기"}
-                                </Button>
+                                <div className="flex h-8 w-full shrink-0 divide-x divide-gray-200/80 overflow-hidden rounded-lg border border-gray-200/80 bg-white shadow-sm dark:divide-white/10 dark:border-white/10 dark:bg-[#171717] sm:w-auto">
+                                    <Button
+                                        aria-label="콘텐츠 정보 열기"
+                                        size="sm"
+                                        radius="none"
+                                        variant="light"
+                                        className="h-full min-h-0 min-w-0 flex-1 gap-1.5 rounded-none bg-white px-2.5 text-xs font-semibold text-gray-600 data-[hover=true]:bg-gray-100 sm:flex-none sm:px-3 dark:bg-[#171717] dark:text-gray-300 dark:data-[hover=true]:bg-white/10"
+                                        startContent={<ContentInfoIcon/>}
+                                        endContent={<ActionChevron/>}
+                                        onPress={() => {
+                                            setOpenBosses(true);
+                                        }}>
+                                        콘텐츠 정보
+                                    </Button>
+                                    <Button
+                                        aria-label={`남은 숙제 현황 ${checklistForm.isShowList ? '닫기' : '보기'}`}
+                                        aria-pressed={checklistForm.isShowList}
+                                        size="sm"
+                                        radius="none"
+                                        variant="light"
+                                        className={clsx(
+                                            "h-full min-h-0 min-w-0 flex-1 gap-1.5 rounded-none px-2.5 text-xs font-semibold sm:flex-none sm:px-3",
+                                            checklistForm.isShowList
+                                                ? "bg-primary-100/80 text-primary-700 data-[hover=true]:bg-primary-100 dark:bg-primary-400/15 dark:text-primary-300 dark:data-[hover=true]:bg-primary-400/20"
+                                                : "bg-white text-gray-600 data-[hover=true]:bg-gray-100 dark:bg-[#171717] dark:text-gray-300 dark:data-[hover=true]:bg-white/10"
+                                        )}
+                                        startContent={<HomeworkIcon size={15}/>}
+                                        endContent={<ActionChevron isOpen={checklistForm.isShowList}/>}
+                                        onPress={() => {
+                                            checklistForm.setShowList(!checklistForm.isShowList);
+                                        }}>
+                                        남은 숙제
+                                    </Button>
+                                    <Button
+                                        aria-label={`큐브 현황 ${checklistForm.isShowCubeDetail ? '닫기' : '보기'}`}
+                                        aria-pressed={checklistForm.isShowCubeDetail}
+                                        size="sm"
+                                        radius="none"
+                                        variant="light"
+                                        className={clsx(
+                                            "h-full min-h-0 min-w-0 flex-1 gap-1.5 rounded-none px-2.5 text-xs font-semibold sm:flex-none sm:px-3",
+                                            checklistForm.isShowCubeDetail
+                                                ? "bg-secondary-100/80 text-secondary-700 data-[hover=true]:bg-secondary-100 dark:bg-secondary-400/15 dark:text-secondary-300 dark:data-[hover=true]:bg-secondary-400/20"
+                                                : "bg-white text-gray-600 data-[hover=true]:bg-gray-100 dark:bg-[#171717] dark:text-gray-300 dark:data-[hover=true]:bg-white/10"
+                                        )}
+                                        startContent={<CubeIcon/>}
+                                        endContent={<ActionChevron isOpen={checklistForm.isShowCubeDetail}/>}
+                                        onPress={() => {
+                                            checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail);
+                                        }}>
+                                        큐브 현황
+                                    </Button>
                                 </div>
                             </div>
                             <div className="border-t border-gray-200/80 px-4 pb-4 sm:px-5 sm:pb-5 dark:border-white/10">
