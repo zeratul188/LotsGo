@@ -1,6 +1,6 @@
 'use client'
-import { LoadingComponent } from "@/app/UtilsCompnents";
+import { NavbarLoadingIndicator } from "@/app/components/loading/LoadingProgress";
 
 export default function Loading() {
-  return <LoadingComponent heightStyle={'h-[calc(100vh-155px)]'}/>;
+  return <NavbarLoadingIndicator/>;
 }

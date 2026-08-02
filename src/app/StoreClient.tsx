@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { addToast } from "@heroui/react";
 import { signOut } from 'firebase/auth';
 import { auth } from '@/utiils/firebase';
+import { ensureFirebaseAuth } from '@/utiils/firebaseAuth';
 import Cookies from 'js-cookie';
 
 type RefreshError = {
@@ -44,7 +45,6 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
 
         try {
             dispatch(logined(JSON.parse(storedUser) as LoginUser));
-            dispatch(setCheckToken(true));
             return true;
         } catch {
             sessionStorage.removeItem('user');
@@ -71,10 +71,17 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
                             authorization: `Bearer ${token}`
                         }
                     });
-                    if (res.ok && restoreStoredUser(storedUser)) return;
+                    if (res.ok && restoreStoredUser(storedUser)) {
+                        await ensureFirebaseAuth();
+                        dispatch(setCheckToken(true));
+                        return;
+                    }
                 } catch {
                     // 오프라인 상태는 세션 만료가 아니므로 현재 로그인 정보를 유지합니다.
-                    if (restoreStoredUser(storedUser)) return;
+                    if (restoreStoredUser(storedUser)) {
+                        dispatch(setCheckToken(true));
+                        return;
+                    }
                 }
             }
 
@@ -99,7 +106,11 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
                 }
 
                 if (refreshRes.status >= 500) {
-                    if (!restoreStoredUser(storedUser)) finishWithoutSession();
+                    if (restoreStoredUser(storedUser)) {
+                        dispatch(setCheckToken(true));
+                    } else {
+                        finishWithoutSession();
+                    }
                     return;
                 }
 
@@ -119,6 +130,7 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
             sessionStorage.setItem('user', JSON.stringify(loginUser));
             localStorage.setItem('sessionExpiresAt', data.sessionExpiresAt);
             dispatch(logined(loginUser));
+            await ensureFirebaseAuth();
             dispatch(setCheckToken(true));
         };
 
@@ -159,7 +171,11 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
 
             checkToken().catch(() => {
                 const storedUser = sessionStorage.getItem('user');
-                if (!restoreStoredUser(storedUser)) finishWithoutSession();
+                if (restoreStoredUser(storedUser)) {
+                    dispatch(setCheckToken(true));
+                } else {
+                    finishWithoutSession();
+                }
             });
         };
 

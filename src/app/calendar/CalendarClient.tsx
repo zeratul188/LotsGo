@@ -1,15 +1,16 @@
 'use client'
 import { useEffect } from "react";
 import { useCalendarForm, WeekComponent } from "./CalendarForm"
-import { Divider } from "@heroui/react";
+import { addToast, Divider } from "@heroui/react";
 import { loadBosses, loadGuild, loadWorks, loadWorksByParty, removeAutoCalendarsByGuild, removeAutoCalendarsByWorks } from "./calendarFeat";
-import { getAuth, onAuthStateChanged } from "firebase/auth";import BigComponent from "./CalendarForm";
-import { checkLogin } from "../checklist/lib/checklistFeat";
+import BigComponent from "./CalendarForm";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import Script from "next/script";
 import dynamic from "next/dynamic";
 import { useMobileQuery } from "@/utiils/utils";
+import { ensureFirebaseAuth } from "@/utiils/firebaseAuth";
+import { useLoadingTask } from "../components/loading/LoadingProgress";
 const LineAd = dynamic(() => import("@/app/ad/LineAd"), { ssr: false });
 const FixedLineAd = dynamic(() => import("@/app/ad/FixedLineAd"), { ssr: false });
 const BoxAd = dynamic(() => import("@/app/ad/BoxAd"), { ssr: false });
@@ -18,35 +19,52 @@ export default function CalendarClient() {
     const isMobile = useMobileQuery();
     const calendarForm = useCalendarForm();
     const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
+    const isLogined = useSelector((state: RootState) => state.login.isLogined);
+    const isDataLoading = !isCheckedToken || (isLogined && calendarForm.isLoading);
+
+    useLoadingTask("일정 데이터를 불러오는 중이에요", isDataLoading);
 
     useEffect(() => {
         if (!isCheckedToken) return;
-        if (checkLogin()) {
-            calendarForm.setLogined(true);
+        calendarForm.setLogined(isLogined);
+        if (!isLogined) {
+            calendarForm.setLoading(false);
+            return;
         }
-        const auth = getAuth();
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                user.getIdToken().then(() => {
-                    const loadData = async () => {
-                        const guildPromise = loadGuild(calendarForm.setGuild);
-                        const bossPromise = loadBosses(calendarForm.setBosses);
-                        const workPromise = loadWorks(calendarForm.setWorks);
-                        const partyWorkPromise = loadWorksByParty(calendarForm.setPartyWorks);
-                        await Promise.all([guildPromise, bossPromise, workPromise, partyWorkPromise]);
-                        calendarForm.setLoading(false);
-                    }
-                    loadData();
+
+        const loadData = async () => {
+            try {
+                await ensureFirebaseAuth();
+                await Promise.all([
+                    loadGuild(calendarForm.setGuild),
+                    loadBosses(calendarForm.setBosses),
+                    loadWorks(calendarForm.setWorks),
+                    loadWorksByParty(calendarForm.setPartyWorks)
+                ]);
+            } catch (error) {
+                console.error("Failed to load calendar data", error);
+                addToast({
+                    title: "일정 로드 오류",
+                    description: "인증 정보를 복구하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+                    color: "danger"
                 });
+            } finally {
+                calendarForm.setLoading(false);
             }
-        });
-        return () => unsubscribe();
-    }, [isCheckedToken]);
+        };
+
+        void loadData();
+    }, [isCheckedToken, isLogined]);
 
     useEffect(() => {
         const settingData = async () => {
-            await removeAutoCalendarsByWorks(calendarForm.works, calendarForm.setWorks);
-            calendarForm.setResetWorks(true);
+            try {
+                await removeAutoCalendarsByWorks(calendarForm.works, calendarForm.setWorks);
+            } catch (error) {
+                console.error("Failed to remove expired personal calendars", error);
+            } finally {
+                calendarForm.setResetWorks(true);
+            }
         }
         if (!calendarForm.resetWorks && calendarForm.isLogined) {
             settingData();
@@ -55,8 +73,13 @@ export default function CalendarClient() {
 
     useEffect(() => {
         const settingData = async () => {
-            await removeAutoCalendarsByGuild(calendarForm.guild, calendarForm.setGuild);
-            calendarForm.setResetGuild(true);
+            try {
+                await removeAutoCalendarsByGuild(calendarForm.guild, calendarForm.setGuild);
+            } catch (error) {
+                console.error("Failed to remove expired guild calendars", error);
+            } finally {
+                calendarForm.setResetGuild(true);
+            }
         }
         if (!calendarForm.resetGuild && calendarForm.guild && calendarForm.isLogined) {
             settingData();
@@ -72,7 +95,8 @@ export default function CalendarClient() {
                 bosses={calendarForm.bosses}
                 setWorks={calendarForm.setWorks}
                 setGuild={calendarForm.setGuild}
-                isLogined={calendarForm.isLogined}/>
+                isLogined={calendarForm.isLogined}
+                isDataLoading={isDataLoading}/>
             {isMobile ? (
                 <div className="w-full flex justify-center px-4 overflow-hidden mt-8 mb-8">
                     <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px]">
@@ -93,7 +117,8 @@ export default function CalendarClient() {
                 bosses={calendarForm.bosses}
                 guild={calendarForm.guild}
                 setWorks={calendarForm.setWorks}
-                setGuild={calendarForm.setGuild}/>
+                setGuild={calendarForm.setGuild}
+                isDataLoading={isDataLoading}/>
             {isMobile ? (
                 <div className="w-full flex justify-center px-4">
                     <div className="w-full max-w-[360px] min-h-[100px] mt-4">

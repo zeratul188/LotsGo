@@ -4,6 +4,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { useMobileQuery } from '@/utiils/utils';
 
 import { ThemeProvider as NextThemesProvider } from 'next-themes';
+import { LoadingProgressProvider } from './components/loading/LoadingProgress';
 
 function Providers({children, ...props}: { children: React.ReactNode }) {
   const isMobile = useMobileQuery();
@@ -13,7 +14,9 @@ function Providers({children, ...props}: { children: React.ReactNode }) {
       <HelmetProvider>
         <HeroUIProvider>
           <ToastProvider placement={isMobile ? 'top-center' : 'bottom-right'}/>
-          {children}
+          <LoadingProgressProvider>
+            {children}
+          </LoadingProgressProvider>
         </HeroUIProvider>
       </HelmetProvider>
     </NextThemesProvider>

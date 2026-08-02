@@ -9,7 +9,7 @@ import {
     isLogin,
     loadChecklist
 } from "../lib/checklistFeat";
-import { LoadingComponent } from "../../UtilsCompnents";
+import { WeeklyChecklistSkeleton } from "./HomeDataSkeleton";
 import { Boss } from "../../api/checklist/boss/route";
 import {
     getAllBoundGold,
@@ -92,7 +92,7 @@ export default function ChecklistComponent() {
         return <></>;
     }
     if (checklistForm.isLoading) {
-        return <LoadingComponent heightStyle="min-h-[240px]"/>
+        return <WeeklyChecklistSkeleton/>
     }
 
     const activeChecklist = checklistForm.checklist.filter(character => character.checklist.length > 0);
