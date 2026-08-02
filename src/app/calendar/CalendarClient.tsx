@@ -10,6 +10,7 @@ import Script from "next/script";
 import dynamic from "next/dynamic";
 import { useMobileQuery } from "@/utiils/utils";
 import { ensureFirebaseAuth } from "@/utiils/firebaseAuth";
+import { useLoadingTask } from "../components/loading/LoadingProgress";
 const LineAd = dynamic(() => import("@/app/ad/LineAd"), { ssr: false });
 const FixedLineAd = dynamic(() => import("@/app/ad/FixedLineAd"), { ssr: false });
 const BoxAd = dynamic(() => import("@/app/ad/BoxAd"), { ssr: false });
@@ -19,6 +20,9 @@ export default function CalendarClient() {
     const calendarForm = useCalendarForm();
     const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
     const isLogined = useSelector((state: RootState) => state.login.isLogined);
+    const isDataLoading = !isCheckedToken || (isLogined && calendarForm.isLoading);
+
+    useLoadingTask("일정 데이터를 불러오는 중이에요", isDataLoading);
 
     useEffect(() => {
         if (!isCheckedToken) return;
@@ -91,7 +95,8 @@ export default function CalendarClient() {
                 bosses={calendarForm.bosses}
                 setWorks={calendarForm.setWorks}
                 setGuild={calendarForm.setGuild}
-                isLogined={calendarForm.isLogined}/>
+                isLogined={calendarForm.isLogined}
+                isDataLoading={isDataLoading}/>
             {isMobile ? (
                 <div className="w-full flex justify-center px-4 overflow-hidden mt-8 mb-8">
                     <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px]">
@@ -112,7 +117,8 @@ export default function CalendarClient() {
                 bosses={calendarForm.bosses}
                 guild={calendarForm.guild}
                 setWorks={calendarForm.setWorks}
-                setGuild={calendarForm.setGuild}/>
+                setGuild={calendarForm.setGuild}
+                isDataLoading={isDataLoading}/>
             {isMobile ? (
                 <div className="w-full flex justify-center px-4">
                     <div className="w-full max-w-[360px] min-h-[100px] mt-4">

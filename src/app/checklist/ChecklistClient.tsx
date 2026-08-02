@@ -10,7 +10,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { CheckCharacter } from "../store/checklistSlice";
 import { Character, LoginUser } from "../store/loginSlice";
-import { addToast, Button, Spinner } from "@heroui/react";
+import { addToast, Button } from "@heroui/react";
 import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
@@ -160,9 +160,10 @@ export default function ChecklistClient() {
 
     if (!isCheckedToken) {
         return (
-            <div className="min-h-[calc(100vh-65px)] p-5 w-full flex justify-center items-center">
-                <Spinner label="로그인 정보를 확인 중입니다..." variant="wave" classNames={{ label: 'fadedtext mt-4' }}/>
-            </div>
+            <LoadingComponent
+                heightStyle="min-h-[calc(100vh-65px)]"
+                message="숙제 데이터를 준비하고 있어요"
+                detail="로그인 정보와 원정대 숙제 현황을 확인하고 있습니다."/>
         )
     }
 
@@ -213,7 +214,12 @@ export default function ChecklistClient() {
                     </div>
                 </div>
             ) : <></>}
-            {checklistForm.isLoading ? <LoadingComponent heightStyle="min-h-[calc(100vh-65px)]"/> : (
+            {checklistForm.isLoading ? (
+                <LoadingComponent
+                    heightStyle="min-h-[calc(100vh-65px)]"
+                    message="숙제 현황을 불러오고 있어요"
+                    detail="캐릭터별 주간 콘텐츠와 진행 상태를 정리하고 있습니다."/>
+            ) : (
                 <div>
                     <div className="w-full max-w-[1280px] mx-auto">
                         <section className="mt-5 overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]">

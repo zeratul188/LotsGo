@@ -17,7 +17,7 @@ import {
 import { addToast, Button } from "@heroui/react";
 import { WeekBox } from "../../calendar/CalendarForm";
 import clsx from "clsx";
-import { LoadingComponent } from "../../UtilsCompnents";
+import { WeeklyScheduleSkeleton } from "./HomeDataSkeleton";
 import { useRouter } from "next/navigation";
 import { RaidWork } from "../../raids/model/types";
 import { useSelector } from "react-redux";
@@ -124,7 +124,7 @@ export function TodoComponent() {
     }
     
     if (todoForm.isLoading) {
-        return <LoadingComponent heightStyle="min-h-[240px]"/>
+        return <WeeklyScheduleSkeleton/>
     }
 
     return (

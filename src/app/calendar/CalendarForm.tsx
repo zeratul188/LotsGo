@@ -109,6 +109,7 @@ function ScheduleDetails({
     works,
     setWorks,
     setGuild,
+    isDataLoading,
 }: {
     item: ScheduleItem;
     bosses: Boss[];
@@ -116,6 +117,7 @@ function ScheduleDetails({
     works: Calendar[];
     setWorks: SetStateFn<Calendar[]>;
     setGuild: SetStateFn<Guild | null>;
+    isDataLoading: boolean;
 }) {
     const [editMemo, setEditMemo] = useState(item.type === "party" ? "" : item.calendar.memo);
     const [isLoadingMemo, setLoadingMemo] = useState(false);
@@ -213,6 +215,7 @@ function ScheduleDetails({
                         <Button
                             color="primary"
                             size="sm"
+                            isDisabled={isDataLoading}
                             isLoading={isLoadingMemo}
                             onPress={editScheduleMemo}
                         >메모 수정</Button>
@@ -220,6 +223,7 @@ function ScheduleDetails({
                             color="danger"
                             variant="flat"
                             size="sm"
+                            isDisabled={isDataLoading}
                             isLoading={isLoadingDelete}
                             onPress={removeSchedule}
                         >삭제</Button>
@@ -237,6 +241,7 @@ function ScheduleRow({
     works,
     setWorks,
     setGuild,
+    isDataLoading,
     compact = false,
 }: {
     item: ScheduleItem;
@@ -245,6 +250,7 @@ function ScheduleRow({
     works: Calendar[];
     setWorks: SetStateFn<Calendar[]>;
     setGuild: SetStateFn<Guild | null>;
+    isDataLoading: boolean;
     compact?: boolean;
 }) {
     const meta = TYPE_META[item.type];
@@ -254,6 +260,7 @@ function ScheduleRow({
             <PopoverTrigger>
                 <button
                     type="button"
+                    disabled={isDataLoading}
                     className={clsx(
                         "group flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-lg border px-3 text-left transition hover:-translate-y-px hover:shadow-sm",
                         compact ? "h-8 py-1" : "min-h-12 py-2",
@@ -268,7 +275,7 @@ function ScheduleRow({
                 </button>
             </PopoverTrigger>
             <PopoverContent>
-                <ScheduleDetails item={item} bosses={bosses} guild={guild} works={works} setWorks={setWorks} setGuild={setGuild} />
+                <ScheduleDetails item={item} bosses={bosses} guild={guild} works={works} setWorks={setWorks} setGuild={setGuild} isDataLoading={isDataLoading} />
             </PopoverContent>
         </Popover>
     );
@@ -282,9 +289,10 @@ type WeekComponentProps = {
     setWorks: SetStateFn<Calendar[]>;
     setGuild: SetStateFn<Guild | null>;
     isLogined: boolean;
+    isDataLoading: boolean;
 };
 
-export function WeekComponent({ works, partyWorks, guild, bosses, setWorks, setGuild, isLogined }: WeekComponentProps) {
+export function WeekComponent({ works, partyWorks, guild, bosses, setWorks, setGuild, isLogined, isDataLoading }: WeekComponentProps) {
     const [weeks, setWeeks] = useState<WeekBox[]>([]);
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [visibleTypes, setVisibleTypes] = useState<Record<"work" | "guild" | "party", boolean>>({ work: true, guild: true, party: true });
@@ -329,7 +337,7 @@ export function WeekComponent({ works, partyWorks, guild, bosses, setWorks, setG
                 </div>
                 <Tooltip showArrow content={isLogined ? "새 일정을 추가합니다." : "로그인 후 일정 추가가 가능합니다."}>
                     <span className="w-full sm:w-auto">
-                        <Button color="primary" radius="lg" className="w-full px-6 sm:w-auto" isDisabled={!isLogined} onPress={onOpen}>일정 추가</Button>
+                        <Button color="primary" radius="lg" className="w-full px-6 sm:w-auto" isDisabled={!isLogined || isDataLoading} onPress={onOpen}>일정 추가</Button>
                     </span>
                 </Tooltip>
             </div>
@@ -347,13 +355,14 @@ export function WeekComponent({ works, partyWorks, guild, bosses, setWorks, setG
                                 radius="full"
                                 variant={visibleTypes[type] ? "flat" : "light"}
                                 color={TYPE_META[type].color}
+                                isDisabled={isDataLoading}
                                 onPress={() => toggleType(type)}
                                 className={clsx(!visibleTypes[type] && "opacity-50")}
                             >{TYPE_META[type].label} 일정 <span className="ml-1 text-xs opacity-70">{count}</span></Button>
                         );
                     })}
                 </div>
-                <Button size="sm" radius="full" variant="flat" onPress={() => setSelectedDate(weeks.find((week) => isTodayDate(week.date))?.date ?? weeks[0]?.date)}>오늘</Button>
+                <Button size="sm" radius="full" variant="flat" isDisabled={isDataLoading || !weeks.length} onPress={() => setSelectedDate(weeks.find((week) => isTodayDate(week.date))?.date ?? weeks[0]?.date)}>오늘</Button>
             </div>
 
             <div className="rounded-2xl border border-divider bg-content1 p-4 sm:p-5">
@@ -372,16 +381,17 @@ export function WeekComponent({ works, partyWorks, guild, bosses, setWorks, setG
                             <button
                                 type="button"
                                 key={week.date.toISOString()}
+                                disabled={isDataLoading}
                                 onClick={() => setSelectedDate(week.date)}
                                 className={clsx(
-                                    "min-w-0 rounded-xl border px-1 py-2 text-center transition sm:px-2",
+                                    "min-w-0 cursor-pointer rounded-xl border px-1 py-2 text-center transition disabled:cursor-not-allowed sm:grid sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:text-left sm:px-4",
                                     isSelected ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-divider bg-content2 hover:border-primary/50",
                                     isTodayDate(week.date) && !isSelected && "ring-1 ring-success/60",
                                 )}
                             >
-                                <span className="block text-[11px] font-semibold sm:text-xs">{["일", "월", "화", "수", "목", "금", "토"][week.date.getDay()]}</span>
-                                <span className="mt-0.5 block text-sm font-bold sm:text-base">{week.date.getDate()}</span>
-                                <span className={clsx("mx-auto mt-1 block w-fit rounded-full px-1.5 text-[10px]", isSelected ? "bg-white/20" : "bg-default-200")}>{count}</span>
+                                <span className="block text-[11px] font-semibold sm:justify-self-start sm:text-xs">{["일", "월", "화", "수", "목", "금", "토"][week.date.getDay()]}</span>
+                                <span className="mt-0.5 block text-sm font-bold sm:mt-0 sm:justify-self-center sm:text-base">{week.date.getDate()}</span>
+                                <span className={clsx("mx-auto mt-1 block w-fit rounded-full px-1.5 text-[10px] sm:mx-0 sm:mt-0 sm:justify-self-end", isSelected ? "bg-white/20" : "bg-default-200")}>{count}</span>
                             </button>
                         );
                     })}
@@ -390,7 +400,7 @@ export function WeekComponent({ works, partyWorks, guild, bosses, setWorks, setG
                 {selectedDate && <p className="mb-3 text-sm font-semibold">{formatKoreanDate(selectedDate)}</p>}
                 {selectedItems.length ? (
                     <div className="space-y-2">
-                        {selectedItems.map((item, index) => <ScheduleRow key={`${scheduleTitle(item)}-${index}`} item={item} bosses={bosses} guild={guild} works={works} setWorks={setWorks} setGuild={setGuild} />)}
+                        {selectedItems.map((item, index) => <ScheduleRow key={`${scheduleTitle(item)}-${index}`} item={item} bosses={bosses} guild={guild} works={works} setWorks={setWorks} setGuild={setGuild} isDataLoading={isDataLoading} />)}
                     </div>
                 ) : (
                     <div className="rounded-xl border border-dashed border-divider px-4 py-8 text-center text-sm text-default-500">등록된 일정이 없습니다.</div>
@@ -502,9 +512,10 @@ type BigComponentProps = {
     guild: Guild | null;
     setWorks: SetStateFn<Calendar[]>;
     setGuild: SetStateFn<Guild | null>;
+    isDataLoading: boolean;
 };
 
-export default function BigComponent({ works, partyWorks, bosses, guild, setWorks, setGuild }: BigComponentProps) {
+export default function BigComponent({ works, partyWorks, bosses, guild, setWorks, setGuild, isDataLoading }: BigComponentProps) {
     const today = new Date();
     const [year, setYear] = useState(today.getFullYear());
     const [month, setMonth] = useState(today.getMonth());
@@ -523,11 +534,11 @@ export default function BigComponent({ works, partyWorks, bosses, guild, setWork
         <section className="mt-8 space-y-4 pb-8">
             <div className="flex flex-col gap-3 rounded-2xl border border-divider bg-content1 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-center gap-2">
-                    <Button isIconOnly size="md" radius="full" variant="flat" aria-label="이전 달" className="text-xl font-bold" onPress={() => shiftMonth(-1)}>‹</Button>
-                    <button type="button" className="min-w-[150px] text-center text-lg font-bold hover:text-primary" onClick={() => { setYear(today.getFullYear()); setMonth(today.getMonth()); }}>{year}년 {month + 1}월</button>
-                    <Button isIconOnly size="md" radius="full" variant="flat" aria-label="다음 달" className="text-xl font-bold" onPress={() => shiftMonth(1)}>›</Button>
+                    <Button isIconOnly size="md" radius="full" variant="flat" aria-label="이전 달" className="text-xl font-bold" isDisabled={isDataLoading} onPress={() => shiftMonth(-1)}>‹</Button>
+                    <button type="button" disabled={isDataLoading} className="min-w-[150px] text-center text-lg font-bold hover:text-primary disabled:cursor-not-allowed disabled:opacity-50" onClick={() => { setYear(today.getFullYear()); setMonth(today.getMonth()); }}>{year}년 {month + 1}월</button>
+                    <Button isIconOnly size="md" radius="full" variant="flat" aria-label="다음 달" className="text-xl font-bold" isDisabled={isDataLoading} onPress={() => shiftMonth(1)}>›</Button>
                 </div>
-                <Button size="sm" radius="full" variant="flat" onPress={() => { setYear(today.getFullYear()); setMonth(today.getMonth()); setSelectedDate(today); }}>오늘</Button>
+                <Button size="sm" radius="full" variant="flat" isDisabled={isDataLoading} onPress={() => { setYear(today.getFullYear()); setMonth(today.getMonth()); setSelectedDate(today); }}>오늘</Button>
             </div>
             <div className="grid grid-cols-7 gap-1.5 text-center sm:gap-2">
                 {["일", "월", "화", "수", "목", "금", "토"].map((day) => <div key={day} className="py-1 text-xs font-semibold text-default-500">{day}</div>)}
@@ -542,9 +553,10 @@ export default function BigComponent({ works, partyWorks, bosses, guild, setWork
                             role="button"
                             tabIndex={0}
                             key={`${date.toISOString()}-${index}`}
-                            onClick={() => setSelectedDate(date)}
+                            aria-disabled={isDataLoading}
+                            onClick={() => { if (!isDataLoading) setSelectedDate(date); }}
                             onKeyDown={(event) => {
-                                if (event.key === "Enter" || event.key === " ") setSelectedDate(date);
+                                if (!isDataLoading && (event.key === "Enter" || event.key === " ")) setSelectedDate(date);
                             }}
                             className={clsx(
                                 "min-h-[88px] min-w-0 rounded-xl border p-1.5 text-left transition sm:min-h-[132px] sm:p-2",
@@ -555,7 +567,7 @@ export default function BigComponent({ works, partyWorks, bosses, guild, setWork
                         >
                             <span className={clsx("inline-flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-xs font-semibold", isTodayDate(date) && "bg-success text-white")}>{date.getDate()}</span>
                             <div className="mt-1 space-y-1">
-                                {items.slice(0, 2).map((item, itemIndex) => <ScheduleRow key={`${scheduleTitle(item)}-${itemIndex}`} item={item} bosses={bosses} guild={guild} works={works} setWorks={setWorks} setGuild={setGuild} compact />)}
+                                {items.slice(0, 2).map((item, itemIndex) => <ScheduleRow key={`${scheduleTitle(item)}-${itemIndex}`} item={item} bosses={bosses} guild={guild} works={works} setWorks={setWorks} setGuild={setGuild} isDataLoading={isDataLoading} compact />)}
                                 {items.length > 2 && <span className="block px-1 text-[11px] font-medium text-primary">+{items.length - 2}개</span>}
                             </div>
                         </div>
@@ -564,7 +576,7 @@ export default function BigComponent({ works, partyWorks, bosses, guild, setWork
             </div>
             <div className="rounded-2xl border border-divider bg-content1 p-4 sm:hidden">
                 <div className="mb-3 text-sm font-semibold">{selectedDate ? formatKoreanDate(selectedDate) : "날짜를 선택하세요"}</div>
-                {selectedItems.length ? <div className="space-y-2">{selectedItems.map((item, index) => <ScheduleRow key={`${scheduleTitle(item)}-${index}`} item={item} bosses={bosses} guild={guild} works={works} setWorks={setWorks} setGuild={setGuild} />)}</div> : <p className="text-sm text-default-500">등록된 일정이 없습니다.</p>}
+                {selectedItems.length ? <div className="space-y-2">{selectedItems.map((item, index) => <ScheduleRow key={`${scheduleTitle(item)}-${index}`} item={item} bosses={bosses} guild={guild} works={works} setWorks={setWorks} setGuild={setGuild} isDataLoading={isDataLoading} />)}</div> : <p className="text-sm text-default-500">등록된 일정이 없습니다.</p>}
             </div>
         </section>
     );

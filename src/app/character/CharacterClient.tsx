@@ -163,7 +163,12 @@ export default function CharacterClient() {
     }
 
     if (characterForm.isLoading) {
-        return <LoadingComponent heightStyle="min-h-[calc(100vh-65px)]"/>
+        return (
+            <LoadingComponent
+                heightStyle="min-h-[calc(100vh-65px)]"
+                message="전투정보실 데이터를 불러오고 있어요"
+                detail="프로필과 장비, 보석, 아크 패시브 정보를 분석하고 있습니다."/>
+        )
     }
 
     if (characterForm.isNothing) {
@@ -175,7 +180,12 @@ export default function CharacterClient() {
     }
 
     if (!characterForm.characterInfo) {
-        return <LoadingComponent heightStyle="min-h-[calc(100vh-65px)]"/>
+        return (
+            <LoadingComponent
+                heightStyle="min-h-[calc(100vh-65px)]"
+                message="캐릭터 정보를 정리하고 있어요"
+                detail="불러온 전투 데이터를 화면에 맞게 구성하고 있습니다."/>
+        )
     }
 
     const tabs = [

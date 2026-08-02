@@ -12,6 +12,7 @@ import dayjs from "dayjs";
 import Script from "next/script";
 import { useSelector } from "react-redux";
 import { RootState } from "./store/store";
+import { HomeAuthenticatedContentSkeleton } from "./home/ui/HomeDataSkeleton";
 
 const BoxAd = dynamic(() => import('./ad/BoxAd'), { ssr: false });
 const TwoLineAd = dynamic(() => import('./ad/TwoLineAd'), { ssr: false });
@@ -43,7 +44,9 @@ export default function HomeClient({ gate, boss, islands, islandTime, islandData
                         <TodoComponent/>
                     </>
                 ) : <NotLoginComponent/>
-            ) : null}
+            ) : (
+                <HomeAuthenticatedContentSkeleton/>
+            )}
             <CalendarComponent
                 gate={gate}
                 boss={boss}
