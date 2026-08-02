@@ -2,6 +2,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import axios from 'axios';
 import { onRequest } from "firebase-functions/v2/https";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 import Redis from 'ioredis';
 
 admin.initializeApp();
@@ -337,41 +338,39 @@ export const resetDayChecklist = onRequest({
   }
 });
 
-// 수요일 10시 10분에 캐시 데이터를 자동 삭제하는 기능 추가
-export const removeCacheCalendarData = onRequest({
+// 매주 수요일 오전 10시 5분(한국 시간)에 공지·이벤트 캐시 삭제
+export const removeCacheCalendarData = onSchedule({
+  schedule: '5 10 * * 3',
+  timeZone: 'Asia/Seoul',
   secrets: ['REDIS_URL']
-}, async (req, res) => {
+}, async () => {
   const redisUrl = process.env.REDIS_URL;
 
   try {
     if (!redisUrl) {
-      console.error('REDIS_URL is undefined');
-      res.status(500).send('Secrets failed');
-    } else {
-      const redis = new Redis(redisUrl!, {
-        lazyConnect: true,
-        maxRetriesPerRequest: 1,
-        connectTimeout: 5000,
-        tls: {}
-      });
-
-      redis.on('error', (err) => {
-        console.error('[Redis 오류 발생]', err);
-        res.status(500).send('Redis failed');
-      });
-
-      await redis.connect();
-      await redis.del('calendar');
-      await redis.del('events');
-      await redis.del('notices');
-      await redis.quit();
-      res.status(200).send('Caches reset complete');
+      throw new Error('REDIS_URL is undefined');
     }
+
+    const redis = new Redis(redisUrl, {
+      lazyConnect: true,
+      maxRetriesPerRequest: 1,
+      connectTimeout: 5000,
+      tls: {}
+    });
+
+    await redis.connect();
+    const deletedKeys = await redis.del('calendar', 'events', 'notices:v2');
+    await redis.quit();
+
+    functions.logger.info('Scheduled cache reset complete', {
+      deletedKeys,
+      schedule: 'Wednesday 10:05 Asia/Seoul'
+    });
   } catch (error) {
-    console.error('Reset failed:', error);
-    res.status(500).send('Reset failed');
+    functions.logger.error('Scheduled cache reset failed', error as any);
+    throw error;
   }
-})
+});
 
 // firebase functions:secrets:set LOSTARK_API_KEY
 // firebase deploy --only functions:resetWeekChecklist
