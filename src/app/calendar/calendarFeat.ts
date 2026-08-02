@@ -9,6 +9,7 @@ import { DateValue, getLocalTimeZone } from "@internationalized/date";
 import { getWeekContents } from "../checklist/lib/checklistFeat";
 import { decrypt } from "@/utiils/crypto";
 import { RaidWork } from "../raids/model/types";
+import { ensureFirebaseAuth } from "@/utiils/firebaseAuth";
 
 export type Calendar = {
     name: string,
@@ -25,6 +26,7 @@ const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_S
 
 // 로그인된 캐릭터의 길드명 반환 함수
 export async function getGuildName(): Promise<string> {
+    await ensureFirebaseAuth();
     const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const decryptedApiKey = storedUser?.apiKey ? decrypt(storedUser.apiKey, secretKey) : null;
@@ -94,6 +96,7 @@ export async function loadGuild(setGuild: SetStateFn<Guild | null>) {
 
 // 보스 데이터 가져오는 함수
 export async function loadBosses(setBosses: SetStateFn<Boss[]>) {
+    await ensureFirebaseAuth();
     const snapshot = await getDocs(collection(firestore, 'boss'));
     const bosses: Boss[] = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -107,6 +110,7 @@ export async function loadBosses(setBosses: SetStateFn<Boss[]>) {
 
 // 본인 일지 가져오는 함수
 export async function loadWorks(setWorks: SetStateFn<Calendar[]>) {
+    await ensureFirebaseAuth();
     const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     if (!storedUser) return;
@@ -254,6 +258,18 @@ export async function handleSubmitCalendar(
     }
 
     setLoadingButton(true);
+    try {
+        await ensureFirebaseAuth();
+    } catch (error) {
+        console.error("Failed to restore Firebase authentication", error);
+        addToast({
+            title: "인증 오류",
+            description: "로그인 인증을 복구하지 못했습니다. 페이지를 새로고침해 주세요.",
+            color: "danger"
+        });
+        setLoadingButton(false);
+        return;
+    }
     const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
     const id = storedUser.id;
@@ -402,6 +418,18 @@ export async function handleEditMemo(
     setGuild: SetStateFn<Guild | null>
 ) {
     setLoadingMemo(true);
+    try {
+        await ensureFirebaseAuth();
+    } catch (error) {
+        console.error("Failed to restore Firebase authentication", error);
+        addToast({
+            title: "인증 오류",
+            description: "로그인 인증을 복구하지 못했습니다. 페이지를 새로고침해 주세요.",
+            color: "danger"
+        });
+        setLoadingMemo(false);
+        return;
+    }
     if (isTypeGuild) {
         const guildName = await getGuildName();
         if (guildName) {
@@ -472,6 +500,7 @@ export async function removeAutoCalendarsByGuild(
     guild: Guild | null,
     setGuild: SetStateFn<Guild | null>
 ) {
+    await ensureFirebaseAuth();
     const now = new Date();
     const guildName = await getGuildName();
     if (guildName && guild) {
@@ -501,6 +530,7 @@ export async function removeAutoCalendarsByWorks(
     works: Calendar[],
     setWorks: SetStateFn<Calendar[]>
 ) {
+    await ensureFirebaseAuth();
     const calendars: Calendar[] = [];
     const now = new Date();
     for (const calendar of works) {
@@ -534,6 +564,18 @@ export async function handleRemoveCalendar(
     setGuild: SetStateFn<Guild | null>
 ) {
     setLoadingDelete(true);
+    try {
+        await ensureFirebaseAuth();
+    } catch (error) {
+        console.error("Failed to restore Firebase authentication", error);
+        addToast({
+            title: "인증 오류",
+            description: "로그인 인증을 복구하지 못했습니다. 페이지를 새로고침해 주세요.",
+            color: "danger"
+        });
+        setLoadingDelete(false);
+        return;
+    }
     if (isTypeGuild) {
         const guildName = await getGuildName();
         if (guildName && guild) {

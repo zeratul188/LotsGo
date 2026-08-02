@@ -22,6 +22,7 @@ import { getBossesById, getTextColorByDifficulty, getWeekContents } from "../che
 import { SetStateFn } from "@/utiils/utils";
 import CalendarIcon from "@/Icons/CalendarIcon";
 import {
+    addToast,
     Button,
     Chip,
     Checkbox,
@@ -125,6 +126,38 @@ function ScheduleDetails({
         setEditMemo(item.type === "party" ? "" : item.calendar.memo);
     }, [item]);
 
+    async function editScheduleMemo() {
+        if (item.type === "party") return;
+        try {
+            await handleEditMemo(editMemo, item.type === "guild", setLoadingMemo, guild, works, item.calendar, setWorks, setGuild);
+        } catch (error) {
+            console.error("Failed to edit calendar memo", error);
+            addToast({
+                title: "일정 수정 오류",
+                description: "일정을 수정하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+                color: "danger"
+            });
+        } finally {
+            setLoadingMemo(false);
+        }
+    }
+
+    async function removeSchedule() {
+        if (item.type === "party") return;
+        try {
+            await handleRemoveCalendar(item.type === "guild", setLoadingDelete, guild, works, item.calendar, setWorks, setGuild);
+        } catch (error) {
+            console.error("Failed to remove calendar", error);
+            addToast({
+                title: "일정 삭제 오류",
+                description: "일정을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+                color: "danger"
+            });
+        } finally {
+            setLoadingDelete(false);
+        }
+    }
+
     return (
         <div className="w-[min(360px,calc(100vw-2rem))] p-1 sm:p-2">
             <div className="flex items-center gap-2 pb-3">
@@ -181,14 +214,14 @@ function ScheduleDetails({
                             color="primary"
                             size="sm"
                             isLoading={isLoadingMemo}
-                            onPress={async () => handleEditMemo(editMemo, item.type === "guild", setLoadingMemo, guild, works, item.calendar, setWorks, setGuild)}
+                            onPress={editScheduleMemo}
                         >메모 수정</Button>
                         <Button
                             color="danger"
                             variant="flat"
                             size="sm"
                             isLoading={isLoadingDelete}
-                            onPress={async () => handleRemoveCalendar(item.type === "guild", setLoadingDelete, guild, works, item.calendar, setWorks, setGuild)}
+                            onPress={removeSchedule}
                         >삭제</Button>
                     </div>
                 </>
