@@ -1,6 +1,6 @@
 'use client'
 import { useMobileQuery } from "@/utiils/utils"
-import { addToast, Spinner, Tab, Tabs } from "@heroui/react";
+import { addToast, Tab, Tabs } from "@heroui/react";
 import { ExpeditionsComponent } from "./ui/ExpeditionForm";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -12,6 +12,7 @@ import OptionComponent from "./ui/OptionForm";
 import HistoryComponent from "./ui/HistoryForm";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
+import { LoadingComponent } from "../UtilsCompnents";
 
 const tabs = [
     {
@@ -71,9 +72,10 @@ export default function SettingClient() {
 
     if (!isCheckedToken) {
         return (
-            <div className="min-h-[calc(100vh-65px)] p-5 w-full flex justify-center items-center">
-                <Spinner label="로그인 정보를 확인 중입니다..." variant="wave" classNames={{ label: 'fadedtext mt-4' }}/>
-            </div>
+            <LoadingComponent
+                heightStyle="min-h-[calc(100vh-65px)]"
+                message="계정 설정을 준비하고 있어요"
+                detail="로그인 상태와 저장된 설정을 확인하고 있습니다."/>
         )
     }
 

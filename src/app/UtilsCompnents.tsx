@@ -1,20 +1,30 @@
-import {Spinner} from "@heroui/react";
+'use client'
+
+import { Spinner } from "@heroui/react";
+import { useLoadingTask } from "./components/loading/LoadingProgress";
 
 type LoadingComponentProps = {
     heightStyle: string;
+    message?: string;
+    detail?: string;
 }
 
-// 로딩 중인 컴포넌넌트
-export function LoadingComponent({heightStyle}: LoadingComponentProps) {
+export function LoadingComponent({
+    heightStyle,
+    message = "데이터 불러오는 중..."
+}: LoadingComponentProps) {
+    useLoadingTask(message);
+
     return (
-        <div className={`flex justify-center items-center flex-col p-5 sm:p-0 w-full ${heightStyle}`}>
-            <Spinner size="lg" variant="gradient"/>
-            <p className="mt-6">데이터를 불러오는 중입니다...</p>
+        <div
+            aria-live="polite"
+            className={`flex w-full flex-col items-center justify-center gap-3 p-5 ${heightStyle}`}>
+            <Spinner size="lg" color="primary"/>
+            <p className="text-sm font-medium text-default-500">{message}</p>
         </div>
     )
 }
 
-// 비어있을 경우 표현할 컨포넌트
 export function EmptyComponent({heightStyle}: LoadingComponentProps) {
     return (
         <div className={`flex justify-center items-center flex-col p-5 sm:p-0 w-full ${heightStyle}`}>

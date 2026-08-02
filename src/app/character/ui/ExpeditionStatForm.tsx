@@ -1,5 +1,6 @@
 ﻿'use client'
-import { Card, CardBody, CardHeader, Checkbox, Chip, Divider, NumberInput, Progress, Radio, RadioGroup, Spinner, Tooltip } from "@heroui/react";
+import { Card, CardBody, CardHeader, Checkbox, Chip, Divider, NumberInput, Progress, Radio, RadioGroup, Tooltip } from "@heroui/react";
+import { LoadingComponent } from "@/app/UtilsCompnents";
 import { ExpeditionCharacter } from "../characterlist/model/types";
 import {
     formatCombatPower,
@@ -47,9 +48,10 @@ export function ExpeditionStatComponent({
 
     if (isLoading) {
         return (
-            <div className="w-full min-h-[700px] py-2 flex justify-center">
-                <Spinner label={statusMessage ?? ''} classNames={{ label: 'fadedtext mt-3' }}/>
-            </div>
+            <LoadingComponent
+                heightStyle="min-h-[700px]"
+                message={statusMessage ?? "원정대 통계를 불러오고 있어요"}
+                detail="캐릭터별 전투 정보를 모아 통계를 계산하고 있습니다."/>
         );
     }
 

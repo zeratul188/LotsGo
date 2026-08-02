@@ -14,13 +14,15 @@ import {
     removeAutoCalendarsByGuild, 
     removeAutoCalendarsByWorks 
 } from "../../calendar/calendarFeat";
-import { isLogin } from "../lib/checklistFeat";
-import { Button } from "@heroui/react";
+import { addToast, Button } from "@heroui/react";
 import { WeekBox } from "../../calendar/CalendarForm";
 import clsx from "clsx";
-import { LoadingComponent } from "../../UtilsCompnents";
+import { WeeklyScheduleSkeleton } from "./HomeDataSkeleton";
 import { useRouter } from "next/navigation";
 import { RaidWork } from "../../raids/model/types";
+import { useSelector } from "react-redux";
+import { RootState } from "../../store/store";
+import { ensureFirebaseAuth } from "@/utiils/firebaseAuth";
 
 // state 관리
 export function useTodoForm() {
@@ -48,22 +50,36 @@ export function TodoComponent() {
     const todoForm = useTodoForm();
     const router = useRouter();
     const [weeks, setWeeks] = useState<WeekBox[]>([]);
+    const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
+    const isLogined = useSelector((state: RootState) => state.login.isLogined);
 
     useEffect(() => {
-        if (isLogin()) {
-            todoForm.setLogin(isLogin());
-        } else {
+        if (!isCheckedToken) return;
+        todoForm.setLogin(isLogined);
+        if (!isLogined) {
             todoForm.setLoading(false);
         }
-    }, []);
+    }, [isCheckedToken, isLogined]);
 
     useEffect(() => {
         const loadData = async () => {
-            const guildPromise = loadGuild(todoForm.setGuild);
-            const workPromise = loadWorks(todoForm.setWorks);
-            const partyWorksPromise = loadWorksByParty(todoForm.setPartyWorks);
-            await Promise.all([guildPromise, workPromise, partyWorksPromise]);
-            todoForm.setLoading(false);
+            try {
+                await ensureFirebaseAuth();
+                await Promise.all([
+                    loadGuild(todoForm.setGuild),
+                    loadWorks(todoForm.setWorks),
+                    loadWorksByParty(todoForm.setPartyWorks)
+                ]);
+            } catch (error) {
+                console.error("Failed to load home calendars", error);
+                addToast({
+                    title: "일정 로드 오류",
+                    description: "인증 정보를 복구하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+                    color: "danger"
+                });
+            } finally {
+                todoForm.setLoading(false);
+            }
         }
         if (todoForm.isLogin) {
             loadData();
@@ -72,8 +88,13 @@ export function TodoComponent() {
 
     useEffect(() => {
         const settingData = async () => {
-            await removeAutoCalendarsByWorks(todoForm.works, todoForm.setWorks);
-            todoForm.setResetWorks(true);
+            try {
+                await removeAutoCalendarsByWorks(todoForm.works, todoForm.setWorks);
+            } catch (error) {
+                console.error("Failed to remove expired personal calendars", error);
+            } finally {
+                todoForm.setResetWorks(true);
+            }
         }
         if (!todoForm.isResetWorks && todoForm.isLogin) {
             settingData();
@@ -85,8 +106,13 @@ export function TodoComponent() {
 
     useEffect(() => {
         const settingData = async () => {
-            await removeAutoCalendarsByGuild(todoForm.guild, todoForm.setGuild);
-            todoForm.setResetGuild(true);
+            try {
+                await removeAutoCalendarsByGuild(todoForm.guild, todoForm.setGuild);
+            } catch (error) {
+                console.error("Failed to remove expired guild calendars", error);
+            } finally {
+                todoForm.setResetGuild(true);
+            }
         }
         if (!todoForm.isResetGuild && todoForm.guild && todoForm.isLogin) {
             settingData();
@@ -98,7 +124,7 @@ export function TodoComponent() {
     }
     
     if (todoForm.isLoading) {
-        return <LoadingComponent heightStyle="min-h-[240px]"/>
+        return <WeeklyScheduleSkeleton/>
     }
 
     return (

@@ -5,7 +5,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store/store";
 import { ExpeditionCharacter } from "./model/types";
 import { loadCharacterList } from "./lib/characterListFeat";
-import { Button, Card, CardBody, CardHeader, Chip, Input, Spinner } from "@heroui/react";
+import { Button, Card, CardBody, CardHeader, Chip, Input } from "@heroui/react";
 import SupportorIcon from "@/Icons/SupportorIcon";
 import AttackIcon from "@/Icons/AttackIcon";
 import clsx from "clsx";
@@ -58,9 +58,10 @@ export default function CharacterListClient() {
 
     if (!isCheckedToken) {
         return (
-            <div className="min-h-[calc(100vh-65px)] p-5 w-full flex justify-center items-center">
-                <Spinner label="로그인 정보를 확인 중입니다..." variant="wave" classNames={{ label: 'fadedtext mt-4' }}/>
-            </div>
+            <LoadingComponent
+                heightStyle="min-h-[calc(100vh-65px)]"
+                message="원정대 정보를 준비하고 있어요"
+                detail="로그인 정보와 대표 캐릭터를 확인하고 있습니다."/>
         )
     }
 

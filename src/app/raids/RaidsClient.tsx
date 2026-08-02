@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from "react";
-import { addToast, Spinner, Tab, Tabs } from "@heroui/react"
+import { addToast, Tab, Tabs } from "@heroui/react"
 import { FindComponent } from "./ui/RaidListForm";
 import { LoginUser } from "../store/loginSlice";
 import { loadRaids } from "./lib/raidListFeat";
@@ -14,6 +14,7 @@ import { changeKey, changeUserId } from "../store/partySlice";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
 import dynamic from "next/dynamic";
+import { LoadingComponent } from "../UtilsCompnents";
 const LineAd = dynamic(() => import("@/app/ad/LineAd"), { ssr: false });
 const BoxAd = dynamic(() => import("@/app/ad/BoxAd"), { ssr: false });
 
@@ -70,9 +71,10 @@ export default function RaidsClient() {
 
     if (!isCheckedToken) {
         return (
-            <div className="min-h-[calc(100vh-65px)] p-5 w-full flex justify-center items-center">
-                <Spinner label="로그인 정보를 확인 중입니다..." variant="wave" classNames={{ label: 'fadedtext mt-4' }}/>
-            </div>
+            <LoadingComponent
+                heightStyle="min-h-[calc(100vh-65px)]"
+                message="파티 데이터를 준비하고 있어요"
+                detail="로그인 정보와 참여 중인 파티를 확인하고 있습니다."/>
         )
     }
 
