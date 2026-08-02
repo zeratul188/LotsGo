@@ -125,6 +125,7 @@ import {
     useOnClickWeekCheck 
 } from "../lib/checklistFeat";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
+import { useLoadingTask } from "../../components/loading/LoadingProgress";
 import { SettingIcon } from "../../icons/SettingIcon";
 import clsx from "clsx";
 import { AppDispatch } from "../../store/store";
@@ -436,6 +437,8 @@ export function ChecklistStatue({
     const [inputAccount, setInputAccount] = useState('');
     const [selected, setSelected] = useState(accounts.length > 0 ? accounts[0] : '본계정');
     const onClickAddAccount = useClickAddAccount(inputAccount, setInputAccount, accounts, setAccounts);
+
+    useLoadingTask("캐릭터 정보를 갱신하고 있어요", isLoading);
 
     const filteredChecklist = checklist.filter((character) => (character.server === server || server === '전체') && filterChecklist(character, filterContent, bosses, checklist, isRemainHomework, isShowGoldCharacter, filterAccount));
 

@@ -25,6 +25,7 @@ import FixedLineAd from "../ad/FixedLineAd";
 import { Settings } from "../api/setting/route";
 import { normalizeChecklist } from "./lib/normalizeChecklist";
 import HomeworkIcon from "@/Icons/HomeworkIcon";
+import ChecklistLoadingSkeleton from "./ui/ChecklistLoadingSkeleton";
 
 
 export const defaultSettings: Settings = {
@@ -252,13 +253,7 @@ export default function ChecklistClient() {
                     </div>
                 </div>
             ) : <></>}
-            {checklistForm.isLoading ? (
-                <LoadingComponent
-                    heightStyle="min-h-[calc(100vh-65px)]"
-                    message="숙제 현황을 불러오고 있어요"
-                    detail="캐릭터별 주간 콘텐츠와 진행 상태를 정리하고 있습니다."/>
-            ) : (
-                <div>
+            <div>
                     <div className="w-full max-w-[1280px] mx-auto">
                         <section className="mt-5 overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]">
                             <div className="flex flex-col gap-1 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-white/10">
@@ -344,51 +339,56 @@ export default function ChecklistClient() {
                                     setHideDayContent={checklistForm.setHideDayContent}/>
                             </div>
                         </section>
-                        <div className={clsx(
-                            checklistForm.isShowList ? 'block' : 'hidden'
-                        )}>
-                            <RemainChecklistComponent checklist={checklist} bosses={checklistForm.bosses}/>
-                        </div>
-                        <div className={clsx(
-                            checklistForm.isShowCubeDetail ? 'block' : 'hidden'
-                        )}>
-                            <CubeDetailComponent checklist={checklist} cubes={checklistForm.cubes}/>
-                        </div>
                     </div>
-                    <ChecklistComponent 
-                        checklist={checklist} 
-                        server={checklistForm.server}
-                        bosses={checklistForm.bosses}
-                        cubes={checklistForm.cubes}
-                        dispatch={dispatch}
-                        onOpen={checklistForm.onOpen}
-                        setModalData={checklistForm.setModalData}
-                        biweekly={checklistForm.biweekly}
-                        isHideDayContent={checklistForm.isHideDayContent}
-                        filterContent={checklistForm.filterContent}
-                        isRemainHomework={checklistForm.isRemainHomework}
-                        isShowGoldCharacter={checklistForm.isShowGoldCharacter}
-                        accounts={checklistForm.accounts}
-                        setAccounts={checklistForm.setAccounts}
-                        filterAccount={checklistForm.filterAccount}
-                        isHideCompleteContent={checklistForm.isHideCompleteContent}
-                        isHideBonusMode={checklistForm.isHideBonusMode}
-                        autoChecklistNickname={autoChecklistNickname}
-                        isAutoChecklistSharing={isAutoChecklistSharing}
-                        setAutoChecklistNickname={setAutoChecklistNickname}/>
-                    <ChecklistModal
-                        isOpen={checklistForm.isOpen}
-                        modalData={checklistForm.modalData}
-                        onOpenChange={checklistForm.onOpenChange}
-                        checklist={checklist}
-                        dispatch={dispatch}
-                        bosses={checklistForm.bosses}/>
-                    <BossInfoModal
-                        isOpenBosses={isOpenBosses}
-                        onOpenBosses={onOpenChangeBosses}
-                        bosses={checklistForm.bosses}/>
+                    {checklistForm.isLoading ? (
+                        <ChecklistLoadingSkeleton/>
+                    ) : (
+                        <>
+                            <div className={clsx(
+                                checklistForm.isShowList ? 'block' : 'hidden'
+                            )}>
+                                <RemainChecklistComponent checklist={checklist} bosses={checklistForm.bosses}/>
+                            </div>
+                            <div className={clsx(
+                                checklistForm.isShowCubeDetail ? 'block' : 'hidden'
+                            )}>
+                                <CubeDetailComponent checklist={checklist} cubes={checklistForm.cubes}/>
+                            </div>
+                            <ChecklistComponent
+                                checklist={checklist}
+                                server={checklistForm.server}
+                                bosses={checklistForm.bosses}
+                                cubes={checklistForm.cubes}
+                                dispatch={dispatch}
+                                onOpen={checklistForm.onOpen}
+                                setModalData={checklistForm.setModalData}
+                                biweekly={checklistForm.biweekly}
+                                isHideDayContent={checklistForm.isHideDayContent}
+                                filterContent={checklistForm.filterContent}
+                                isRemainHomework={checklistForm.isRemainHomework}
+                                isShowGoldCharacter={checklistForm.isShowGoldCharacter}
+                                accounts={checklistForm.accounts}
+                                setAccounts={checklistForm.setAccounts}
+                                filterAccount={checklistForm.filterAccount}
+                                isHideCompleteContent={checklistForm.isHideCompleteContent}
+                                isHideBonusMode={checklistForm.isHideBonusMode}
+                                autoChecklistNickname={autoChecklistNickname}
+                                isAutoChecklistSharing={isAutoChecklistSharing}
+                                setAutoChecklistNickname={setAutoChecklistNickname}/>
+                            <ChecklistModal
+                                isOpen={checklistForm.isOpen}
+                                modalData={checklistForm.modalData}
+                                onOpenChange={checklistForm.onOpenChange}
+                                checklist={checklist}
+                                dispatch={dispatch}
+                                bosses={checklistForm.bosses}/>
+                            <BossInfoModal
+                                isOpenBosses={isOpenBosses}
+                                onOpenBosses={onOpenChangeBosses}
+                                bosses={checklistForm.bosses}/>
+                        </>
+                    )}
                 </div>
-            )}
             <div className="mx-auto w-full max-w-[1280px]">
                 <div className="mx-4 mt-8 flex flex-col gap-4 rounded-2xl border border-danger/20 bg-danger/[0.025] p-4 shadow-sm dark:border-danger/30 dark:bg-danger/[0.06] sm:flex-row sm:items-start sm:p-5">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-danger/10 text-lg font-bold text-danger dark:bg-danger/15">
