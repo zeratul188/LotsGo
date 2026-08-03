@@ -1,102 +1,121 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: '숙제 · 로츠고 가이드',
-    description: '로츠고 사이트에서 숙제 기능을 어떻게 이용하는 방법에 대해서 알려드립니다.',
+    title: '숙제 시작하기 · 로츠고 가이드',
+    description: '로츠고 숙제 페이지의 초기 설정과 캐릭터 등록, 숙제 체크 방법을 안내합니다.',
 };
 
-export default function Checklist() {
+const firstSteps = [
+    {
+        number: '01',
+        title: '숙제 페이지 열기',
+        description: '로그인한 뒤 상단 메뉴의 숙제로 이동합니다. 처음 방문하면 회원가입 때 등록한 대표 캐릭터를 기준으로 원정대 정보를 불러옵니다.',
+    },
+    {
+        number: '02',
+        title: '캐릭터와 골드 지정 확인',
+        description: '불러온 캐릭터 목록과 골드 지정 상태를 확인합니다. 골드 지정은 주간 골드 현황을 계산하는 기준이므로 실제 플레이 계획에 맞게 조정하세요.',
+    },
+    {
+        number: '03',
+        title: '주간 콘텐츠 확인',
+        description: '캐릭터별 레벨에 맞는 주간 콘텐츠가 기본으로 구성됩니다. 레이드와 관문, 난이도가 내 플레이 계획과 맞는지 확인합니다.',
+    },
+    {
+        number: '04',
+        title: '완료한 숙제 체크하기',
+        description: '콘텐츠를 완료할 때마다 해당 항목을 체크하면 캐릭터별 남은 숙제와 전체 진행 현황에 반영됩니다.',
+    },
+];
+
+export default function ChecklistGuide() {
     return (
-        <div className="w-full [&_p]:text-base [&_li]:text-base [&_h3]:text-lg [&_h1]:text-2xl">
-            <h1 className="font-bold mb-2">숙제</h1>
-            <p>캐릭터들을 등록하여 일일 콘텐츠, 주간 콘텐츠 등을 기록하고 관리할 수 잇는 기능입니다.</p>
-            <img src="/about/checklist1.webp" alt="로츠고 숙제 페이지" className="w-full h-auto rounded-xl mt-2 mb-2"/>
-            <h1 className="font-bold mt-10 mb-2">숙제 초기 세팅</h1>
-            <p>초기세팅은 회원가입 후 숙제 페이지로 이동하면 별도 설정없이 자동으로 초기세팅이 완료됩니다.</p>
-            <p>초기세팅 내용은 회원가입 시 등록했던 원정대에서 레벨이 높은 순서대로 6캐릭이 골드 지정으로 선택된 상태에서 자동으로 등록됩니다.</p>
-            <p>추가된 캐릭터는 주요 콘텐츠에서 레벨이 맞는 주간 레이드를 레벨 높은 순서대로 3개의 레이드가 주간 콘텐츠에 추가됩니다.</p>
-            <h1 className="font-bold mt-10 mb-2">캐릭터 추가하기</h1>
-            <div className="w-full grid sm:grid-cols-[1fr_2fr] gap-4">
-                <img src="/about/checklist2.webp" alt="로츠고 캐릭터 추가" className="w-full h-auto rounded-xl mt-2 mb-2"/>
-                <ul className="list-decimal pl-4">
-                    <li>페이지 상단에 고정된 요소에서 "캐릭터 추가"를 누르면 창이 나오게 됩니다.</li>
-                    <li>추가할 캐릭터 명 또는 해당 원정대의 대표 캐릭터 명을 입력하신 후 "조회" 버튼을 통해 데이터를 불러옵니다.</li>
-                    <li>해당 캐릭터 명이 있는 원정대 데이터가 불러와지며 추가할 캐릭터들을 체크합니다.</li>
-                    <li>골드 지정이 필요한 경우 "골드 지정"을 체크하시면 골드 지정이 된 캐릭터로 추가가 가능합니다.</li>
-                    <li>"추가" 버튼을 누르게 되면 체크된 캐릭터들이 추가되며 주간 콘텐츠도 자동으로 3개가 채워집니다.</li>
-                </ul>
+        <div className="w-full [&_p]:text-base [&_h1]:text-2xl">
+            <h1 className="font-bold mb-3">숙제 시작하기</h1>
+            <p>
+                숙제 메뉴는 여러 캐릭터의 일일·주간 콘텐츠를 한곳에서 기록하고 완료 여부를 관리하는 로츠고의 핵심 기능입니다.
+                처음에는 원정대와 캐릭터를 등록하고, 이후 게임에서 콘텐츠를 완료할 때마다 체크하는 방식으로 사용합니다.
+            </p>
+
+            <section className="mt-6 rounded-2xl border border-primary-200 bg-primary-50/70 p-5 dark:border-primary-500/20 dark:bg-primary-500/10">
+                <h2 className="text-xl font-bold">처음 시작할 때 알아둘 점</h2>
+                <p className="mt-2">
+                    회원가입 때 대표 캐릭터를 확인했다면 숙제 페이지에서 해당 원정대의 캐릭터 정보를 바탕으로 초기 목록을 만들 수 있습니다.
+                    초기 설정은 시작을 돕기 위한 기본값이므로, 캐릭터별 골드 지정과 콘텐츠 목록은 내 플레이 방식에 맞게 다시 확인하는 것이 좋습니다.
+                </p>
+            </section>
+
+            <h2 className="mt-10 mb-4 text-xl font-bold">숙제 시작 순서</h2>
+            <div className="space-y-3">
+                {firstSteps.map((step) => (
+                    <article key={step.number} className="flex gap-3 rounded-xl border border-default-200 bg-content1 p-4 dark:border-white/10">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                            {step.number}
+                        </span>
+                        <div>
+                            <h3 className="text-lg font-bold">{step.title}</h3>
+                            <p className="mt-1 text-base leading-7 text-default-600 dark:text-default-400">{step.description}</p>
+                        </div>
+                    </article>
+                ))}
             </div>
-            <h1 className="font-bold mt-10 mb-2">남은 숙제 확인하기</h1>
-            <img src="/about/checklist3.webp" alt="로츠고 남은 숙제 확인" className="w-full h-auto rounded-xl mt-2 mb-2"/>
-            <p>서버 선택 우측에 위치한 "남은 숙제 현황 보기"를 누르면 현재 체크하지 않은 주간 콘텐츠를 표시합니다.</p>
-            <p>항목의 좌측의 색은 골드 지정된 레이드를 뜻합니다. 노란색은 골드 지정 레이드이며, 회색은 골드 지정이 아닌 레이드를 뜻합니다.</p>
-            <p>콘텐츠 선택으로 특정 콘텐츠를 선택하면 해당 레이드의 체크하지 않은 항목만 표시됩니다.</p>
-            <h1 className="font-bold mt-10 mb-2">계정 관리하기</h1>
-            <div className="w-full grid sm:grid-cols-[1fr_2fr] gap-2 mb-2">
-                <div className="w-full flex flex-col gap-2">
-                    <img src="/about/checklist11.webp" alt="로츠고 계정 버튼 위치" className="w-full h-auto rounded-xl mt-2 mb-2"/>
-                    <img src="/about/checklist12.webp" alt="로츠고 계정 관리" className="w-full h-auto rounded-xl mt-2 mb-2"/>
-                </div>
-                <div className="w-full">
-                    <p>로스트아크를 플레이 할 경우 다계정을 이용하게 되면 숙제로 등록된 캐릭터 수가 많아졌을 경우 캐릭터마다 계정을 지정하여 관리하실 수 있습니다.</p>
-                    <p>캐릭터 설정 버튼을 눌러 "계정 선택"을 통해 캐릭터의 계정을 지정하실 수 있습니다.</p>
-                    <p>
-                        2번째 이미지를 보시면 기존에 등록되어 있던 계정을 선택하거나 새로운 계정을 등록할려면 하단의 입력란에 새로운 계정명을 입력하신 후 "계정 추가"를 통해 
-                        계정을 추가하고 추가된 계정을 선택하여 "계정 선택"을 통해 계정을 지정하실 수 있습니다.
+
+            <h2 className="mt-10 mb-4 text-xl font-bold">캐릭터 추가하기</h2>
+            <ol className="list-decimal space-y-2 pl-5 text-base">
+                <li>숙제 페이지 상단의 <strong>캐릭터 추가</strong> 버튼을 누릅니다.</li>
+                <li>추가하려는 캐릭터 이름 또는 같은 원정대의 대표 캐릭터 이름을 입력하고 조회합니다.</li>
+                <li>조회된 원정대에서 추가할 캐릭터를 선택합니다.</li>
+                <li>주간 골드를 받을 캐릭터라면 <strong>골드 지정</strong>을 선택합니다.</li>
+                <li>추가를 완료하면 캐릭터 정보와 기본 주간 콘텐츠가 숙제 목록에 표시됩니다.</li>
+            </ol>
+            <p className="mt-3 text-default-600 dark:text-default-400">
+                캐릭터 정보가 보이지 않으면 이름을 다시 확인하고, 로스트아크 점검 시간이나 API 응답 지연 여부도 확인해 주세요.
+            </p>
+
+            <h2 className="mt-10 mb-4 text-xl font-bold">골드 지정과 콘텐츠 확인</h2>
+            <div className="space-y-3">
+                <section className="rounded-xl border border-default-200 bg-content1 p-4 dark:border-white/10">
+                    <h3 className="text-lg font-bold">골드 지정</h3>
+                    <p className="mt-1">
+                        골드 지정 캐릭터와 콘텐츠를 기준으로 주간 골드 현황이 계산됩니다. 실제로 골드를 받을 캐릭터가 바뀌었다면 캐릭터 설정에서 지정 상태를 함께 변경하세요.
                     </p>
-                    <p>이후 계정마다 숙제를 간략하게 확인하고 싶으시다면 상단의 "검색 필터"를 통해 계정 별로 검색하실 수 있습니다.</p>
-                </div>
+                </section>
+                <section className="rounded-xl border border-default-200 bg-content1 p-4 dark:border-white/10">
+                    <h3 className="text-lg font-bold">주간 콘텐츠</h3>
+                    <p className="mt-1">
+                        캐릭터 하단의 주간 콘텐츠 영역에서 레이드와 관문별 진행 상태를 확인합니다. 기본으로 등록된 콘텐츠가 실제 플레이 목록과 다르면 추가·삭제 또는 골드 지정 상태를 수정할 수 있습니다.
+                    </p>
+                </section>
+                <section className="rounded-xl border border-default-200 bg-content1 p-4 dark:border-white/10">
+                    <h3 className="text-lg font-bold">일일·기타 콘텐츠</h3>
+                    <p className="mt-1">
+                        일일 콘텐츠와 기타 탭에서는 레이드 외에 매일 해야 하는 일이나 개인적으로 관리할 항목을 기록할 수 있습니다. 필요한 항목은 직접 추가해 나만의 체크리스트로 사용할 수 있습니다.
+                    </p>
+                </section>
             </div>
-            <h1 className="font-bold mt-10 mb-2">휴식 게이지 관리하기</h1>
-            <img src="/about/checklist4.webp" alt="로츠고 휴식 게이지 관리" className="w-full sm:w-1/2 h-auto rounded-xl mt-2 mb-2"/>
-            <p>휴식게이지를 관리하기 위해서 해당 캐릭터의 일일콘텐츠 및에 있는 "추가" 버튼을 누르면 휴식 게이지를 관리할 수 있습니다.</p>
-            <p>쿠르잔 전선, 가디언 토벌에서 휴식 게이지를 조절하여 휴식 게이지를 수정할 수 있습니다.</p>
-            <h1 className="font-bold mt-10 mb-2">콘텐츠 관리하기</h1>
-            <div className="w-full grid sm:grid-cols-2 gap-2 mb-2">
-                <img src="/about/checklist5.webp" alt="로츠고 주간 콘텐츠 관리" className="w-full h-auto rounded-xl mt-2 mb-2"/>
-                <img src="/about/checklist6.webp" alt="로츠고 기타 콘텐츠 관리" className="w-full h-auto rounded-xl mt-2 mb-2"/>
-            </div>
-            <p>주간 콘텐츠를 추가하기 위해 주간 콘텐츠 영역의 하단에 위치한 "추가" 버튼을 통해 창을 여실 수 있습니다.</p>
-            <p>하단의 콘텐츠의 종류와 난이도를 선택하신 후 골드 지정을 선택하고 "추가"를 누르시면 해당 콘텐츠가 추가됩니다.</p>
-            <p className="mb-3">콘텐츠의 골드지정을 변경하거나 삭제하기 위해서 콘텐츠 추가 영역 위에서 골드지정을 변경하실 수 있으며, 삭제를 할 수 있습니다.</p>
-            <p>주간 콘텐츠, 일일 콘텐츠 외에도 본인이 로스트아크에서 별도로 해야할 일이 필요하다면 커스텀 숙제 항목을 추가할 수 있습니다.</p>
-            <p>기타 콘텐츠는 일일, 주간 모두 존재하며 탭에서 "기타"로 넘어가시면 커스텀 숙제를 추가하실 수 있습니다.</p>
-            <p className="mb-3">주간 콘텐츠와 비슷하게 관리가 가능합니다.</p>
-            <p>주간 콘텐츠에서 추가된 주간 숙제에서 "카멘 하드 4관문"처럼 2주마다 1번씩 돌 수 있는 격주의 레이드일 경우 1주차때 체크하셨다면 자동으로 2주차때는 체크가 불가능합니다.</p>
-            <p>단, 다시 1주차로 넘어올 경우에는 다시 활성화됩니다. 반대로 2주차때 체크해도 1주차로 돌아올 때는 비활성화되지 않습니다.</p>
-            <h1 className="font-bold mt-10 mb-2">버스비 설정</h1>
-            <img src="/about/checklist13.webp" alt="로츠고 버스비" className="w-full sm:w-1/2 h-auto rounded-xl mt-2 mb-2"/>
-            <p>버스비를 설정하기 위해서 체크박스에 있는 버스 모양 아이콘을 누르면 버스비를 설정할 수 있습니다. 버스비를 입력하면 자동으로 적용됩니다.</p>
-            <p>버스비는 해당 콘텐츠의 모든 관문을 완료해야만 적용됩니다. 골드지정 콘텐츠, 골드지정 캐릭터와 상관없이 골드가 적용됩니다.</p>
-            <p>버스를 해제하기 위해서 버스비를 0으로 설정하시면 해제됩니다. 적용되면 초록색, 해제되면 회색으로 표시됩니다.</p>
-            <h1 className="font-bold mt-10 mb-2">더보기 설정</h1>
-            <div className="w-full grid sm:grid-cols-2 gap-2 mb-2">
-                <img src="/about/checklist14.webp" alt="로츠고 더보기 전" className="w-full h-auto rounded-xl mt-2 mb-2"/>
-                <img src="/about/checklist15.webp" alt="로츠고 더보기 이후" className="w-full h-auto rounded-xl mt-2 mb-2"/>
-            </div>
-            <p>더보기를 체크하기 위해서 캐릭터 하단의 "더보기 관리 모드"를 체크하면 더보기를 체크하실 수 있습니다.</p>
-            <p>더보기가 체크된 관문은 관문 밑에 노란색 글씨의 "더보기" 문구가 표시됩니다.</p>
-            <p>더보기는 클리어 완료된 관문만 적용이 가능하며 클리어 취소할 경우 더보기도 같이 취소됩니다.</p>
-            <p>더보기를 이용하지 않고 "더보기 관리 모드" 스위치가 보이지 않길 원하는 경우, 계정 설정에서 "더보기 관리 모드"를 숨길 수 있습니다.</p>
-            <h1 className="font-bold mt-10 mb-2">큐브 관리하기</h1>
-            <div className="w-full grid sm:grid-cols-2 gap-2 mb-2">
-                <img src="/about/checklist7.webp" alt="로츠고 큐브 추가 및 감소" className="w-full h-auto rounded-xl mt-2 mb-2"/>
-                <img src="/about/checklist8.webp" alt="로츠고 큐브 보상 보기" className="w-full h-auto rounded-xl mt-2 mb-2"/>
-            </div>
-            <p>
-                캐릭터 하단의 큐브 영역을 클릭하면 각 캐릭터의 레벨에 따라 큐브들의 목록이 표시됩니다.
-                (큐브 항목은 캐릭터 레벨에 따라 표시되므로 실제 레벨과 등록된 캐릭터의 레벨이 다를 경우 상단에 고정된 요소의 "캐릭터 갱신하기" 버튼을 통해 캐릭터 정보를 최신화하세요.)
+
+            <h2 className="mt-10 mb-4 text-xl font-bold">숙제 체크 방법</h2>
+            <ul className="list-disc space-y-2 pl-5 text-base">
+                <li>콘텐츠를 완료한 뒤 해당 콘텐츠의 체크 영역을 누르면 완료 상태가 저장됩니다.</li>
+                <li>레이드의 관문은 각각 진행 상태를 관리할 수 있어 일부 관문만 완료한 경우에도 남은 관문을 확인할 수 있습니다.</li>
+                <li>숙제 페이지 상단의 남은 숙제 현황에서 아직 완료하지 않은 콘텐츠만 모아볼 수 있습니다.</li>
+                <li>캐릭터가 많다면 검색 필터를 사용해 특정 계정이나 캐릭터의 숙제만 좁혀서 확인할 수 있습니다.</li>
+            </ul>
+
+            <section className="mt-8 rounded-2xl border border-warning-200 bg-warning-50/70 p-5 dark:border-warning-500/20 dark:bg-warning-500/10">
+                <h2 className="text-xl font-bold">사용할 때 주의할 점</h2>
+                <ul className="mt-3 list-disc space-y-2 pl-5 text-base">
+                    <li>캐릭터를 삭제하거나 골드 지정 상태를 변경하면 주간 골드 현황이 달라질 수 있으니 실제 플레이 계획을 확인한 뒤 수정하세요.</li>
+                    <li>캐릭터 정보가 갱신되면 레벨과 클래스 정보가 최신화됩니다. 체크리스트 자체를 바꾸는 작업과는 구분해서 사용하세요.</li>
+                    <li>콘텐츠를 완료한 뒤 바로 체크하는 습관을 들이면 다른 캐릭터의 숙제와 혼동하는 일을 줄일 수 있습니다.</li>
+                    <li>일일·주간 초기화 이후에는 새로운 숙제 상태로 갱신되므로, 이전 주의 체크 상태와 비교할 때 초기화 시점을 확인하세요.</li>
+                </ul>
+            </section>
+
+            <p className="mt-8">
+                기본 설정을 마친 뒤에는 숙제 페이지를 오늘의 플레이 목록처럼 사용하면 됩니다.
+                숙제의 세부 콘텐츠를 추가하거나 자동 체크, 골드, 큐브 같은 기능을 더 알아보려면 기능 가이드의 하위 메뉴를 이어서 확인해 보세요.
             </p>
-            <p>큐브의 개수는 추가할 항목의 "증가", "감소"로 개수를 조절하실 수 있습니다.</p>
-            <p>
-                "보상" 탭에서는 가지고 있는 큐브 티켓의 모든 보상을 합친 보석의 결과가 표시됩니다.
-                단, 황금방처럼 추가로 얻는 보석은 포함하지 않습니다.
-            </p>
-            <img src="/about/checklist9.webp" alt="로츠고 큐브 총 개수" className="w-full h-auto rounded-xl mt-2 mb-2"/>
-            <img src="/about/checklist10.webp" alt="로츠고 큐브 총 보상" className="w-full h-auto rounded-xl mt-2 mb-2"/>
-            <p>큐브 전체 현황은 서버 선택의 우측에 "남은 숙제 현황 보기" 우측의 "큐브 현황 보기"를 누르시면 해당 요소가 표시됩니다.</p>
-            <p>"개수" 탭에서는 캐릭터 별로 큐브 개수를 확인할 수 있으며 전체 캐릭터의 큐브 총합도 확인을 하실 수 있습니다.</p>
-            <p>"보상" 탭에서는 보석의 티어별로 표시가 되며, 캐릭터 별로 큐브 보상을 확인할 수 있으며 전체 캐릭터의 큐브 총 보상을 확인할 수 있습니다.</p>
         </div>
-    )
+    );
 }
