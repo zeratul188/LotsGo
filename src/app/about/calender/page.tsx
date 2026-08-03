@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function Calender() {
     return (
-        <div className="w-full [&_p]:text-lg [&_li]:text-lg [&_h3]:text-xl [&_h1]:text-3xl">
+        <div className="w-full [&_p]:text-base [&_li]:text-base [&_h3]:text-lg [&_h1]:text-2xl">
             <h1 className="font-bold mb-2">일정</h1>
             <p>지인 또는 길드원들의 레이드 일정 또는 기타 일정을 기록하고 일정을 관리할 수 있는 기능입니다.</p>
             <img src="/about/calendar1.webp" alt="로츠고 이번주 일정" className="w-full h-auto rounded-xl mt-2 mb-2"/>

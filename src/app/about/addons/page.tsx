@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function Addons() {
     return (
-        <div className="w-full [&_p]:text-lg [&_li]:text-lg [&_h3]:text-xl [&_h1]:text-3xl">
+        <div className="w-full [&_p]:text-base [&_li]:text-base [&_h3]:text-lg [&_h1]:text-2xl">
             <h1 className="font-bold mb-2">도구</h1>
             <p>로스트아크에서 경매 계산기, 유물 각인서 시세 등과 같은 유용하게 이용할 수 있는 도구들을 제공해드립니다.</p>
             <h1 className="font-bold mt-10 mb-2">경매 계산기</h1>

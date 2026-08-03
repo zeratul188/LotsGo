@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function Expedition() {
     return (
-        <div className="w-full [&_p]:text-lg [&_li]:text-lg [&_h3]:text-xl [&_h1]:text-3xl">
+        <div className="w-full [&_p]:text-base [&_li]:text-base [&_h3]:text-lg [&_h1]:text-2xl">
             <h1 className="font-bold mb-2">내 원정대 관리</h1>
             <p>로츠고에 회원가입했을 떄 등록한 원정대 정보를 확인할 수 있습니다.</p>
             <img src="/about/signup3.webp" alt="로츠고 설정 위치" className="w-full h-auto rounded-xl mt-2 mb-2"/>

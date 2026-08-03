@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function Reset() {
     return (
-        <div className="w-full [&_p]:text-lg [&_li]:text-lg [&_h3]:text-xl [&_h1]:text-3xl">
+        <div className="w-full [&_p]:text-base [&_li]:text-base [&_h3]:text-lg [&_h1]:text-2xl">
             <h1 className="font-bold mb-2">비밀번호 재설정</h1>
             <p>로츠고 이용 중 비밀번호를 잊어버렸을 경우 비밀번호를 다시 설정하실 수 있습니다.</p>
             <div className="w-full grid sm:grid-cols-2 gap-2 mb-2">

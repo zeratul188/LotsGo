@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function Checklist() {
     return (
-        <div className="w-full [&_p]:text-lg [&_li]:text-lg [&_h3]:text-xl [&_h1]:text-3xl">
+        <div className="w-full [&_p]:text-base [&_li]:text-base [&_h3]:text-lg [&_h1]:text-2xl">
             <h1 className="font-bold mb-2">숙제</h1>
             <p>캐릭터들을 등록하여 일일 콘텐츠, 주간 콘텐츠 등을 기록하고 관리할 수 잇는 기능입니다.</p>
             <img src="/about/checklist1.webp" alt="로츠고 숙제 페이지" className="w-full h-auto rounded-xl mt-2 mb-2"/>
