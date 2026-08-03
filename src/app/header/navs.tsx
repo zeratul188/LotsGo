@@ -6,7 +6,7 @@ import {
     DropdownItem
 } from "@heroui/react";
 import { useTheme } from "next-themes";
-import { MoonIcon, SunIcon } from "@/Icons/themeicons";
+import { MoonIcon, SunIcon, SystemIcon } from "@/Icons/themeicons";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { useLogout, useOnActionProfile } from "./headerFeat";
@@ -414,7 +414,10 @@ export function ProfileContent() {
                         aria-label={`현재 ${themeLabel} 테마. ${nextTheme === 'system' ? '시스템' : nextTheme === 'dark' ? '다크' : '라이트'} 테마로 전환`}
                         onPress={toggleTheme}
                         className="group h-10 min-w-10 gap-1.5 border border-default-200/80 bg-default-50/80 px-2.5 text-default-600 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary-50/70 hover:text-primary hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:bg-primary-500/10 dark:hover:text-white sm:min-w-[86px]">
-                        <span className="flex h-5 w-5 items-center justify-center transition-transform duration-300 group-hover:rotate-12">
+                        <span className="flex h-5 w-5 items-center justify-center transition-transform duration-300 group-hover:rotate-12 sm:hidden">
+                            {selectedTheme === 'system' ? <SystemIcon /> : isDark ? <MoonIcon /> : <SunIcon />}
+                        </span>
+                        <span className="hidden h-5 w-5 items-center justify-center transition-transform duration-300 group-hover:rotate-12 sm:flex">
                             {isDark ? <MoonIcon /> : <SunIcon />}
                         </span>
                         <span className="hidden text-xs font-semibold sm:inline">{themeLabel}</span>
