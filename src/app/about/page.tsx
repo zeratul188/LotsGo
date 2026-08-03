@@ -2,62 +2,80 @@ import { Metadata } from "next";
 
 export const metadata: Metadata = {
     title: '사이트 소개 · 로츠고 가이드',
-    description: '로츠고 사이트에 대해서 알아보세요. 로츠고 사이트의 주요 기능과 내용을 확인하세요.',
+    description: '로스트아크의 반복되는 숙제를 간편하게 관리하는 로츠고를 소개합니다.',
 };
+
+const features = [
+    {
+        icon: '🗂️',
+        title: '캐릭터별 숙제 관리',
+        description: '원정대의 캐릭터별로 일일·주간 콘텐츠와 개인 숙제를 한곳에서 확인하고 체크할 수 있습니다.',
+    },
+    {
+        icon: '🔄',
+        title: '자동 초기화와 진행 현황',
+        description: '초기화 일정에 맞춰 숙제가 갱신되며, 남은 콘텐츠와 휴식 게이지를 빠르게 확인할 수 있습니다.',
+    },
+    {
+        icon: '📅',
+        title: '일정 관리',
+        description: '고정 파티, 지인, 길드원과 함께할 레이드 약속을 기록하고 공유할 수 있습니다.',
+    },
+    {
+        icon: '🔎',
+        title: '전투정보실',
+        description: '캐릭터의 장비와 전투 관련 정보를 조회하고 여러 캐릭터를 비교할 수 있습니다.',
+    },
+    {
+        icon: '🧮',
+        title: '플레이 보조 도구',
+        description: '경매 계산기, 유물 각인서 시세, 버스 계산기 등 플레이에 필요한 도구를 제공합니다.',
+    },
+    {
+        icon: '👥',
+        title: '파티 관리',
+        description: '파티를 모집하거나 참여하고, 파티원과 숙제 및 일정을 함께 관리할 수 있습니다.',
+    },
+];
 
 export default function About() {
     return (
-        <div className="w-full [&_p]:text-lg [&_li]:text-lg [&_h3]:text-xl [&_h1]:text-3xl">
-            <h1 className="font-bold mb-2">로츠고(Lot's Go)</h1>
+        <div className="w-full [&_p]:text-base [&_h3]:text-lg [&_h1]:text-2xl">
+            <h1 className="font-bold mb-3">로츠고(Lot&apos;s Go)</h1>
             <p>
-                로츠고 사이트는 로스트아크(Lostark) 유저들의 반복되는 일일, 주간 숙제를 관리하고 개인, 길드 일정을 관리하는데 있어
-                보다 효율적으로 돕기 위해서 개발된 웹사이트입니다.
+                로츠고는 로스트아크를 즐기는 모험가를 위한 숙제 관리 서비스입니다.
+                캐릭터가 늘어날수록 함께 늘어나는 일일·주간 콘텐츠를 잊지 않고 관리할 수 있도록 도와줍니다.
             </p>
             <p>
-                로스트아크에서 모코코 챌린지 익스프레스 등의 이벤트를 통하여 원정대에 캐릭터가 늘어남에 따라 일일, 주간 숙제량이 증가하고 있습니다.
-                숙제량이 많아질수록 "내가 이 캐릭터로 이 레이드를 돌았나?", "내 지인이 어떤 레이드를 같이 가자고 하는데 내가 그 레이드가 남아있나?"
-                같은 생각을 가진적이 있을겁니다.  
+                어떤 캐릭터의 레이드가 남아 있는지, 오늘 해야 할 콘텐츠가 무엇인지 매번 기억하거나 따로 기록하지 않아도 됩니다.
+                로츠고에 원정대와 캐릭터를 등록하면 필요한 숙제를 한눈에 확인하고, 완료한 콘텐츠를 간단하게 체크할 수 있습니다.
             </p>
-            <p>
-                위와 같은 고민을 해결하고자 로츠고는 개인 일일, 주간 숙제를 관리하는 기능을 제공하여, 매번 엑셀이나 수기로 정리하던 번거로운 작업을 하지 않고,
-                효율적으로 숙제를 관리하실 수 있습니다. 그리고 데이터를 
-                DB에 저장함으로써 로그인만 하면 어디서든 내 숙제 데이터를 확인할 수 있습니다.
+
+            <section className="mt-8 rounded-2xl border border-primary-200 bg-primary-50/70 p-5 dark:border-primary-500/20 dark:bg-primary-500/10">
+                <h2 className="text-xl font-bold">로츠고의 가장 중요한 역할</h2>
+                <p className="mt-2">
+                    로츠고는 숙제를 대신 해주는 서비스가 아니라, 내가 해야 할 숙제를 놓치지 않도록 정리하고 기록해주는 서비스입니다.
+                    오늘의 숙제와 이번 주의 숙제를 구분하고, 캐릭터별 진행 상황을 모아 보여주어 게임을 시작하기 전에 필요한 내용을 빠르게 파악할 수 있습니다.
+                </p>
+            </section>
+
+            <h2 className="mt-10 mb-4 text-xl font-bold">주요 기능</h2>
+            <div className="grid gap-3 sm:grid-cols-2">
+                {features.map((feature) => (
+                    <article key={feature.title} className="rounded-xl border border-default-200 bg-content1 p-4 dark:border-white/10">
+                        <h3 className="font-bold">
+                            <span className="mr-2" aria-hidden="true">{feature.icon}</span>
+                            {feature.title}
+                        </h3>
+                        <p className="mt-2 text-base leading-7 text-default-600 dark:text-default-400">{feature.description}</p>
+                    </article>
+                ))}
+            </div>
+
+            <p className="mt-8">
+                로츠고는 숙제 관리에서 시작해 일정, 전투정보, 파티, 플레이 보조 도구까지 로스트아크를 즐기는 데 필요한 기능을 한곳에 모으고 있습니다.
+                먼저 숙제 관리 기능으로 나만의 원정대를 정리하고, 필요한 기능을 가이드 메뉴에서 차례로 확인해 보세요.
             </p>
-            <p>
-                숙제와 추가로 지인들이랑, 고정팟 인원들 또는 길드원들과 레이드의 약속을 잡았을 때 로츠고의 일정 기능을 통하여 내가 약속한 레이드 일정을 기록할 수 있습니다.
-                그리고 초기화면에 일정을 표시함으로써 약속을 잊지 않도록 도와줍니다.
-            </p>
-            <p>
-                단순히 숙제, 일정 관리 기능만 제공하는 것이 아닌 로스트아크를 플레이하면서 모험섬, 이벤트, 공지사항 등 플레이에 유용한 정보도 제공하며, 
-                경매계산기, 유물 각인서 시세 확인, 전투정보실 등의 기능으로 로스트아크 플레이에 도움이 될 수 있는 기능을 제공합니다.
-            </p>
-            <h1 className="font-bold mt-10 mb-2">주요 기능</h1>
-            <h3 className="font-bold">🗂️ 캐릭터별 콘텐츠 관리</h3>
-            <ul className="list-disc pl-4">
-                <li>일일, 주간 콘텐츠를 관리하며 콘텐츠 외 본인이 필요한 개인적인 숙제도 별도로 기록 가능합니다.</li>
-                <li>캐릭터 별로 획득 가능한 골드량을 확인할 수 있으며, 총 캐릭터의 획득 가능한 골드량을 확인하실 수 있습니다.</li>
-                <li>부수입을 기록함으로써 콘텐츠의 골드량와 별개로 획득한 골드량도 기록이 가능합니다.</li>
-                <li>큐브를 기록함으로써 캐릭터마다 큐브를 몇 장을 가지고 있는지 확인이 가능하며 총 보석의 보상량도 자동으로 계산해드립니다.</li>
-            </ul>
-            <img src="/about/intro1.webp" alt="로츠고 숙제 화면 예시" className="w-full h-auto rounded-xl mt-2"/>
-            <h3 className="font-bold mt-4">🌀 자동 초기화 시스템</h3>
-            <ul className="list-disc pl-4">
-                <li>일일 콘텐츠는 매일 오전 6시, 주간 콘텐츠는 매주 수요일 6시에 자동으로 초기화됩니다.</li>
-                <li>자동 초기화 기능으로 인해 별도로 체크를 해제하거나 리셋할 필요없이 알아서 초기화가 됩니다.</li>
-                <li>숙제의 초기화 외에도 유물 각인서 시세도 자동으로 업데이트하거나 가격이 기록됩니다.</li>
-            </ul>
-            <h3 className="font-bold mt-2">👥 일정 관리 및 길드 일정 공유</h3>
-            <ul className="list-disc pl-4">
-                <li>지인들과 약속된 레이드의 일정을 기록할 수 있습니다.</li>
-                <li>길드 일정으로 설정하면 로그인한 계정의 대표 캐릭터가 가입된 길드끼리 길드 일정이 공유됩니다.</li>
-                <li>일정 내 메모 기능으로 약속 일정에 대한 자세한 내용을 입력하실 수 있습니다.</li>
-            </ul>
-            <h3 className="font-bold mt-2">🔍 전투정보실 검색</h3>
-            <ul className="list-disc pl-4">
-                <li>닉네임을 입력하면 장비, 전투력, 각인, 보석, 스킬, 내실 포인트, 원정대 등 캐릭터의 정보를 확인할 수 있습니다.</li>
-                <li>초월, 엘릭서, 악세 연마 효과, 팔찌 효과 등 중요한 요소는 간단하게 표현하여 쉽게 표현할 수 있습니다.</li>
-            </ul>
-            <img src="/about/intro2.webp" alt="로츠고 전투정보실 예시" className="w-full sm:w-1/2 h-auto rounded-xl mt-2"/>
         </div>
-    )
+    );
 }
