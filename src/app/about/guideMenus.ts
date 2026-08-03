@@ -101,9 +101,6 @@ export const guideCategories: GuideCategory[] = [
         icon: 'settings',
         items: [
             { label: '원정대·대표 캐릭터', href: '/about/expedition' },
-            { label: '기능 설정', href: '/about/settings/features' },
-            { label: 'API 키 관리', href: '/about/settings/api-key' },
-            { label: '로그인 기록·전체 로그아웃', href: '/about/settings/security' },
             { label: '비밀번호 변경', href: '/about/settings/password' },
             { label: '비밀번호 재설정', href: '/about/reset' },
             { label: '회원탈퇴', href: '/about/settings/delete' },
