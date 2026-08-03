@@ -33,3 +33,21 @@ export const MoonIcon = () => {
       </svg>
     );
   };
+
+  export const SystemIcon = () => {
+    return (
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        height="1em"
+        role="presentation"
+        viewBox="0 0 24 24"
+        width="1em"
+      >
+        <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8">
+          <rect x="3" y="4" width="18" height="13" rx="2" />
+          <path d="M8 21h8M12 17v4M7 21h10" />
+        </g>
+      </svg>
+    );
+  };

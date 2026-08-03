@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function EditMember() {
     return (
-        <div className="w-full [&_p]:text-lg [&_li]:text-lg [&_h3]:text-xl [&_h1]:text-3xl">
+        <div className="w-full [&_p]:text-base [&_li]:text-base [&_h3]:text-lg [&_h1]:text-2xl">
             <h1 className="font-bold mb-2">정보 변경 및 탈퇴</h1>
             <p>비밀번호를 변경하거나 로스트아크를 접거나 로츠고를 이용하지 않게 될 경우 회원을 탈퇴할 수 있습니다.</p>
             <h1 className="font-bold mt-10 mb-2">비밀번호 변경하기</h1>
@@ -19,4 +19,4 @@ export default function EditMember() {
             <p>한번 탈퇴한 계정은 다시 복구가 불가능합니다. 그리고 탈퇴한 이메일과 아이디로 다시 계정을 생성이 가능합니다.</p>
         </div>
     )
-} 
+}
