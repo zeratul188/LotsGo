@@ -10,7 +10,7 @@ function Providers({children, ...props}: { children: React.ReactNode }) {
   const isMobile = useMobileQuery();
 
   return (
-    <NextThemesProvider attribute='class' defaultTheme='system' {...props}>
+    <NextThemesProvider attribute='class' defaultTheme='system' enableSystem storageKey='theme' {...props}>
       <HelmetProvider>
         <HeroUIProvider>
           <ToastProvider placement={isMobile ? 'top-center' : 'bottom-right'}/>

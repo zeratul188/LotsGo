@@ -6,25 +6,27 @@ import { Button, Divider, Link, Popover, PopoverContent, PopoverTrigger } from "
 export default function Footer() {
     const isMobile = useMobileQuery();
     return (
-        <div className="w-full min-h-[160px] bg-[#eeeeee] dark:bg-[#1d1d1d]">
-            <div className="w-full max-w-[1280px] p-5 flex gap-5 flex-col sm:flex-row m-auto">
-                <div className="grow h-[max-content] sm:h-[120px] flex flex-col">
+        <footer className="w-full border-t border-gray-200/80 bg-gradient-to-b from-gray-50 to-gray-100/90 dark:border-white/10 dark:from-[#181818] dark:to-[#111111]">
+            <div className="m-auto flex w-full max-w-[1280px] flex-col gap-6 px-5 py-7 sm:flex-row sm:items-stretch sm:gap-7 sm:px-6 sm:py-8">
+                <div className="flex min-w-0 grow flex-col justify-between">
                     <LogoComponent/>
-                    <div className="grow"/>
                     <SiteInformation/>
                 </div>
-                <div>
-                    <Divider orientation={isMobile ? 'horizontal' : 'vertical'} className="w-full sm:w-[1px]"/>
+                <div className="flex shrink-0">
+                    <Divider
+                        orientation={isMobile ? 'horizontal' : 'vertical'}
+                        className="w-full bg-gray-200/80 dark:bg-white/10 sm:h-auto sm:w-px"/>
                 </div>
-                <div className="w-full sm:w-[260px]">
+                <div className="w-full rounded-2xl border border-gray-200/80 bg-white/80 p-3 shadow-sm backdrop-blur-sm dark:border-white/10 dark:bg-white/[0.035] sm:w-[280px]">
                     <Button
                         fullWidth
                         showAnchorIcon
                         as={Link}
-                        radius="sm"
+                        radius="lg"
                         color="primary"
+                        className="h-11 font-semibold shadow-sm"
                         startContent={
-                            <img src="/discord.png" alt="discord-icon" className="w-5 h-5"/>
+                            <img src="/discord.png" alt="discord-icon" className="h-5 w-5"/>
                         }
                         onPress={() => {
                             window.open('https://discord.gg/FzP3zuyW4s', '_target');
@@ -34,26 +36,27 @@ export default function Footer() {
                     <Button
                         fullWidth
                         as={Link}
-                        radius="sm"
+                        radius="lg"
                         size="sm"
                         color="primary"
+                        variant="bordered"
                         href="/about"
-                        className="mt-2">
+                        className="mt-2.5 h-10 border-primary-200/80 bg-primary-50/40 font-semibold text-primary-700 dark:border-primary-500/25 dark:bg-primary-500/10 dark:text-primary-300">
                         Lot's Go 가이드
                     </Button>
                     <Popover>
                         <PopoverTrigger>
                             <Button
                                 fullWidth
-                                radius="sm"
+                                radius="lg"
                                 size="sm"
                                 variant="flat"
-                                className="mt-2">
+                                className="mt-2.5 h-10 border border-gray-200/80 bg-gray-100/80 font-semibold text-gray-600 dark:border-white/10 dark:bg-white/[0.06] dark:text-gray-300">
                                 후원하기
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent>
-                            <div className="w-[240px] p-2">
+                        <PopoverContent className="rounded-xl border border-gray-200/80 bg-white/95 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#171717]/95">
+                            <div className="w-[240px] p-2 text-sm leading-5">
                                 <p>투네이션으로 후원할 경우 아이디를 반드시 입력해주시고 보내주시기 바랍니다.</p>
                                 <p>후원 후 담당자가 확인하고 바로 적용해드립니다.</p>
                                 <Divider className="mt-2"/>
@@ -68,10 +71,10 @@ export default function Footer() {
                                 </ul>
                                 <Button
                                     fullWidth
-                                    radius="sm"
+                                    radius="lg"
                                     size="sm"
                                     color="primary"
-                                    className="mt-2"
+                                    className="mt-3 font-semibold"
                                     onPress={() => {
                                         window.open('https://toon.at/donate/lotsgo', '_target');
                                     }}>
@@ -82,6 +85,6 @@ export default function Footer() {
                     </Popover>
                 </div>
             </div>
-        </div>
+        </footer>
     )
 }

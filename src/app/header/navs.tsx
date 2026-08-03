@@ -392,16 +392,14 @@ function ProfileButton() {
 
 // 헤더의 프로필 관련 요소
 export function ProfileContent() {
-    const { resolvedTheme, setTheme } = useTheme();
+    const { theme, resolvedTheme, setTheme } = useTheme();
+    const selectedTheme = theme === 'light' || theme === 'dark' ? theme : 'system';
     const isDark = resolvedTheme === 'dark';
+    const themeLabel = selectedTheme === 'system' ? '시스템' : isDark ? '다크' : '라이트';
+    const nextTheme = selectedTheme === 'system' ? 'light' : selectedTheme === 'light' ? 'dark' : 'system';
 
     const toggleTheme = () => {
-        const nextTheme = isDark ? 'light' : 'dark';
-        const root = document.documentElement;
-
         setTheme(nextTheme);
-        localStorage.setItem('theme', nextTheme);
-        root.classList.toggle('dark', nextTheme === 'dark');
     };
     return (
         <>
@@ -409,17 +407,17 @@ export function ProfileContent() {
                 <ProfileButton/>
             </NavbarItem>
             <NavbarItem className="shrink-0">
-                <Tooltip showArrow content={isDark ? '라이트 모드로 전환' : '다크 모드로 전환'}>
+                <Tooltip showArrow content={`${themeLabel} 테마 · 다음: ${nextTheme === 'system' ? '시스템' : nextTheme === 'dark' ? '다크' : '라이트'}`}>
                     <Button
                         radius="full"
                         variant="flat"
-                        aria-label={isDark ? '라이트 모드로 전환' : '다크 모드로 전환'}
+                        aria-label={`현재 ${themeLabel} 테마. ${nextTheme === 'system' ? '시스템' : nextTheme === 'dark' ? '다크' : '라이트'} 테마로 전환`}
                         onPress={toggleTheme}
-                        className="group h-10 min-w-10 gap-1.5 border border-default-200/80 bg-default-50/80 px-2.5 text-default-600 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary-50/70 hover:text-primary hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] dark:text-default-300 dark:hover:bg-primary-500/10 sm:min-w-[86px]">
+                        className="group h-10 min-w-10 gap-1.5 border border-default-200/80 bg-default-50/80 px-2.5 text-default-600 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary-50/70 hover:text-primary hover:shadow-md dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:hover:bg-primary-500/10 dark:hover:text-white sm:min-w-[86px]">
                         <span className="flex h-5 w-5 items-center justify-center transition-transform duration-300 group-hover:rotate-12">
                             {isDark ? <MoonIcon /> : <SunIcon />}
                         </span>
-                        <span className="hidden text-xs font-semibold sm:inline">{isDark ? '다크' : '라이트'}</span>
+                        <span className="hidden text-xs font-semibold sm:inline">{themeLabel}</span>
                     </Button>
                 </Tooltip>
             </NavbarItem>
