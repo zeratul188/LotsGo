@@ -3841,7 +3841,7 @@ export function FilterComponent({
                                 color="primary"
                                 variant="bordered"
                                 startContent={<AddIcon size={14}/>}
-                                className="h-10 min-w-0 flex-1 whitespace-nowrap border-primary-200/90 bg-white px-3 text-xs font-semibold text-primary-700 shadow-sm transition-colors hover:border-primary-300 hover:bg-primary-50/70 dark:border-primary-800/80 dark:bg-[#171717] dark:text-primary-300 dark:hover:border-primary-700 dark:hover:bg-primary-950/30">
+                                className="h-10 min-w-0 flex-1 whitespace-nowrap border-primary-200/90 bg-white px-3 text-xs font-semibold text-primary-700 shadow-sm transition-colors hover:border-primary-300 hover:bg-primary-50/70 dark:border-white/10 dark:bg-[#171717] dark:text-primary-300 dark:hover:border-white/20 dark:hover:bg-white/[0.06] dark:hover:text-primary-200">
                                 추가 옵션
                             </Button>
                         </PopoverTrigger>
@@ -3902,7 +3902,7 @@ export function FilterComponent({
                         color="danger"
                         variant="bordered"
                         startContent={<span className="text-base leading-none">×</span>}
-                        className="h-10 min-w-0 flex-1 whitespace-nowrap border-danger-200/90 bg-white px-3 text-xs font-semibold text-danger-600 shadow-sm transition-colors hover:border-danger-300 hover:bg-danger-50/70 dark:border-danger-900/80 dark:bg-[#171717] dark:text-danger-300 dark:hover:border-danger-700 dark:hover:bg-danger-950/30"
+                        className="h-10 min-w-0 flex-1 whitespace-nowrap border-danger-200/90 bg-white px-3 text-xs font-semibold text-danger-600 shadow-sm transition-colors hover:border-danger-300 hover:bg-danger-50/70 dark:border-white/10 dark:bg-[#171717] dark:text-danger-300 dark:hover:border-white/20 dark:hover:bg-white/[0.06] dark:hover:text-danger-200"
                         onPress={() => {
                             setFilterAccount(new Set([]));
                             setFilterContent(new Set([]));
