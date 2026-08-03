@@ -125,6 +125,7 @@ import {
     useOnClickWeekCheck 
 } from "../lib/checklistFeat";
 import { SetStateFn, useMobileQuery } from "@/utiils/utils";
+import { useLoadingTask } from "../../components/loading/LoadingProgress";
 import { SettingIcon } from "../../icons/SettingIcon";
 import clsx from "clsx";
 import { AppDispatch } from "../../store/store";
@@ -143,6 +144,7 @@ import CheckIcon from "@/Icons/CheckIcon";
 import CharacterIcon from "@/Icons/CharacterIcon";
 import BusIcon from "@/Icons/BusIcon";
 import JobEmblemIcon from "@/Icons/JobEmblemIcon";
+import RaidIcon from "@/Icons/RaidIcon";
 import JobAvatar from "@/Icons/JobAvatar";
 import { EditIcon } from "@/Icons/EditIcon";
 import SwitchCharacterIcon from "@/Icons/SwitchCharacterIcon";
@@ -214,6 +216,7 @@ export function useChecklistForm(initialBosses: Boss[] = [], initialCubes: Cube[
     // 설정
     const [isHideDayContent, setHideDayContent] = useState(false);
     const [isHideBonusMode, setHideBonusMode] = useState(false);
+    const [isAutoDeleteUnselectedRaids, setAutoDeleteUnselectedRaids] = useState(false);
 
     // 필터 설정값
     const [isRemainHomework, setRemainHomework] = useState(false);
@@ -241,7 +244,8 @@ export function useChecklistForm(initialBosses: Boss[] = [], initialCubes: Cube[
         accounts, setAccounts,
         filterAccount, setFilterAccount,
         isHideCompleteContent, setHideCompleteContent,
-        isHideBonusMode, setHideBonusMode
+        isHideBonusMode, setHideBonusMode,
+        isAutoDeleteUnselectedRaids, setAutoDeleteUnselectedRaids
     }
 }
 
@@ -436,6 +440,8 @@ export function ChecklistStatue({
     const [inputAccount, setInputAccount] = useState('');
     const [selected, setSelected] = useState(accounts.length > 0 ? accounts[0] : '본계정');
     const onClickAddAccount = useClickAddAccount(inputAccount, setInputAccount, accounts, setAccounts);
+
+    useLoadingTask("캐릭터 정보를 갱신하고 있어요", isLoading);
 
     const filteredChecklist = checklist.filter((character) => (character.server === server || server === '전체') && filterChecklist(character, filterContent, bosses, checklist, isRemainHomework, isShowGoldCharacter, filterAccount));
 
@@ -901,7 +907,8 @@ export function ChecklistStatue({
 type SelectServerProps = {
     checklist: CheckCharacter[],
     server: string,
-    setServer: SetStateFn<string>
+    setServer: SetStateFn<string>,
+    compact?: boolean
 }
 function LegacySelectServer({ checklist, server, setServer }: SelectServerProps) {
     return (
@@ -925,14 +932,19 @@ function LegacySelectServer({ checklist, server, setServer }: SelectServerProps)
 }
 
 // 커스텀 라디오 요소
-export function SelectServer({ checklist, server, setServer }: SelectServerProps) {
+export function SelectServer({ checklist, server, setServer, compact = false }: SelectServerProps) {
     return (
         <Select
-            label="서버 선택"
+            aria-label="서버 선택"
+            label={compact ? undefined : "서버 선택"}
             placeholder="서버를 선택하세요"
             selectedKeys={new Set([server])}
             radius="md"
             variant="bordered"
+            size={compact ? "sm" : "md"}
+            startContent={compact ? (
+                <span className="shrink-0 border-r border-gray-200/80 pr-2 text-[10px] font-semibold text-gray-500 dark:border-white/10 dark:text-gray-400">서버</span>
+            ) : undefined}
             disallowEmptySelection
             onSelectionChange={(keys) => {
                 const selectedServer = Array.from(keys)[0];
@@ -941,6 +953,12 @@ export function SelectServer({ checklist, server, setServer }: SelectServerProps
                 }
             }}
             className="w-full"
+            classNames={compact ? {
+                trigger: "h-10 min-h-10 rounded-lg border-gray-200/80 bg-white px-3 shadow-sm transition-colors data-[hover=true]:border-gray-300 data-[hover=true]:bg-gray-50/80 dark:border-white/10 dark:bg-[#171717] dark:data-[hover=true]:border-white/20 dark:data-[hover=true]:bg-white/[0.06]",
+                value: "text-xs font-semibold text-gray-700 dark:text-gray-200",
+                selectorIcon: "text-gray-400 dark:text-gray-500",
+                popoverContent: "rounded-xl border border-gray-200/80 shadow-xl dark:border-white/10"
+            } : undefined}
         >
             {['전체', ...getServerList(checklist)].map((serverName) => (
                 <SelectItem key={serverName}>{serverName}</SelectItem>
@@ -987,7 +1005,9 @@ type ChecklistProps = {
     isHideBonusMode: boolean,
     autoChecklistNickname: string,
     isAutoChecklistSharing: boolean,
-    setAutoChecklistNickname: (nickname: string) => void
+    setAutoChecklistNickname: (nickname: string) => void,
+    isAutoRegisteringRaids: boolean,
+    onRaidAutoRegistration: (nickname?: string) => Promise<void>
 }
 export function ChecklistComponent({ 
     checklist, 
@@ -1009,7 +1029,9 @@ export function ChecklistComponent({
     isHideBonusMode,
     autoChecklistNickname,
     isAutoChecklistSharing,
-    setAutoChecklistNickname
+    setAutoChecklistNickname,
+    isAutoRegisteringRaids,
+    onRaidAutoRegistration
 }: ChecklistProps) {
     const [inputCubeControl, setInputCubeControl] = useState<{ [nickname: string]: number }>({});
     const [isBonusMode, setBonusMode] = useState<{ [nickname: string]: boolean }>({});
@@ -1075,7 +1097,9 @@ export function ChecklistComponent({
                                                         characterIndex={getIndexByNickname(checklist, character.nickname)}
                                                         dispatch={dispatch}
                                                         accounts={accounts}
-                                                        setAccounts={setAccounts}/>
+                                                        setAccounts={setAccounts}
+                                                        isAutoRegisteringRaids={isAutoRegisteringRaids}
+                                                        onRaidAutoRegistration={onRaidAutoRegistration}/>
                                                     <AutoChecklistCharacterButton
                                                         size={14}
                                                         nickname={character.nickname}
@@ -1092,7 +1116,9 @@ export function ChecklistComponent({
                                                 characterIndex={getIndexByNickname(checklist, character.nickname)}
                                                 dispatch={dispatch}
                                                 accounts={accounts}
-                                                setAccounts={setAccounts}/>
+                                                setAccounts={setAccounts}
+                                                isAutoRegisteringRaids={isAutoRegisteringRaids}
+                                                onRaidAutoRegistration={onRaidAutoRegistration}/>
                                         </div>
                                     </div>
                                     </div>
@@ -1253,19 +1279,26 @@ export function ChecklistComponent({
                                     </div>
                                     <Button 
                                         color="success"
-                                        variant="flat"
+                                        variant="light"
                                         fullWidth 
                                         size="sm" 
-                                        startContent={<AddIcon size={16}/>}
-                                        radius="md"
-                                        className="mt-3 font-medium"
+                                        radius="lg"
+                                        className="group mt-3 h-10 justify-start border border-success-200/80 bg-gradient-to-r from-success-50/90 to-emerald-50/60 px-2.5 font-semibold text-success-700 shadow-sm transition-all hover:border-success-300 hover:shadow-md dark:border-success-800/70 dark:from-success-950/40 dark:to-emerald-950/20 dark:text-success-300 dark:hover:border-success-700"
                                         onPress={() => {
                                             setModalData({
                                                 characterIndex: getIndexByNickname(checklist, character.nickname),
                                                 type: 'day'
                                             });
                                             onOpen();
-                                        }}>추가 및 휴식 게이지 관리</Button>
+                                        }}>
+                                        <span className="flex w-full items-center gap-2">
+                                            <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-success-100 text-success-700 transition-transform group-hover:scale-105 dark:bg-success-900/60 dark:text-success-300">
+                                                <AddIcon size={14}/>
+                                            </span>
+                                            <span className="min-w-0 grow truncate text-left">추가 및 휴식 게이지 관리</span>
+                                            <span className="shrink-0 text-[10px] font-medium text-success-600/70 dark:text-success-400/70">설정</span>
+                                        </span>
+                                    </Button>
                                 </div>
                                 <div className={clsx(
                                     "min-w-0 grow-2",
@@ -1628,19 +1661,26 @@ export function ChecklistComponent({
                                       </div>
                                      <Button
                                         color="secondary"
-                                        variant="flat"
+                                        variant="light"
                                         fullWidth 
                                         size="sm" 
-                                        startContent={<AddIcon size={16}/>}
-                                        radius="md"
-                                        className="mt-3 font-medium"
+                                        radius="lg"
+                                        className="group mt-3 h-10 justify-start border border-secondary-200/80 bg-gradient-to-r from-secondary-50/90 to-violet-50/60 px-2.5 font-semibold text-secondary-700 shadow-sm transition-all hover:border-secondary-300 hover:shadow-md dark:border-secondary-800/70 dark:from-secondary-950/40 dark:to-violet-950/20 dark:text-secondary-300 dark:hover:border-secondary-700"
                                         onPress={() => {
                                             setModalData({
                                                 characterIndex: getIndexByNickname(checklist, character.nickname),
                                                 type: 'week'
                                             });
                                             onOpen();
-                                        }}>주간 콘텐츠 관리</Button>
+                                        }}>
+                                        <span className="flex w-full items-center gap-2">
+                                            <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-secondary-100 text-secondary-700 transition-transform group-hover:scale-105 dark:bg-secondary-900/60 dark:text-secondary-300">
+                                                <AddIcon size={14}/>
+                                            </span>
+                                            <span className="min-w-0 grow truncate text-left">주간 콘텐츠 관리</span>
+                                            <span className="shrink-0 text-[10px] font-medium text-secondary-600/70 dark:text-secondary-400/70">편집</span>
+                                        </span>
+                                    </Button>
                                 </div>
                             </div>
                         </CardBody>
@@ -2007,9 +2047,21 @@ type SettingButtonProps = {
     dispatch: AppDispatch,
     accounts: string[],
     setAccounts: SetStateFn<string[]>,
-    compact?: boolean
+    compact?: boolean,
+    isAutoRegisteringRaids: boolean,
+    onRaidAutoRegistration: (nickname?: string) => Promise<void>
 }
-function SettingButton({ size, checklist, characterIndex, dispatch, accounts, setAccounts, compact = false }: SettingButtonProps) {
+function SettingButton({
+    size,
+    checklist,
+    characterIndex,
+    dispatch,
+    accounts,
+    setAccounts,
+    compact = false,
+    isAutoRegisteringRaids,
+    onRaidAutoRegistration
+}: SettingButtonProps) {
     const [isOpenAccount, setOpenAccount] = useState(false);
     const onOpenChangeAccount = (isOpen: boolean) => setOpenAccount(isOpen);
     return (
@@ -2046,6 +2098,13 @@ function SettingButton({ size, checklist, characterIndex, dispatch, accounts, se
                         onPress={async () => {
                             setOpenAccount(true);
                         }}>계정 선택</DropdownItem>
+                    <DropdownItem
+                        key="auto-register-raids"
+                        isDisabled={isAutoRegisteringRaids}
+                        startContent={<RaidIcon size={16}/>}
+                        onPress={async () => {
+                            await onRaidAutoRegistration(checklist[characterIndex].nickname);
+                        }}>레이드 자동 등록</DropdownItem>
                     <DropdownItem 
                         key="reset-cube"
                         startContent={
@@ -2638,7 +2697,22 @@ function WeekModalContent({ checklist, index, dispatch, bosses, onClose, onOrder
 
     return (
         <div className="w-full">
-            <Tabs fullWidth aria-label="week-modal" color="secondary" variant="underlined" selectedKey={selectedKey} onSelectionChange={handleTabChange} classNames={{tabList: "gap-5", panel: "px-0 pb-1 pt-5"}}>
+            <Tabs
+                fullWidth
+                aria-label="week-modal"
+                color="secondary"
+                variant="light"
+                radius="lg"
+                selectedKey={selectedKey}
+                onSelectionChange={handleTabChange}
+                classNames={{
+                    base: "w-full",
+                    tabList: "w-full gap-1 rounded-xl border border-gray-200/80 bg-gray-100/80 p-1 dark:border-white/10 dark:bg-white/[0.05]",
+                    cursor: "rounded-lg bg-white shadow-sm ring-1 ring-black/[0.04] dark:bg-white/10 dark:ring-white/10",
+                    tab: "h-9 px-2 text-xs font-semibold sm:text-sm",
+                    tabContent: "text-gray-500 transition-colors group-data-[selected=true]:text-secondary-700 dark:text-gray-400 dark:group-data-[selected=true]:text-secondary-300",
+                    panel: "px-0 pb-1 pt-3"
+                }}>
                 <Tab key="content" title="콘텐츠">
                     <WeekContentComponent
                         checklist={checklist}
@@ -3685,7 +3759,7 @@ export function FilterComponent({
 }: FilterComponentProps) {
 
     return (
-        <div className="mt-4 w-full rounded-xl border border-gray-200/80 bg-gray-50/60 p-3 dark:border-white/10 dark:bg-white/[0.025] sm:p-4">
+        <div className="w-full pt-3 sm:pt-4">
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h3 className="font-semibold">검색 필터</h3>
@@ -3711,13 +3785,23 @@ export function FilterComponent({
             </div>
             <div className="grid w-full gap-3 sm:grid-cols-2 md960:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] md960:items-end">
                 <Select
-                    label="계정 검색"
+                    aria-label="계정 검색"
                     placeholder="계정을 선택하세요."
                     selectedKeys={filterAccount}
                     radius="md"
                     variant="bordered"
+                    size="sm"
+                    startContent={(
+                        <span className="shrink-0 border-r border-gray-200/80 pr-2 text-[10px] font-semibold text-gray-500 dark:border-white/10 dark:text-gray-400">계정</span>
+                    )}
                     onSelectionChange={setFilterAccount}
-                    className="w-full">
+                    className="w-full"
+                    classNames={{
+                        trigger: "h-10 min-h-10 rounded-lg border-gray-200/80 bg-white px-3 shadow-sm transition-colors data-[hover=true]:border-gray-300 data-[hover=true]:bg-gray-50/80 dark:border-white/10 dark:bg-[#171717] dark:data-[hover=true]:border-white/20 dark:data-[hover=true]:bg-white/[0.06]",
+                        value: "text-xs font-semibold text-gray-700 dark:text-gray-200",
+                        selectorIcon: "text-gray-400 dark:text-gray-500",
+                        popoverContent: "rounded-xl border border-gray-200/80 shadow-xl dark:border-white/10"
+                    }}>
                     {getAccounts(checklist).map((account, index) => (
                         <SelectItem key={index}>{account}</SelectItem>
                     ))}
@@ -3725,15 +3809,26 @@ export function FilterComponent({
                 <SelectServer
                     checklist={checklist}
                     server={server}
-                    setServer={setServer}/>
+                    setServer={setServer}
+                    compact/>
                 <Select
-                    label="콘텐츠로 검색"
+                    aria-label="콘텐츠로 검색"
                     placeholder="콘텐츠를 선택하세요."
                     selectedKeys={filterContent}
                     radius="md"
                     variant="bordered"
+                    size="sm"
+                    startContent={(
+                        <span className="shrink-0 border-r border-gray-200/80 pr-2 text-[10px] font-semibold text-gray-500 dark:border-white/10 dark:text-gray-400">콘텐츠</span>
+                    )}
                     onSelectionChange={setFilterContent}
-                    className="w-full">
+                    className="w-full"
+                    classNames={{
+                        trigger: "h-10 min-h-10 rounded-lg border-gray-200/80 bg-white px-3 shadow-sm transition-colors data-[hover=true]:border-gray-300 data-[hover=true]:bg-gray-50/80 dark:border-white/10 dark:bg-[#171717] dark:data-[hover=true]:border-white/20 dark:data-[hover=true]:bg-white/[0.06]",
+                        value: "text-xs font-semibold text-gray-700 dark:text-gray-200",
+                        selectorIcon: "text-gray-400 dark:text-gray-500",
+                        popoverContent: "rounded-xl border border-gray-200/80 shadow-xl dark:border-white/10"
+                    }}>
                     {getBossesByHaveContent(checklist, bosses).map((boss, index) => (
                         <SelectItem key={index}>{boss}</SelectItem>
                     ))}
@@ -3742,10 +3837,11 @@ export function FilterComponent({
                     <Popover showArrow placement="bottom-end">
                         <PopoverTrigger>
                             <Button
-                                radius="md"
+                                radius="lg"
                                 color="primary"
-                                variant="flat"
-                                className="h-14 flex-1 whitespace-nowrap px-4 font-medium">
+                                variant="bordered"
+                                startContent={<AddIcon size={14}/>}
+                                className="h-10 min-w-0 flex-1 whitespace-nowrap border-primary-200/90 bg-white px-3 text-xs font-semibold text-primary-700 shadow-sm transition-colors hover:border-primary-300 hover:bg-primary-50/70 dark:border-white/10 dark:bg-[#171717] dark:text-primary-300 dark:hover:border-white/20 dark:hover:bg-white/[0.06] dark:hover:text-primary-200">
                                 추가 옵션
                             </Button>
                         </PopoverTrigger>
@@ -3802,10 +3898,11 @@ export function FilterComponent({
                         </PopoverContent>
                     </Popover>
                     <Button
-                        radius="md"
+                        radius="lg"
                         color="danger"
-                        variant="light"
-                        className="h-14 flex-1 whitespace-nowrap px-4 font-medium"
+                        variant="bordered"
+                        startContent={<span className="text-base leading-none">×</span>}
+                        className="h-10 min-w-0 flex-1 whitespace-nowrap border-danger-200/90 bg-white px-3 text-xs font-semibold text-danger-600 shadow-sm transition-colors hover:border-danger-300 hover:bg-danger-50/70 dark:border-white/10 dark:bg-[#171717] dark:text-danger-300 dark:hover:border-white/20 dark:hover:bg-white/[0.06] dark:hover:text-danger-200"
                         onPress={() => {
                             setFilterAccount(new Set([]));
                             setFilterContent(new Set([]));

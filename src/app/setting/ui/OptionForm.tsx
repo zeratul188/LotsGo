@@ -1,7 +1,13 @@
 import { Button, Card, CardBody, Chip, Switch } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { Settings } from "../../api/setting/route";
-import { handleHideBonusMode, handleHideDayContent, loadSettings, useAllLogout } from "../lib/optionFeat";
+import {
+    handleAutoDeleteUnselectedRaids,
+    handleHideBonusMode,
+    handleHideDayContent,
+    loadSettings,
+    useAllLogout
+} from "../lib/optionFeat";
 import { LoadingComponent } from "../../UtilsCompnents";
 
 export default function OptionComponent() {
@@ -43,6 +49,17 @@ export default function OptionComponent() {
                         <div className="flex items-center gap-4 px-4 py-4">
                             <div className="grow"><h3 className="text-sm font-semibold">더보기 관리 모드 숨기기</h3><p className="mt-1 text-xs text-default-500">더보기 관리 모드 전환 스위치를 숨깁니다.</p></div>
                             <Switch size="sm" aria-label="더보기 관리 모드 숨기기" isSelected={settings.isHideBonusMode} onValueChange={async () => await handleHideBonusMode(settings, setSettings)}/>
+                        </div>
+                        <div className="flex items-center gap-4 px-4 py-4">
+                            <div className="grow">
+                                <h3 className="text-sm font-semibold">자동 등록 제외 레이드 삭제</h3>
+                                <p className="mt-1 text-xs text-default-500">레이드 자동 등록 시 골드 지정 3회에서 밀려난 기존 레이드를 목록에서도 삭제합니다.</p>
+                            </div>
+                            <Switch
+                                size="sm"
+                                aria-label="자동 등록 제외 레이드 삭제"
+                                isSelected={settings.isAutoDeleteUnselectedRaids}
+                                onValueChange={async () => await handleAutoDeleteUnselectedRaids(settings, setSettings)}/>
                         </div>
                     </div>
                 </CardBody>

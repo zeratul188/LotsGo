@@ -18,21 +18,6 @@
         "daylist": [],
         "checklist": [
             {
-                "name": "카멘 익스트림",
-                "isGold": true,
-                "busGold": 0,
-                "items": [
-                    {
-                        "difficulty": "하드",
-                        "isCheck": false,
-                        "isDisable": false,
-                        "isBonus": false,
-                        "isBiweekly": false,
-                        "stage": 1
-                    }
-                ]
-            },
-            {
                 "name": "카제로스 레이드 - 3막 모르둠",
                 "isGold": true,
                 "busGold": 0,
@@ -114,21 +99,6 @@
         "daylist": [],
         "checklist": [
             {
-                "name": "카멘 익스트림",
-                "isGold": true,
-                "busGold": 0,
-                "items": [
-                    {
-                        "difficulty": "노말",
-                        "isCheck": false,
-                        "isDisable": false,
-                        "isBonus": false,
-                        "isBiweekly": false,
-                        "stage": 1
-                    }
-                ]
-            },
-            {
                 "name": "카제로스 레이드 - 3막 모르둠",
                 "isGold": true,
                 "busGold": 0,
@@ -209,21 +179,6 @@
         },
         "daylist": [],
         "checklist": [
-            {
-                "name": "카멘 익스트림",
-                "isGold": true,
-                "busGold": 0,
-                "items": [
-                    {
-                        "difficulty": "노말",
-                        "isCheck": false,
-                        "isDisable": false,
-                        "isBonus": false,
-                        "isBiweekly": false,
-                        "stage": 1
-                    }
-                ]
-            },
             {
                 "name": "카제로스 레이드 - 3막 모르둠",
                 "isGold": true,
