@@ -2,8 +2,8 @@
 import { useMobileQuery } from "@/utiils/utils"
 import { addToast, Tab, Tabs } from "@heroui/react";
 import { ExpeditionsComponent } from "./ui/ExpeditionForm";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { checkLogin } from "../checklist/lib/checklistFeat";
 import ChangePasswordComponent from "./ui/ChangePasswordForm";
 import DeleteComponent from "./ui/DeleteForm";
@@ -56,7 +56,16 @@ const tabs = [
 export default function SettingClient() {
     const isMobile = useMobileQuery();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
+    const [selectedTab, setSelectedTab] = useState('expeditions');
+
+    useEffect(() => {
+        const tab = searchParams.get('tab');
+        if (tab && tabs.some((item) => item.key === tab)) {
+            setSelectedTab(tab);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         if (!isCheckedToken) return;
@@ -88,6 +97,8 @@ export default function SettingClient() {
                 variant="light"
                 aria-label="settings tabs" 
                 placement={isMobile ? 'top' : 'start'}
+                selectedKey={selectedTab}
+                onSelectionChange={(key) => setSelectedTab(String(key))}
                 className="flex"
                 classNames={{
                     base: "w-full sm:w-auto sm:items-start",

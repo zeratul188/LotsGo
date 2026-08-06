@@ -1,5 +1,6 @@
 import { Button, Card, CardBody, Checkbox, Chip, Input, Link } from "@heroui/react";
 import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../store/store";
 import clsx from "clsx";
@@ -15,6 +16,9 @@ export default function APIComponent() {
     const [isLoadingButton, setLoadingButton] = useState(false);
     const userApiKey: string | null = useSelector((state: RootState) => state.login.user.apiKey);
     const dispatch = useDispatch<AppDispatch>();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const returnTo = searchParams.get('returnTo');
     return (
         <div className="w-full space-y-4">
             <div className="flex items-center gap-2"><div><h1 className="text-xl font-bold">로스트아크 API 키</h1><p className="mt-1 text-xs text-default-500">게임 데이터 조회와 일부 기능을 활성화하는 키를 관리합니다.</p></div><Chip size="sm" radius="full" variant="flat" color={userApiKey ? 'success' : 'default'}>{userApiKey ? '등록됨' : '미등록'}</Chip></div>
@@ -33,7 +37,7 @@ export default function APIComponent() {
                     <p className={clsx("rounded-xl bg-default-50 p-3 text-sm break-words dark:bg-white/[0.04]", isShowKey && userApiKey ? 'block' : 'hidden')}>
                         {userApiKey ? decrypt(userApiKey, secretKey) : '-'}
                     </p>
-                    <Button radius="lg" isLoading={isLoadingButton} isDisabled={apiKey.trim() === '' && !userApiKey} color={userApiKey ? 'danger' : 'primary'} className="w-full font-semibold sm:w-fit" onPress={async () => { if (userApiKey) { await handleRemoveKey(dispatch, setLoadingButton, setShowKey) } else { await handleInsertKey(apiKey, dispatch, setLoadingButton, setApiKey); } }}>
+                    <Button radius="lg" isLoading={isLoadingButton} isDisabled={apiKey.trim() === '' && !userApiKey} color={userApiKey ? 'danger' : 'primary'} className="w-full font-semibold sm:w-fit" onPress={async () => { if (userApiKey) { await handleRemoveKey(dispatch, setLoadingButton, setShowKey) } else { const inserted = await handleInsertKey(apiKey, dispatch, setLoadingButton, setApiKey); if (inserted && returnTo?.startsWith('/')) router.push(returnTo); } }}>
                         {userApiKey ? 'API 키 제거하기' : 'API 키 등록'}
                     </Button>
                 </CardBody>
