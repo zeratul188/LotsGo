@@ -55,3 +55,13 @@ export type LostarkEvent = {
     startDate: string,
     endDate: string
 }
+
+export type MajorUpdate = {
+    id: string,
+    url: string,
+    title: string,
+    sub: string,
+    color: string,
+    isBlack: boolean,
+    storagePath?: string
+}

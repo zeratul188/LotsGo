@@ -2,6 +2,7 @@ import { decrypt } from "@/utiils/crypto";
 import HomeClient from "./HomeClient";
 import { cookies } from 'next/headers';
 import { loadCalendar, loadEvents, loadNotices } from "./home/lib/calendarServer";
+import { loadMajorUpdates } from "./home/lib/majorUpdatesServer";
 
 const secretKey = process.env.NEXT_PUBLIC_SECRET_KEY ? process.env.NEXT_PUBLIC_SECRET_KEY : 'null';
 
@@ -13,10 +14,11 @@ export default async function Home() {
     apiKey = decrypt(cookieApiKey, secretKey);
   }
 
-  const [calendarData, notices, events] = await Promise.all([
+  const [calendarData, notices, events, majorUpdates] = await Promise.all([
       loadCalendar(apiKey),
       loadNotices(apiKey),
-      loadEvents(apiKey)
+      loadEvents(apiKey),
+      loadMajorUpdates()
   ]);
 
   return (
@@ -28,6 +30,7 @@ export default async function Home() {
       islandDatas={calendarData.islandDatas}
       isInspection={calendarData.isInspection}
       notices={notices}
-      events={events}/>
+      events={events}
+      majorUpdates={majorUpdates}/>
   )
 }

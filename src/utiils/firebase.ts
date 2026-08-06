@@ -13,7 +13,7 @@ const firebaseConfig = {
   authDomain: "whitetusk-7bfa1.firebaseapp.com",
   databaseURL: "https://whitetusk-7bfa1-default-rtdb.firebaseio.com",
   projectId: "whitetusk-7bfa1",
-  storageBucket: "whitetusk-7bfa1.firebasestorage.app",
+  storageBucket: "whitetusk-7bfa1-major-updates",
   messagingSenderId: "452160426051",
   appId: "1:452160426051:web:cfb4d2d1252ddfc89644f6",
   measurementId: "G-T2KFYHDHZY"
