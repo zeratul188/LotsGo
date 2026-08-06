@@ -11,6 +11,7 @@ import BadgeComponent from "./ui/BadgeForm";
 import { isAdministratorByToken } from "./lib/administratorFeat";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
+import MajorUpdatesForm from "./ui/MajorUpdatesForm";
 
 type TabMenu = {
     key: string,
@@ -27,6 +28,12 @@ export default function AdministratorClient() {
     const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
     
     const menus: Array<TabMenu> = [
+        {
+            key: 'major-updates',
+            title: '주요 업데이트 관리',
+            description: '홈 타이틀과 이미지',
+            component: <MajorUpdatesForm/>
+        },
         {
             key: 'checklist',
             title: '숙제 관리',

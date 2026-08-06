@@ -310,7 +310,7 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
     const arm = info.equipment.arm;
     const stone = info.equipment.stone;
     const orb = info.equipment.orb;
-    const averageUpgradeTargets = new Set(['무기', '투구', '어깨', '상의', '하의', '장갑']);
+    const averageUpgradeTargets = new Set(['무기', '투구', '어깨', '상의', '하의', '장갑', '완갑']);
     const averageUpgradeEquipments = info.equipment.equipments.filter((equip) => averageUpgradeTargets.has(equip.type));
     const upgradeValues = averageUpgradeEquipments
         .map((equip) => Number(equip.name.match(/^\+(\d+)/)?.[1] ?? NaN))
@@ -440,13 +440,15 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                                                             <p className={`grow ${getColorTextByGrade(equip.grade)}`}>{getParsedText(parsedEquipment.Element_001.value.leftStr0)}</p>
                                                             <p className="fadedtext grow text-right">Lv.{getParsedText(parsedEquipment.Element_001.value.leftStr2).replaceAll('아이템 레벨 ', '')}</p>
                                                         </div>
-                                                        <Progress
-                                                            value={equip.quality}
-                                                            maxValue={100}
-                                                            size="sm"
-                                                            color="primary"
-                                                            label={`${getParsedText(parsedEquipment.Element_001.value.leftStr1)} : ${equip.quality}`}
-                                                            className="w-full fadedtext"/>
+                                                        {equip.quality >= 0 ? (
+                                                            <Progress
+                                                                value={equip.quality}
+                                                                maxValue={100}
+                                                                size="sm"
+                                                                color="primary"
+                                                                label={`${getParsedText(parsedEquipment.Element_001.value.leftStr1)} : ${equip.quality}`}
+                                                                className="w-full fadedtext"/>
+                                                        ) : null}
                                                     </div>
                                                 </div>
                                                 <div className="w-full flex gap-2 fadedtext mt-2">

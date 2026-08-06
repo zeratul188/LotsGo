@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react"
-import data from '@/data/mains/data.json';
 import clsx from "clsx";
 import { motion, AnimatePresence } from "framer-motion";
+import type { MajorUpdate } from "../model/types";
 
-export default function UpdateComponent() {
+export default function UpdateComponent({ data }: { data: MajorUpdate[] }) {
     const [page, setPage] = useState(1);
     const update = data[page - 1];
+
+    if (data.length === 0 || !update) return null;
 
     useEffect(() => {
         const interval = setInterval(() => {

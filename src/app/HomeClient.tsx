@@ -7,7 +7,7 @@ import CalendarComponent, { ContentData } from "./home/ui/CalendarForm";
 import ChecklistComponent from "./home/ui/ChecklistForm";
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import type { Island, IslandData, LostarkEvent, Notice } from "./home/model/types";
+import type { Island, IslandData, LostarkEvent, MajorUpdate, Notice } from "./home/model/types";
 import dayjs from "dayjs";
 import Script from "next/script";
 import { useSelector } from "react-redux";
@@ -26,8 +26,9 @@ type HomeProps = {
   isInspection: boolean;
   notices: Notice[];
   events: LostarkEvent[];
+  majorUpdates: MajorUpdate[];
 };
-export default function HomeClient({ gate, boss, islands, islandTime, islandDatas, isInspection, notices, events }: HomeProps) {
+export default function HomeClient({ gate, boss, islands, islandTime, islandDatas, isInspection, notices, events, majorUpdates }: HomeProps) {
     const isMobile = useMobileQuery();
     const [isLoaded, setLoaded] = useState(false);
     const [isShowAd, setShowAd] = useState(false);
@@ -36,7 +37,7 @@ export default function HomeClient({ gate, boss, islands, islandTime, islandData
     return (
         <div className="w-full min-h-[calc(100vh-65px)]">
             <div className="p-5 w-full max-w-[1280px] mx-auto pb-20">
-            <UpdateComponent/>
+            <UpdateComponent data={majorUpdates}/>
             {isCheckedToken ? (
                 isLogined ? (
                     <>
