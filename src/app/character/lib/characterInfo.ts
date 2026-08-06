@@ -75,7 +75,7 @@ function getEquipment(file: CharacterFile): EquipInfo {
 
 // 장비 데이터 불러오기
 function getEquipmentData(data: any): Equipment[] {
-    const attackType = ['무기', '투구', '어깨', '상의', '하의', '장갑'];
+    const attackType = ['무기', '투구', '어깨', '상의', '하의', '장갑', '완갑'];
     const newEquipments: Equipment[] = [];
     for (const type of attackType) {
         const obj = getObjectByArmorType(data, type);
@@ -87,7 +87,7 @@ function getEquipmentData(data: any): Equipment[] {
             type: type,
             name: obj.Name,
             grade: obj.Grade,
-            quality: Number(parsedTooltip.Element_001.value.qualityValue),
+            quality: type === '완갑' ? -1 : Number(parsedTooltip.Element_001?.value?.qualityValue ?? -1),
             highUpgrade: findHighUpgradeInTooltip(obj.Tooltip),
             tooltip: obj.Tooltip
         }

@@ -7,10 +7,13 @@ if (!admin.apps.length) {
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL ?? process.env.NEXT_PUBLIC_FIREBASE_CLIENT_EMAIL,
         privateKey: (process.env.FIREBASE_PRIVATE_KEY ?? process.env.NEXT_PUBLIC_FIREBASE_PRIVATE_KEY)?.replace(/\\n/g, '\n'),
     }),
-    databaseURL: "https://whitetusk-7bfa1-default-rtdb.firebaseio.com"
+    databaseURL: "https://whitetusk-7bfa1-default-rtdb.firebaseio.com",
+    storageBucket: process.env.MAJOR_UPDATES_STORAGE_BUCKET
+        ?? "whitetusk-7bfa1-major-updates"
   });
 }
 
 export const adminDatabase = admin.database();
 export const adminDB = admin.firestore();
 export const adminAuth = admin.auth();
+export const adminStorage = admin.storage();
