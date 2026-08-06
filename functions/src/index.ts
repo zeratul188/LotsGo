@@ -372,5 +372,118 @@ export const removeCacheCalendarData = onSchedule({
   }
 });
 
+type GemPriceValue = {
+  price: number | null,
+  icon: string | null,
+  grade: string | null,
+  name: string | null
+}
+
+type GemAuctionItem = {
+  Name?: string,
+  Icon?: string,
+  Grade?: string,
+  AuctionInfo?: {
+    BuyPrice?: number
+  }
+}
+
+type GemAuctionResponse = {
+  Items?: GemAuctionItem[]
+}
+
+const GEM_LEVELS = [5, 6, 7, 8, 9, 10];
+const GEM_CATEGORY_CODE = 210000;
+
+function createEmptyGemPrice(): GemPriceValue {
+  return { price: null, icon: null, grade: null, name: null };
+}
+
+function selectLowerGemPrice(current: GemPriceValue, item: GemAuctionItem): GemPriceValue {
+  const price = Number(item.AuctionInfo?.BuyPrice);
+  if (!Number.isFinite(price) || price <= 0) return current;
+  if (current.price !== null && current.price <= price) return current;
+
+  return {
+    price,
+    icon: typeof item.Icon === 'string' ? item.Icon : null,
+    grade: typeof item.Grade === 'string' ? item.Grade : null,
+    name: typeof item.Name === 'string' ? item.Name : null
+  };
+}
+
+async function loadScheduledGemAuctionPrice(apiKey: string, level: number, kind: '겁화' | '작열'): Promise<GemPriceValue> {
+  const response = await axios.post<GemAuctionResponse>(
+    'https://developer-lostark.game.onstove.com/auctions/items',
+    {
+      Sort: 'BUY_PRICE',
+      CategoryCode: GEM_CATEGORY_CODE,
+      CharacterClass: null,
+      ItemTier: 4,
+      ItemGrade: null,
+      ItemLevel: null,
+      ItemName: `${level}레벨 ${kind}의 보석`,
+      PageNo: 0,
+      SortCondition: 'ASC'
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      timeout: 15000
+    }
+  );
+
+  let result = createEmptyGemPrice();
+
+  for (const item of response.data.Items ?? []) {
+    result = selectLowerGemPrice(result, item);
+  }
+
+  return result;
+}
+
+// 한국 시간 기준 00·03·06·09·12·15·18·21시에 공용 보석 시세 갱신
+export const updateGemPrices = onSchedule({
+  schedule: '0 */3 * * *',
+  timeZone: 'Asia/Seoul',
+  region: 'asia-northeast3',
+  timeoutSeconds: 120,
+  secrets: ['LOSTARK_API_KEY']
+}, async () => {
+  const apiKey = process.env.LOSTARK_API_KEY;
+  if (!apiKey) throw new Error('LOSTARK_API_KEY is undefined');
+
+  const entries = await Promise.all(
+    GEM_LEVELS.map(async (level) => {
+      const [damage, cooldown] = await Promise.all([
+        loadScheduledGemAuctionPrice(apiKey, level, '겁화'),
+        loadScheduledGemAuctionPrice(apiKey, level, '작열')
+      ]);
+      const prices = [damage.price, cooldown.price]
+        .filter((price): price is number => price !== null);
+      return [String(level), {
+        lowestPrice: prices.length > 0 ? Math.min(...prices) : null,
+        damage,
+        cooldown
+      }] as const;
+    })
+  );
+  const levels = Object.fromEntries(entries);
+
+  await database.ref('/gem-prices/current').set({
+    version: 1,
+    updatedAt: Date.now(),
+    levels
+  });
+
+  functions.logger.info('Gem price snapshot updated', {
+    levels: GEM_LEVELS.length,
+    schedule: 'Every 3 hours Asia/Seoul'
+  });
+});
+
 // firebase functions:secrets:set LOSTARK_API_KEY
 // firebase deploy --only functions:resetWeekChecklist

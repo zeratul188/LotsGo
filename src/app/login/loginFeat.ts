@@ -96,7 +96,8 @@ export async function login(
         setIdDuplicated(false);
         setPasswordNotMatch(false);
         addToast({ title: "로그인 성공", description: "로그인되었습니다.", color: "success" });
-        router.push("/");
+        const returnTo = new URLSearchParams(window.location.search).get('returnTo');
+        router.push(returnTo?.startsWith('/') ? returnTo : "/");
     } catch {
         setIdDuplicated(false);
         setPasswordNotMatch(true);

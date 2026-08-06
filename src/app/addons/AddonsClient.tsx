@@ -18,6 +18,12 @@ const tabs = [
         path: '/addons/relics'
     },
     {
+        key: 'gems',
+        label: '보석 시세',
+        description: '레벨별 겁화·작열 최저가 확인',
+        path: '/addons/gems'
+    },
+    {
         key: 'bus',
         label: '버스 계산기',
         description: '기사와 손님 정산 금액 계산',

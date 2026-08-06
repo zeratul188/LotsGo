@@ -13,7 +13,7 @@ export async function handleInsertKey(
     dispatch: AppDispatch, 
     setLoadingButton: SetStateFn<boolean>,
     setApiKey: SetStateFn<string>
-) {
+) : Promise<boolean> {
     setLoadingButton(true);
     const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
@@ -39,7 +39,9 @@ export async function handleInsertKey(
                 description: `데이터를 가져오는데 문제가 발생하였습니다.`,
                 color: "danger"
             });
-            return;
+            setApiKey('');
+            setLoadingButton(false);
+            return false;
         }
         dispatch(editApiKey(encryptApiKey));
         const localUser = sessionStorage.getItem('user');
@@ -64,6 +66,9 @@ export async function handleInsertKey(
             description: `로스트아크 API 키를 정상적으로 등록하였습니다.`,
             color: "success"
         });
+        setApiKey('');
+        setLoadingButton(false);
+        return true;
     } else {
         addToast({
             title: "키 오류",
@@ -73,6 +78,7 @@ export async function handleInsertKey(
     }
     setApiKey('');
     setLoadingButton(false);
+    return false;
 }
 
 // API 키 제거 이벤트
