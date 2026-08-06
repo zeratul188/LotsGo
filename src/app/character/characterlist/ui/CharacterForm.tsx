@@ -26,7 +26,10 @@ export function EquipmentComponent({ character }: { character: ExpeditionCharact
                             : "",
                         getEnhanceLevel(equipment.name) === "-" ? "fadedtext" : "font-bold"
                     )}>{getEnhanceLevel(equipment.name)}</p>
-                    <p className="whitespace-nowrap text-[9pt]">{equipment.quality} / {equipment.highUpgrade !== -1 ? equipment.highUpgrade : "-"}</p>
+                    <p className="whitespace-nowrap text-[9pt]">
+                        {equipment.quality >= 0 ? `${equipment.quality} / ` : ""}
+                        {equipment.highUpgrade !== -1 ? equipment.highUpgrade : "-"}
+                    </p>
                     <Chip 
                         size="sm"  
                         variant="flat"
