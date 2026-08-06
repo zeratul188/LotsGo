@@ -1,5 +1,7 @@
 'use client'
 
+import dynamic from "next/dynamic";
+import Script from "next/script";
 import { addToast, Button, Card, CardBody, Chip, Select, SelectItem, Tooltip } from "@heroui/react";
 import clsx from "clsx";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -33,6 +35,8 @@ import {
 import "./transcendence.css";
 
 const presets = presetData.preset as EquipmentPreset[];
+const LineAd = dynamic(() => import("@/app/ad/LineAd"), { ssr: false });
+const BoxAd = dynamic(() => import("@/app/ad/BoxAd"), { ssr: false });
 const levels = [1, 2, 3, 4, 5, 6, 7];
 const LOCAL_PROGRESS_KEY = "lostark-transcendence-progress";
 
@@ -908,6 +912,25 @@ export default function TranscendenceForm() {
                     </div>
                 </div>
             )}
+            {isMobile ? (
+                <div className="flex w-full justify-center px-4">
+                    <div className="mt-4 min-h-[100px] w-full max-w-[360px]">
+                        <BoxAd isLoaded={true}/>
+                    </div>
+                </div>
+            ) : (
+                <div className="mt-8 flex w-full justify-center overflow-hidden px-4">
+                    <div className="flex w-full max-w-[1240px] justify-center rounded-2xl bg-[#eeeeee] p-8 dark:bg-[#222222]">
+                        <div className="min-h-[60px] max-h-[80px] w-full max-w-[970px]">
+                            <LineAd isLoaded={true}/>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <Script
+                async
+                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
+                crossOrigin="anonymous"/>
         </div>
     );
 }

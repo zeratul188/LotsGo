@@ -1,5 +1,7 @@
 'use client';
 
+import dynamic from 'next/dynamic';
+import Script from 'next/script';
 import {
     Button,
     Link,
@@ -15,7 +17,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/app/store/store';
-import { getBackgroundByGrade } from '@/utiils/utils';
+import { getBackgroundByGrade, useMobileQuery } from '@/utiils/utils';
 import clsx from 'clsx';
 import {
     GEM_LEVELS,
@@ -31,6 +33,8 @@ const PERSONAL_CACHE_KEY = 'lotsgo:gem-prices';
 const REFRESH_COOLDOWN_KEY = 'lotsgo:gem-prices:refresh-until';
 const DESCENDING_GEM_LEVELS = [...GEM_LEVELS].reverse();
 const EMPTY_PRICE: GemPrice = { price: null, icon: null, grade: null, name: null };
+const LineAd = dynamic(() => import('@/app/ad/LineAd'), { ssr: false });
+const BoxAd = dynamic(() => import('@/app/ad/BoxAd'), { ssr: false });
 
 function formatPrice(price: number | null) {
     return price === null ? '가격 없음' : price.toLocaleString();
@@ -153,6 +157,7 @@ function MobilePriceCards({ data }: { data: GemPriceData | null }) {
 }
 
 export default function GemPriceForm() {
+    const isMobile = useMobileQuery();
     const router = useRouter();
     const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
     const isLogined = useSelector((state: RootState) => state.login.isLogined);
@@ -350,6 +355,25 @@ export default function GemPriceForm() {
                     <p className="font-medium text-secondary-600 dark:text-secondary-400">{sourceLabel}</p>
                 </div>
             </section>
+            {isMobile ? (
+                <div className="flex w-full justify-center px-4">
+                    <div className="mt-4 min-h-[100px] w-full max-w-[360px]">
+                        <BoxAd isLoaded={true}/>
+                    </div>
+                </div>
+            ) : (
+                <div className="mt-8 flex w-full justify-center overflow-hidden px-4">
+                    <div className="flex w-full max-w-[1240px] justify-center rounded-2xl bg-[#eeeeee] p-8 dark:bg-[#222222]">
+                        <div className="min-h-[60px] max-h-[80px] w-full max-w-[970px]">
+                            <LineAd isLoaded={true}/>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <Script
+                async
+                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
+                crossOrigin="anonymous"/>
         </div>
     );
 }
