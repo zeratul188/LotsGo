@@ -24,6 +24,12 @@ const tabs = [
         path: '/addons/gems'
     },
     {
+        key: 'honing',
+        label: '재련 최적화',
+        description: '재련 재료 시세 및 강화 계산',
+        path: '/addons/honing'
+    },
+    {
         key: 'bus',
         label: '버스 계산기',
         description: '기사와 손님 정산 금액 계산',
