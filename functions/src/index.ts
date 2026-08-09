@@ -485,5 +485,109 @@ export const updateGemPrices = onSchedule({
   });
 });
 
+type HoningMarketItem = {
+  Name?: string,
+  Icon?: string,
+  Grade?: string,
+  BundleCount?: number,
+  CurrentMinPrice?: number
+}
+
+type HoningMarketResponse = {
+  Items?: HoningMarketItem[]
+}
+
+const HONING_MARKET_MATERIALS = [
+  { key: 'destiny-shard-pouch-large', name: '운명의 파편 주머니(대)' },
+  { key: 'destiny-destruction-stone', name: '운명의 파괴석' },
+  { key: 'destiny-destruction-crystal', name: '운명의 파괴석 결정' },
+  { key: 'destiny-guardian-stone', name: '운명의 수호석' },
+  { key: 'destiny-guardian-crystal', name: '운명의 수호석 결정' },
+  { key: 'destiny-leapstone', name: '운명의 돌파석' },
+  { key: 'great-destiny-leapstone', name: '위대한 운명의 돌파석' },
+  { key: 'abidos-fusion-material', name: '아비도스 융화 재료' },
+  { key: 'superior-abidos-fusion-material', name: '상급 아비도스 융화 재료' },
+  { key: 'lava-breath', name: '용암의 숨결' },
+  { key: 'glacier-breath', name: '빙하의 숨결' },
+  { key: 'tailoring-upheaval-11-14', name: '재봉술 : 업화 [11-14]' },
+  { key: 'tailoring-upheaval-15-18', name: '재봉술 : 업화 [15-18]' },
+  { key: 'tailoring-upheaval-19-20', name: '재봉술 : 업화 [19-20]' },
+  { key: 'metallurgy-upheaval-11-14', name: '야금술 : 업화 [11-14]' },
+  { key: 'metallurgy-upheaval-15-18', name: '야금술 : 업화 [15-18]' },
+  { key: 'metallurgy-upheaval-19-20', name: '야금술 : 업화 [19-20]' },
+  { key: 'tailoring-thrill-12-15', name: '재봉술 : 전율 [12-15]' },
+  { key: 'tailoring-thrill-16-19', name: '재봉술 : 전율 [16-19]' },
+  { key: 'metallurgy-thrill-12-15', name: '야금술 : 전율 [12-15]' },
+  { key: 'metallurgy-thrill-16-19', name: '야금술 : 전율 [16-19]' }
+] as const;
+
+async function loadScheduledHoningMaterialPrice(apiKey: string, material: typeof HONING_MARKET_MATERIALS[number]) {
+  const response = await axios.post<HoningMarketResponse>(
+    'https://developer-lostark.game.onstove.com/markets/items',
+    {
+      Sort: 'CURRENT_MIN_PRICE',
+      CategoryCode: 50000,
+      CharacterClass: null,
+      ItemTier: 4,
+      ItemGrade: null,
+      ItemName: material.name,
+      PageNo: 1,
+      SortCondition: 'ASC'
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      timeout: 15000
+    }
+  );
+
+  const matchingItems = (response.data.Items ?? [])
+    .filter((item) => item.Name === material.name)
+    .filter((item) => Number.isFinite(Number(item.CurrentMinPrice)) && Number(item.CurrentMinPrice) > 0);
+  const lowest = matchingItems.reduce<HoningMarketItem | null>((current, item) => {
+    if (!current || Number(item.CurrentMinPrice) < Number(current.CurrentMinPrice)) return item;
+    return current;
+  }, null);
+
+  return {
+    name: material.name,
+    price: lowest ? Number(lowest.CurrentMinPrice) : null,
+    bundleCount: lowest && Number(lowest.BundleCount) > 0 ? Number(lowest.BundleCount) : 1,
+    icon: typeof lowest?.Icon === 'string' ? lowest.Icon : null,
+    grade: typeof lowest?.Grade === 'string' ? lowest.Grade : null
+  };
+}
+
+// 한국 시간 기준 00·03·06·09·12·15·18·21시에 공용 재련 재료 시세 갱신
+export const updateHoningMaterialPrices = onSchedule({
+  schedule: '0 */3 * * *',
+  timeZone: 'Asia/Seoul',
+  region: 'asia-northeast3',
+  timeoutSeconds: 120,
+  secrets: ['LOSTARK_API_KEY']
+}, async () => {
+  const apiKey = process.env.LOSTARK_API_KEY;
+  if (!apiKey) throw new Error('LOSTARK_API_KEY is undefined');
+
+  const entries = await Promise.all(HONING_MARKET_MATERIALS.map(async (material) => {
+    const price = await loadScheduledHoningMaterialPrice(apiKey, material);
+    return [material.key, price] as const;
+  }));
+
+  await database.ref('/honing-material-prices/current').set({
+    version: 1,
+    updatedAt: Date.now(),
+    items: Object.fromEntries(entries)
+  });
+
+  functions.logger.info('Honing material price snapshot updated', {
+    items: HONING_MARKET_MATERIALS.length,
+    schedule: 'Every 3 hours Asia/Seoul'
+  });
+});
+
 // firebase functions:secrets:set LOSTARK_API_KEY
 // firebase deploy --only functions:resetWeekChecklist

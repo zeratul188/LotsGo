@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/app/store/store';
 import { getBackgroundByGrade, useMobileQuery } from '@/utiils/utils';
+import { useLoadingTask } from '@/app/components/loading/LoadingProgress';
 import clsx from 'clsx';
 import {
     GEM_LEVELS,
@@ -165,14 +166,18 @@ export default function GemPriceForm() {
     const hasApiKey = Boolean(useSelector((state: RootState) => state.login.user.apiKey));
     const [data, setData] = useState<GemPriceData | null>(null);
     const [dataSource, setDataSource] = useState<'shared' | 'personal'>('shared');
+    const [isLoadingPrices, setIsLoadingPrices] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [cooldownUntil, setCooldownUntil] = useState(0);
     const [now, setNow] = useState(() => Date.now());
+
+    useLoadingTask('보석 시세를 불러오는 중이에요', isLoadingPrices || isRefreshing);
 
     useEffect(() => {
         let cancelled = false;
 
         const loadPrices = async () => {
+            setIsLoadingPrices(true);
             if (userId) {
                 const raw = localStorage.getItem(getCacheKey(userId));
                 if (raw) {
@@ -184,6 +189,7 @@ export default function GemPriceForm() {
                                 if (!cancelled) {
                                     setData(normalized);
                                     setDataSource('personal');
+                                    setIsLoadingPrices(false);
                                 }
                                 return;
                             }
@@ -211,6 +217,8 @@ export default function GemPriceForm() {
                     setDataSource('shared');
                 }
                 console.error('Failed to load shared gem prices', error);
+            } finally {
+                if (!cancelled) setIsLoadingPrices(false);
             }
         };
 
