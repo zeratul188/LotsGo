@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, Card, CardBody, CardHeader, Checkbox, Progress, Select, SelectItem, Tab, Tabs } from '@heroui/react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { calculateHoning, getHoningAttempt } from '../lib/honingCalculator';
 import { findHoningRate, type HoningPart, type HoningTier } from '../data/honingRates';
 import type { HoningAttempt, HoningCalculationInput, HoningSimulationOptions, OwnedMaterialKey, OwnedMaterials } from '../model/calculatorTypes';
@@ -64,6 +64,32 @@ export default function HoningSimulationCard({ priceData }: { priceData: HoningM
     const input = useMemo<HoningCalculationInput>(() => ({ tier, part, level: Number(level), mode: 'optimal', owned: emptyOwned, prices: priceData }), [tier, part, level, priceData]);
     const optimalCalculation = useMemo(() => mode === 'optimal' ? calculateHoning(input) : null, [input, mode]);
 
+    const resetProgress = () => {
+        runtime.current = { failures: 0, artisan: 0, attempts: [], cost: 0, materials: {} };
+        setRows([]); setArtisan(0); setSpentGold(0); setCompleted(false); setRunning(false);
+    };
+
+    const executeAttempt = useCallback(() => {
+        const state = runtime.current;
+        const optimalRow = mode === 'optimal' ? optimalCalculation?.attempts[state.failures] : null;
+        const options: HoningSimulationOptions = { attempt: state.attempts.length + 1, failures: state.failures, artisan: state.artisan, useBook: mode === 'custom' && useBook, useBreath: mode === 'custom' && useBreath };
+        const attempt = optimalRow ?? getHoningAttempt(input, options);
+        if (!attempt) return false;
+        const success = attempt.finalChance >= 100 || Math.random() * 100 < attempt.finalChance;
+        const row = { ...attempt, success };
+        const nextAttempts = [...state.attempts, row];
+        const nextCost = state.cost + attempt.cost;
+        for (const material of attempt.materials) {
+            const current = state.materials[material.key] ?? { amount: 0, name: material.name, icon: material.icon };
+            state.materials[material.key] = { ...current, amount: current.amount + material.amount };
+        }
+        state.attempts = nextAttempts; state.cost = nextCost; state.artisan = attempt.artisanAfter;
+        setRows(nextAttempts); setSpentGold(nextCost); setArtisan(attempt.artisanAfter);
+        if (success) { setCompleted(true); setRunning(false); }
+        else { state.failures += 1; }
+        return success;
+    }, [input, mode, optimalCalculation, useBook, useBreath]);
+
     useEffect(() => {
         try {
             const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
@@ -83,34 +109,19 @@ export default function HoningSimulationCard({ priceData }: { priceData: HoningM
 
     useEffect(() => {
         if (!running) return undefined;
-        const timer = window.setInterval(() => {
-            const state = runtime.current;
-            const optimalRow = mode === 'optimal' ? optimalCalculation?.attempts[state.failures] : null;
-            const options: HoningSimulationOptions = { attempt: state.attempts.length + 1, failures: state.failures, artisan: state.artisan, useBook: mode === 'custom' && useBook, useBreath: mode === 'custom' && useBreath };
-            const attempt = optimalRow ?? getHoningAttempt(input, options);
-            if (!attempt) return;
-            const success = attempt.finalChance >= 100 || Math.random() * 100 < attempt.finalChance;
-            const row = { ...attempt, success };
-            const nextAttempts = [...state.attempts, row];
-            const nextCost = state.cost + attempt.cost;
-            for (const material of attempt.materials) {
-                const current = state.materials[material.key] ?? { amount: 0, name: material.name, icon: material.icon };
-                state.materials[material.key] = { ...current, amount: current.amount + material.amount };
-            }
-            state.attempts = nextAttempts; state.cost = nextCost;
-            setRows(nextAttempts); setSpentGold(nextCost); setArtisan(attempt.artisanAfter);
-            if (success) { setCompleted(true); setRunning(false); }
-            else { state.failures += 1; state.artisan = attempt.artisanAfter; }
-        }, SPEED_INTERVALS[speed]);
+        const timer = window.setInterval(executeAttempt, SPEED_INTERVALS[speed]);
         return () => window.clearInterval(timer);
-    }, [input, mode, optimalCalculation, running, speed, useBook, useBreath]);
+    }, [executeAttempt, running, speed]);
 
     const start = () => {
-        runtime.current = { failures: 0, artisan: 0, attempts: [], cost: 0, materials: {} };
-        setRows([]); setArtisan(0); setSpentGold(0); setCompleted(false); setRunning(true);
+        resetProgress(); setRunning(true);
     };
 
     const stop = () => setRunning(false);
+
+    const handleTierChange = (keys: Iterable<unknown>) => { const value = String(Array.from(keys)[0]) as HoningTier; if (value !== tier) { setTier(value); resetProgress(); } };
+    const handlePartChange = (keys: Iterable<unknown>) => { const value = String(Array.from(keys)[0]) as HoningPart; if (value !== part) { setPart(value); resetProgress(); } };
+    const handleLevelChange = (keys: Iterable<unknown>) => { const value = String(Array.from(keys)[0]); if (value !== level) { setLevel(value); resetProgress(); } };
 
     const saveRecord = () => {
         if (!completed || rows.length === 0) return;
@@ -131,12 +142,12 @@ export default function HoningSimulationCard({ priceData }: { priceData: HoningM
         <CardHeader className="flex-col items-start gap-1 border-b border-default-100 px-4 py-4 dark:border-white/[0.06] sm:px-5"><h2 className="text-lg font-bold">재련 시뮬레이션</h2><p className="text-xs text-default-500">거래소 시세를 기준으로 재련 성공까지의 과정을 시뮬레이션합니다.</p></CardHeader>
         <CardBody className="grid items-stretch gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:p-5">
             <div ref={leftColumnRef} className="min-w-0 space-y-4">
-                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3"><Select label="장비 등급" selectedKeys={new Set([tier])} onSelectionChange={(keys) => setTier(String(Array.from(keys)[0]) as HoningTier)}><SelectItem key="4티어">4티어</SelectItem><SelectItem key="세르카">세르카</SelectItem></Select><Select label="장비 종류" selectedKeys={new Set([part])} onSelectionChange={(keys) => setPart(String(Array.from(keys)[0]) as HoningPart)}><SelectItem key="무기">무기</SelectItem><SelectItem key="방어구">방어구</SelectItem></Select><Select label="강화 단계" selectionMode="single" selectedKeys={[level]} renderValue={() => `${level}강`} onSelectionChange={(keys) => setLevel(String(Array.from(keys)[0]))}>{Array.from({ length: 15 }, (_, index) => String(index + 11)).map((item) => <SelectItem key={item}>{item}강</SelectItem>)}</Select></div>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3"><Select label="장비 등급" selectedKeys={new Set([tier])} onSelectionChange={handleTierChange}><SelectItem key="4티어">4티어</SelectItem><SelectItem key="세르카">세르카</SelectItem></Select><Select label="장비 종류" selectedKeys={new Set([part])} onSelectionChange={handlePartChange}><SelectItem key="무기">무기</SelectItem><SelectItem key="방어구">방어구</SelectItem></Select><Select label="강화 단계" selectionMode="single" selectedKeys={[level]} renderValue={() => `${level}강`} onSelectionChange={handleLevelChange}>{Array.from({ length: 15 }, (_, index) => String(index + 11)).map((item) => <SelectItem key={item}>{item}강</SelectItem>)}</Select></div>
                 {rate ? <div className="rounded-xl bg-default-50 p-3 dark:bg-white/[0.04]"><div className="mb-2 flex items-center justify-between"><span className="text-xs font-bold text-default-500">1회 재련 필요 재료</span><span className="text-xs text-default-500">기본 확률 {rate.successRate}%</span></div><div className="flex flex-wrap gap-2">{rate ? [{ name: part === '무기' ? (tier === '세르카' ? '운명의 파괴석 결정' : '운명의 파괴석') : (tier === '세르카' ? '운명의 수호석 결정' : '운명의 수호석'), amount: rate.stone, key: part === '무기' ? (tier === '세르카' ? 'destiny-destruction-crystal' : 'destiny-destruction-stone') : (tier === '세르카' ? 'destiny-guardian-crystal' : 'destiny-guardian-stone') }, { name: tier === '세르카' ? '위대한 운명의 돌파석' : '운명의 돌파석', amount: rate.leapstone, key: tier === '세르카' ? 'great-destiny-leapstone' : 'destiny-leapstone' }, { name: tier === '세르카' ? '상급 아비도스 융화 재료' : '아비도스 융화 재료', amount: rate.fusion, key: tier === '세르카' ? 'superior-abidos-fusion-material' : 'abidos-fusion-material' }, { name: '운명의 파편', amount: rate.shard, key: 'destiny-shard' }].map((item) => { const price = item.key === 'destiny-shard' ? priceData.items['destiny-shard-pouch-large'] : priceData.items[item.key as keyof typeof priceData.items]; const unit = item.key === 'destiny-shard' ? price?.unitPrice ?? 0 : price?.unitPrice ?? price?.price ?? 0; return <div key={item.key} className="flex items-center gap-1.5 rounded-lg bg-default-100/80 px-2 py-1.5 text-xs dark:bg-white/[0.06]"><MaterialIcon icon={price?.icon ?? null}/><span>{item.name} × {item.amount.toLocaleString('ko-KR')}</span><span className="text-default-500">·</span><Gold value={item.amount * unit}/></div>; }) : null}<div className="flex items-center gap-1.5 rounded-lg bg-default-100/80 px-2 py-1.5 text-xs dark:bg-white/[0.06]"><img src="/icons/gold.png" alt="골드" className="h-6 w-6 rounded object-cover"/><span>{rate.gold.toLocaleString('ko-KR')}</span></div></div></div> : null}
                 <Tabs fullWidth selectedKey={mode} onSelectionChange={(key) => setMode(String(key) as SimulationMode)}><Tab key="optimal" title="최적 재련"/><Tab key="custom" title="직접 설정"/></Tabs>
                 <div className="flex flex-col gap-3 rounded-xl border border-default-200/80 p-3 dark:border-white/10">{bookKey ? <Checkbox isSelected={mode === 'optimal' || useBook} isDisabled={mode === 'optimal'} onValueChange={setUseBook}><span className="inline-flex items-center gap-2"><MaterialIcon icon={bookIcon}/>야금술 / 재봉술</span></Checkbox> : null}<Checkbox isSelected={mode === 'optimal' || useBreath} isDisabled={mode === 'optimal'} onValueChange={setUseBreath}><span className="inline-flex items-center gap-2"><MaterialIcon icon={breathIcon}/>숨결</span></Checkbox><p className="text-[11px] text-default-500">최적 재련은 기존 최적화 결과의 트라이별 투입 전략을 사용합니다.</p></div>
                 <Select label="재련 속도" selectedKeys={new Set([speed])} isDisabled={running} onSelectionChange={(keys) => setSpeed(String(Array.from(keys)[0]) as SimulationSpeed)}><SelectItem key="fast">빠르게</SelectItem><SelectItem key="normal">보통</SelectItem><SelectItem key="slow">느리게</SelectItem></Select>
-                <Button color={running ? 'danger' : 'primary'} radius="lg" className="w-full font-semibold" isDisabled={!running && !rate} onPress={running ? stop : start}>{running ? '재련 중단' : '재련 시작'}</Button>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2"><Button color="secondary" radius="lg" className="w-full font-semibold" isDisabled={running || completed || !rate} onPress={executeAttempt}>1회 재련</Button><Button color={running ? 'danger' : 'primary'} radius="lg" className="w-full font-semibold" isDisabled={!running && !rate} onPress={running ? stop : start}>{running ? '자동 재련 중단' : '자동 재련'}</Button></div>
                 <div className="rounded-xl bg-default-50 p-3 dark:bg-white/[0.04]"><div className="mb-1 flex items-center justify-between text-xs"><span>장인의 기운</span><span className="font-semibold tabular-nums">{artisan.toFixed(2)}%</span></div><Progress aria-label="장인의 기운" value={artisan} color={artisan >= 100 ? 'success' : 'primary'}/><div className="mt-3 flex items-center justify-between text-xs"><span>누적 골드</span><Gold value={spentGold}/></div></div>
                 <div><h3 className="mb-2 text-xs font-bold text-default-500">사용 재료</h3><div className="flex flex-wrap gap-2">{materialRows.length ? materialRows.map((item) => <div key={item.name} className="flex items-center gap-1.5 rounded-lg bg-default-100/80 px-2 py-1.5 text-xs dark:bg-white/[0.06]"><MaterialIcon icon={item.icon}/><span>{item.name} × {item.amount.toLocaleString('ko-KR')}</span></div>) : <span className="text-xs text-default-400">재련을 시작하면 사용량이 표시됩니다.</span>}</div></div>
                 <div className="flex gap-2"><Button className="flex-1" variant="flat" isDisabled={!completed} onPress={saveRecord}>기록하기</Button><Button className="flex-1" variant="flat" color="danger" onPress={reset}>초기화</Button></div>
