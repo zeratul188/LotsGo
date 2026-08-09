@@ -1,7 +1,7 @@
 import { HONING_MATERIALS } from '../model/types';
 import { findHoningRate } from '../data/honingRates';
 import type { HoningRate } from '../data/honingRates';
-import type { HoningCalculation, HoningCalculationInput, HoningAttempt, HoningMode, MaterialAmount, OwnedMaterialKey, OwnedMaterials } from '../model/calculatorTypes';
+import type { HoningCalculation, HoningCalculationInput, HoningAttempt, HoningMode, HoningSimulationOptions, MaterialAmount, OwnedMaterialKey, OwnedMaterials } from '../model/calculatorTypes';
 
 const ALL_OWNED_KEYS = [...HONING_MATERIALS.filter((item) => item.key !== 'destiny-shard-pouch-large').map((item) => item.key), 'destiny-shard'] as OwnedMaterialKey[];
 const DISPLAY_NAMES: Record<OwnedMaterialKey, string> = Object.fromEntries([
@@ -94,6 +94,21 @@ function makeActionList(mode: HoningMode, rate: HoningRate): Action[] {
         }
     }
     return actions;
+}
+
+export function getHoningAttempt(input: HoningCalculationInput, options: HoningSimulationOptions): HoningAttempt | null {
+    const rate = findHoningRate(input.tier, input.part, input.level);
+    if (!rate) return null;
+    const action: Action = {
+        book: options.useBook && bookKey(rate) ? 1 : 0,
+        breath: options.useBreath ? rate.breathCount : 0
+    };
+    const finalChance = chance(rate, options.failures, options.artisan, action);
+    const consumed = actionMaterials(rate, options.artisan >= 100 ? { book: 0, breath: 0 } : action, input);
+    const materials: MaterialAmount[] = consumed.map(([key, amount]) => ({ key, amount, paid: amount, icon: iconFor(key, input.prices), name: DISPLAY_NAMES[key] }));
+    const cost = rate.gold + consumed.reduce((total, [key, amount]) => total + amount * priceFor(key, input.prices), 0);
+    const artisanAfter = finalChance >= 100 ? 100 : Math.min(100, options.artisan + finalChance * 0.465);
+    return { attempt: options.attempt, baseChance: rate.successRate + rate.successRate * 0.1 * Math.min(options.failures, 10) + rate.research, artisanBefore: options.artisan, artisanAfter, book: options.artisan >= 100 ? 0 : action.book, breath: options.artisan >= 100 ? 0 : action.breath, finalChance, cost, materials };
 }
 
 export function calculateHoning(input: HoningCalculationInput): HoningCalculation | null {
