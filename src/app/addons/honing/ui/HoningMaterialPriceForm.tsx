@@ -8,6 +8,7 @@ import { RootState } from '@/app/store/store';
 import { useLoadingTask } from '@/app/components/loading/LoadingProgress';
 import clsx from 'clsx';
 import { HONING_MATERIALS, HoningMaterialPrice, HoningMaterialPriceData, normalizeHoningMaterialPriceData } from '../model/types';
+import HoningOptimizationWorkspace from './HoningOptimizationWorkspace';
 
 const PERSONAL_CACHE_MAX_AGE = 2 * 60 * 60 * 1000;
 const REFRESH_COOLDOWN = 10 * 1000;
@@ -59,7 +60,7 @@ function PriceDetails({ material, value }: { material: typeof HONING_MATERIALS[n
             {bundleLabel ? <span>{bundleLabel}</span> : null}
             <span aria-hidden="true">·</span>
             <span>{material.unitLabel}</span>
-            <GoldPrice price={value.unitPrice} decimals={2}/>
+            <GoldPrice price={value.unitPrice} decimals={material.divisor === 3000 ? 3 : 2}/>
         </div>
     );
 }
@@ -197,5 +198,6 @@ export default function HoningMaterialPriceForm() {
             {data ? <MaterialPriceGrid data={data}/> : <div className="px-4 py-16 text-center text-sm text-default-500 sm:px-5">공용 재련 재료 시세가 아직 준비되지 않았습니다.</div>}
             <div className="flex flex-col gap-1 border-t border-default-100 bg-default-50/70 px-4 py-3 text-xs dark:border-white/[0.06] dark:bg-white/[0.02] sm:flex-row sm:items-center sm:justify-between sm:px-5"><p className="text-default-500">마지막 갱신 {updatedLabel}</p><p className="font-medium text-secondary-600 dark:text-secondary-400">{sourceLabel}</p></div>
         </section>
+        {data ? <HoningOptimizationWorkspace priceData={data}/> : null}
     </div>;
 }
