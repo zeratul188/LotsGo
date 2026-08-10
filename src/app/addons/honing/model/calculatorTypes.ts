@@ -7,8 +7,8 @@ export type OwnedMaterialKey = Exclude<HoningMaterialKey, 'destiny-shard-pouch-l
 export type OwnedMaterials = Record<OwnedMaterialKey, number>;
 
 export type HoningSelection = { tier: HoningTier; part: HoningPart; level: number };
-export type HoningCalculationInput = HoningSelection & { mode: HoningMode; owned: OwnedMaterials; prices: HoningMaterialPriceData };
-export type HoningSimulationOptions = { attempt: number; failures: number; artisan: number; useBook: boolean; useBreath: boolean };
+export type HoningCalculationInput = HoningSelection & { mode: HoningMode; owned: OwnedMaterials; prices: HoningMaterialPriceData; onlyOwned?: boolean; initialFailures?: number; initialArtisan?: number };
+export type HoningSimulationOptions = { attempt: number; failures: number; artisan: number; useBook: boolean; useBreath: boolean; breathAmount?: number };
 
 export type MaterialAmount = { key: OwnedMaterialKey; amount: number; paid: number; icon: string | null; name: string };
 export type HoningAttempt = { attempt: number; baseChance: number; artisanBefore: number; artisanAfter: number; book: number; breath: number; finalChance: number; cost: number; materials: MaterialAmount[] };

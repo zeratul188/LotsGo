@@ -9,7 +9,6 @@ import { useLoadingTask } from '@/app/components/loading/LoadingProgress';
 import clsx from 'clsx';
 import { HONING_MATERIALS, HoningMaterialPrice, HoningMaterialPriceData, normalizeHoningMaterialPriceData } from '../model/types';
 import HoningOptimizationWorkspace from './HoningOptimizationWorkspace';
-import HoningSimulationCard from './HoningSimulationCard';
 
 const PERSONAL_CACHE_MAX_AGE = 2 * 60 * 60 * 1000;
 const REFRESH_COOLDOWN = 10 * 1000;
@@ -200,6 +199,5 @@ export default function HoningMaterialPriceForm() {
             <div className="flex flex-col gap-1 border-t border-default-100 bg-default-50/70 px-4 py-3 text-xs dark:border-white/[0.06] dark:bg-white/[0.02] sm:flex-row sm:items-center sm:justify-between sm:px-5"><p className="text-default-500">마지막 갱신 {updatedLabel}</p><p className="font-medium text-secondary-600 dark:text-secondary-400">{sourceLabel}</p></div>
         </section>
         {data ? <HoningOptimizationWorkspace priceData={data}/> : null}
-        {data ? <HoningSimulationCard priceData={data}/> : null}
     </div>;
 }
