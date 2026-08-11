@@ -1,7 +1,7 @@
 import { HONING_MATERIALS } from '../model/types';
 import { findHoningRate } from '../data/honingRates';
 import type { HoningRate } from '../data/honingRates';
-import type { HoningCalculation, HoningCalculationInput, HoningAttempt, HoningMode, HoningSimulationOptions, MaterialAmount, OwnedMaterialKey, OwnedMaterials } from '../model/calculatorTypes';
+import type { HoningCalculation, HoningCalculationInput, HoningAttempt, HoningBreathAmounts, HoningBreathKey, HoningMode, HoningSimulationOptions, MaterialAmount, OwnedMaterialKey, OwnedMaterials } from '../model/calculatorTypes';
 
 const ALL_OWNED_KEYS = [...HONING_MATERIALS.filter((item) => item.key !== 'destiny-shard-pouch-large').map((item) => item.key), 'destiny-shard'] as OwnedMaterialKey[];
 const DISPLAY_NAMES: Record<OwnedMaterialKey, string> = Object.fromEntries([
@@ -9,24 +9,32 @@ const DISPLAY_NAMES: Record<OwnedMaterialKey, string> = Object.fromEntries([
     ['destiny-shard', '운명의 파편']
 ]) as Record<OwnedMaterialKey, string>;
 
-type Action = { book: 0 | 1; breath: number };
+type Action = { book: 0 | 1; breaths: HoningBreathAmounts };
 type StateResult = { attempts: number; cost: number; materials: Record<OwnedMaterialKey, number> };
 
-function stoneKey(tier: HoningRate['tier'], part: HoningRate['part']): OwnedMaterialKey {
-    if (tier === '세르카') return part === '무기' ? 'destiny-destruction-crystal' : 'destiny-guardian-crystal';
-    return part === '무기' ? 'destiny-destruction-stone' : 'destiny-guardian-stone';
+export function stoneRequirements(rate: HoningRate): Array<[OwnedMaterialKey, number]> {
+    if (rate.part === '완갑') return [['destiny-destruction-crystal', rate.destructionStone ?? 0], ['destiny-guardian-crystal', rate.guardianStone ?? 0]];
+    const key = rate.tier === '세르카'
+        ? rate.part === '무기' ? 'destiny-destruction-crystal' : 'destiny-guardian-crystal'
+        : rate.part === '무기' ? 'destiny-destruction-stone' : 'destiny-guardian-stone';
+    return [[key, rate.stone]];
 }
 
-function bookKey(rate: HoningRate): OwnedMaterialKey | null {
+export function breathRequirements(rate: HoningRate): Array<{ key: HoningBreathKey; rate: number; max: number }> {
+    if (rate.part === '완갑') return [
+        { key: 'lava-breath', rate: rate.lavaBreathRate ?? 0, max: rate.lavaBreathCount ?? 0 },
+        { key: 'glacier-breath', rate: rate.glacierBreathRate ?? 0, max: rate.glacierBreathCount ?? 0 }
+    ];
+    return [{ key: rate.part === '무기' ? 'lava-breath' : 'glacier-breath', rate: rate.breathRate, max: rate.breathCount }];
+}
+
+export function bookKey(rate: HoningRate): OwnedMaterialKey | null {
+    if (rate.part === '완갑') return null;
     const prefix = rate.part === '무기' ? 'metallurgy' : 'tailoring';
     const suffix = rate.tier === '4티어' ? 'upheaval' : 'thrill';
     const ranges = rate.tier === '4티어' ? [[11, 14], [15, 18], [19, 20]] : [[12, 15], [16, 19]];
     const range = ranges.find(([from, to]) => rate.level >= from && rate.level <= to);
     return range ? `${prefix}-${suffix}-${range[0]}-${range[1]}` as OwnedMaterialKey : null;
-}
-
-function breathKey(part: HoningRate['part']): OwnedMaterialKey {
-    return part === '무기' ? 'lava-breath' : 'glacier-breath';
 }
 
 function priceFor(key: OwnedMaterialKey, prices: HoningCalculationInput['prices']): number {
@@ -38,13 +46,10 @@ function iconFor(key: OwnedMaterialKey, prices: HoningCalculationInput['prices']
     return key === 'destiny-shard' ? prices.items['destiny-shard-pouch-large']?.icon ?? null : prices.items[key]?.icon ?? null;
 }
 
-function addMaterial(target: Record<OwnedMaterialKey, number>, key: OwnedMaterialKey, amount: number) {
-    target[key] = (target[key] ?? 0) + amount;
-}
-
-function createOwned(value: OwnedMaterials): OwnedMaterials {
-    return Object.fromEntries(ALL_OWNED_KEYS.map((key) => [key, Math.max(0, Number(value[key]) || 0)])) as OwnedMaterials;
-}
+function addMaterial(target: Record<OwnedMaterialKey, number>, key: OwnedMaterialKey, amount: number) { target[key] = (target[key] ?? 0) + amount; }
+function emptyMaterials() { return {} as Record<OwnedMaterialKey, number>; }
+function createOwned(value: OwnedMaterials): OwnedMaterials { return Object.fromEntries(ALL_OWNED_KEYS.map((key) => [key, Math.max(0, Number(value[key]) || 0)])) as OwnedMaterials; }
+function combineMaterials(left: Record<OwnedMaterialKey, number>, right: Record<OwnedMaterialKey, number>, multiplier = 1) { const result = { ...left }; for (const key of ALL_OWNED_KEYS) if (right[key]) addMaterial(result, key, right[key] * multiplier); return result; }
 
 function consume(key: OwnedMaterialKey, amount: number, bound: OwnedMaterials, prices: HoningCalculationInput['prices']) {
     const free = Math.min(amount, bound[key] ?? 0);
@@ -52,15 +57,14 @@ function consume(key: OwnedMaterialKey, amount: number, bound: OwnedMaterials, p
     return { paid: amount - free, cost: (amount - free) * priceFor(key, prices) };
 }
 
-function actionMaterials(rate: HoningRate, action: Action, input: HoningCalculationInput) {
+export function actionMaterials(rate: HoningRate, action: Action): Array<[OwnedMaterialKey, number]> {
     const mandatory: Array<[OwnedMaterialKey, number]> = [
-        [stoneKey(rate.tier, rate.part), rate.stone],
+        ...stoneRequirements(rate),
         [rate.tier === '세르카' ? 'great-destiny-leapstone' : 'destiny-leapstone', rate.leapstone],
         [rate.tier === '세르카' ? 'superior-abidos-fusion-material' : 'abidos-fusion-material', rate.fusion],
         ['destiny-shard', rate.shard]
     ];
-    const optional: Array<[OwnedMaterialKey, number]> = [];
-    if (action.breath > 0) optional.push([breathKey(rate.part), action.breath]);
+    const optional: Array<[OwnedMaterialKey, number]> = Object.entries(action.breaths).filter(([, amount]) => Number(amount) > 0).map(([key, amount]) => [key as OwnedMaterialKey, Number(amount)]);
     const key = bookKey(rate);
     if (action.book && key) optional.push([key, 1]);
     return [...mandatory, ...optional];
@@ -70,46 +74,44 @@ function chance(rate: HoningRate, failures: number, artisan: number, action: Act
     if (artisan >= 100) return 100;
     const pityBonus = rate.successRate * 0.1 * Math.min(failures, 10);
     const bookBonus = action.book ? rate.successRate : 0;
-    return Math.min(100, rate.successRate + pityBonus + rate.research + bookBonus + action.breath * rate.breathRate);
-}
-
-function emptyMaterials() { return {} as Record<OwnedMaterialKey, number>; }
-function combineMaterials(left: Record<OwnedMaterialKey, number>, right: Record<OwnedMaterialKey, number>, multiplier = 1) {
-    const result = { ...left };
-    for (const key of ALL_OWNED_KEYS) if (right[key]) addMaterial(result, key, right[key] * multiplier);
-    return result;
+    const breathBonus = breathRequirements(rate).reduce((sum, item) => sum + (action.breaths[item.key] ?? 0) * item.rate, 0);
+    return Math.min(100, rate.successRate + pityBonus + rate.research + bookBonus + breathBonus);
 }
 
 function makeActionList(mode: HoningMode, rate: HoningRate, owned?: OwnedMaterials, onlyOwned = false): Action[] {
-    const maxBreath = mode === 'no-breath' ? 0 : rate.breathCount;
-    const ownedBreath = onlyOwned ? Math.min(maxBreath, Math.floor(owned?.[breathKey(rate.part)] ?? 0)) : maxBreath;
-    const hasBook = mode !== 'no-breath' && bookKey(rate) !== null && (!onlyOwned || (owned?.[bookKey(rate) as OwnedMaterialKey] ?? 0) >= 1);
+    const breathOptions = breathRequirements(rate).map((item) => {
+        const max = mode === 'no-breath' ? 0 : item.max;
+        const ownedAmount = onlyOwned ? Math.min(max, Math.floor(owned?.[item.key] ?? 0)) : max;
+        return onlyOwned || mode === 'full-breath' ? [ownedAmount] : [0, max];
+    });
     const actions: Action[] = [];
-    const breathOptions = mode === 'full-breath' ? [ownedBreath] : onlyOwned ? (ownedBreath > 0 ? [0, ownedBreath] : [0]) : maxBreath > 0 ? [0, maxBreath] : [0];
-    for (const breath of [...new Set(breathOptions)]) {
-        if (mode === 'full-breath') {
-            actions.push({ book: hasBook ? 1 : 0, breath });
-        } else {
-            actions.push({ book: 0, breath });
-            if (hasBook) actions.push({ book: 1, breath });
+    const combinations = (index: number, breaths: HoningBreathAmounts) => {
+        if (index === breathOptions.length) {
+            const key = bookKey(rate);
+            const hasBook = mode !== 'no-breath' && key !== null && (!onlyOwned || (owned?.[key] ?? 0) >= 1);
+            actions.push({ book: 0, breaths: { ...breaths } });
+            if (hasBook) actions.push({ book: 1, breaths: { ...breaths } });
+            return;
         }
-    }
-    return actions;
+        const item = breathRequirements(rate)[index];
+        for (const amount of [...new Set(breathOptions[index])]) combinations(index + 1, { ...breaths, [item.key]: amount });
+    };
+    combinations(0, {});
+    return mode === 'full-breath' ? actions.filter((action) => action.book === (bookKey(rate) && (!onlyOwned || (owned?.[bookKey(rate) as OwnedMaterialKey] ?? 0) >= 1) ? 1 : 0)) : actions;
 }
 
 export function getHoningAttempt(input: HoningCalculationInput, options: HoningSimulationOptions): HoningAttempt | null {
     const rate = findHoningRate(input.tier, input.part, input.level);
     if (!rate) return null;
-    const action: Action = {
-        book: options.useBook && bookKey(rate) ? 1 : 0,
-        breath: options.useBreath ? Math.max(0, Math.min(rate.breathCount, options.breathAmount ?? rate.breathCount)) : 0
-    };
+    const breaths = options.breathAmounts ?? {};
+    const action: Action = { book: options.useBook && bookKey(rate) ? 1 : 0, breaths: Object.fromEntries(breathRequirements(rate).map((item) => [item.key, Math.max(0, Math.min(item.max, breaths[item.key] ?? 0))])) };
     const finalChance = chance(rate, options.failures, options.artisan, action);
-    const consumed = actionMaterials(rate, options.artisan >= 100 ? { book: 0, breath: 0 } : action, input);
+    const consumed = actionMaterials(rate, options.artisan >= 100 ? { book: 0, breaths: {} } : action);
     const materials: MaterialAmount[] = consumed.map(([key, amount]) => ({ key, amount, paid: amount, icon: iconFor(key, input.prices), name: DISPLAY_NAMES[key] }));
     const cost = rate.gold + consumed.reduce((total, [key, amount]) => total + amount * priceFor(key, input.prices), 0);
     const artisanAfter = finalChance >= 100 ? 100 : Math.min(100, options.artisan + finalChance * 0.465);
-    return { attempt: options.attempt, baseChance: rate.successRate + rate.successRate * 0.1 * Math.min(options.failures, 10) + rate.research, artisanBefore: options.artisan, artisanAfter, book: options.artisan >= 100 ? 0 : action.book, breath: options.artisan >= 100 ? 0 : action.breath, finalChance, cost, materials };
+    const totalBreath = Object.values(action.breaths).reduce((sum, amount) => sum + (amount ?? 0), 0);
+    return { attempt: options.attempt, baseChance: rate.successRate + rate.successRate * 0.1 * Math.min(options.failures, 10) + rate.research, artisanBefore: options.artisan, artisanAfter, book: options.artisan >= 100 ? 0 : action.book, breath: options.artisan >= 100 ? 0 : totalBreath, finalChance, cost, materials };
 }
 
 export function calculateHoning(input: HoningCalculationInput): HoningCalculation | null {
@@ -120,29 +122,21 @@ export function calculateHoning(input: HoningCalculationInput): HoningCalculatio
     const policy = new Map<string, Action>();
     const memo = new Map<string, StateResult>();
     const getStateKey = (failures: number, artisan: number, bound: OwnedMaterials) => `${failures}|${Math.round(artisan * 1000)}|${ALL_OWNED_KEYS.map((key) => Math.floor(bound[key] ?? 0)).join(',')}`;
-
     const solve = (failures: number, artisan: number, bound: OwnedMaterials): StateResult => {
         const stateKey = getStateKey(failures, artisan, bound);
         const cached = memo.get(stateKey);
         if (cached) return cached;
         let best: StateResult | null = null;
         let bestAction: Action | null = null;
-        const availableActions = artisan >= 100 ? [{ book: 0 as const, breath: 0 }] : makeActionList(input.mode, rate, bound, onlyOwned).filter((action) => {
-            if (onlyOwned) return actionMaterials(rate, action, input).every(([key, amount]) => (bound[key] ?? 0) >= amount);
-            const key = bookKey(rate);
-            const bookAvailable = !action.book || (key && priceFor(key, input.prices) > 0);
-            const breathAvailable = !action.breath || priceFor(breathKey(rate.part), input.prices) > 0;
-            return Boolean(bookAvailable && breathAvailable);
+        const availableActions = artisan >= 100 ? [{ book: 0 as const, breaths: {} }] : makeActionList(input.mode, rate, bound, onlyOwned).filter((action) => {
+            if (onlyOwned) return actionMaterials(rate, action).every(([key, amount]) => (bound[key] ?? 0) >= amount);
+            return actionMaterials(rate, action).filter(([key]) => key !== 'destiny-shard').every(([key]) => priceFor(key, input.prices) > 0);
         });
         for (const action of availableActions) {
             const nextBound = { ...bound };
             const consumed = emptyMaterials();
             let cost = rate.gold;
-            for (const [key, amount] of actionMaterials(rate, action, input)) {
-                const purchase = consume(key, amount, nextBound, input.prices);
-                cost += purchase.cost;
-                addMaterial(consumed, key, amount);
-            }
+            for (const [key, amount] of actionMaterials(rate, action)) { const purchase = consume(key, amount, nextBound, input.prices); cost += purchase.cost; addMaterial(consumed, key, amount); }
             const finalChance = chance(rate, failures, artisan, action);
             const failProbability = 1 - finalChance / 100;
             const nextArtisan = Math.min(100, artisan + finalChance * 0.465);
@@ -155,30 +149,28 @@ export function calculateHoning(input: HoningCalculationInput): HoningCalculatio
         if (bestAction) policy.set(stateKey, bestAction);
         return result;
     };
-
     const average = solve(input.initialFailures ?? 0, input.initialArtisan ?? 0, initialOwned);
     const pityAttempts: HoningAttempt[] = [];
     let failures = input.initialFailures ?? 0; let artisan = input.initialArtisan ?? 0; let bound = { ...initialOwned }; let pityCost = 0; const pityMaterials = emptyMaterials();
     for (let attempt = 1; ; attempt += 1) {
         const stateKey = getStateKey(failures, artisan, bound);
-        const action = artisan >= 100 ? { book: 0 as const, breath: 0 } : policy.get(stateKey) ?? makeActionList(input.mode, rate, bound, onlyOwned)[0];
-        const before = artisan;
-        const finalChance = chance(rate, failures, artisan, action);
-        const consumed: MaterialAmount[] = [];
-        let trialCost = rate.gold;
-        for (const [key, amount] of actionMaterials(rate, action, input)) {
-            const purchase = consume(key, amount, bound, input.prices);
-            trialCost += purchase.cost; addMaterial(pityMaterials, key, amount);
-            consumed.push({ key, amount, paid: purchase.paid, icon: iconFor(key, input.prices), name: DISPLAY_NAMES[key] });
-        }
-        pityCost += trialCost;
-        artisan = finalChance >= 100 ? 100 : Math.min(100, artisan + finalChance * 0.465);
-        pityAttempts.push({ attempt, baseChance: rate.successRate + rate.successRate * .1 * Math.min(failures, 10) + rate.research, artisanBefore: before, artisanAfter: artisan, book: action.book, breath: action.breath, finalChance, cost: trialCost, materials: consumed });
+        const action = artisan >= 100 ? { book: 0 as const, breaths: {} } : policy.get(stateKey) ?? makeActionList(input.mode, rate, bound, onlyOwned)[0];
+        if (!action) break;
+        const before = artisan; const finalChance = chance(rate, failures, artisan, action); const consumed: MaterialAmount[] = []; let trialCost = rate.gold;
+        for (const [key, amount] of actionMaterials(rate, action)) { const purchase = consume(key, amount, bound, input.prices); trialCost += purchase.cost; addMaterial(pityMaterials, key, amount); consumed.push({ key, amount, paid: purchase.paid, icon: iconFor(key, input.prices), name: DISPLAY_NAMES[key] }); }
+        pityCost += trialCost; artisan = finalChance >= 100 ? 100 : Math.min(100, artisan + finalChance * 0.465);
+        pityAttempts.push({ attempt, baseChance: rate.successRate + rate.successRate * .1 * Math.min(failures, 10) + rate.research, artisanBefore: before, artisanAfter: artisan, book: action.book, breath: Object.values(action.breaths).reduce((sum, amount) => sum + (amount ?? 0), 0), finalChance, cost: trialCost, materials: consumed });
         if (finalChance >= 100) break;
         failures += 1;
     }
     const toAmounts = (materials: Record<OwnedMaterialKey, number>): MaterialAmount[] => ALL_OWNED_KEYS.filter((key) => materials[key] > 0).map((key) => ({ key, amount: materials[key], paid: materials[key], icon: iconFor(key, input.prices), name: DISPLAY_NAMES[key] }));
-    const requiredKeys = actionMaterials(rate, { book: bookKey(rate) ? 1 : 0, breath: rate.breathCount }, input).map(([key]) => key);
+    const requiredKeys = actionMaterials(rate, { book: bookKey(rate) ? 1 : 0, breaths: Object.fromEntries(breathRequirements(rate).map((item) => [item.key, item.max])) }).map(([key]) => key);
     const missingPrices = requiredKeys.filter((key) => priceFor(key, input.prices) <= 0);
-    return { averageAttempts: average.attempts, averageCost: average.cost, averageMaterials: toAmounts(average.materials), pityAttempts, pityCost, pityMaterials: toAmounts(pityMaterials), attempts: pityAttempts, bookKey: bookKey(rate), breathKey: breathKey(rate.part), missingPrices };
+    return { averageAttempts: average.attempts, averageCost: average.cost, averageMaterials: toAmounts(average.materials), pityAttempts, pityCost, pityMaterials: toAmounts(pityMaterials), attempts: pityAttempts, bookKey: bookKey(rate), breathKeys: breathRequirements(rate).map((item) => item.key), missingPrices };
+}
+
+export function actionFromAttempt(attempt: HoningAttempt, rate: HoningRate): HoningSimulationOptions {
+    const book = bookKey(rate);
+    const breaths = Object.fromEntries(breathRequirements(rate).map((item) => [item.key, attempt.materials.find((material) => material.key === item.key)?.amount ?? 0])) as HoningBreathAmounts;
+    return { attempt: attempt.attempt, failures: 0, artisan: attempt.artisanBefore, useBook: Boolean(book && attempt.materials.some((material) => material.key === book)), breathAmounts: breaths };
 }
