@@ -1,7 +1,7 @@
 import { HONING_MATERIALS } from '../model/types';
 import { findHoningRate } from '../data/honingRates';
 import type { HoningRate } from '../data/honingRates';
-import type { HoningCalculation, HoningCalculationInput, HoningAttempt, HoningBreathAmounts, HoningBreathKey, HoningMode, HoningSimulationOptions, MaterialAmount, OwnedMaterialKey, OwnedMaterials } from '../model/calculatorTypes';
+import type { HoningCalculation, HoningCalculationInput, HoningAttempt, HoningBreathAmounts, HoningBreathKey, HoningMode, HoningRangeCalculation, HoningSimulationOptions, MaterialAmount, OwnedMaterialKey, OwnedMaterials } from '../model/calculatorTypes';
 
 const ALL_OWNED_KEYS = [...HONING_MATERIALS.filter((item) => item.key !== 'destiny-shard-pouch-large').map((item) => item.key), 'destiny-shard'] as OwnedMaterialKey[];
 const DISPLAY_NAMES: Record<OwnedMaterialKey, string> = Object.fromEntries([
@@ -10,7 +10,7 @@ const DISPLAY_NAMES: Record<OwnedMaterialKey, string> = Object.fromEntries([
 ]) as Record<OwnedMaterialKey, string>;
 
 type Action = { book: 0 | 1; breaths: HoningBreathAmounts };
-type StateResult = { attempts: number; cost: number; materials: Record<OwnedMaterialKey, number> };
+type StateResult = { attempts: number; cost: number; materials: Record<OwnedMaterialKey, number>; boundMaterials: Record<OwnedMaterialKey, number> };
 
 export function stoneRequirements(rate: HoningRate): Array<[OwnedMaterialKey, number]> {
     if (rate.part === '완갑') return [['destiny-destruction-crystal', rate.destructionStone ?? 0], ['destiny-guardian-crystal', rate.guardianStone ?? 0]];
@@ -135,29 +135,30 @@ export function calculateHoning(input: HoningCalculationInput): HoningCalculatio
         for (const action of availableActions) {
             const nextBound = { ...bound };
             const consumed = emptyMaterials();
+            const boundConsumed = emptyMaterials();
             let cost = rate.gold;
-            for (const [key, amount] of actionMaterials(rate, action)) { const purchase = consume(key, amount, nextBound, input.prices); cost += purchase.cost; addMaterial(consumed, key, amount); }
+            for (const [key, amount] of actionMaterials(rate, action)) { const purchase = consume(key, amount, nextBound, input.prices); cost += purchase.cost; addMaterial(consumed, key, amount); addMaterial(boundConsumed, key, amount - purchase.paid); }
             const finalChance = chance(rate, failures, artisan, action);
             const failProbability = 1 - finalChance / 100;
             const nextArtisan = Math.min(100, artisan + finalChance * 0.465);
-            const future = finalChance >= 100 ? { attempts: 0, cost: 0, materials: emptyMaterials() } : solve(failures + 1, nextArtisan, nextBound);
-            const candidate = { attempts: 1 + failProbability * future.attempts, cost: cost + failProbability * future.cost, materials: combineMaterials(consumed, future.materials, failProbability) };
+            const future = finalChance >= 100 ? { attempts: 0, cost: 0, materials: emptyMaterials(), boundMaterials: emptyMaterials() } : solve(failures + 1, nextArtisan, nextBound);
+            const candidate = { attempts: 1 + failProbability * future.attempts, cost: cost + failProbability * future.cost, materials: combineMaterials(consumed, future.materials, failProbability), boundMaterials: combineMaterials(boundConsumed, future.boundMaterials, failProbability) };
             if (!best || candidate.cost < best.cost) { best = candidate; bestAction = action; }
         }
-        const result = best ?? { attempts: 0, cost: 0, materials: emptyMaterials() };
+        const result = best ?? { attempts: 0, cost: 0, materials: emptyMaterials(), boundMaterials: emptyMaterials() };
         memo.set(stateKey, result);
         if (bestAction) policy.set(stateKey, bestAction);
         return result;
     };
     const average = solve(input.initialFailures ?? 0, input.initialArtisan ?? 0, initialOwned);
     const pityAttempts: HoningAttempt[] = [];
-    let failures = input.initialFailures ?? 0; let artisan = input.initialArtisan ?? 0; let bound = { ...initialOwned }; let pityCost = 0; const pityMaterials = emptyMaterials();
+    let failures = input.initialFailures ?? 0; let artisan = input.initialArtisan ?? 0; let bound = { ...initialOwned }; let pityCost = 0; const pityMaterials = emptyMaterials(); const pityBoundMaterials = emptyMaterials();
     for (let attempt = 1; ; attempt += 1) {
         const stateKey = getStateKey(failures, artisan, bound);
         const action = artisan >= 100 ? { book: 0 as const, breaths: {} } : policy.get(stateKey) ?? makeActionList(input.mode, rate, bound, onlyOwned)[0];
         if (!action) break;
         const before = artisan; const finalChance = chance(rate, failures, artisan, action); const consumed: MaterialAmount[] = []; let trialCost = rate.gold;
-        for (const [key, amount] of actionMaterials(rate, action)) { const purchase = consume(key, amount, bound, input.prices); trialCost += purchase.cost; addMaterial(pityMaterials, key, amount); consumed.push({ key, amount, paid: purchase.paid, icon: iconFor(key, input.prices), name: DISPLAY_NAMES[key] }); }
+        for (const [key, amount] of actionMaterials(rate, action)) { const purchase = consume(key, amount, bound, input.prices); trialCost += purchase.cost; addMaterial(pityMaterials, key, amount); addMaterial(pityBoundMaterials, key, amount - purchase.paid); consumed.push({ key, amount, paid: purchase.paid, icon: iconFor(key, input.prices), name: DISPLAY_NAMES[key] }); }
         pityCost += trialCost; artisan = finalChance >= 100 ? 100 : Math.min(100, artisan + finalChance * 0.465);
         pityAttempts.push({ attempt, baseChance: rate.successRate + rate.successRate * .1 * Math.min(failures, 10) + rate.research, artisanBefore: before, artisanAfter: artisan, book: action.book, breath: Object.values(action.breaths).reduce((sum, amount) => sum + (amount ?? 0), 0), finalChance, cost: trialCost, materials: consumed });
         if (finalChance >= 100) break;
@@ -166,11 +167,55 @@ export function calculateHoning(input: HoningCalculationInput): HoningCalculatio
     const toAmounts = (materials: Record<OwnedMaterialKey, number>): MaterialAmount[] => ALL_OWNED_KEYS.filter((key) => materials[key] > 0).map((key) => ({ key, amount: materials[key], paid: materials[key], icon: iconFor(key, input.prices), name: DISPLAY_NAMES[key] }));
     const requiredKeys = actionMaterials(rate, { book: bookKey(rate) ? 1 : 0, breaths: Object.fromEntries(breathRequirements(rate).map((item) => [item.key, item.max])) }).map(([key]) => key);
     const missingPrices = requiredKeys.filter((key) => priceFor(key, input.prices) <= 0);
-    return { averageAttempts: average.attempts, averageCost: average.cost, averageMaterials: toAmounts(average.materials), pityAttempts, pityCost, pityMaterials: toAmounts(pityMaterials), attempts: pityAttempts, bookKey: bookKey(rate), breathKeys: breathRequirements(rate).map((item) => item.key), missingPrices };
+    return { averageAttempts: average.attempts, averageCost: average.cost, averageMaterials: toAmounts(average.materials), boundMaterials: toAmounts(average.boundMaterials), pityAttempts, pityCost, pityMaterials: toAmounts(pityMaterials), pityBoundMaterials: toAmounts(pityBoundMaterials), attempts: pityAttempts, bookKey: bookKey(rate), breathKeys: breathRequirements(rate).map((item) => item.key), missingPrices };
 }
 
 export function actionFromAttempt(attempt: HoningAttempt, rate: HoningRate): HoningSimulationOptions {
     const book = bookKey(rate);
     const breaths = Object.fromEntries(breathRequirements(rate).map((item) => [item.key, attempt.materials.find((material) => material.key === item.key)?.amount ?? 0])) as HoningBreathAmounts;
     return { attempt: attempt.attempt, failures: 0, artisan: attempt.artisanBefore, useBook: Boolean(book && attempt.materials.some((material) => material.key === book)), breathAmounts: breaths };
+}
+
+function subtractMaterials(owned: OwnedMaterials, materials: MaterialAmount[]) {
+    for (const material of materials) owned[material.key] = Math.max(0, (owned[material.key] ?? 0) - material.amount);
+}
+
+function mergeMaterialAmounts(target: Map<OwnedMaterialKey, MaterialAmount>, materials: MaterialAmount[]) {
+    for (const material of materials) {
+        const current = target.get(material.key);
+        target.set(material.key, current ? { ...current, amount: current.amount + material.amount, paid: current.paid + material.paid } : { ...material });
+    }
+}
+
+export function calculateHoningRange(input: HoningCalculationInput, startLevel: number, targetLevel: number): HoningRangeCalculation | null {
+    if (targetLevel <= startLevel) return null;
+    const averageOwned = createOwned(input.owned);
+    const pityOwned = createOwned(input.owned);
+    const averageMaterials = new Map<OwnedMaterialKey, MaterialAmount>();
+    const pityMaterials = new Map<OwnedMaterialKey, MaterialAmount>();
+    const stages: HoningRangeCalculation['stages'] = [];
+    const missingPrices = new Set<OwnedMaterialKey>();
+    let averageAttempts = 0;
+    let averageCost = 0;
+    let pityAttempts = 0;
+    let pityCost = 0;
+
+    for (let level = startLevel + 1; level <= targetLevel; level += 1) {
+        const average = calculateHoning({ ...input, level, owned: averageOwned, initialFailures: 0, initialArtisan: 0 });
+        const pity = calculateHoning({ ...input, level, owned: pityOwned, initialFailures: 0, initialArtisan: 0 });
+        if (!average || !pity) return null;
+        averageAttempts += average.averageAttempts;
+        averageCost += average.averageCost;
+        pityAttempts += pity.pityAttempts.length;
+        pityCost += pity.pityCost;
+        mergeMaterialAmounts(averageMaterials, average.averageMaterials);
+        mergeMaterialAmounts(pityMaterials, pity.pityMaterials);
+        subtractMaterials(averageOwned, average.boundMaterials);
+        subtractMaterials(pityOwned, pity.pityBoundMaterials);
+        average.missingPrices.forEach((key) => missingPrices.add(key));
+        pity.missingPrices.forEach((key) => missingPrices.add(key));
+        stages.push({ level, averageAttempts: average.averageAttempts, averageCost: average.averageCost, pityAttempts: pity.pityAttempts.length, pityCost: pity.pityCost });
+    }
+
+    return { startLevel, targetLevel, averageAttempts, averageCost, averageMaterials: [...averageMaterials.values()], pityAttempts, pityCost, pityMaterials: [...pityMaterials.values()], stages, missingPrices: [...missingPrices] };
 }
