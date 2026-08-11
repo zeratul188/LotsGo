@@ -14,4 +14,6 @@ export type HoningSimulationOptions = { attempt: number; failures: number; artis
 
 export type MaterialAmount = { key: OwnedMaterialKey; amount: number; paid: number; icon: string | null; name: string };
 export type HoningAttempt = { attempt: number; baseChance: number; artisanBefore: number; artisanAfter: number; book: number; breath: number; finalChance: number; cost: number; materials: MaterialAmount[] };
-export type HoningCalculation = { averageAttempts: number; averageCost: number; averageMaterials: MaterialAmount[]; pityAttempts: HoningAttempt[]; pityCost: number; pityMaterials: MaterialAmount[]; attempts: HoningAttempt[]; bookKey: OwnedMaterialKey | null; breathKeys: HoningBreathKey[]; missingPrices: OwnedMaterialKey[] };
+export type HoningCalculation = { averageAttempts: number; averageCost: number; averageMaterials: MaterialAmount[]; boundMaterials: MaterialAmount[]; pityAttempts: HoningAttempt[]; pityCost: number; pityMaterials: MaterialAmount[]; pityBoundMaterials: MaterialAmount[]; attempts: HoningAttempt[]; bookKey: OwnedMaterialKey | null; breathKeys: HoningBreathKey[]; missingPrices: OwnedMaterialKey[] };
+export type HoningRangeStage = { level: number; averageAttempts: number; averageCost: number; pityAttempts: number; pityCost: number };
+export type HoningRangeCalculation = { startLevel: number; targetLevel: number; averageAttempts: number; averageCost: number; averageMaterials: MaterialAmount[]; pityAttempts: number; pityCost: number; pityMaterials: MaterialAmount[]; stages: HoningRangeStage[]; missingPrices: OwnedMaterialKey[] };
