@@ -187,7 +187,7 @@ function mergeMaterialAmounts(target: Map<OwnedMaterialKey, MaterialAmount>, mat
     }
 }
 
-export function calculateHoningRange(input: HoningCalculationInput, startLevel: number, targetLevel: number): HoningRangeCalculation | null {
+export function* calculateHoningRangeSteps(input: HoningCalculationInput, startLevel: number, targetLevel: number): Generator<HoningRangeCalculation, HoningRangeCalculation | null, void> {
     if (targetLevel <= startLevel) return null;
     const averageOwned = createOwned(input.owned);
     const pityOwned = createOwned(input.owned);
@@ -215,7 +215,15 @@ export function calculateHoningRange(input: HoningCalculationInput, startLevel: 
         average.missingPrices.forEach((key) => missingPrices.add(key));
         pity.missingPrices.forEach((key) => missingPrices.add(key));
         stages.push({ level, averageAttempts: average.averageAttempts, averageCost: average.averageCost, pityAttempts: pity.pityAttempts.length, pityCost: pity.pityCost });
+        yield { startLevel, targetLevel, averageAttempts, averageCost, averageMaterials: [...averageMaterials.values()], pityAttempts, pityCost, pityMaterials: [...pityMaterials.values()], stages: [...stages], missingPrices: [...missingPrices] };
     }
 
     return { startLevel, targetLevel, averageAttempts, averageCost, averageMaterials: [...averageMaterials.values()], pityAttempts, pityCost, pityMaterials: [...pityMaterials.values()], stages, missingPrices: [...missingPrices] };
+}
+
+export function calculateHoningRange(input: HoningCalculationInput, startLevel: number, targetLevel: number): HoningRangeCalculation | null {
+    const steps = calculateHoningRangeSteps(input, startLevel, targetLevel);
+    let next = steps.next();
+    while (!next.done) next = steps.next();
+    return next.value;
 }
