@@ -12,7 +12,7 @@ import {
     Progress, 
     Tooltip 
 } from "@heroui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {  
     getAccessoryStatPercentColor,
     getAccessoryStatSummary,
@@ -61,6 +61,7 @@ import SupportorIcon from "@/Icons/SupportorIcon";
 import { CardPiece, CharacterInfo, ExpeditionCharacterInfo } from "../model/types";
 import { getCore } from "../lib/arkGridPrints";
 import data from "@/data/characters/data.json";
+import { calculateBraceletCombatPowerPercent, createInitialState } from "../lib/combatSimulatorFeat";
 
 // state 관리
 export function useCharacterForm() {
@@ -310,6 +311,10 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
     const arm = info.equipment.arm;
     const stone = info.equipment.stone;
     const orb = info.equipment.orb;
+    const braceletCombatPowerPercent = useMemo(() => {
+        const initial = createInitialState(info);
+        return calculateBraceletCombatPowerPercent(info, initial, initial);
+    }, [info]);
     const averageUpgradeTargets = new Set(['무기', '투구', '어깨', '상의', '하의', '장갑', '완갑']);
     const averageUpgradeEquipments = info.equipment.equipments.filter((equip) => averageUpgradeTargets.has(equip.type));
     const upgradeValues = averageUpgradeEquipments
@@ -677,8 +682,17 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                                                 <div className="flex gap-1 items-center">
                                                     <p className={`${getColorTextByGrade(arm.grade)} grow truncate font-medium`}>{arm.grade} {arm.type}</p>
                                                 </div>
-                                                <div className="flex gap-2 items-center">
+                                                <div className="flex flex-wrap items-center gap-2">
                                                     {arm.point > 0 ? <Chip size="sm" radius="sm" variant="flat" color="success">+{arm.point}</Chip> : <></>}
+                                                    <span
+                                                        aria-label={`팔찌 전투력 증가율 ${braceletCombatPowerPercent >= 0 ? '+' : ''}${braceletCombatPowerPercent.toFixed(2)}%`}
+                                                        className="inline-flex h-6 items-center gap-1 rounded-full border border-emerald-200/90 bg-gradient-to-r from-emerald-50 to-cyan-50 px-2 text-[11px] font-bold tabular-nums text-emerald-600 shadow-sm dark:border-emerald-400/25 dark:from-emerald-500/15 dark:to-cyan-500/10 dark:text-emerald-300">
+                                                        <svg aria-hidden="true" viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M3 11.5 6.25 8.25 8.5 10.5 13 6"/>
+                                                            <path d="M9.75 6H13v3.25"/>
+                                                        </svg>
+                                                        {braceletCombatPowerPercent >= 0 ? '+' : ''}{braceletCombatPowerPercent.toFixed(2)}%
+                                                    </span>
                                                 </div>
                                             </div>
                                             {printEffectInTooltip(arm.tooltip).length > 0 ? (

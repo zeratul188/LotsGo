@@ -20,6 +20,7 @@ import { ArkGridComponent } from "./ui/ArkGridForm";
 import { ExpeditionStatComponent } from "./ui/ExpeditionStatForm";
 import { ExpeditionCharacter } from "./characterlist/model/types";
 import { fetchCharacterList } from "./characterlist/lib/characterListFeat";
+import { CombatSimulatorComponent } from "./ui/CombatSimulatorForm";
 
 export default function CharacterClient() {
     const characterForm = useCharacterForm();
@@ -222,6 +223,11 @@ export default function CharacterClient() {
             id: 'expedition',
             label: '원정대',
             component: <ExpeditionsComponent expeditions={characterForm.expeditions}/>
+        },
+        {
+            id: 'simulator',
+            label: '시뮬레이션',
+            component: <CombatSimulatorComponent info={characterForm.characterInfo}/>
         },
         {
             id: 'expeditionstat',
