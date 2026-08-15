@@ -91,6 +91,7 @@ const WRIST_GUARD_GRADE_RANGES = [
 ];
 export const ARK_GRID_OPTION_NAMES = ["공격력", "보스 피해", "추가 피해", "낙인력", "아군 공격 강화", "아군 피해 강화"];
 export const ENGRAVING_NAMES = characterData.engravings.map((item) => item.name).sort((a, b) => a.localeCompare(b, "ko"));
+export const ENGRAVING_ICON_BY_NAME: Record<string, string> = Object.fromEntries(characterData.engravings.map((item) => [item.name, item.url]));
 
 const gradeIndex: Record<OptionGrade, number> = { none: -1, sm: 0, md: 1, lg: 2 };
 
@@ -233,13 +234,17 @@ export function createInitialState(info: CharacterInfo): SimulatorState {
 
     const avatars: Record<string, string> = Object.fromEntries(AVATAR_SLOTS.map((slot) => [slot, "없음"]));
     const avatarGradeRank: Record<string, number> = { 없음: 0, 영웅: 1, 전설: 2 };
-    const applyAvatarGrade = (slot: string, grade: string) => {
-        if ((avatarGradeRank[grade] ?? 0) > (avatarGradeRank[avatars[slot]] ?? 0)) avatars[slot] = grade;
+    const matchesAvatarSlot = (avatar: CharacterInfo["avatars"][number], slot: string) => {
+        if (slot === "무기") return avatar.type.startsWith("무기");
+        if (slot === "투구") return avatar.type.startsWith("머리");
+        if (slot === "상의") return avatar.type.startsWith("상의");
+        return avatar.type.startsWith("하의") || (avatar.type.startsWith("상의") && /상하의|한벌|한 벌/.test(avatar.name));
     };
-    for (const avatar of info.avatars) {
-        const slot = avatar.type.startsWith("무기") ? "무기" : avatar.type.startsWith("머리") ? "투구" : avatar.type.startsWith("상의") ? "상의" : avatar.type.startsWith("하의") ? "하의" : null;
-        if (slot) applyAvatarGrade(slot, avatar.grade);
-        if (avatar.type.startsWith("상의") && /상하의|한벌|한 벌/.test(avatar.name)) applyAvatarGrade("하의", avatar.grade);
+    for (const slot of AVATAR_SLOTS) {
+        const candidates = info.avatars.filter((avatar) => matchesAvatarSlot(avatar, slot) && avatarGradeRank[avatar.grade] > 0);
+        const equippedCandidates = candidates.some((avatar) => avatar.isInner) ? candidates.filter((avatar) => avatar.isInner) : candidates;
+        const equipped = equippedCandidates.sort((left, right) => avatarGradeRank[right.grade] - avatarGradeRank[left.grade])[0];
+        if (equipped) avatars[slot] = equipped.grade;
     }
 
     const bracelet: BraceletSimulation[] = [];
@@ -750,6 +755,18 @@ export function calculateExpectedCombatPower(info: CharacterInfo, initial: Simul
         ratio *= Math.max(0.01, 1 + ((state.karma.도약 ?? 0) - (initial.karma.도약 ?? 0)) * 0.0002);
     }
     return Math.max(0, info.profile.combatPower * ratio);
+}
+
+export function calculateBraceletCombatPowerPercent(info: CharacterInfo, initial: SimulatorState, state: SimulatorState): number {
+    const withoutBracelet = structuredClone(state);
+    withoutBracelet.bracelet = Array.from({ length: 5 }, () => ({
+        type: "없음",
+        value: 0,
+        grade: "none" as OptionGrade,
+    }));
+    const basePower = calculateExpectedCombatPower(info, initial, withoutBracelet);
+    const currentPower = calculateExpectedCombatPower(info, initial, state);
+    return basePower > 0 ? (currentPower / basePower - 1) * 100 : 0;
 }
 
 export function getHoningRange(set: string, slot: string, equipmentName = ""): number[] {
