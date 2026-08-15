@@ -204,7 +204,11 @@ export function CombatSimulatorComponent({ info }: { info: CharacterInfo }) {
     const difference = expected - info.profile.combatPower;
     const change = info.profile.combatPower ? difference / info.profile.combatPower * 100 : 0;
     const hasCombatPowerChange = Math.abs(difference) >= 0.005;
-    const itemLevelDifference = EQUIPMENT_SLOTS.slice(0, 6).reduce((sum, slot) => sum + ((state.equipment.levels[slot] ?? 0) - (initial.equipment.levels[slot] ?? 0)) * 5 / 6, 0);
+    const itemLevelDifference = EQUIPMENT_SLOTS.slice(0, 6).reduce((sum, slot) => {
+        const honingDifference = ((state.equipment.levels[slot] ?? 0) - (initial.equipment.levels[slot] ?? 0)) * 5;
+        const advancedHoningDifference = (state.equipment.advancedLevels[slot] ?? 0) - (initial.equipment.advancedLevels[slot] ?? 0);
+        return sum + (honingDifference + advancedHoningDifference) / 6;
+    }, 0);
     const expectedItemLevel = info.profile.itemLevel + itemLevelDifference;
     const hasItemLevelChange = Math.abs(itemLevelDifference) >= 0.005;
     const changeEntries = useMemo(() => getSimulationChangeEntries(info, initial, state, expected), [info, initial, state, expected]);
@@ -215,7 +219,7 @@ export function CombatSimulatorComponent({ info }: { info: CharacterInfo }) {
     });
 
     return (
-        <div className="grid w-full gap-5 lg:grid-cols-[250px_minmax(0,1fr)]">
+        <div className="combat-simulator-form grid w-full gap-5 lg:grid-cols-[250px_minmax(0,1fr)]">
             <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
                 <div className="overflow-hidden rounded-2xl border border-primary/20 bg-content1 shadow-sm dark:border-primary/25">
                     <div className="relative overflow-hidden bg-gradient-to-br from-primary/15 via-primary/5 to-content1 p-4">
