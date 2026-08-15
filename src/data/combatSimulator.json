@@ -1,0 +1,2478 @@
+{
+  "honing": [
+    {
+      "set": "에기르",
+      "slot": "무기",
+      "from": 10,
+      "to": 11,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 3153,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "무기",
+      "from": 11,
+      "to": 12,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 3264,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "무기",
+      "from": 12,
+      "to": 13,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 3377,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "무기",
+      "from": 13,
+      "to": 14,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 3496,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "무기",
+      "from": 14,
+      "to": 15,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 3618,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "무기",
+      "from": 15,
+      "to": 16,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 3744,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "무기",
+      "from": 16,
+      "to": 17,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 3876,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "무기",
+      "from": 17,
+      "to": 18,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 4011,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "무기",
+      "from": 18,
+      "to": 19,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 4152,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "무기",
+      "from": 19,
+      "to": 20,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 4297,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "무기",
+      "from": 20,
+      "to": 21,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 4447,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "무기",
+      "from": 21,
+      "to": 22,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 4604,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "무기",
+      "from": 22,
+      "to": 23,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 4764,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "무기",
+      "from": 23,
+      "to": 24,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 4931,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "무기",
+      "from": 24,
+      "to": 25,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 5103,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "투구",
+      "from": 10,
+      "to": 11,
+      "mainStat": 1736,
+      "vitality": 125,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "투구",
+      "from": 11,
+      "to": 12,
+      "mainStat": 1796,
+      "vitality": 127,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "투구",
+      "from": 12,
+      "to": 13,
+      "mainStat": 1859,
+      "vitality": 129,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "투구",
+      "from": 13,
+      "to": 14,
+      "mainStat": 1924,
+      "vitality": 132,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "투구",
+      "from": 14,
+      "to": 15,
+      "mainStat": 1991,
+      "vitality": 134,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "투구",
+      "from": 15,
+      "to": 16,
+      "mainStat": 2061,
+      "vitality": 136,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "투구",
+      "from": 16,
+      "to": 17,
+      "mainStat": 2133,
+      "vitality": 139,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "투구",
+      "from": 17,
+      "to": 18,
+      "mainStat": 2208,
+      "vitality": 142,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "투구",
+      "from": 18,
+      "to": 19,
+      "mainStat": 2285,
+      "vitality": 144,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "투구",
+      "from": 19,
+      "to": 20,
+      "mainStat": 2365,
+      "vitality": 146,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "투구",
+      "from": 20,
+      "to": 21,
+      "mainStat": 2448,
+      "vitality": 149,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "투구",
+      "from": 21,
+      "to": 22,
+      "mainStat": 2534,
+      "vitality": 152,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "투구",
+      "from": 22,
+      "to": 23,
+      "mainStat": 2622,
+      "vitality": 155,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "투구",
+      "from": 23,
+      "to": 24,
+      "mainStat": 2714,
+      "vitality": 157,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "투구",
+      "from": 24,
+      "to": 25,
+      "mainStat": 2809,
+      "vitality": 160,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "견갑",
+      "from": 10,
+      "to": 11,
+      "mainStat": 1978,
+      "vitality": 112,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "견갑",
+      "from": 11,
+      "to": 12,
+      "mainStat": 2048,
+      "vitality": 114,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "견갑",
+      "from": 12,
+      "to": 13,
+      "mainStat": 2119,
+      "vitality": 117,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "견갑",
+      "from": 13,
+      "to": 14,
+      "mainStat": 2194,
+      "vitality": 118,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "견갑",
+      "from": 14,
+      "to": 15,
+      "mainStat": 2270,
+      "vitality": 120,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "견갑",
+      "from": 15,
+      "to": 16,
+      "mainStat": 2350,
+      "vitality": 123,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "견갑",
+      "from": 16,
+      "to": 17,
+      "mainStat": 2432,
+      "vitality": 125,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "견갑",
+      "from": 17,
+      "to": 18,
+      "mainStat": 2517,
+      "vitality": 127,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "견갑",
+      "from": 18,
+      "to": 19,
+      "mainStat": 2605,
+      "vitality": 129,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "견갑",
+      "from": 19,
+      "to": 20,
+      "mainStat": 2696,
+      "vitality": 132,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "견갑",
+      "from": 20,
+      "to": 21,
+      "mainStat": 2791,
+      "vitality": 134,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "견갑",
+      "from": 21,
+      "to": 22,
+      "mainStat": 2889,
+      "vitality": 136,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "견갑",
+      "from": 22,
+      "to": 23,
+      "mainStat": 2989,
+      "vitality": 139,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "견갑",
+      "from": 23,
+      "to": 24,
+      "mainStat": 3094,
+      "vitality": 141,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "견갑",
+      "from": 24,
+      "to": 25,
+      "mainStat": 3203,
+      "vitality": 144,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "상의",
+      "from": 10,
+      "to": 11,
+      "mainStat": 1388,
+      "vitality": 167,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "상의",
+      "from": 11,
+      "to": 12,
+      "mainStat": 1437,
+      "vitality": 169,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "상의",
+      "from": 12,
+      "to": 13,
+      "mainStat": 1487,
+      "vitality": 173,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "상의",
+      "from": 13,
+      "to": 14,
+      "mainStat": 1539,
+      "vitality": 175,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "상의",
+      "from": 14,
+      "to": 15,
+      "mainStat": 1593,
+      "vitality": 179,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "상의",
+      "from": 15,
+      "to": 16,
+      "mainStat": 1649,
+      "vitality": 182,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "상의",
+      "from": 16,
+      "to": 17,
+      "mainStat": 1707,
+      "vitality": 185,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "상의",
+      "from": 17,
+      "to": 18,
+      "mainStat": 1766,
+      "vitality": 189,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "상의",
+      "from": 18,
+      "to": 19,
+      "mainStat": 1828,
+      "vitality": 192,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "상의",
+      "from": 19,
+      "to": 20,
+      "mainStat": 1892,
+      "vitality": 195,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "상의",
+      "from": 20,
+      "to": 21,
+      "mainStat": 1958,
+      "vitality": 199,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "상의",
+      "from": 21,
+      "to": 22,
+      "mainStat": 2027,
+      "vitality": 203,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "상의",
+      "from": 22,
+      "to": 23,
+      "mainStat": 2098,
+      "vitality": 206,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "상의",
+      "from": 23,
+      "to": 24,
+      "mainStat": 2171,
+      "vitality": 209,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "상의",
+      "from": 24,
+      "to": 25,
+      "mainStat": 2247,
+      "vitality": 214,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "하의",
+      "from": 10,
+      "to": 11,
+      "mainStat": 1500,
+      "vitality": 141,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "하의",
+      "from": 11,
+      "to": 12,
+      "mainStat": 1552,
+      "vitality": 144,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "하의",
+      "from": 12,
+      "to": 13,
+      "mainStat": 1607,
+      "vitality": 147,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "하의",
+      "from": 13,
+      "to": 14,
+      "mainStat": 1663,
+      "vitality": 149,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "하의",
+      "from": 14,
+      "to": 15,
+      "mainStat": 1721,
+      "vitality": 152,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "하의",
+      "from": 15,
+      "to": 16,
+      "mainStat": 1781,
+      "vitality": 155,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "하의",
+      "from": 16,
+      "to": 17,
+      "mainStat": 1844,
+      "vitality": 157,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "하의",
+      "from": 17,
+      "to": 18,
+      "mainStat": 1908,
+      "vitality": 161,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "하의",
+      "from": 18,
+      "to": 19,
+      "mainStat": 1975,
+      "vitality": 163,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "하의",
+      "from": 19,
+      "to": 20,
+      "mainStat": 2044,
+      "vitality": 166,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "하의",
+      "from": 20,
+      "to": 21,
+      "mainStat": 2116,
+      "vitality": 169,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "하의",
+      "from": 21,
+      "to": 22,
+      "mainStat": 2190,
+      "vitality": 172,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "하의",
+      "from": 22,
+      "to": 23,
+      "mainStat": 2266,
+      "vitality": 175,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "하의",
+      "from": 23,
+      "to": 24,
+      "mainStat": 2346,
+      "vitality": 178,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "하의",
+      "from": 24,
+      "to": 25,
+      "mainStat": 2428,
+      "vitality": 182,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "장갑",
+      "from": 10,
+      "to": 11,
+      "mainStat": 2141,
+      "vitality": 84,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "장갑",
+      "from": 11,
+      "to": 12,
+      "mainStat": 2215,
+      "vitality": 86,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "장갑",
+      "from": 12,
+      "to": 13,
+      "mainStat": 2293,
+      "vitality": 88,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "장갑",
+      "from": 13,
+      "to": 14,
+      "mainStat": 2374,
+      "vitality": 89,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "장갑",
+      "from": 14,
+      "to": 15,
+      "mainStat": 2456,
+      "vitality": 90,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "장갑",
+      "from": 15,
+      "to": 16,
+      "mainStat": 2542,
+      "vitality": 93,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "장갑",
+      "from": 16,
+      "to": 17,
+      "mainStat": 2631,
+      "vitality": 94,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "장갑",
+      "from": 17,
+      "to": 18,
+      "mainStat": 2724,
+      "vitality": 95,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "장갑",
+      "from": 18,
+      "to": 19,
+      "mainStat": 2818,
+      "vitality": 98,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "장갑",
+      "from": 19,
+      "to": 20,
+      "mainStat": 2918,
+      "vitality": 99,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "장갑",
+      "from": 20,
+      "to": 21,
+      "mainStat": 3019,
+      "vitality": 101,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "장갑",
+      "from": 21,
+      "to": 22,
+      "mainStat": 3125,
+      "vitality": 102,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "장갑",
+      "from": 22,
+      "to": 23,
+      "mainStat": 3235,
+      "vitality": 105,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "장갑",
+      "from": 23,
+      "to": 24,
+      "mainStat": 3347,
+      "vitality": 106,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "에기르",
+      "slot": "장갑",
+      "from": 24,
+      "to": 25,
+      "mainStat": 3465,
+      "vitality": 108,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "무기",
+      "from": 10,
+      "to": 11,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 4607,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "무기",
+      "from": 11,
+      "to": 12,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 4767,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "무기",
+      "from": 12,
+      "to": 13,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 4933,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "무기",
+      "from": 13,
+      "to": 14,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 5108,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "무기",
+      "from": 14,
+      "to": 15,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 5285,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "무기",
+      "from": 15,
+      "to": 16,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 5471,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "무기",
+      "from": 16,
+      "to": 17,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 4831,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "무기",
+      "from": 17,
+      "to": 18,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 4953,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "무기",
+      "from": 18,
+      "to": 19,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 5076,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "무기",
+      "from": 19,
+      "to": 20,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 5203,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "무기",
+      "from": 20,
+      "to": 21,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 5334,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "무기",
+      "from": 21,
+      "to": 22,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 5466,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "무기",
+      "from": 22,
+      "to": 23,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 5604,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "무기",
+      "from": 23,
+      "to": 24,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 5743,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "무기",
+      "from": 24,
+      "to": 25,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 5887,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "투구",
+      "from": 10,
+      "to": 11,
+      "mainStat": 2661,
+      "vitality": 160,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "투구",
+      "from": 11,
+      "to": 12,
+      "mainStat": 2753,
+      "vitality": 162,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "투구",
+      "from": 12,
+      "to": 13,
+      "mainStat": 2850,
+      "vitality": 165,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "투구",
+      "from": 13,
+      "to": 14,
+      "mainStat": 2949,
+      "vitality": 168,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "투구",
+      "from": 14,
+      "to": 15,
+      "mainStat": 3053,
+      "vitality": 171,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "투구",
+      "from": 15,
+      "to": 16,
+      "mainStat": 3159,
+      "vitality": 175,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "투구",
+      "from": 16,
+      "to": 17,
+      "mainStat": 2793,
+      "vitality": 151,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "투구",
+      "from": 17,
+      "to": 18,
+      "mainStat": 2860,
+      "vitality": 153,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "투구",
+      "from": 18,
+      "to": 19,
+      "mainStat": 2932,
+      "vitality": 156,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "투구",
+      "from": 19,
+      "to": 20,
+      "mainStat": 3005,
+      "vitality": 158,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "투구",
+      "from": 20,
+      "to": 21,
+      "mainStat": 3081,
+      "vitality": 159,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "투구",
+      "from": 21,
+      "to": 22,
+      "mainStat": 3157,
+      "vitality": 163,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "투구",
+      "from": 22,
+      "to": 23,
+      "mainStat": 3236,
+      "vitality": 164,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "투구",
+      "from": 23,
+      "to": 24,
+      "mainStat": 3317,
+      "vitality": 166,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "투구",
+      "from": 24,
+      "to": 25,
+      "mainStat": 3400,
+      "vitality": 169,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "견갑",
+      "from": 10,
+      "to": 11,
+      "mainStat": 2830,
+      "vitality": 138,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "견갑",
+      "from": 11,
+      "to": 12,
+      "mainStat": 2931,
+      "vitality": 141,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "견갑",
+      "from": 12,
+      "to": 13,
+      "mainStat": 3033,
+      "vitality": 143,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "견갑",
+      "from": 13,
+      "to": 14,
+      "mainStat": 3139,
+      "vitality": 146,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "견갑",
+      "from": 14,
+      "to": 15,
+      "mainStat": 3249,
+      "vitality": 148,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "견갑",
+      "from": 15,
+      "to": 16,
+      "mainStat": 3363,
+      "vitality": 151,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "견갑",
+      "from": 16,
+      "to": 17,
+      "mainStat": 2971,
+      "vitality": 131,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "견갑",
+      "from": 17,
+      "to": 18,
+      "mainStat": 3045,
+      "vitality": 133,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "견갑",
+      "from": 18,
+      "to": 19,
+      "mainStat": 3120,
+      "vitality": 135,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "견갑",
+      "from": 19,
+      "to": 20,
+      "mainStat": 3198,
+      "vitality": 136,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "견갑",
+      "from": 20,
+      "to": 21,
+      "mainStat": 3279,
+      "vitality": 139,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "견갑",
+      "from": 21,
+      "to": 22,
+      "mainStat": 3360,
+      "vitality": 140,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "견갑",
+      "from": 22,
+      "to": 23,
+      "mainStat": 3444,
+      "vitality": 143,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "견갑",
+      "from": 23,
+      "to": 24,
+      "mainStat": 3531,
+      "vitality": 144,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "견갑",
+      "from": 24,
+      "to": 25,
+      "mainStat": 3618,
+      "vitality": 146,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "상의",
+      "from": 10,
+      "to": 11,
+      "mainStat": 2128,
+      "vitality": 213,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "상의",
+      "from": 11,
+      "to": 12,
+      "mainStat": 2203,
+      "vitality": 217,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "상의",
+      "from": 12,
+      "to": 13,
+      "mainStat": 2280,
+      "vitality": 219,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "상의",
+      "from": 13,
+      "to": 14,
+      "mainStat": 2359,
+      "vitality": 225,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "상의",
+      "from": 14,
+      "to": 15,
+      "mainStat": 2442,
+      "vitality": 228,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "상의",
+      "from": 15,
+      "to": 16,
+      "mainStat": 2528,
+      "vitality": 232,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "상의",
+      "from": 16,
+      "to": 17,
+      "mainStat": 2233,
+      "vitality": 202,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "상의",
+      "from": 17,
+      "to": 18,
+      "mainStat": 2289,
+      "vitality": 204,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "상의",
+      "from": 18,
+      "to": 19,
+      "mainStat": 2345,
+      "vitality": 207,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "상의",
+      "from": 19,
+      "to": 20,
+      "mainStat": 2404,
+      "vitality": 211,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "상의",
+      "from": 20,
+      "to": 21,
+      "mainStat": 2465,
+      "vitality": 213,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "상의",
+      "from": 21,
+      "to": 22,
+      "mainStat": 2525,
+      "vitality": 216,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "상의",
+      "from": 22,
+      "to": 23,
+      "mainStat": 2589,
+      "vitality": 219,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "상의",
+      "from": 23,
+      "to": 24,
+      "mainStat": 2654,
+      "vitality": 222,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "상의",
+      "from": 24,
+      "to": 25,
+      "mainStat": 2720,
+      "vitality": 225,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "하의",
+      "from": 10,
+      "to": 11,
+      "mainStat": 2300,
+      "vitality": 181,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "하의",
+      "from": 11,
+      "to": 12,
+      "mainStat": 2379,
+      "vitality": 184,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "하의",
+      "from": 12,
+      "to": 13,
+      "mainStat": 2463,
+      "vitality": 187,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "하의",
+      "from": 13,
+      "to": 14,
+      "mainStat": 2550,
+      "vitality": 191,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "하의",
+      "from": 14,
+      "to": 15,
+      "mainStat": 2637,
+      "vitality": 194,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "하의",
+      "from": 15,
+      "to": 16,
+      "mainStat": 2731,
+      "vitality": 197,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "하의",
+      "from": 16,
+      "to": 17,
+      "mainStat": 2414,
+      "vitality": 171,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "하의",
+      "from": 17,
+      "to": 18,
+      "mainStat": 2472,
+      "vitality": 174,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "하의",
+      "from": 18,
+      "to": 19,
+      "mainStat": 2534,
+      "vitality": 176,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "하의",
+      "from": 19,
+      "to": 20,
+      "mainStat": 2597,
+      "vitality": 179,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "하의",
+      "from": 20,
+      "to": 21,
+      "mainStat": 2663,
+      "vitality": 181,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "하의",
+      "from": 21,
+      "to": 22,
+      "mainStat": 2729,
+      "vitality": 184,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "하의",
+      "from": 22,
+      "to": 23,
+      "mainStat": 2797,
+      "vitality": 186,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "하의",
+      "from": 23,
+      "to": 24,
+      "mainStat": 2867,
+      "vitality": 189,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "하의",
+      "from": 24,
+      "to": 25,
+      "mainStat": 2938,
+      "vitality": 191,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "장갑",
+      "from": 10,
+      "to": 11,
+      "mainStat": 3192,
+      "vitality": 106,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "장갑",
+      "from": 11,
+      "to": 12,
+      "mainStat": 3304,
+      "vitality": 108,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "장갑",
+      "from": 12,
+      "to": 13,
+      "mainStat": 3420,
+      "vitality": 110,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "장갑",
+      "from": 13,
+      "to": 14,
+      "mainStat": 3540,
+      "vitality": 113,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "장갑",
+      "from": 14,
+      "to": 15,
+      "mainStat": 3662,
+      "vitality": 113,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "장갑",
+      "from": 15,
+      "to": 16,
+      "mainStat": 3792,
+      "vitality": 117,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "장갑",
+      "from": 16,
+      "to": 17,
+      "mainStat": 3350,
+      "vitality": 101,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "장갑",
+      "from": 17,
+      "to": 18,
+      "mainStat": 3433,
+      "vitality": 102,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "장갑",
+      "from": 18,
+      "to": 19,
+      "mainStat": 3518,
+      "vitality": 103,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "장갑",
+      "from": 19,
+      "to": 20,
+      "mainStat": 3606,
+      "vitality": 106,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "장갑",
+      "from": 20,
+      "to": 21,
+      "mainStat": 3697,
+      "vitality": 106,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "장갑",
+      "from": 21,
+      "to": 22,
+      "mainStat": 3788,
+      "vitality": 108,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "장갑",
+      "from": 22,
+      "to": 23,
+      "mainStat": 3884,
+      "vitality": 110,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "장갑",
+      "from": 23,
+      "to": 24,
+      "mainStat": 3981,
+      "vitality": 111,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "장갑",
+      "from": 24,
+      "to": 25,
+      "mainStat": 4080,
+      "vitality": 112,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 0,
+      "to": 1,
+      "mainStat": 0,
+      "vitality": 540,
+      "weaponAttack": 1850,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 1,
+      "to": 2,
+      "mainStat": 6000,
+      "vitality": 0,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 2,
+      "to": 3,
+      "mainStat": 0,
+      "vitality": 542,
+      "weaponAttack": 1860,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 3,
+      "to": 4,
+      "mainStat": 6030,
+      "vitality": 0,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 4,
+      "to": 5,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 0,
+      "baseAttack": 850
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 5,
+      "to": 6,
+      "mainStat": 0,
+      "vitality": 544,
+      "weaponAttack": 1867,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 6,
+      "to": 7,
+      "mainStat": 6078,
+      "vitality": 0,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 7,
+      "to": 8,
+      "mainStat": 0,
+      "vitality": 546,
+      "weaponAttack": 1892,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 8,
+      "to": 9,
+      "mainStat": 6138,
+      "vitality": 0,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 9,
+      "to": 10,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 0,
+      "baseAttack": 1180
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 10,
+      "to": 11,
+      "mainStat": 0,
+      "vitality": 549,
+      "weaponAttack": 1904,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 11,
+      "to": 12,
+      "mainStat": 6216,
+      "vitality": 0,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 12,
+      "to": 13,
+      "mainStat": 0,
+      "vitality": 552,
+      "weaponAttack": 1944,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 13,
+      "to": 14,
+      "mainStat": 6306,
+      "vitality": 0,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 14,
+      "to": 15,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 0,
+      "baseAttack": 1660
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 15,
+      "to": 16,
+      "mainStat": 0,
+      "vitality": 555,
+      "weaponAttack": 1961,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 16,
+      "to": 17,
+      "mainStat": 6414,
+      "vitality": 0,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 17,
+      "to": 18,
+      "mainStat": 0,
+      "vitality": 558,
+      "weaponAttack": 2016,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 18,
+      "to": 19,
+      "mainStat": 6534,
+      "vitality": 0,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 19,
+      "to": 20,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 0,
+      "baseAttack": 2290
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 20,
+      "to": 21,
+      "mainStat": 0,
+      "vitality": 562,
+      "weaponAttack": 2038,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 21,
+      "to": 22,
+      "mainStat": 6672,
+      "vitality": 0,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 22,
+      "to": 23,
+      "mainStat": 0,
+      "vitality": 566,
+      "weaponAttack": 2108,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 23,
+      "to": 24,
+      "mainStat": 6822,
+      "vitality": 0,
+      "weaponAttack": 0,
+      "baseAttack": 0
+    },
+    {
+      "set": "세르카",
+      "slot": "완갑",
+      "from": 24,
+      "to": 25,
+      "mainStat": 0,
+      "vitality": 0,
+      "weaponAttack": 0,
+      "baseAttack": 3070
+    }
+  ],
+  "advancedHoning": {
+    "1": {
+      "basicEffect": 0,
+      "무기": 1.0026370033979095,
+      "투구": 1.0003804172885027,
+      "견갑": 1.0004134504284012,
+      "상의": 1.0003027318816793,
+      "하의": 1.0003433150353722,
+      "장갑": 1.0004820234682876
+    },
+    "2": {
+      "basicEffect": 0,
+      "무기": 1.0026421140124397,
+      "투구": 1.000383929093781,
+      "견갑": 1.0004169695538425,
+      "상의": 1.0003062865310497,
+      "하의": 1.0003431972106098,
+      "장갑": 1.0004817912336061
+    },
+    "3": {
+      "basicEffect": 0,
+      "무기": 1.002651170800277,
+      "투구": 1.0003874368130763,
+      "견갑": 1.0004204842207765,
+      "상의": 1.000309837900101,
+      "하의": 1.0003430794666939,
+      "장갑": 1.0004889112717943
+    },
+    "4": {
+      "basicEffect": 0,
+      "무기": 1.0026481548791155,
+      "투구": 1.0003909404126432,
+      "견갑": 1.0004203074881097,
+      "상의": 1.0003097419303117,
+      "하의": 1.0003466103333662,
+      "장갑": 1.000488672354372
+    },
+    "5": {
+      "basicEffect": 0,
+      "무기": 1.0026570952809668,
+      "투구": 1.0003907876379627,
+      "견갑": 1.0004275016215578,
+      "상의": 1.0003096460199556,
+      "하의": 1.0003501375019146,
+      "장갑": 1.000492106103952
+    },
+    "6": {
+      "basicEffect": 0,
+      "무기": 1.0026619731180446,
+      "투구": 1.0003942857768708,
+      "견갑": 1.0004273189420174,
+      "상의": 1.0003168337023656,
+      "하의": 1.0003536609376027,
+      "장갑": 1.0004955346819218
+    },
+    "7": {
+      "basicEffect": 0,
+      "무기": 1.002662830922124,
+      "투구": 1.0003977797322103,
+      "견갑": 1.0004271364185346,
+      "상의": 1.0003130927373407,
+      "하의": 1.0003535359057625,
+      "장갑": 1.0004952892489214
+    },
+    "8": {
+      "basicEffect": 0,
+      "무기": 1.0026636631296066,
+      "투구": 1.0003976215664099,
+      "견갑": 1.0004343153276503,
+      "상의": 1.0003166342146925,
+      "하의": 1.0003570543742804,
+      "장갑": 1.0005023780449793
+    },
+    "9": {
+      "basicEffect": 0,
+      "무기": 1.0026723529713175,
+      "투구": 1.0004011099807102,
+      "견갑": 1.0004341267797359,
+      "상의": 1.0003201723109165,
+      "하의": 1.000356926931958,
+      "장갑": 1.0005021257880076
+    },
+    "10": {
+      "basicEffect": 0,
+      "무기": 1.002677023590042,
+      "투구": 1.0004045941483293,
+      "견갑": 1.0004376158394868,
+      "상의": 1.0003237069906161,
+      "하의": 1.0003604403926252,
+      "장갑": 1.000505537096532
+    },
+    "11": {
+      "basicEffect": 0,
+      "무기": 1.0026816378377532,
+      "투구": 1.0004080740362895,
+      "견갑": 1.0004411002510596,
+      "상의": 1.0003236022383093,
+      "하의": 1.0003639500223829,
+      "장갑": 1.0005126045804882
+    },
+    "12": {
+      "basicEffect": 0,
+      "무기": 1.0026822859645281,
+      "투구": 1.0004079075797971,
+      "견갑": 1.0004409057674148,
+      "상의": 1.000327132357752,
+      "하의": 1.0003638176109553,
+      "장갑": 1.0005123419516568
+    },
+    "13": {
+      "basicEffect": 0,
+      "무기": 1.002686809287235,
+      "투구": 1.0004113818060023,
+      "견갑": 1.0004443840506525,
+      "상의": 1.0003270253771692,
+      "하의": 1.000367322148798,
+      "장갑": 1.0005157373031695
+    },
+    "14": {
+      "basicEffect": 0,
+      "무기": 1.0026990553306343,
+      "투구": 1.0004112126406037,
+      "견갑": 1.0004515285894688,
+      "상의": 1.0003305508939404,
+      "하의": 1.0003671872727802,
+      "장갑": 1.0005191272812355
+    },
+    "15": {
+      "basicEffect": 0,
+      "무기": 1.0026956687003774,
+      "투구": 1.000418318722491,
+      "견갑": 1.0004513248034168,
+      "상의": 1.0003304416661523,
+      "하의": 1.0003743208620282,
+      "장갑": 1.0005188579279298
+    },
+    "16": {
+      "basicEffect": 0,
+      "무기": 1.0027000263039811,
+      "투구": 1.0004181438051087,
+      "견갑": 1.0004511212012295,
+      "상의": 1.0003339625381151,
+      "하의": 1.0003741807983493,
+      "장갑": 1.0005258929223577
+    },
+    "17": {
+      "basicEffect": 0,
+      "무기": 1.0027043292414763,
+      "투구": 1.000421603547285,
+      "견갑": 1.0004545837808907,
+      "상의": 1.000337479860073,
+      "하의": 1.00037767230391,
+      "장갑": 1.000529266618972
+    },
+    "18": {
+      "basicEffect": 0,
+      "무기": 1.0027085778042821,
+      "투구": 1.000421425872642,
+      "견갑": 1.0004617058933458,
+      "상의": 1.0003373660058403,
+      "하의": 1.0003775297213904,
+      "장갑": 1.0005289866439993
+    },
+    "19": {
+      "basicEffect": 0,
+      "무기": 1.002712772284446,
+      "투구": 1.0004285112502362,
+      "견갑": 1.0004614928193916,
+      "상의": 1.0003408785964505,
+      "하의": 1.0003773872464883,
+      "장갑": 1.0005359994749394
+    },
+    "20": {
+      "basicEffect": 0,
+      "무기": 1.0027169129745988,
+      "투구": 1.0004283277069947,
+      "견갑": 1.0004649408939312,
+      "상의": 1.000340762437829,
+      "하의": 1.0003844995882953,
+      "장갑": 1.0005357123334098
+    },
+    "21": {
+      "basicEffect": 0,
+      "무기": 1.0027210001679157,
+      "투구": 1.0004317726626224,
+      "견갑": 1.0004647248243559,
+      "상의": 1.0003442702557745,
+      "하의": 1.0003879777656108,
+      "장갑": 1.0005390678497021
+    },
+    "22": {
+      "basicEffect": 0,
+      "무기": 1.0027212282444462,
+      "투구": 1.0004352130912098,
+      "견갑": 1.0004718240571748,
+      "상의": 1.0003477744248137,
+      "하의": 1.0003878272972424,
+      "장갑": 1.0005460581879606
+    },
+    "23": {
+      "basicEffect": 0,
+      "무기": 1.0027328211824007,
+      "투구": 1.0004350237631732,
+      "견갑": 1.0004716015442208,
+      "상의": 1.0003476535198108,
+      "하의": 1.0003876769455404,
+      "장갑": 1.0005457601711505
+    },
+    "24": {
+      "basicEffect": 0,
+      "무기": 1.002729158465312,
+      "투구": 1.000438458221454,
+      "견갑": 1.0004750333436865,
+      "상의": 1.0003511528311246,
+      "하의": 1.0003947702002824,
+      "장갑": 1.0005490988959838
+    },
+    "25": {
+      "basicEffect": 0,
+      "무기": 1.0027368301844057,
+      "투구": 1.0004455101272058,
+      "견갑": 1.0004821125294472,
+      "상의": 1.0003546484276047,
+      "하의": 1.0003946144182696,
+      "장갑": 1.0005524319727273
+    },
+    "26": {
+      "basicEffect": 0,
+      "무기": 1.0027406542935662,
+      "투구": 1.0004453117363175,
+      "견갑": 1.000478229601317,
+      "상의": 1.0003545226966877,
+      "하의": 1.0003980776468544,
+      "장갑": 1.000555759374353
+    },
+    "27": {
+      "basicEffect": 0,
+      "무기": 1.002744426673875,
+      "투구": 1.0004451135220422,
+      "견갑": 1.0004852987323851,
+      "상의": 1.0003580133513665,
+      "하의": 1.0003979192440982,
+      "장갑": 1.0005590810740166
+    },
+    "28": {
+      "basicEffect": 0,
+      "무기": 1.002748147621205,
+      "투구": 1.0004521498822603,
+      "견갑": 1.0004887104244853,
+      "상의": 1.000357885223678,
+      "하의": 1.000404992984943,
+      "장갑": 1.0005623970450572
+    },
+    "29": {
+      "basicEffect": 0,
+      "무기": 1.0027518174316619,
+      "투구": 1.0004519455351397,
+      "견갑": 1.0004884717032718,
+      "상의": 1.0003613708966335,
+      "하의": 1.0004048290320249,
+      "장갑": 1.0005657072609977
+    },
+    "30": {
+      "basicEffect": 2,
+      "무기": 1.012719690199583,
+      "투구": 1.0021213774859328,
+      "견갑": 1.00229542481755,
+      "상의": 1.001697829667948,
+      "하의": 1.0018860289335627,
+      "장갑": 1.0026384746137424
+    },
+    "31": {
+      "basicEffect": 0,
+      "무기": 1.0027612730535047,
+      "투구": 1.0004688164908002,
+      "견갑": 1.000505291014908,
+      "상의": 1.0003714469119418,
+      "하의": 1.0004183285610218,
+      "장갑": 1.0005819732870647
+    },
+    "32": {
+      "basicEffect": 0,
+      "무기": 1.0027610027610028,
+      "투구": 1.0004685968048908,
+      "견갑": 1.0005050358248433,
+      "상의": 1.000378518873672,
+      "하의": 1.0004181536354133,
+      "장갑": 1.0005816347911534
+    },
+    "33": {
+      "basicEffect": 0,
+      "무기": 1.0027680269123884,
+      "투구": 1.000468377324773,
+      "견갑": 1.0005120439268322,
+      "상의": 1.0003747720737148,
+      "하의": 1.0004215821220352,
+      "장갑": 1.0005885177656544
+    },
+    "34": {
+      "basicEffect": 0,
+      "무기": 1.0027676790513316,
+      "투구": 1.0004753604816985,
+      "견갑": 1.0005117818720326,
+      "상의": 1.0003818361274612,
+      "하의": 1.0004250062130147,
+      "장갑": 1.0005917800310322
+    },
+    "35": {
+      "basicEffect": 0,
+      "무기": 1.0027745858121573,
+      "투구": 1.0004787341261843,
+      "견갑": 1.0005151478873495,
+      "상의": 1.000381690384283,
+      "하의": 1.000428425876923,
+      "장갑": 1.0005950363152467
+    },
+    "36": {
+      "basicEffect": 0,
+      "무기": 1.0027777878509858,
+      "투구": 1.0004785050494875,
+      "견갑": 1.0005185085807733,
+      "상의": 1.0003815447523199,
+      "하의": 1.000428242406794,
+      "장갑": 1.0005982865936949
+    },
+    "37": {
+      "basicEffect": 0,
+      "무기": 1.0027845583581954,
+      "투구": 1.0004818722535078,
+      "견갑": 1.000521863923982,
+      "상의": 1.0003885954433587,
+      "하의": 1.0004316562289794,
+      "장갑": 1.0006015308419631
+    },
+    "38": {
+      "basicEffect": 0,
+      "무기": 1.0027840386591897,
+      "투구": 1.0004852344940622,
+      "견갑": 1.0005252138888285,
+      "상의": 1.0003884444955975,
+      "하의": 1.0004350655654595,
+      "장갑": 1.0006047690358253
+    },
+    "39": {
+      "basicEffect": 0,
+      "무기": 1.0027906943290645,
+      "투구": 1.000488591742081,
+      "견갑": 1.0005285584473416,
+      "상의": 1.0003918889767742,
+      "하의": 1.0004384703852789,
+      "장갑": 1.0006080011512448
+    },
+    "40": {
+      "basicEffect": 3,
+      "무기": 1.017414817657248,
+      "투구": 1.0030988879193643,
+      "견갑": 1.0033469745159551,
+      "상의": 1.0024833871819845,
+      "하의": 1.0027589972769273,
+      "장갑": 1.0038363493199198
+    }
+  },
+  "gems": [
+    {
+      "level": 1,
+      "baseAttackPercent": 0,
+      "dealerMultiplier": 1.0047995400495984,
+      "supportMultiplier": 1.001804798448282
+    },
+    {
+      "level": 2,
+      "baseAttackPercent": 0.05,
+      "dealerMultiplier": 1.014776785890859,
+      "supportMultiplier": 1.021137245251054
+    },
+    {
+      "level": 3,
+      "baseAttackPercent": 0.1,
+      "dealerMultiplier": 1.006722143186587,
+      "supportMultiplier": 1.0114377018075296
+    },
+    {
+      "level": 4,
+      "baseAttackPercent": 0.2,
+      "dealerMultiplier": 1.0071250753353147,
+      "supportMultiplier": 1.0117243603667647
+    },
+    {
+      "level": 5,
+      "baseAttackPercent": 0.3,
+      "dealerMultiplier": 1.0070849190789222,
+      "supportMultiplier": 1.0116067095108656
+    },
+    {
+      "level": 6,
+      "baseAttackPercent": 0.45,
+      "dealerMultiplier": 1.0074867766271078,
+      "supportMultiplier": 1.011899295251987
+    },
+    {
+      "level": 7,
+      "baseAttackPercent": 0.6,
+      "dealerMultiplier": 1.0074475595571122,
+      "supportMultiplier": 1.0117822476903287
+    },
+    {
+      "level": 8,
+      "baseAttackPercent": 0.8,
+      "dealerMultiplier": 1.0078488153441143,
+      "supportMultiplier": 1.0120784812321206
+    },
+    {
+      "level": 9,
+      "baseAttackPercent": 1,
+      "dealerMultiplier": 1.007808836498288,
+      "supportMultiplier": 1.0119690904012661
+    },
+    {
+      "level": 10,
+      "baseAttackPercent": 1.2,
+      "dealerMultiplier": 1.0077693125114935,
+      "supportMultiplier": 1.0118655523621318
+    }
+  ]
+}
