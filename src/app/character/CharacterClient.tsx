@@ -1,11 +1,11 @@
 'use client'
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { LoadingComponent } from "../UtilsCompnents";
 import { AbilityComponent, InfomationComponent, NotFoundComponent, useCharacterForm } from "./ui/CharacterForm"
 import { ExpeditionComponent, HistoryComponent, SearchComponent } from "./ui/CharacterSearchSections"
 import { ProfileComponent } from "./ui/CharacterProfile"
 import { useSearchParams } from "next/navigation";
-import { Button, Divider, Input, Tooltip } from "@heroui/react";
+import { Button, Divider, Input, Modal, ModalBody, ModalContent, ModalFooter, Tooltip } from "@heroui/react";
 import { handleSearch, loadProfile, LoadProfileUI, UpdatePayload, UpdateUI, useClickUpdate } from "./lib/characterFeat";
 import { useMobileQuery } from "@/utiils/utils";
 import { SkillComponent } from "./ui/SkillForm";
@@ -33,7 +33,72 @@ export default function CharacterClient() {
     const [isLoadingExpeditionStat, setLoadingExpeditionStat] = useState(false);
     const [loadedExpeditionStatNickname, setLoadedExpeditionStatNickname] = useState<string | null>(null);
     const [loadedExpeditionStatRefreshKey, setLoadedExpeditionStatRefreshKey] = useState(-1);
+    const [isSettingConfirmOpen, setSettingConfirmOpen] = useState(false);
+    const settingConfirmResolver = useRef<((useCachedCharacter: boolean) => void) | null>(null);
     //const onClickUpdate = useClickUpdate(nickname, characterForm.setDisable, characterForm.setLoadingUpdate, characterForm.file, characterForm.setFile, characterForm.setExpeditions, characterForm.setGems, characterForm.setCombat, characterForm.combat);
+
+    const confirmUseCachedCharacter = useCallback(() => {
+        return new Promise<boolean>((resolve) => {
+            settingConfirmResolver.current = resolve;
+            setSettingConfirmOpen(true);
+        });
+    }, []);
+
+    const answerSettingConfirm = useCallback((useCachedCharacter: boolean) => {
+        settingConfirmResolver.current?.(useCachedCharacter);
+        settingConfirmResolver.current = null;
+        setSettingConfirmOpen(false);
+    }, []);
+
+    const settingConfirmModal = (
+        <Modal
+            aria-label="캐릭터 정보 확인"
+            isOpen={isSettingConfirmOpen}
+            isDismissable={false}
+            isKeyboardDismissDisabled
+            hideCloseButton
+            placement="center"
+            size="md"
+            classNames={{
+                backdrop: "bg-black/55 backdrop-blur-[2px]",
+                base: "overflow-hidden border border-default-200/80 bg-content1 shadow-2xl dark:border-white/10 dark:bg-[#171717]"
+            }}>
+            <ModalContent>
+                <div className="h-1 w-full bg-gradient-to-r from-primary-400 via-primary to-sky-400"/>
+                <ModalBody className="px-5 pb-4 pt-5 sm:px-6 sm:pt-6">
+                    <div className="flex items-start gap-3">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-xl font-black text-primary dark:bg-primary/20">
+                            !
+                        </span>
+                        <div className="min-w-0 pt-0.5">
+                            <p className="text-lg font-bold tracking-tight text-foreground">캐릭터 세팅을 확인해주세요</p>
+                            <p className="mt-1 text-sm leading-6 text-default-500">현재 조회된 정보가 평소 전투 세팅과 다를 수 있습니다.</p>
+                        </div>
+                    </div>
+                    <div className="mt-1 rounded-xl border border-default-200/80 bg-default-50 px-4 py-3.5 dark:border-white/10 dark:bg-white/[0.04]">
+                        <p className="text-sm font-semibold text-foreground">카던 세팅 또는 보석이 없습니다.</p>
+                        <p className="mt-1 text-sm text-default-500">데이터베이스에서 데이터를 불러올까요?</p>
+                    </div>
+                </ModalBody>
+                <ModalFooter className="gap-2 border-t border-default-100 px-5 pb-5 pt-4 dark:border-white/[0.08] sm:px-6">
+                    <Button
+                        className="h-11 flex-1 font-semibold"
+                        radius="lg"
+                        variant="bordered"
+                        onPress={() => answerSettingConfirm(false)}>
+                        아니요
+                    </Button>
+                    <Button
+                        className="h-11 flex-1 font-bold shadow-sm shadow-primary/20"
+                        radius="lg"
+                        color="primary"
+                        onPress={() => answerSettingConfirm(true)}>
+                        예
+                    </Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+    );
     
     useEffect(() => {
         if (nickname) {
@@ -66,7 +131,8 @@ export default function CharacterClient() {
         setCharacterInfo: characterForm.setCharacterInfo,
         setTitles: characterForm.setTitles,
         setAttackPieces: characterForm.setAttackPieces,
-        setSupporterPieces: characterForm.setSupporterPieces
+        setSupporterPieces: characterForm.setSupporterPieces,
+        confirmUseCachedCharacter
     }
 
     useEffect(() => {
@@ -165,10 +231,13 @@ export default function CharacterClient() {
 
     if (characterForm.isLoading) {
         return (
-            <LoadingComponent
-                heightStyle="min-h-[calc(100vh-65px)]"
-                message="전투정보실 데이터를 불러오고 있어요"
-                detail="프로필과 장비, 보석, 아크 패시브 정보를 분석하고 있습니다."/>
+            <>
+                <LoadingComponent
+                    heightStyle="min-h-[calc(100vh-65px)]"
+                    message="전투정보실 데이터를 불러오고 있어요"
+                    detail="프로필과 장비, 보석, 아크 패시브 정보를 분석하고 있습니다."/>
+                {settingConfirmModal}
+            </>
         )
     }
 
@@ -249,7 +318,8 @@ export default function CharacterClient() {
         setLoadingUpdate: characterForm.setLoadingUpdate,
         setTitles: characterForm.setTitles,
         setAttackPieces: characterForm.setAttackPieces,
-        setSupportorPieces: characterForm.setSupporterPieces
+        setSupportorPieces: characterForm.setSupporterPieces,
+        confirmUseCachedCharacter
     }
     const updatePayload: UpdatePayload = {
         nickname: characterForm.nickname,
@@ -268,6 +338,7 @@ export default function CharacterClient() {
 
     return (
         <>
+            {settingConfirmModal}
             <div className="w-full">
                 <ProfileComponent info={characterForm.characterInfo} isBadge={characterForm.isBadge}/>
                 {!characterForm.isLoading ? isMobile ? (

@@ -26,6 +26,17 @@ export type CharacterFile = {
     arkGrid: any | null
 }
 
+const temporarySettingEngravings = new Set(["승부사", "선수필승"]);
+
+export function hasTemporaryCharacterSetting(characterInfo: CharacterInfo | null | undefined) {
+    const engravings = Array.isArray(characterInfo?.engravings) ? characterInfo.engravings : [];
+    const gems = Array.isArray(characterInfo?.gems) ? characterInfo.gems : [];
+
+    return gems.length === 0 || engravings.some(engraving => temporarySettingEngravings.has(engraving.name));
+}
+
+export type ConfirmUseCachedCharacter = () => Promise<boolean>;
+
 // 캐릭터 갱신 이벤트 함수
 export type UpdateUI = {
     setDisable: SetStateFn<boolean>,
@@ -34,7 +45,8 @@ export type UpdateUI = {
     setCharacterInfo: SetStateFn<CharacterInfo | null>,
     setTitles: SetStateFn<string[]>,
     setAttackPieces: SetStateFn<CardPiece[]>,
-    setSupportorPieces: SetStateFn<CardPiece[]>
+    setSupportorPieces: SetStateFn<CardPiece[]>,
+    confirmUseCachedCharacter: ConfirmUseCachedCharacter
 }
 export type UpdatePayload = {
     nickname: string | null,
@@ -52,6 +64,18 @@ export function useClickUpdate(ui: UpdateUI, payload: UpdatePayload) {
         
         if (payload.nickname) {
             ui.setLoadingUpdate(true);
+            const cachedRes = await fetch(`/api/characters?nickname=${payload.nickname}`);
+            if (!cachedRes.ok && cachedRes.status !== 401) {
+                addToast({
+                    title: "불러오기 오류",
+                    description: `데이터베이스에 저장된 캐릭터 정보를 확인하지 못했습니다.`,
+                    color: "danger"
+                });
+                ui.setLoadingUpdate(false);
+                return false;
+            }
+            const cachedData = cachedRes.ok ? await cachedRes.json() : null;
+            const cachedCharacter: CharacterInfo | null = cachedData?.character ?? null;
             const lostarkRes = await fetch(`/api/lostark?value=${payload.nickname}&code=5&key=${decryptedApiKey}`);
             if (!lostarkRes.ok) {
                 addToast({
@@ -63,7 +87,7 @@ export function useClickUpdate(ui: UpdateUI, payload: UpdatePayload) {
                 const data = await lostarkRes.json();
                 if (data) {
                     const expeditionRes = await fetch(`/api/lostark?value=${payload.nickname}&code=0&key=${decryptedApiKey}`);
-                    if (!lostarkRes.ok) {
+                    if (!expeditionRes.ok) {
                         addToast({
                             title: "불러오기 오류",
                             description: `입력한 캐릭터가 존재하지 않거나 로스트아크 점검 시간 등의 이유로 데이터를 불러오지 못했습니다.`,
@@ -87,7 +111,7 @@ export function useClickUpdate(ui: UpdateUI, payload: UpdatePayload) {
                         const file: CharacterFile = {
                             profile: data.ArmoryProfile,
                             equipment: data.ArmoryEquipment,
-                            gem: data.ArmoryGem.Gems,
+                            gem: data.ArmoryGem?.Gems ?? null,
                             cards: data.ArmoryCard,
                             stats: data.ArmoryProfile.Stats,
                             engraving: data.ArmoryEngraving ? data.ArmoryEngraving.ArkPassiveEffects : null,
@@ -100,67 +124,127 @@ export function useClickUpdate(ui: UpdateUI, payload: UpdatePayload) {
                         const combatPower = toNumber(file.profile.CombatPower);
                         const characterType = getCharacterType(file.arkpassive);
                         const title = getParsedText(file.profile.Title);
-                        const cloneTitles = structuredClone(payload.titles);
-                        if (isRareTitle(title) && !payload.titles.includes(title)) {
+                        const baseTitles: string[] = Array.isArray(cachedData?.titles) ? cachedData.titles : payload.titles;
+                        const baseExpeditions: ExpeditionCharacterInfo[] = Array.isArray(cachedData?.expeditions) ? cachedData.expeditions : payload.expeditions;
+                        const baseAttackPieces: CardPiece[] = Array.isArray(cachedData?.attackPieces) ? cachedData.attackPieces : payload.attackPieces;
+                        const baseSupportorPieces: CardPiece[] = Array.isArray(cachedData?.supportorPieces) ? cachedData.supportorPieces : payload.supportorPieces;
+                        const cloneTitles = structuredClone(baseTitles);
+                        if (isRareTitle(title) && !baseTitles.includes(title)) {
                             cloneTitles.push(title);
                         }
-                        payload.expeditions.forEach(character => {
-                            const findIndex = newExpeditions.findIndex(char => char.nickname === character.nickname);
-                            if (findIndex > -1) {
-                                newExpeditions[findIndex] = newExpeditions[findIndex].nickname === payload.nickname ? {
-                                    ...newExpeditions[findIndex],
-                                    combatPower: combatPower,
-                                    type: characterType
-                                } : character;
-                            }
-                        });
+                        newExpeditions = mergeExpeditionCharacters(
+                            newExpeditions,
+                            baseExpeditions,
+                            payload.nickname,
+                            combatPower,
+                            characterType
+                        );
                         
                         const info = getCharacterInfoByFile(file, combatPower);
                         const cloneAttackPieces = syncCardPieces(
                             'attack',
-                            Array.isArray(payload.attackPieces) ? payload.attackPieces : [],
+                            Array.isArray(baseAttackPieces) ? baseAttackPieces : [],
                             info.profile.characterType === 'attack' ? info.card.sets : [],
                             info.profile.characterType === 'attack' ? info.card.cards : []
                         );
                         const cloneSupportorPieces = syncCardPieces(
                             'supportor',
-                            Array.isArray(payload.supportorPieces) ? payload.supportorPieces : [],
+                            Array.isArray(baseSupportorPieces) ? baseSupportorPieces : [],
                             info.profile.characterType === 'supportor' ? info.card.sets : [],
                             info.profile.characterType === 'supportor' ? info.card.cards : []
                         );
-                        ui.setAttackPieces(cloneAttackPieces);
-                        ui.setSupportorPieces(cloneSupportorPieces);
-                        const inputRes = await fetch('/api/characters', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                nickname: payload.nickname,
-                                characterInfo: info,
-                                expeditions: newExpeditions,
-                                titles: cloneTitles,
-                                attackPieces: cloneAttackPieces,
-                                supportorPieces: cloneSupportorPieces
-                            })
-                        });
-                        if (inputRes.ok) {
-                            const today = new Date();
-                            const history: CharacterHistory = {
-                                nickname: payload.nickname,
-                                job: info.profile.className,
-                                level: info.profile.itemLevel,
-                                server: info.profile.server,
-                                date: today
+                        const shouldConfirmCachedCharacter = cachedCharacter !== null
+                            && !hasTemporaryCharacterSetting(cachedCharacter)
+                            && hasTemporaryCharacterSetting(info);
+
+                        if (shouldConfirmCachedCharacter) {
+                            const useCachedCharacter = await ui.confirmUseCachedCharacter();
+                            if (useCachedCharacter) {
+                                const cachedAttackPieces = syncCardPieces(
+                                    'attack',
+                                    baseAttackPieces,
+                                    cachedCharacter.profile.characterType === 'attack' ? cachedCharacter.card?.sets ?? [] : [],
+                                    cachedCharacter.profile.characterType === 'attack' ? cachedCharacter.card?.cards ?? [] : []
+                                );
+                                const cachedSupportorPieces = syncCardPieces(
+                                    'supportor',
+                                    baseSupportorPieces,
+                                    cachedCharacter.profile.characterType === 'supportor' ? cachedCharacter.card?.sets ?? [] : [],
+                                    cachedCharacter.profile.characterType === 'supportor' ? cachedCharacter.card?.cards ?? [] : []
+                                );
+                                const history: CharacterHistory = {
+                                    nickname: payload.nickname,
+                                    job: cachedCharacter.profile.className,
+                                    level: cachedCharacter.profile.itemLevel,
+                                    server: cachedCharacter.profile.server,
+                                    date: new Date()
+                                }
+                                updateHistory(history);
+                                ui.setExpeditions(baseExpeditions);
+                                ui.setTitles(baseTitles);
+                                ui.setCharacterInfo(cachedCharacter);
+                                ui.setAttackPieces(cachedAttackPieces);
+                                ui.setSupportorPieces(cachedSupportorPieces);
+                                addToast({
+                                    title: "불러오기 완료",
+                                    description: `데이터베이스에 저장된 캐릭터 정보를 불러왔습니다.`,
+                                    color: "success"
+                                });
+                            } else {
+                                const history: CharacterHistory = {
+                                    nickname: payload.nickname,
+                                    job: info.profile.className,
+                                    level: info.profile.itemLevel,
+                                    server: info.profile.server,
+                                    date: new Date()
+                                }
+                                updateHistory(history);
+                                ui.setExpeditions(newExpeditions);
+                                ui.setTitles(cloneTitles);
+                                ui.setCharacterInfo(info);
+                                ui.setAttackPieces(cloneAttackPieces);
+                                ui.setSupportorPieces(cloneSupportorPieces);
+                                addToast({
+                                    title: "정보 확인",
+                                    description: `API에서 불러온 정보는 데이터베이스에 저장하지 않았습니다.`,
+                                    color: "warning"
+                                });
                             }
-                            updateHistory(history);
-                            ui.setExpeditions(newExpeditions);
-                            ui.setTitles(cloneTitles);
-                            ui.setCharacterInfo(info);
-                            isSuccess = true;
-                            addToast({
-                                title: "갱신 완료",
-                                description: `캐릭터 정보를 갱신하였습니다.`,
-                                color: "success"
+                        } else {
+                            ui.setAttackPieces(cloneAttackPieces);
+                            ui.setSupportorPieces(cloneSupportorPieces);
+                            const inputRes = await fetch('/api/characters', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    nickname: payload.nickname,
+                                    characterInfo: info,
+                                    expeditions: newExpeditions,
+                                    titles: cloneTitles,
+                                    attackPieces: cloneAttackPieces,
+                                    supportorPieces: cloneSupportorPieces
+                                })
                             });
+                            if (inputRes.ok) {
+                                const today = new Date();
+                                const history: CharacterHistory = {
+                                    nickname: payload.nickname,
+                                    job: info.profile.className,
+                                    level: info.profile.itemLevel,
+                                    server: info.profile.server,
+                                    date: today
+                                }
+                                updateHistory(history);
+                                ui.setExpeditions(newExpeditions);
+                                ui.setTitles(cloneTitles);
+                                ui.setCharacterInfo(info);
+                                isSuccess = true;
+                                addToast({
+                                    title: "갱신 완료",
+                                    description: `캐릭터 정보를 갱신하였습니다.`,
+                                    color: "success"
+                                });
+                            }
                         }
                     }
                 }
@@ -205,7 +289,8 @@ export type LoadProfileUI = {
     setCharacterInfo: SetStateFn<CharacterInfo | null>,
     setTitles: SetStateFn<string[]>,
     setAttackPieces: SetStateFn<CardPiece[]>,
-    setSupporterPieces: SetStateFn<CardPiece[]>
+    setSupporterPieces: SetStateFn<CardPiece[]>,
+    confirmUseCachedCharacter: ConfirmUseCachedCharacter
 }
 export async function loadProfile(
     nickname: string,
@@ -280,8 +365,8 @@ export async function loadProfile(
 
     if (res.ok) {
         const data = await res.json();
-        titles = data.titles;
-        loadedExpeditions = data.expeditions;
+        titles = Array.isArray(data.titles) ? data.titles : [];
+        loadedExpeditions = Array.isArray(data.expeditions) ? data.expeditions : [];
         cachedCharacter = data.character ?? null;
         originalAttackPieces = Array.isArray(data.attackPieces) ? data.attackPieces : [];
         originalSupportorPieces = Array.isArray(data.supportorPieces) ? data.supportorPieces : [];
@@ -394,7 +479,7 @@ export async function loadProfile(
             const file: CharacterFile = {
                 profile: data.ArmoryProfile,
                 equipment: data.ArmoryEquipment,
-                gem: data.ArmoryGem.Gems,
+                gem: data.ArmoryGem?.Gems ?? null,
                 cards: data.ArmoryCard,
                 stats: data.ArmoryProfile.Stats,
                 engraving: data.ArmoryEngraving ? data.ArmoryEngraving.ArkPassiveEffects : null,
@@ -404,28 +489,44 @@ export async function loadProfile(
                 avatars: data.ArmoryAvatars,
                 arkGrid: data.ArkGrid
             }
-            ui.setNothing(false);
-            ui.setLoading(false);
             const combatPower = toNumber(file.profile.CombatPower);
             const characterType = getCharacterType(file.arkpassive);
             const title = getParsedText(file.profile.Title);
-            if (isRareTitle(title) && !titles.includes(title)) {
-                titles.push(title);
+            const apiTitles = structuredClone(titles);
+            if (isRareTitle(title) && !apiTitles.includes(title)) {
+                apiTitles.push(title);
             }
-            loadedExpeditions.forEach(character => {
-                const findIndex = newExpeditions.findIndex(char => char.nickname === character.nickname);
-                if (findIndex > -1) {
-                    newExpeditions[findIndex] = newExpeditions[findIndex].nickname === nickname ? {
-                        ...newExpeditions[findIndex],
-                        combatPower: combatPower,
-                        type: characterType
-                    } : character;
-                }
-            });
-            ui.setTitles(titles);
-            ui.setExpeditions(newExpeditions);
+            newExpeditions = mergeExpeditionCharacters(
+                newExpeditions,
+                loadedExpeditions,
+                nickname,
+                combatPower,
+                characterType
+            );
             const info = getCharacterInfoByFile(file, combatPower);
-            ui.setCharacterInfo(info);
+            const normalCachedCharacter = cachedCharacter !== null
+                && !hasTemporaryCharacterSetting(cachedCharacter)
+                ? cachedCharacter
+                : null;
+            const shouldConfirmCachedCharacter = normalCachedCharacter !== null
+                && hasTemporaryCharacterSetting(info);
+
+            if (shouldConfirmCachedCharacter) {
+                const useCachedCharacter = await ui.confirmUseCachedCharacter();
+                if (useCachedCharacter) {
+                    await applyCachedCharacter(
+                        normalCachedCharacter,
+                        titles,
+                        loadedExpeditions,
+                        attackPieces,
+                        supportorPieces,
+                        originalAttackPieces,
+                        originalSupportorPieces
+                    );
+                    return;
+                }
+            }
+
             attackPieces = syncCardPieces(
                 'attack',
                 attackPieces,
@@ -438,8 +539,26 @@ export async function loadProfile(
                 info.profile.characterType === 'supportor' ? info.card.sets : [],
                 info.profile.characterType === 'supportor' ? info.card.cards : []
             );
+            ui.setNothing(false);
+            ui.setTitles(apiTitles);
+            ui.setExpeditions(newExpeditions);
+            ui.setCharacterInfo(info);
             ui.setAttackPieces(attackPieces);
             ui.setSupporterPieces(supportorPieces);
+
+            if (shouldConfirmCachedCharacter) {
+                const history: CharacterHistory = {
+                    nickname: nickname,
+                    job: info.profile.className,
+                    level: info.profile.itemLevel,
+                    server: info.profile.server,
+                    date: new Date()
+                }
+                saveHistory(history);
+                ui.setLoading(false);
+                return;
+            }
+
             const inputRes = await fetch('/api/characters', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -447,7 +566,7 @@ export async function loadProfile(
                     nickname: nickname,
                     characterInfo: info,
                     expeditions: newExpeditions,
-                    titles: titles,
+                    titles: apiTitles,
                     attackPieces: attackPieces,
                     supportorPieces: supportorPieces
                 })
@@ -462,6 +581,7 @@ export async function loadProfile(
                     date: today
                 }
                 saveHistory(history);
+                ui.setLoading(false);
                 return;
             }
         }
@@ -472,6 +592,39 @@ export async function loadProfile(
         title: "불러오기 오류",
         description: `입력한 캐릭터가 존재하지 않거나 로스트아크 점검 시간 등의 이유로 데이터를 불러오지 못했습니다.`,
         color: "danger"
+    });
+}
+
+function mergeExpeditionCharacters(
+    apiExpeditions: ExpeditionCharacterInfo[],
+    cachedExpeditions: ExpeditionCharacterInfo[],
+    currentNickname: string,
+    currentCombatPower: number,
+    currentType: string
+) {
+    const cachedByNickname = new Map(
+        cachedExpeditions.map(character => [character.nickname, character])
+    );
+
+    return apiExpeditions.map(character => {
+        if (character.nickname === currentNickname) {
+            return {
+                ...character,
+                combatPower: currentCombatPower,
+                type: currentType
+            };
+        }
+
+        const cachedCharacter = cachedByNickname.get(character.nickname);
+        if (!cachedCharacter) return character;
+
+        return {
+            ...character,
+            combatPower: typeof cachedCharacter.combatPower === 'number'
+                ? cachedCharacter.combatPower
+                : character.combatPower,
+            type: cachedCharacter.type || character.type
+        };
     });
 }
 

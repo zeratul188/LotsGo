@@ -62,6 +62,7 @@ import { CardPiece, CharacterInfo, ExpeditionCharacterInfo } from "../model/type
 import { getCore } from "../lib/arkGridPrints";
 import data from "@/data/characters/data.json";
 import { calculateBraceletCombatPowerPercent, createInitialState } from "../lib/combatSimulatorFeat";
+import { TitleIcon } from "./TitleIcon";
 
 // state 관리
 export function useCharacterForm() {
@@ -205,13 +206,16 @@ function TitleComponent({titles}: { titles: string[] }) {
             </CardHeader>
             <Divider/>
             <CardBody className="px-3 pb-3 pt-3">
-                {paginatedTitles.map((title, index) => (
-                    <div key={index} className="mb-0.5 rounded-lg px-1.5 py-1 transition-colors hover:bg-default-100 dark:hover:bg-white/[0.05]">
-                        <p className={clsx(
-                            'text-sm leading-tight',
-                            getColorTextByGrade(getTitleData(title)?.grade ?? 'default')
-                        )}>{title}</p>
-                        <p className="fadedtext text-[9pt] leading-tight">{getTitleData(title)?.condition ?? '-'}</p>
+                {paginatedTitles.map(title => (
+                    <div key={title} className="mb-0.5 flex items-center gap-2 rounded-lg px-1.5 py-1 transition-colors hover:bg-default-100 dark:hover:bg-white/[0.05]">
+                        <TitleIcon title={title} className="h-5 w-auto max-w-8"/>
+                        <div className="min-w-0">
+                            <p className={clsx(
+                                'text-sm leading-tight',
+                                getColorTextByGrade(getTitleData(title)?.grade ?? 'default')
+                            )}>{title}</p>
+                            <p className="fadedtext text-[9pt] leading-tight">{getTitleData(title)?.condition ?? '-'}</p>
+                        </div>
                     </div>
                 ))}
                 {totalPages > 1 ? (

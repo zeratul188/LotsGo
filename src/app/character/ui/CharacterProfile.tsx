@@ -7,11 +7,13 @@ import VegaIcon from "@/Icons/VegaIcon";
 import { ItemLevelIcon } from "@/Icons/ItemLevelIcon";
 import type { CharacterInfo } from "../model/types";
 import { getParsedText } from "../lib/characterFeat";
+import { TitleIcon } from "./TitleIcon";
 
 const upperClass = ['도화가', '기상술사', '환수사'];
 
 export function ProfileComponent({ info, isBadge }: { info: CharacterInfo, isBadge: boolean }) {
     const isMobile = useMobileQuery();
+    const title = info.profile.title ? getParsedText(info.profile.title) : '';
     return (
         <div className="w-full h-[max-content] sm:h-[300px] border-b-1 border-[#dddddd] dark:border-[#333333] bg-[#F6F6F6] dark:bg-[#111111]">
             <div className="w-full h-full max-w-[1280px] mx-auto flex flex-col-reverse sm:flex-row relative">
@@ -21,7 +23,10 @@ export function ProfileComponent({ info, isBadge }: { info: CharacterInfo, isBad
                         <Chip color="warning" variant="solid" radius="sm">{info.profile.className}</Chip>
                         <Chip color="primary" variant="solid" radius="sm" className={clsx(info.profile.arkpassiveTitle ? 'flex' : 'hidden')}>{info.profile.arkpassiveTitle}</Chip>
                     </div>
-                    <p className="mt-2">{info.profile.title ? getParsedText(info.profile.title) : '-'}{info.profile.guildName !== '-' ?` · ${info.profile.guildName} 길드` : ''}</p>
+                    <p className="mt-2 flex items-center gap-1">
+                        <TitleIcon title={title} className="h-[1em] w-auto"/>
+                        <span>{title || '-'}{info.profile.guildName !== '-' ?` · ${info.profile.guildName} 길드` : ''}</span>
+                    </p>
                     {isBadge ? (
                         <div className="flex gap-2 items-center">
                             <div className="tag-container">
@@ -80,7 +85,10 @@ export function ProfileComponent({ info, isBadge }: { info: CharacterInfo, isBad
                         className={clsx('mt-2', info.profile.arkpassiveTitle ? 'flex' : 'hidden')}>
                         {info.profile.arkpassiveTitle}
                     </Chip>
-                    <p className="text-[#dddddd] text-sm mt-4">{getParsedText(info.profile.title)}{info.profile.guildName !== '-' ?` · ${info.profile.guildName} 길드` : ''}</p>
+                    <p className="text-[#dddddd] text-sm mt-4 flex items-center gap-1">
+                        <TitleIcon title={title} className="h-[1em] w-auto"/>
+                        <span>{title}{info.profile.guildName !== '-' ?` · ${info.profile.guildName} 길드` : ''}</span>
+                    </p>
                     {isBadge ? (
                         <div className="flex gap-2 items-center">
                             <div className="tag-container-mobile mt-2">
