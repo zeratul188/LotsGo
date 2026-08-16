@@ -132,16 +132,13 @@ export function useClickUpdate(ui: UpdateUI, payload: UpdatePayload) {
                         if (isRareTitle(title) && !baseTitles.includes(title)) {
                             cloneTitles.push(title);
                         }
-                        baseExpeditions.forEach(character => {
-                            const findIndex = newExpeditions.findIndex(char => char.nickname === character.nickname);
-                            if (findIndex > -1) {
-                                newExpeditions[findIndex] = newExpeditions[findIndex].nickname === payload.nickname ? {
-                                    ...newExpeditions[findIndex],
-                                    combatPower: combatPower,
-                                    type: characterType
-                                } : character;
-                            }
-                        });
+                        newExpeditions = mergeExpeditionCharacters(
+                            newExpeditions,
+                            baseExpeditions,
+                            payload.nickname,
+                            combatPower,
+                            characterType
+                        );
                         
                         const info = getCharacterInfoByFile(file, combatPower);
                         const cloneAttackPieces = syncCardPieces(
@@ -499,16 +496,13 @@ export async function loadProfile(
             if (isRareTitle(title) && !apiTitles.includes(title)) {
                 apiTitles.push(title);
             }
-            loadedExpeditions.forEach(character => {
-                const findIndex = newExpeditions.findIndex(char => char.nickname === character.nickname);
-                if (findIndex > -1) {
-                    newExpeditions[findIndex] = newExpeditions[findIndex].nickname === nickname ? {
-                        ...newExpeditions[findIndex],
-                        combatPower: combatPower,
-                        type: characterType
-                    } : character;
-                }
-            });
+            newExpeditions = mergeExpeditionCharacters(
+                newExpeditions,
+                loadedExpeditions,
+                nickname,
+                combatPower,
+                characterType
+            );
             const info = getCharacterInfoByFile(file, combatPower);
             const normalCachedCharacter = cachedCharacter !== null
                 && !hasTemporaryCharacterSetting(cachedCharacter)
@@ -598,6 +592,39 @@ export async function loadProfile(
         title: "불러오기 오류",
         description: `입력한 캐릭터가 존재하지 않거나 로스트아크 점검 시간 등의 이유로 데이터를 불러오지 못했습니다.`,
         color: "danger"
+    });
+}
+
+function mergeExpeditionCharacters(
+    apiExpeditions: ExpeditionCharacterInfo[],
+    cachedExpeditions: ExpeditionCharacterInfo[],
+    currentNickname: string,
+    currentCombatPower: number,
+    currentType: string
+) {
+    const cachedByNickname = new Map(
+        cachedExpeditions.map(character => [character.nickname, character])
+    );
+
+    return apiExpeditions.map(character => {
+        if (character.nickname === currentNickname) {
+            return {
+                ...character,
+                combatPower: currentCombatPower,
+                type: currentType
+            };
+        }
+
+        const cachedCharacter = cachedByNickname.get(character.nickname);
+        if (!cachedCharacter) return character;
+
+        return {
+            ...character,
+            combatPower: typeof cachedCharacter.combatPower === 'number'
+                ? cachedCharacter.combatPower
+                : character.combatPower,
+            type: cachedCharacter.type || character.type
+        };
     });
 }
 
