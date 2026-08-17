@@ -24,7 +24,7 @@ export function ProfileComponent({ info, isBadge }: { info: CharacterInfo, isBad
                         <Chip color="primary" variant="solid" radius="sm" className={clsx(info.profile.arkpassiveTitle ? 'flex' : 'hidden')}>{info.profile.arkpassiveTitle}</Chip>
                     </div>
                     <p className="mt-2 flex items-center gap-1">
-                        <TitleIcon title={title} className="h-[1em] w-auto"/>
+                        <TitleIcon title={title} className="mr-1 h-[1em] w-[1em] scale-[1.75]"/>
                         <span>{title || '-'}{info.profile.guildName !== '-' ?` · ${info.profile.guildName} 길드` : ''}</span>
                     </p>
                     {isBadge ? (
@@ -86,7 +86,7 @@ export function ProfileComponent({ info, isBadge }: { info: CharacterInfo, isBad
                         {info.profile.arkpassiveTitle}
                     </Chip>
                     <p className="text-[#dddddd] text-sm mt-4 flex items-center gap-1">
-                        <TitleIcon title={title} className="h-[1em] w-auto"/>
+                        <TitleIcon title={title} className="mr-1 h-[1em] w-[1em] scale-[1.75]"/>
                         <span>{title}{info.profile.guildName !== '-' ?` · ${info.profile.guildName} 길드` : ''}</span>
                     </p>
                     {isBadge ? (
