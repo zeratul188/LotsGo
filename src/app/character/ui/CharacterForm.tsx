@@ -208,7 +208,7 @@ function TitleComponent({titles}: { titles: string[] }) {
             <CardBody className="px-3 pb-3 pt-3">
                 {paginatedTitles.map(title => (
                     <div key={title} className="mb-0.5 flex items-center gap-2 rounded-lg px-1.5 py-1 transition-colors hover:bg-default-100 dark:hover:bg-white/[0.05]">
-                        <TitleIcon title={title} className="h-5 w-auto max-w-8"/>
+                        <TitleIcon title={title} className="mx-1.5 h-5 w-5 scale-[1.75]"/>
                         <div className="min-w-0">
                             <p className={clsx(
                                 'text-sm leading-tight',
