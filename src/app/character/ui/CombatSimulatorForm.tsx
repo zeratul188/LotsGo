@@ -233,7 +233,7 @@ export function CombatSimulatorComponent({ info }: { info: CharacterInfo }) {
                             <span className="text-default-500">현재 {info.profile.combatPower.toLocaleString()}</span>
                             {hasCombatPowerChange && (
                                 <span className={`rounded-full px-2 py-1 font-bold tabular-nums ${difference > 0 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-300" : "bg-danger/10 text-danger"}`}>
-                                    {difference > 0 ? "+" : ""}{difference.toFixed(2)} ({change > 0 ? "+" : ""}{change.toFixed(2)}%)
+                                    {difference > 0 ? "+" : ""}{difference.toFixed(2)} ({Math.abs(change).toFixed(2)}%)
                                 </span>
                             )}
                         </div>

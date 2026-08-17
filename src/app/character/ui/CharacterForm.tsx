@@ -695,7 +695,7 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                                                             <path d="M3 11.5 6.25 8.25 8.5 10.5 13 6"/>
                                                             <path d="M9.75 6H13v3.25"/>
                                                         </svg>
-                                                        {braceletCombatPowerPercent >= 0 ? '+' : ''}{braceletCombatPowerPercent.toFixed(2)}%
+                                                        {braceletCombatPowerPercent.toFixed(2)}%
                                                     </span>
                                                 </div>
                                             </div>
