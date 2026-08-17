@@ -409,7 +409,7 @@ function EquipmentEditor({ info, support, state, update }: EditorProps & { info:
                 <button className="h-9 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground" onClick={applyBulkAdvanced}>적용</button>
             </div> : null}
         </div>
-        <div className="grid gap-3 xl:grid-cols-2">
+        <div className="grid gap-3 xl:grid-cols-2 mb-4">
             {EQUIPMENT_SLOTS.map((slot) => {
                 const item = equipmentBySlot[slot];
                 if (!item || item.grade === "에스더") return null;
