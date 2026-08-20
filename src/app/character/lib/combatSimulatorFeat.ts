@@ -90,6 +90,13 @@ const WRIST_GUARD_GRADE_RANGES = [
     { grade: "고대", min: 20, max: 25 },
 ];
 export const ARK_GRID_OPTION_NAMES = ["공격력", "보스 피해", "추가 피해", "낙인력", "아군 공격 강화", "아군 피해 강화"];
+
+export function getArkGridOptionLevels(info: CharacterInfo): Record<string, number> {
+    return Object.fromEntries(ARK_GRID_OPTION_NAMES.map((name) => [
+        name,
+        info.arkgrid.options.find((option) => option.name === name || (name === "아군 공격 강화" && option.name === "아군 공격력 강화"))?.level ?? 0,
+    ]));
+}
 export const ENGRAVING_NAMES = characterData.engravings.map((item) => item.name).sort((a, b) => a.localeCompare(b, "ko"));
 export const ENGRAVING_ICON_BY_NAME: Record<string, string> = Object.fromEntries(characterData.engravings.map((item) => [item.name, item.url]));
 
@@ -286,7 +293,7 @@ export function createInitialState(info: CharacterInfo): SimulatorState {
             .map((effect) => ({ ...effect, name: effect.name.trim() })) ?? [],
         stoneHealthBonus: getStoneHealthBonus(info.equipment.stone?.tooltip),
         cores,
-        arkGridOptions: Object.fromEntries(ARK_GRID_OPTION_NAMES.map((name) => [name, info.arkgrid.options.find((option) => option.name === name || (name === "아군 공격 강화" && option.name === "아군 공격력 강화"))?.level ?? 0])),
+        arkGridOptions: getArkGridOptionLevels(info),
         karma,
     };
 }
@@ -484,6 +491,10 @@ function arkGridGemFactor(options: Record<string, number>, support: boolean): nu
     const allyAttack = (options["아군 공격 강화"] ?? 0) * SUPPORT_ARK_GRID_ALLY_ATTACK_LEVEL_COEFFICIENT;
     const allyDamage = (options["아군 피해 강화"] ?? 0) * SUPPORT_ARK_GRID_ALLY_DAMAGE_LEVEL_COEFFICIENT;
     return (1 + brand) * (1 + allyAttack) * (1 + allyDamage);
+}
+
+export function calculateArkGridGemCombatPowerPercent(options: Record<string, number>, support: boolean): number {
+    return (arkGridGemFactor(options, support) - 1) * 100;
 }
 
 function engravingFactor(name: string, bookLevel: number, stoneLevel: number, support: boolean): number {

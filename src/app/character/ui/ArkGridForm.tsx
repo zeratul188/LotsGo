@@ -2,6 +2,7 @@ import { Card, CardBody, Tooltip } from "@heroui/react"
 import clsx from "clsx"
 import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils"
 import { getColorByType, getCore, getGem, getOtherOptions, getPoint, getPower } from "../lib/arkGridPrints"
+import { calculateArkGridGemCombatPowerPercent, getArkGridOptionLevels } from "../lib/combatSimulatorFeat"
 import { ArkGridGem, CharacterInfo, Core } from "../model/types"
 
 function ArkGridGemSlot({ gem }: { gem: ArkGridGem | undefined }) {
@@ -152,13 +153,24 @@ function ArkGridCoreCard({ core, slotIndex }: { core: Core | undefined; slotInde
 export function ArkGridComponent({ info }: { info: CharacterInfo }) {
     const cores = info.arkgrid.cores;
     const options = [...info.arkgrid.options].sort((a, b) => b.level - a.level);
+    const support = info.profile.characterType === "supportor";
+    const gemCombatPowerPercent = calculateArkGridGemCombatPowerPercent(getArkGridOptionLevels(info), support);
 
     return (
         <div className="w-full">
             <div className="mb-5 rounded-2xl border border-default-200/80 bg-content1/95 p-4 shadow-sm dark:border-white/10 dark:bg-[#18181b]">
-                <div className="mb-3">
-                    <p className="font-semibold">장착 중인 아크 그리드 효과</p>
-                    <p className="text-xs text-default-500">현재 적용 중인 효과를 확인할 수 있습니다.</p>
+                <div className="mb-3 flex items-center justify-between gap-4">
+                    <div className="min-w-0">
+                        <p className="font-semibold">장착 중인 아크 그리드 효과</p>
+                        <p className="text-xs text-default-500">현재 적용 중인 효과를 확인할 수 있습니다.</p>
+                    </div>
+                    <div
+                        aria-label={`젬 효과 전투력 증가율 ${gemCombatPowerPercent >= 0 ? "+" : ""}${gemCombatPowerPercent.toFixed(2)}%`}
+                        className="shrink-0 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/10 via-primary/5 to-content1 px-3 py-2.5 text-right shadow-sm dark:border-primary/25 dark:from-primary/20 dark:via-primary/10">
+                        <p className="text-lg font-black tabular-nums leading-none text-primary">
+                            {gemCombatPowerPercent >= 0 ? "+" : ""}{gemCombatPowerPercent.toFixed(2)}%
+                        </p>
+                    </div>
                 </div>
                 <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 min-[1225px]:grid-cols-3">
                     {options.map((item, index) => (

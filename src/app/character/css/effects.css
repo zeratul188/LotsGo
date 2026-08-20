@@ -292,9 +292,84 @@
 .combat-simulator-form select {
     appearance: none;
     -webkit-appearance: none;
-    padding-right: 2rem;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m4 6 4 4 4-4' stroke='%2371717a' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-position: right 0.65rem center;
-    background-repeat: no-repeat;
-    background-size: 0.85rem 0.85rem;
+    box-sizing: border-box;
+    height: 2.5rem;
+    cursor: pointer;
+    border: 1px solid rgba(161, 161, 170, 0.38);
+    border-radius: 0.75rem;
+    padding: 0 2.25rem 0 0.875rem;
+    background-color: rgba(255, 255, 255, 0.96);
+    background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m4 6 4 4 4-4' stroke='%2371717a' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 244, 245, 0.82));
+    background-position: right 0.75rem center, 0 0;
+    background-repeat: no-repeat, no-repeat;
+    background-size: 0.9rem 0.9rem, 100% 100%;
+    color: #27272a;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    box-shadow: 0 1px 2px rgba(24, 24, 27, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.combat-simulator-form select:hover:not(:disabled) {
+    border-color: rgba(0, 111, 238, 0.5);
+    box-shadow: 0 3px 10px rgba(0, 111, 238, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.combat-simulator-form select:focus,
+.combat-simulator-form select:focus-visible {
+    border-color: #006fee;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 111, 238, 0.13), 0 3px 10px rgba(0, 111, 238, 0.1);
+}
+
+.combat-simulator-form select:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.combat-simulator-form select option {
+    background-color: #ffffff;
+    color: #27272a;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.combat-simulator-form .gem-level-select {
+    width: 4rem;
+    min-width: 4rem;
+    padding-left: 0.45rem;
+    padding-right: 1.55rem;
+    text-align: center;
+}
+
+.combat-simulator-form button:not(:disabled) {
+    cursor: pointer;
+}
+
+.combat-simulator-form button:disabled {
+    cursor: not-allowed;
+}
+
+.dark .combat-simulator-form select {
+    border-color: rgba(255, 255, 255, 0.14);
+    background-color: rgba(255, 255, 255, 0.055);
+    background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='m4 6 4 4 4-4' stroke='%23a1a1aa' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025));
+    color: #f4f4f5;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.dark .combat-simulator-form select:hover:not(:disabled) {
+    border-color: rgba(0, 111, 238, 0.72);
+    box-shadow: 0 3px 12px rgba(0, 111, 238, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.dark .combat-simulator-form select option {
+    background-color: #18181b;
+    color: #f4f4f5;
 }

@@ -666,7 +666,7 @@ function GemEditor({ info, state, update }: EditorProps & { info: CharacterInfo 
                             </div>
                             <select
                                 aria-label={`보석 ${index + 1} 레벨`}
-                                className={`${controlClass} mt-2 w-14 cursor-pointer px-1 text-center font-bold`}
+                                className={`${controlClass} gem-level-select mt-2 cursor-pointer text-center font-bold`}
                                 value={level}
                                 onChange={(e) => update((next) => { next.gems[index] = Number(e.target.value); })}
                             >
