@@ -338,11 +338,132 @@
     font-weight: 500;
 }
 
+.combat-simulator-form .simulator-select-trigger {
+    box-sizing: border-box;
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    border: 1px solid rgba(161, 161, 170, 0.38);
+    border-radius: 0.75rem;
+    padding-right: 0.75rem;
+    padding-left: 0.875rem;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 244, 245, 0.82));
+    color: #27272a;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    box-shadow: 0 1px 2px rgba(24, 24, 27, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+    transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.combat-simulator-form .simulator-select-trigger:hover:not(:disabled) {
+    border-color: rgba(0, 111, 238, 0.5);
+    box-shadow: 0 3px 10px rgba(0, 111, 238, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.combat-simulator-form .simulator-select-trigger:focus-visible {
+    border-color: #006fee;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 111, 238, 0.13), 0 3px 10px rgba(0, 111, 238, 0.1);
+}
+
+.combat-simulator-form .simulator-select-trigger:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+.simulator-select-menu {
+    position: fixed;
+    z-index: 10000;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: 1px solid rgba(161, 161, 170, 0.28);
+    border-radius: 0.875rem;
+    padding: 0.375rem;
+    background: rgba(255, 255, 255, 0.98);
+    color: #27272a;
+    box-shadow: 0 16px 40px rgba(24, 24, 27, 0.16), 0 4px 12px rgba(24, 24, 27, 0.08);
+    backdrop-filter: blur(18px);
+    animation: simulator-select-menu-in 140ms ease-out;
+}
+
+.simulator-select-option {
+    display: flex;
+    width: 100%;
+    min-height: 2.25rem;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    border: 0;
+    border-radius: 0.625rem;
+    padding: 0.45rem 0.625rem;
+    background: transparent;
+    color: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+.simulator-select-option[data-active="true"] {
+    background: rgba(0, 111, 238, 0.09);
+    color: #005bc4;
+}
+
+.simulator-select-option[data-selected="true"] {
+    background: rgba(0, 111, 238, 0.13);
+    color: #006fee;
+    font-weight: 800;
+}
+
+.simulator-select-option:disabled {
+    cursor: not-allowed;
+    opacity: 0.38;
+}
+
+.simulator-select-group {
+    position: sticky;
+    top: -0.375rem;
+    z-index: 1;
+    margin: 0.25rem -0.375rem 0.2rem;
+    padding: 0.45rem 0.75rem 0.3rem;
+    background: rgba(255, 255, 255, 0.96);
+    color: #71717a;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+.simulator-select-menu::-webkit-scrollbar {
+    width: 0.45rem;
+}
+
+.simulator-select-menu::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    background: rgba(113, 113, 122, 0.45);
+    background-clip: padding-box;
+}
+
+@keyframes simulator-select-menu-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
 .combat-simulator-form .gem-level-select {
-    width: 4rem;
-    min-width: 4rem;
+    width: 4.5rem;
+    min-width: 4.5rem;
     padding-left: 0.45rem;
-    padding-right: 1.55rem;
+    padding-right: 1.25rem;
     text-align: center;
 }
 
@@ -362,6 +483,40 @@
         linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025));
     color: #f4f4f5;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.dark .combat-simulator-form .simulator-select-trigger {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025));
+    color: #f4f4f5;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.dark .combat-simulator-form .simulator-select-trigger:hover:not(:disabled) {
+    border-color: rgba(0, 111, 238, 0.72);
+    box-shadow: 0 3px 12px rgba(0, 111, 238, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.dark .simulator-select-menu {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(24, 24, 27, 0.97);
+    color: #f4f4f5;
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42), 0 4px 12px rgba(0, 0, 0, 0.24);
+}
+
+.dark .simulator-select-option[data-active="true"] {
+    background: rgba(0, 111, 238, 0.18);
+    color: #8ec5ff;
+}
+
+.dark .simulator-select-option[data-selected="true"] {
+    background: rgba(0, 111, 238, 0.24);
+    color: #c4e1ff;
+}
+
+.dark .simulator-select-group {
+    background: rgba(24, 24, 27, 0.96);
+    color: #a1a1aa;
 }
 
 .dark .combat-simulator-form select:hover:not(:disabled) {
