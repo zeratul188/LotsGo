@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from "react";
+import { Tooltip } from "@heroui/react";
 import { CharacterInfo } from "../model/types";
 import {
     ARK_GRID_OPTION_NAMES,
@@ -30,6 +31,7 @@ import {
     SimulatorSection,
     SimulatorState,
 } from "../lib/combatSimulatorFeat";
+import SimulatorSelect from "./SimulatorSelect";
 
 const simulatorSections: Array<{ key: SimulatorSection; label: string; detail: string }> = [
     { key: "equipment", label: "장비", detail: "재련 · 품질 · 장신구" },
@@ -56,6 +58,14 @@ const accessoryGradeActiveClasses: Record<OptionGrade, string> = {
 };
 const controlClass = "h-9 rounded-lg border border-default-300 bg-content1 px-2 text-sm outline-none focus:border-primary dark:border-white/15";
 const cardClass = "rounded-2xl border border-default-200/80 bg-content1 p-4 shadow-sm dark:border-white/10";
+
+function formatExpectedItemLevel(value: number) {
+    const nearestInteger = Math.round(value);
+    const isRoundingArtifact = Math.abs(value - nearestInteger) < 0.02;
+    return isRoundingArtifact
+        ? nearestInteger.toLocaleString()
+        : value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
 
 function SimulatorSectionIcon({ section }: { section: SimulatorSection }) {
     const commonProps = {
@@ -240,7 +250,7 @@ export function CombatSimulatorComponent({ info }: { info: CharacterInfo }) {
                         <div className="relative mt-3 flex items-center justify-between gap-2 border-t border-primary/10 pt-3">
                             <span className="text-[11px] font-semibold text-default-500">예상 아이템 레벨</span>
                             <span className="text-sm font-black tabular-nums text-foreground">
-                                {expectedItemLevel.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                                {formatExpectedItemLevel(expectedItemLevel)}
                                 {hasItemLevelChange && <span className={`ml-1.5 text-[10px] ${itemLevelDifference > 0 ? "text-emerald-600 dark:text-emerald-300" : "text-danger"}`}>({itemLevelDifference > 0 ? "+" : ""}{itemLevelDifference.toFixed(2)})</span>}
                             </span>
                         </div>
@@ -279,13 +289,13 @@ export function CombatSimulatorComponent({ info }: { info: CharacterInfo }) {
             </aside>
 
             <main className="min-w-0">
-                {section === "equipment" && <EquipmentEditor info={info} support={support} state={state} update={update}/>} 
-                {section === "avatar" && <AvatarEditor info={info} state={state} update={update}/>}
+                {section === "equipment" && <EquipmentEditor info={info} initial={initial} support={support} state={state} update={update}/>}
+                {section === "avatar" && <AvatarEditor info={info} initial={initial} state={state} update={update}/>}
                 {section === "bracelet" && <BraceletEditor info={info} initial={initial} support={support} state={state} update={update}/>}
-                {section === "gem" && <GemEditor info={info} state={state} update={update}/>}
-                {section === "engraving" && <EngravingEditor info={info} state={state} update={update}/>}
-                {section === "arkgrid" && <ArkGridEditor info={info} support={support} state={state} update={update}/>}
-                {section === "arkpassive" && <ArkPassiveEditor state={state} update={update}/>} 
+                {section === "gem" && <GemEditor info={info} initial={initial} state={state} update={update}/>}
+                {section === "engraving" && <EngravingEditor info={info} initial={initial} state={state} update={update}/>}
+                {section === "arkgrid" && <ArkGridEditor info={info} initial={initial} support={support} state={state} update={update}/>}
+                {section === "arkpassive" && <ArkPassiveEditor initial={initial} state={state} update={update}/>}
             </main>
         </div>
     );
@@ -358,7 +368,22 @@ function AccessoryGradeButtons({ value, disabled, onChange }: { value: OptionGra
     ))}</div>;
 }
 
-function EquipmentEditor({ info, support, state, update }: EditorProps & { info: CharacterInfo; support: boolean }) {
+function ResetItemButton({ label, onClick }: { label: string; onClick: () => void }) {
+    return <Tooltip showArrow color="danger" content="항목 초기화" delay={300}>
+        <button
+            aria-label={`${label} 항목 초기화`}
+            className="inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-rose-300/70 bg-rose-50 text-rose-600 transition hover:border-rose-400 hover:bg-rose-100 dark:border-rose-400/40 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:border-rose-300/70 dark:hover:bg-rose-500/20"
+            onClick={onClick}
+            type="button"
+        >
+            <svg aria-hidden="true" className="h-4 w-4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.9" viewBox="0 0 24 24">
+                <path d="M4 7v5h5"/><path d="M4.5 12A7.5 7.5 0 1 0 7 5.8"/>
+            </svg>
+        </button>
+    </Tooltip>;
+}
+
+function EquipmentEditor({ info, initial, support, state, update }: EditorProps & { info: CharacterInfo; initial: SimulatorState; support: boolean }) {
     const [bulkHoning, setBulkHoning] = useState(20);
     const [bulkQuality, setBulkQuality] = useState(100);
     const [bulkAdvanced, setBulkAdvanced] = useState(40);
@@ -395,7 +420,7 @@ function EquipmentEditor({ info, support, state, update }: EditorProps & { info:
         <div className="mb-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <div className={`${cardClass} flex items-center gap-2`}>
                 <div className="mr-auto"><p className="text-sm font-bold">일괄 재련</p><p className="mt-0.5 text-[11px] text-default-400">완갑 제외</p></div>
-                <select aria-label="일괄 재련 단계" className={controlClass} value={bulkHoning} onChange={(event) => setBulkHoning(Number(event.target.value))}>{Array.from({ length: 16 }, (_, i) => i + 10).map((level) => <option key={level} value={level}>+{level}</option>)}</select>
+                <SimulatorSelect aria-label="일괄 재련 단계" className={controlClass} value={bulkHoning} onChange={(event) => setBulkHoning(Number(event.target.value))}>{Array.from({ length: 16 }, (_, i) => i + 10).map((level) => <option key={level} value={level}>+{level}</option>)}</SimulatorSelect>
                 <button className="h-9 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground" onClick={applyBulkHoning}>적용</button>
             </div>
             {qualitySlots.length ? <div className={`${cardClass} flex items-center gap-2`}>
@@ -405,7 +430,7 @@ function EquipmentEditor({ info, support, state, update }: EditorProps & { info:
             </div> : null}
             {advancedSlots.length ? <div className={`${cardClass} flex items-center gap-2`}>
                 <div className="mr-auto"><p className="text-sm font-bold">일괄 상급 재련</p><p className="mt-0.5 text-[11px] text-default-400">보유 장비만</p></div>
-                <select aria-label="일괄 상급 재련 단계" className={controlClass} value={bulkAdvanced} onChange={(event) => setBulkAdvanced(Number(event.target.value))}>{Array.from({ length: 41 }, (_, i) => <option value={i} key={i}>{i}단계</option>)}</select>
+                <SimulatorSelect aria-label="일괄 상급 재련 단계" className={controlClass} value={bulkAdvanced} onChange={(event) => setBulkAdvanced(Number(event.target.value))}>{Array.from({ length: 41 }, (_, i) => <option value={i} key={i}>{i}단계</option>)}</SimulatorSelect>
                 <button className="h-9 rounded-lg bg-primary px-3 text-sm font-semibold text-primary-foreground" onClick={applyBulkAdvanced}>적용</button>
             </div> : null}
         </div>
@@ -415,15 +440,26 @@ function EquipmentEditor({ info, support, state, update }: EditorProps & { info:
                 if (!item || item.grade === "에스더") return null;
                 const set = getEquipmentSet(item.name);
                 const range = getHoningRange(set, slot, item.name);
+                const equipmentChanged = (state.equipment.levels[slot] ?? 0) !== (initial.equipment.levels[slot] ?? 0)
+                    || (state.equipment.advancedLevels[slot] ?? 0) !== (initial.equipment.advancedLevels[slot] ?? 0)
+                    || (state.equipment.qualities[slot] ?? 0) !== (initial.equipment.qualities[slot] ?? 0)
+                    || (state.equipment.grades[slot] ?? "") !== (initial.equipment.grades[slot] ?? "");
                 return <div className={cardClass} key={slot}>
                     <div className="mb-4 flex items-center gap-3">
                         <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-default-200 bg-default-100 p-1.5 dark:border-white/10"><img alt={`${slot} 아이콘`} className="h-full w-full object-contain" src={item.icon}/></div>
                         <div className="min-w-0 grow"><div className="mb-1 flex items-center gap-1.5"><span className="rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">{slot}</span><span className="text-xs font-semibold text-default-500">{set} · {item.grade}</span></div><p className="truncate text-sm font-bold">{item.name}</p></div>
+                        {equipmentChanged && <ResetItemButton label={slot} onClick={() => update((next) => {
+                            next.equipment.levels[slot] = initial.equipment.levels[slot] ?? 0;
+                            next.equipment.advancedLevels[slot] = initial.equipment.advancedLevels[slot] ?? 0;
+                            next.equipment.qualities[slot] = initial.equipment.qualities[slot] ?? 0;
+                            next.equipment.grades[slot] = initial.equipment.grades[slot] ?? "";
+                            if (slot === "무기") next.equipment.weaponQuality = initial.equipment.weaponQuality;
+                        })}/>}
                     </div>
                     <div className="grid grid-cols-2 gap-2 rounded-xl bg-default-50 p-3 sm:grid-cols-3 dark:bg-white/[0.03]">
-                        <label className="grid gap-1 text-xs text-default-500">재련<select className={controlClass} value={state.equipment.levels[slot] ?? 0} onChange={(e) => update((next) => { const level = Number(e.target.value); next.equipment.levels[slot] = level; if (slot === "완갑") next.equipment.grades[slot] = getWristGuardGradeForLevel(level, next.equipment.grades[slot]); })}>{range.map((level) => <option value={level} key={level}>+{level}</option>)}</select></label>
-                        {advancedSlots.includes(slot) ? <label className="grid gap-1 text-xs text-default-500">상급 재련<select className={controlClass} value={state.equipment.advancedLevels[slot] ?? 0} onChange={(e) => update((next) => { next.equipment.advancedLevels[slot] = Number(e.target.value); })}>{Array.from({ length: 41 }, (_, i) => <option value={i} key={i}>{i}단계</option>)}</select></label> : null}
-                        {slot === "완갑" ? <label className="grid gap-1 text-xs text-default-500">등급<select aria-label="완갑 등급" className={controlClass} value={state.equipment.grades[slot]} onChange={(e) => update((next) => { const grade = e.target.value; next.equipment.grades[slot] = grade; next.equipment.levels[slot] = clampWristGuardLevelForGrade(next.equipment.levels[slot], grade); })}>{WRIST_GUARD_GRADES.map((grade) => <option key={grade}>{grade}</option>)}</select></label> : null}
+                        <label className="grid gap-1 text-xs text-default-500">재련<SimulatorSelect className={controlClass} value={state.equipment.levels[slot] ?? 0} onChange={(e) => update((next) => { const level = Number(e.target.value); next.equipment.levels[slot] = level; if (slot === "완갑") next.equipment.grades[slot] = getWristGuardGradeForLevel(level, next.equipment.grades[slot]); })}>{range.map((level) => <option value={level} key={level}>+{level}</option>)}</SimulatorSelect></label>
+                        {advancedSlots.includes(slot) ? <label className="grid gap-1 text-xs text-default-500">상급 재련<SimulatorSelect className={controlClass} value={state.equipment.advancedLevels[slot] ?? 0} onChange={(e) => update((next) => { next.equipment.advancedLevels[slot] = Number(e.target.value); })}>{Array.from({ length: 41 }, (_, i) => <option value={i} key={i}>{i}단계</option>)}</SimulatorSelect></label> : null}
+                        {slot === "완갑" ? <label className="grid gap-1 text-xs text-default-500">등급<SimulatorSelect aria-label="완갑 등급" className={controlClass} value={state.equipment.grades[slot]} onChange={(e) => update((next) => { const grade = e.target.value; next.equipment.grades[slot] = grade; next.equipment.levels[slot] = clampWristGuardLevelForGrade(next.equipment.levels[slot], grade); })}>{WRIST_GUARD_GRADES.map((grade) => <option key={grade}>{grade}</option>)}</SimulatorSelect></label> : null}
                         {!support && slot === "무기" ? <label className="grid gap-1 text-xs text-default-500">품질<input className={controlClass} type="number" min={0} max={100} value={state.equipment.weaponQuality} onChange={(e) => update((next) => { const quality = clamp(Number(e.target.value), 100); next.equipment.weaponQuality = quality; next.equipment.qualities.무기 = quality; })}/></label> : null}
                         {support && ["투구", "견갑", "상의", "하의", "장갑"].includes(slot) ? <label className="grid gap-1 text-xs text-default-500">품질<input className={controlClass} type="number" min={0} max={100} value={state.equipment.qualities?.[slot] ?? item.quality ?? 0} onChange={(e) => update((next) => { next.equipment.qualities ??= {}; next.equipment.qualities[slot] = clamp(Number(e.target.value), 100); })}/></label> : null}
                     </div>
@@ -436,17 +472,21 @@ function EquipmentEditor({ info, support, state, update }: EditorProps & { info:
                 const source = info.equipment.accessories[index];
                 const options = getAccessoryOptions(accessory.type);
                 const maxMain = getAccessoryMaxMainStat(accessory);
+                const accessoryChanged = JSON.stringify(accessory) !== JSON.stringify(initial.accessories[index]);
                 return <div className={cardClass} key={accessory.key}>
                     <div className="mb-4 flex items-center gap-3">
                         <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-default-200 bg-default-100 p-1.5 dark:border-white/10">{source?.icon ? <img alt={`${accessory.type} 아이콘`} className="h-full w-full object-contain" src={source.icon}/> : null}</div>
                         <div className="min-w-0 grow"><div className="mb-1 flex items-center gap-1.5"><span className="rounded-md bg-secondary/10 px-2 py-0.5 text-[11px] font-bold text-secondary">{accessory.type}</span><span className="text-xs font-semibold text-default-500">{source?.grade ?? ""}{source?.point ? ` · 깨달음 +${source.point}` : ""}</span></div><p className="truncate text-sm font-bold">{accessory.name}</p></div>
+                        {accessoryChanged && <ResetItemButton label={`${accessory.type} ${index + 1}`} onClick={() => update((next) => {
+                            next.accessories[index] = structuredClone(initial.accessories[index]);
+                        })}/>}
                     </div>
                     <div className="mb-3 grid grid-cols-2 gap-2 rounded-xl bg-default-50 p-3 dark:bg-white/[0.03]">
                         <label className="grid gap-1 text-xs text-default-500">주스탯 · 최대 {maxMain.toLocaleString()}<input className={controlClass} type="number" min={0} max={maxMain} value={accessory.mainStat} onChange={(e) => update((next) => { next.accessories[index].mainStat = clamp(Number(e.target.value), maxMain); })}/></label>
                         <label className="grid gap-1 text-xs text-default-500">체력<input className={controlClass} type="number" min={0} max={999999} value={accessory.vitality} onChange={(e) => update((next) => { next.accessories[index].vitality = clamp(Number(e.target.value), 999999); })}/></label>
                     </div>
                     <div className="space-y-2">{accessory.options.map((option, optionIndex) => <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2" key={optionIndex}>
-                        <select className={controlClass} value={option.name} onChange={(e) => update((next) => { const changed = next.accessories[index].options[optionIndex]; changed.name = e.target.value; changed.grade = e.target.value === "없음" ? "none" : changed.grade === "none" ? "sm" : changed.grade; })}>{options.map((item, i) => <option key={`${item.small}-${i}`} value={item.small}>{item.small.endsWith("%") ? `${item.name}%` : item.name}</option>)}</select>
+                        <SimulatorSelect className={controlClass} value={option.name} onChange={(e) => update((next) => { const changed = next.accessories[index].options[optionIndex]; changed.name = e.target.value; changed.grade = e.target.value === "없음" ? "none" : changed.grade === "none" ? "sm" : changed.grade; })}>{options.map((item, i) => <option key={`${item.small}-${i}`} value={item.small}>{item.small.endsWith("%") ? `${item.name}%` : item.name}</option>)}</SimulatorSelect>
                         <AccessoryGradeButtons disabled={option.name === "없음"} value={option.grade} onChange={(grade) => update((next) => { next.accessories[index].options[optionIndex].grade = grade; })}/>
                     </div>)}</div>
                 </div>;
@@ -475,7 +515,7 @@ function getSimulatorAvatar(info: CharacterInfo, slot: string) {
     return equippedCandidates.sort((left, right) => gradeRank[right.grade] - gradeRank[left.grade])[0];
 }
 
-function AvatarEditor({ info, state, update }: EditorProps & { info: CharacterInfo }) {
+function AvatarEditor({ info, initial, state, update }: EditorProps & { info: CharacterInfo; initial: SimulatorState }) {
     const uniformGrade = avatarGrades.find((grade) => AVATAR_SLOTS.every((slot) => state.avatars[slot] === grade));
     const applyAll = (grade: string) => update((next) => {
         AVATAR_SLOTS.forEach((slot) => { next.avatars[slot] = grade; });
@@ -504,6 +544,7 @@ function AvatarEditor({ info, state, update }: EditorProps & { info: CharacterIn
             {AVATAR_SLOTS.map((slot) => {
                 const grade = state.avatars[slot];
                 const avatar = getSimulatorAvatar(info, slot);
+                const avatarChanged = grade !== initial.avatars[slot];
                 return (
                     <div className={`${cardClass} flex items-center gap-4`} key={slot}>
                         <div className={`flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border ${avatarGradeStyles[avatar?.grade ?? "없음"]}`}>
@@ -519,11 +560,12 @@ function AvatarEditor({ info, state, update }: EditorProps & { info: CharacterIn
                             <div className="mb-2 flex min-w-0 items-center gap-2">
                                 <p className="shrink-0 font-bold">{slot}</p>
                                 <span className={`truncate rounded-full border px-2 py-0.5 text-[10px] font-semibold ${avatarGradeStyles[grade] ?? avatarGradeStyles.없음}`}>{grade}</span>
+                                {avatarChanged && <ResetItemButton label={slot} onClick={() => update((next) => { next.avatars[slot] = initial.avatars[slot]; })}/>}
                             </div>
                             <p className="mb-3 truncate text-xs text-default-500">{avatar ? `${avatar.name} · 현재 ${avatar.grade}` : "장착된 영웅·전설 아바타 없음"}</p>
-                            <select className={`${controlClass} w-full cursor-pointer`} value={grade} onChange={(e) => update((next) => { next.avatars[slot] = e.target.value; })}>
+                            <SimulatorSelect className={`${controlClass} w-full cursor-pointer`} value={grade} onChange={(e) => update((next) => { next.avatars[slot] = e.target.value; })}>
                                 {avatarGrades.map((option) => <option key={option}>{option}</option>)}
-                            </select>
+                            </SimulatorSelect>
                         </div>
                     </div>
                 );
@@ -569,6 +611,7 @@ function BraceletEditor({ info, initial, support, state, update }: EditorProps &
                 const item = state.bracelet[index];
                 const rawOption = braceletRawOptions.find((option) => option.name === item.type);
                 const contribution = optionPercents[index] ?? 0;
+                const braceletChanged = JSON.stringify(item) !== JSON.stringify(initial.bracelet[index]);
                 return (
                     <div className={`${cardClass} p-3 sm:p-4`} key={index}>
                         <div className="grid gap-3 md:grid-cols-[44px_minmax(0,1fr)_190px_120px] md:items-center">
@@ -576,20 +619,23 @@ function BraceletEditor({ info, initial, support, state, update }: EditorProps &
                                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-default-100 text-sm font-black text-default-500 dark:bg-white/[0.06]">{index + 1}</span>
                                 <span className="text-xs font-semibold text-default-400 md:hidden">효과 {index + 1}</span>
                             </div>
-                            <select
-                                aria-label={`팔찌 효과 ${index + 1}`}
-                                className={`${controlClass} w-full cursor-pointer`}
-                                value={item.type}
-                                onChange={(e) => update((next) => {
-                                    const type = e.target.value;
-                                    const raw = braceletRawOptions.some((option) => option.name === type);
-                                    next.bracelet[index] = { type, value: 0, grade: type === "없음" || raw ? "none" : "sm" };
-                                })}
-                            >
-                                <option value="없음">없음</option>
-                                <optgroup label="수치 효과">{braceletRawOptions.map((option) => <option key={option.name} value={option.name} disabled={selected.has(option.name) && option.name !== item.type}>{option.label}</option>)}</optgroup>
-                                <optgroup label="특수 효과">{braceletSpecialOptions.map((option) => <option key={option.name} value={option.name} disabled={selected.has(option.name) && option.name !== item.type}>{option.label}</option>)}</optgroup>
-                            </select>
+                            <div className="flex min-w-0 items-center gap-2">
+                                <SimulatorSelect
+                                    aria-label={`팔찌 효과 ${index + 1}`}
+                                    className={`${controlClass} min-w-0 flex-1 cursor-pointer`}
+                                    value={item.type}
+                                    onChange={(e) => update((next) => {
+                                        const type = e.target.value;
+                                        const raw = braceletRawOptions.some((option) => option.name === type);
+                                        next.bracelet[index] = { type, value: 0, grade: type === "없음" || raw ? "none" : "sm" };
+                                    })}
+                                >
+                                    <option value="없음">없음</option>
+                                    <optgroup label="수치 효과">{braceletRawOptions.map((option) => <option key={option.name} value={option.name} disabled={selected.has(option.name) && option.name !== item.type}>{option.label}</option>)}</optgroup>
+                                    <optgroup label="특수 효과">{braceletSpecialOptions.map((option) => <option key={option.name} value={option.name} disabled={selected.has(option.name) && option.name !== item.type}>{option.label}</option>)}</optgroup>
+                                </SimulatorSelect>
+                                {braceletChanged && <ResetItemButton label={`팔찌 효과 ${index + 1}`} onClick={() => update((next) => { next.bracelet[index] = structuredClone(initial.bracelet[index]); })}/>}
+                            </div>
                             <div className="flex min-h-9 items-center md:justify-end">
                                 {rawOption ? (
                                     <div className="grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 md:grid-cols-[120px_auto] md:justify-end">
@@ -624,7 +670,7 @@ function BraceletEditor({ info, initial, support, state, update }: EditorProps &
     </>;
 }
 
-function GemEditor({ info, state, update }: EditorProps & { info: CharacterInfo }) {
+function GemEditor({ info, initial, state, update }: EditorProps & { info: CharacterInfo; initial: SimulatorState }) {
     const gems = Array.from({ length: 11 }, (_, index) => state.gems[index] ?? 1);
     const [bulkGemLevel, setBulkGemLevel] = useState(Math.max(...gems));
     return <>
@@ -643,15 +689,16 @@ function GemEditor({ info, state, update }: EditorProps & { info: CharacterInfo 
                     <p className="mt-1 text-xs text-default-400">장착 슬롯 11개의 레벨을 한 번에 변경합니다.</p>
                 </div>
                 <div className="grid grid-cols-[100px_64px] gap-2">
-                    <select aria-label="일괄 보석 레벨" className={`${controlClass} cursor-pointer text-center font-bold`} value={bulkGemLevel} onChange={(e) => setBulkGemLevel(Number(e.target.value))}>
+                    <SimulatorSelect aria-label="일괄 보석 레벨" className={`${controlClass} cursor-pointer text-center font-bold`} value={bulkGemLevel} onChange={(e) => setBulkGemLevel(Number(e.target.value))}>
                         {Array.from({ length: 10 }, (_, i) => i + 1).map((value) => <option key={value} value={value}>{value}레벨</option>)}
-                    </select>
+                    </SimulatorSelect>
                     <button className="h-9 cursor-pointer rounded-lg bg-primary text-sm font-bold text-primary-foreground transition hover:opacity-90" onClick={() => update((next) => { next.gems = Array.from({ length: 11 }, () => bulkGemLevel); })} type="button">적용</button>
                 </div>
             </div>
             <div className="grid grid-cols-3 gap-x-2 gap-y-5 sm:grid-cols-6 xl:grid-cols-11">
                 {gems.map((level, index) => {
                     const gem = info.gems[index];
+                    const gemChanged = level !== (initial.gems[index] ?? 1);
                     return (
                         <div className="flex min-w-0 flex-col items-center" key={index} title={gem?.name ?? `보석 ${index + 1}`}>
                             <div className="relative flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border border-amber-300 bg-gradient-to-br from-amber-100 to-orange-100 shadow-sm dark:border-amber-500/30 dark:from-amber-500/20 dark:to-orange-500/10">
@@ -664,14 +711,15 @@ function GemEditor({ info, state, update }: EditorProps & { info: CharacterInfo 
                                 )}
                                 <span className="absolute right-0 top-0 min-w-5 rounded-bl-lg bg-primary px-1 py-0.5 text-center text-[10px] font-black leading-none text-primary-foreground shadow-sm">{level}</span>
                             </div>
-                            <select
+                            <SimulatorSelect
                                 aria-label={`보석 ${index + 1} 레벨`}
-                                className={`${controlClass} mt-2 w-14 cursor-pointer px-1 text-center font-bold`}
+                                className={`${controlClass} gem-level-select mt-2 cursor-pointer text-center font-bold`}
                                 value={level}
                                 onChange={(e) => update((next) => { next.gems[index] = Number(e.target.value); })}
                             >
                                 {Array.from({ length: 10 }, (_, i) => i + 1).map((value) => <option key={value} value={value}>{value}</option>)}
-                            </select>
+                            </SimulatorSelect>
+                            {gemChanged && <div className="mt-1.5"><ResetItemButton label={`보석 ${index + 1}`} onClick={() => update((next) => { next.gems[index] = initial.gems[index] ?? 1; })}/></div>}
                         </div>
                     );
                 })}
@@ -695,7 +743,7 @@ function EngravingIcon({ name, className = "h-12 w-12" }: { name: string; classN
     );
 }
 
-function EngravingEditor({ info, state, update }: EditorProps & { info: CharacterInfo }) {
+function EngravingEditor({ info, initial, state, update }: EditorProps & { info: CharacterInfo; initial: SimulatorState }) {
     const names = ENGRAVING_NAMES;
     const abilityStone = info.equipment.stone;
     return <>
@@ -708,14 +756,15 @@ function EngravingEditor({ info, state, update }: EditorProps & { info: Characte
                         <p className="truncate font-bold">{engraving.name}</p>
                         <p className="mt-1 text-xs text-default-400">전투 각인</p>
                     </div>
-                    <select
+                    {JSON.stringify(engraving) !== JSON.stringify(initial.engravings[index]) && <ResetItemButton label={engraving.name} onClick={() => update((next) => { next.engravings[index] = structuredClone(initial.engravings[index]); })}/>}
+                    <SimulatorSelect
                         aria-label={`${engraving.name} 유물 단계`}
                         className={`${controlClass} shrink-0 cursor-pointer`}
                         value={engraving.level}
                         onChange={(e) => update((next) => { next.engravings[index].level = Number(e.target.value); })}
                     >
                         {Array.from({ length: 5 }, (_, i) => <option key={i} value={i}>유물 {i}단계</option>)}
-                    </select>
+                    </SimulatorSelect>
                 </div>
             ))}
         </div>
@@ -743,6 +792,7 @@ function EngravingEditor({ info, state, update }: EditorProps & { info: Characte
             <div className="grid gap-3 p-4 lg:grid-cols-2">
                 {Array.from({ length: 2 }, (_, index) => {
                     const stone = state.stones[index] ?? { name: names[index] ?? names[0] ?? "", level: 0 };
+                    const initialStone = initial.stones[index] ?? { name: names[index] ?? names[0] ?? "", level: 0 };
                     return (
                         <div className="rounded-2xl border border-default-200/80 bg-content1 p-3 dark:border-white/10" key={index}>
                             <div className="mb-3 flex items-center gap-3">
@@ -751,10 +801,11 @@ function EngravingEditor({ info, state, update }: EditorProps & { info: Characte
                                     <p className="text-xs font-semibold text-default-400">스톤 각인 {index + 1}</p>
                                     <p className="mt-0.5 font-bold">{stone.name}</p>
                                 </div>
+                                {JSON.stringify(stone) !== JSON.stringify(initialStone) && <ResetItemButton label={`스톤 각인 ${index + 1}`} onClick={() => update((next) => { next.stones[index] = structuredClone(initialStone); })}/>}
                             </div>
                             <div className="grid grid-cols-[minmax(0,1fr)_100px] gap-2">
-                                <select aria-label={`스톤 각인 ${index + 1}`} className={`${controlClass} min-w-0 cursor-pointer`} value={stone.name} onChange={(e) => update((next) => { next.stones[index] = { ...stone, name: e.target.value }; })}>{names.map((name) => <option key={name}>{name}</option>)}</select>
-                                <select aria-label={`스톤 각인 ${index + 1} 레벨`} className={`${controlClass} cursor-pointer`} value={stone.level} onChange={(e) => update((next) => { next.stones[index] = { ...stone, level: Number(e.target.value) }; })}>{Array.from({ length: 5 }, (_, i) => <option key={i} value={i}>{i}레벨</option>)}</select>
+                                <SimulatorSelect aria-label={`스톤 각인 ${index + 1}`} className={`${controlClass} min-w-0 cursor-pointer`} value={stone.name} onChange={(e) => update((next) => { next.stones[index] = { ...stone, name: e.target.value }; })}>{names.map((name) => <option key={name}>{name}</option>)}</SimulatorSelect>
+                                <SimulatorSelect aria-label={`스톤 각인 ${index + 1} 레벨`} className={`${controlClass} cursor-pointer`} value={stone.level} onChange={(e) => update((next) => { next.stones[index] = { ...stone, level: Number(e.target.value) }; })}>{Array.from({ length: 5 }, (_, i) => <option key={i} value={i}>{i}레벨</option>)}</SimulatorSelect>
                             </div>
                         </div>
                     );
@@ -767,7 +818,8 @@ function EngravingEditor({ info, state, update }: EditorProps & { info: Characte
                         <span className="block text-sm font-bold text-emerald-700 dark:text-emerald-300">세공 보너스 체력</span>
                         <span className="mt-1 block text-xs text-emerald-600/70 dark:text-emerald-300/60">서포터 전투력 계산에 적용됩니다.</span>
                     </span>
-                    <select aria-label="세공 보너스 체력" className={`${controlClass} w-32 shrink-0 cursor-pointer`} value={state.stoneHealthBonus} onChange={(e) => update((next) => { next.stoneHealthBonus = Number(e.target.value); })}>{STONE_HEALTH_BONUSES.map((value) => <option key={value} value={value}>{value.toLocaleString()}</option>)}</select>
+                    {state.stoneHealthBonus !== initial.stoneHealthBonus && <ResetItemButton label="세공 보너스 체력" onClick={() => update((next) => { next.stoneHealthBonus = initial.stoneHealthBonus; })}/>}
+                    <SimulatorSelect aria-label="세공 보너스 체력" className={`${controlClass} w-32 shrink-0 cursor-pointer`} value={state.stoneHealthBonus} onChange={(e) => update((next) => { next.stoneHealthBonus = Number(e.target.value); })}>{STONE_HEALTH_BONUSES.map((value) => <option key={value} value={value}>{value.toLocaleString()}</option>)}</SimulatorSelect>
                 </label>
             </div>
         </div>
@@ -789,7 +841,7 @@ function clampCorePointForGrade(point: number, grade: string) {
     return getAllowedCorePoints(grade).filter((allowed) => allowed <= point).at(-1) ?? 0;
 }
 
-function ArkGridEditor({ info, support, state, update }: EditorProps & { info: CharacterInfo; support: boolean }) {
+function ArkGridEditor({ info, initial, support, state, update }: EditorProps & { info: CharacterInfo; initial: SimulatorState; support: boolean }) {
     const labels = ["질서 해", "질서 달", "질서 별", "혼돈 해", "혼돈 달", "혼돈 별"];
     const visibleOptions = support ? ARK_GRID_OPTION_NAMES.slice(3) : ARK_GRID_OPTION_NAMES.slice(0, 3);
     const [bulkGrade, setBulkGrade] = useState("유물");
@@ -802,7 +854,7 @@ function ArkGridEditor({ info, support, state, update }: EditorProps & { info: C
                 <p className="text-sm font-bold">코어 등급 일괄 적용</p>
                 <p className="mt-1 text-xs text-default-400">6개 코어의 등급을 한 번에 변경합니다.</p>
                 <div className="mt-3 grid grid-cols-[minmax(0,1fr)_64px] gap-2">
-                    <select aria-label="일괄 코어 등급" className={`${controlClass} cursor-pointer`} value={bulkGrade} onChange={(e) => setBulkGrade(e.target.value)}>{CORE_GRADES.map((grade) => <option key={grade}>{grade}</option>)}</select>
+                    <SimulatorSelect aria-label="일괄 코어 등급" className={`${controlClass} cursor-pointer`} value={bulkGrade} onChange={(e) => setBulkGrade(e.target.value)}>{CORE_GRADES.map((grade) => <option key={grade}>{grade}</option>)}</SimulatorSelect>
                     <button className="h-9 cursor-pointer rounded-lg bg-primary text-sm font-bold text-primary-foreground transition hover:opacity-90" onClick={() => update((next) => { next.cores.slice(0, 6).forEach((core) => { core.grade = bulkGrade; core.point = clampCorePointForGrade(core.point, bulkGrade); }); })} type="button">적용</button>
                 </div>
             </div>
@@ -810,7 +862,7 @@ function ArkGridEditor({ info, support, state, update }: EditorProps & { info: C
                 <p className="text-sm font-bold">코어 포인트 일괄 적용</p>
                 <p className="mt-1 text-xs text-default-400">등급 최대치를 넘으면 가능한 최고 포인트로 보정합니다.</p>
                 <div className="mt-3 grid grid-cols-[minmax(0,1fr)_64px] gap-2">
-                    <select aria-label="일괄 코어 포인트" className={`${controlClass} cursor-pointer`} value={bulkPoint} onChange={(e) => setBulkPoint(Number(e.target.value))}>{CORE_POINTS.map((point) => <option key={point} value={point}>{point}p</option>)}</select>
+                    <SimulatorSelect aria-label="일괄 코어 포인트" className={`${controlClass} cursor-pointer`} value={bulkPoint} onChange={(e) => setBulkPoint(Number(e.target.value))}>{CORE_POINTS.map((point) => <option key={point} value={point}>{point}p</option>)}</SimulatorSelect>
                     <button className="h-9 cursor-pointer rounded-lg bg-primary text-sm font-bold text-primary-foreground transition hover:opacity-90" onClick={() => update((next) => { next.cores.slice(0, 6).forEach((core) => { core.point = clampCorePointForGrade(bulkPoint, core.grade); }); })} type="button">적용</button>
                 </div>
             </div>
@@ -821,6 +873,7 @@ function ArkGridEditor({ info, support, state, update }: EditorProps & { info: C
                 const equippedCore = info.arkgrid.cores.find((item) => item.index === index);
                 const allowedPoints = getAllowedCorePoints(core.grade);
                 const currentName = equippedCore?.name.split(":").at(-1)?.trim();
+                const coreChanged = JSON.stringify(core) !== JSON.stringify(initial.cores[index]);
                 return (
                     <div className={`${cardClass} p-3 sm:p-4`} key={index}>
                         <div className="grid gap-3 md:grid-cols-[64px_minmax(150px,1fr)_110px_100px_minmax(180px,1fr)] md:items-center">
@@ -836,12 +889,15 @@ function ArkGridEditor({ info, support, state, update }: EditorProps & { info: C
                                     <p className="font-black">{labels[index]}</p>
                                     <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${coreGradeStyles[core.grade]}`}>{core.grade}</span>
                                 </div>
-                                <p className="mt-1 truncate text-xs text-default-500">{currentName ? `${currentName} · 현재 ${equippedCore?.grade}` : "장착된 코어 없음"}</p>
+                                <div className="flex items-center gap-2">
+                                    <p className="min-w-0 truncate text-xs text-default-500">{currentName ? `${currentName} · 현재 ${equippedCore?.grade}` : "장착된 코어 없음"}</p>
+                                    {coreChanged && <ResetItemButton label={labels[index]} onClick={() => update((next) => { next.cores[index] = structuredClone(initial.cores[index]); })}/>}
+                                </div>
                             </div>
-                            <select aria-label={`${labels[index]} 등급`} className={`${controlClass} cursor-pointer`} value={core.grade} onChange={(e) => update((next) => { const changed = next.cores[index]; changed.grade = e.target.value; changed.point = clampCorePointForGrade(changed.point, e.target.value); })}>{CORE_GRADES.map((grade) => <option key={grade}>{grade}</option>)}</select>
-                            <select aria-label={`${labels[index]} 포인트`} className={`${controlClass} cursor-pointer`} value={core.point} onChange={(e) => update((next) => { next.cores[index].point = Number(e.target.value); })}>{allowedPoints.map((point) => <option key={point} value={point}>{point}p</option>)}</select>
+                            <SimulatorSelect aria-label={`${labels[index]} 등급`} className={`${controlClass} cursor-pointer`} value={core.grade} onChange={(e) => update((next) => { const changed = next.cores[index]; changed.grade = e.target.value; changed.point = clampCorePointForGrade(changed.point, e.target.value); })}>{CORE_GRADES.map((grade) => <option key={grade}>{grade}</option>)}</SimulatorSelect>
+                            <SimulatorSelect aria-label={`${labels[index]} 포인트`} className={`${controlClass} cursor-pointer`} value={core.point} onChange={(e) => update((next) => { next.cores[index].point = Number(e.target.value); })}>{allowedPoints.map((point) => <option key={point} value={point}>{point}p</option>)}</SimulatorSelect>
                             {index >= 3 ? (
-                                <select aria-label={`${labels[index]} 코어 종류`} className={`${controlClass} min-w-0 cursor-pointer`} value={core.name} onChange={(e) => update((next) => { next.cores[index].name = e.target.value; if (e.target.value === "없음") next.cores[index].point = 0; })}>{getCoreChoices(index, support).map((name) => <option key={name}>{name}</option>)}</select>
+                                <SimulatorSelect aria-label={`${labels[index]} 코어 종류`} className={`${controlClass} min-w-0 cursor-pointer`} value={core.name} onChange={(e) => update((next) => { next.cores[index].name = e.target.value; if (e.target.value === "없음") next.cores[index].point = 0; })}>{getCoreChoices(index, support).map((name) => <option key={name}>{name}</option>)}</SimulatorSelect>
                             ) : (
                                 <span className="truncate rounded-lg bg-default-100 px-3 py-2 text-sm font-semibold text-default-500 dark:bg-white/[0.05]">{core.name}</span>
                             )}
@@ -859,7 +915,10 @@ function ArkGridEditor({ info, support, state, update }: EditorProps & { info: C
             <div className="grid gap-3 sm:grid-cols-3">
                 {visibleOptions.map((name) => (
                     <label className="rounded-xl border border-default-200/80 bg-default-50/70 p-3 text-sm font-bold dark:border-white/10 dark:bg-white/[0.03]" key={name}>
-                        <span className="mb-2 block">{name}</span>
+                        <span className="mb-3 flex min-h-7 items-center justify-between gap-3">
+                            <span>{name}</span>
+                            {state.arkGridOptions[name] !== initial.arkGridOptions[name] && <ResetItemButton label={name} onClick={() => update((next) => { next.arkGridOptions[name] = initial.arkGridOptions[name] ?? 0; })}/>}
+                        </span>
                         <input aria-label={`${name} 합산 레벨`} className={`${controlClass} w-full`} type="number" min={0} max={999} value={state.arkGridOptions[name] ?? 0} onChange={(e) => update((next) => { next.arkGridOptions[name] = clamp(Number(e.target.value), 999); })}/>
                     </label>
                 ))}
@@ -868,7 +927,7 @@ function ArkGridEditor({ info, support, state, update }: EditorProps & { info: C
     </>;
 }
 
-function ArkPassiveEditor({ state, update }: EditorProps) {
+function ArkPassiveEditor({ initial, state, update }: EditorProps & { initial: SimulatorState }) {
     const types = [
         { name: "진화", color: "text-amber-600 dark:text-amber-300", border: "border-amber-300/80 dark:border-amber-500/30", background: "from-amber-100/80 via-amber-50/40 to-content1 dark:from-amber-500/15 dark:via-amber-500/5", progress: "bg-amber-500" },
         { name: "깨달음", color: "text-blue-600 dark:text-blue-300", border: "border-blue-300/80 dark:border-blue-500/30", background: "from-blue-100/80 via-blue-50/40 to-content1 dark:from-blue-500/15 dark:via-blue-500/5", progress: "bg-blue-500" },
@@ -893,7 +952,10 @@ function ArkPassiveEditor({ state, update }: EditorProps) {
                     <div className={`relative overflow-hidden rounded-2xl border bg-gradient-to-br p-4 shadow-sm ${type.border} ${type.background}`} key={type.name}>
                         <div className="flex items-center justify-between gap-3">
                             <h3 className={`text-lg font-black ${type.color}`}>{type.name}</h3>
-                            <span className={`rounded-full border bg-content1/80 px-2.5 py-1 text-xs font-black tabular-nums ${type.border} ${type.color}`}>Lv. {level}</span>
+                            <div className="flex items-center gap-2">
+                                {level !== (initial.karma[type.name] ?? 0) && <ResetItemButton label={type.name} onClick={() => update((next) => { next.karma[type.name] = initial.karma[type.name] ?? 0; })}/>}
+                                <span className={`rounded-full border bg-content1/80 px-2.5 py-1 text-xs font-black tabular-nums ${type.border} ${type.color}`}>Lv. {level}</span>
+                            </div>
                         </div>
                         <div className="mt-4 grid grid-cols-[36px_minmax(0,1fr)_36px] gap-2">
                             <button aria-label={`${type.name} 레벨 감소`} className="h-10 cursor-pointer rounded-xl border border-default-200 bg-content1 text-lg font-bold text-default-500 transition hover:bg-default-100 dark:border-white/10" onClick={() => changeLevel(level - 1)} type="button">−</button>
