@@ -128,30 +128,37 @@ export default function ChecklistClient() {
         const loadPageData = async () => {
             checklistForm.setLoading(true);
 
-            let bossData = initialBosses;
-            try {
-                bossData = await getBosses();
-            } catch {
+            const bossRequest = getBosses().catch(() => {
                 addToast({
                     title: "보스 데이터 로드 오류",
                     description: "데이터베이스의 보스 정보를 불러오지 못해 기본 정보를 사용합니다.",
                     color: "warning"
                 });
-            }
-
-            if (isCancelled) return;
-
-            checklistForm.setBosses(bossData);
-            await loadChecklist(
-                checklistForm.setLoading,
+                return initialBosses;
+            });
+            const checklistRequest = loadChecklist(
+                (isLoading) => {
+                    if (isLoading) checklistForm.setLoading(true);
+                },
                 dispatch,
                 expedition,
-                bossData,
+                initialBosses,
                 checklistForm.setLife,
                 checklistForm.setBlessing,
                 checklistForm.setMax,
-                checklistForm.setBiweekly
+                checklistForm.setBiweekly,
+                bossRequest
             );
+
+            try {
+                const [bossData] = await Promise.all([bossRequest, checklistRequest]);
+                if (isCancelled) return;
+
+                checklistForm.setBosses(bossData);
+                checklistForm.setLoading(false);
+            } catch {
+                if (!isCancelled) checklistForm.setLoading(false);
+            }
         };
 
         void loadPageData();
