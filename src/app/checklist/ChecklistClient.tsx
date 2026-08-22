@@ -122,11 +122,43 @@ export default function ChecklistClient() {
     };
 
     useEffect(() => {
-        if (!expedition || expedition.length === 0) return;
-        if (checkLogin()) {
-            loadChecklist(checklistForm.setLoading, dispatch, expedition, checklistForm.bosses, checklistForm.setLife, checklistForm.setBlessing, checklistForm.setMax, checklistForm.setBiweekly);
-        }
-    }, [expedition]);
+        if (!isCheckedToken || !expedition || expedition.length === 0 || !checkLogin()) return;
+
+        let isCancelled = false;
+        const loadPageData = async () => {
+            checklistForm.setLoading(true);
+
+            let bossData = initialBosses;
+            try {
+                bossData = await getBosses();
+            } catch {
+                addToast({
+                    title: "보스 데이터 로드 오류",
+                    description: "데이터베이스의 보스 정보를 불러오지 못해 기본 정보를 사용합니다.",
+                    color: "warning"
+                });
+            }
+
+            if (isCancelled) return;
+
+            checklistForm.setBosses(bossData);
+            await loadChecklist(
+                checklistForm.setLoading,
+                dispatch,
+                expedition,
+                bossData,
+                checklistForm.setLife,
+                checklistForm.setBlessing,
+                checklistForm.setMax,
+                checklistForm.setBiweekly
+            );
+        };
+
+        void loadPageData();
+        return () => {
+            isCancelled = true;
+        };
+    }, [isCheckedToken, expedition]);
 
     useEffect(() => {
         const results: string[] = [];
@@ -167,18 +199,6 @@ export default function ChecklistClient() {
         if (!isCheckedToken) return;
         if (checkLogin()) {
             checklistForm.setLogined(true);
-            getBosses()
-                .then((bossData) => {
-                    checklistForm.setBosses(bossData);
-                })
-                .catch(() => {
-                    checklistForm.setBosses([]);
-                    addToast({
-                        title: "보스 데이터 로드 오류",
-                        description: "데이터베이스의 보스 정보를 불러오지 못했습니다.",
-                        color: "danger"
-                    });
-                });
             getCubes()
                 .then((cubeData) => {
                     checklistForm.setCubes(cubeData);
