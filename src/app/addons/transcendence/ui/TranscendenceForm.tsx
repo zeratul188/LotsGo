@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Script from "next/script";
-import { addToast, Button, Card, CardBody, Chip, Select, SelectItem, Tooltip } from "@heroui/react";
+import { addToast, Button, Card, CardBody, Chip, Progress, Select, SelectItem, Tooltip } from "@heroui/react";
 import clsx from "clsx";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
@@ -661,6 +661,12 @@ export default function TranscendenceForm() {
 
     const normalCount = game.board.flat().filter((tile) => tile?.base === "normal").length;
     const distortedCount = game.board.flat().filter((tile) => tile?.base === "distorted").length;
+    const totalNormalCount = game.preset.blocks.flat().filter((value) => value === 1).length;
+    const progressPercent = game.completedGrade !== null || normalCount === 0
+        ? 100
+        : totalNormalCount > 0
+        ? Math.max(0, Math.min(100, Math.round(((totalNormalCount - normalCount) / totalNormalCount) * 100)))
+        : 0;
     const completionGuide = getCompletionGuide(game);
 
     return (
@@ -776,29 +782,49 @@ export default function TranscendenceForm() {
                             </Chip>
                         </header>
 
-                        <div className="grid grid-cols-3 gap-2">
-                            <div className="rounded-2xl border border-default-200 bg-default-50/80 px-3 py-2.5">
-                                <div className="flex items-center gap-1.5 text-xs text-default-500">
+                        <div className="grid grid-cols-3 items-stretch gap-2">
+                            <div className="flex min-w-0 items-center justify-between gap-2 rounded-2xl border border-default-200 bg-default-50/80 px-3 py-2.5">
+                                <div className="flex min-w-0 items-center gap-1.5 text-xs text-default-500">
                                     <span className="h-2 w-2 rounded-full bg-default-500"/>
-                                    일반 석판
+                                    <span className="truncate">일반 석판</span>
                                 </div>
-                                <p className="mt-1 text-2xl font-bold tabular-nums">{normalCount}</p>
+                                <p className="shrink-0 text-xl font-bold tabular-nums">{normalCount}</p>
                             </div>
-                            <div className="rounded-2xl border border-purple-300/40 bg-purple-50/60 px-3 py-2.5 dark:bg-purple-950/20">
-                                <div className="flex items-center gap-1.5 text-xs text-purple-500">
+                            <div className="flex min-w-0 items-center justify-between gap-2 rounded-2xl border border-purple-300/40 bg-purple-50/60 px-3 py-2.5 dark:bg-purple-950/20">
+                                <div className="flex min-w-0 items-center gap-1.5 text-xs text-purple-500">
                                     <span className="h-2 w-2 rounded-full bg-purple-500"/>
-                                    왜곡 석판
+                                    <span className="truncate">왜곡 석판</span>
                                 </div>
-                                <p className="mt-1 text-2xl font-bold tabular-nums text-purple-500">{distortedCount}</p>
+                                <p className="shrink-0 text-xl font-bold tabular-nums text-purple-500">{distortedCount}</p>
                             </div>
-                            <div className="rounded-2xl border border-default-200 bg-default-50/80 px-3 py-2.5">
-                                <div className="flex items-center gap-1.5 text-xs text-default-500">
+                            <div className="flex min-w-0 items-center justify-between gap-2 rounded-2xl border border-default-200 bg-default-50/80 px-3 py-2.5">
+                                <div className="flex min-w-0 items-center gap-1.5 text-xs text-default-500">
                                     <span className="h-2 w-2 rounded-full bg-primary"/>
-                                    사용 횟수
+                                    <span className="truncate">사용 횟수</span>
                                 </div>
-                                <p className="mt-1 text-2xl font-bold tabular-nums">{game.usedTurns}</p>
+                                <p className="shrink-0 text-xl font-bold tabular-nums">{game.usedTurns}</p>
                             </div>
                         </div>
+
+                        <section className="rounded-2xl border border-primary-200/70 bg-primary-50/45 px-3 py-2.5 dark:border-primary-400/20 dark:bg-primary-950/15">
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="min-w-0">
+                                    <h3 className="text-xs font-bold text-primary-700 dark:text-primary-300">초월 진행도</h3>
+                                    <p className="mt-0.5 truncate text-[11px] text-default-500">일반 석판을 제거한 현재 진행 상황</p>
+                                </div>
+                                <div className="flex shrink-0 items-baseline gap-2">
+                                    <span className="text-[10px] tabular-nums text-default-500 dark:text-default-400">({totalNormalCount - normalCount} / {totalNormalCount})</span>
+                                    <span className="text-lg font-bold tabular-nums leading-none text-primary-700 dark:text-primary-300">{progressPercent}%</span>
+                                </div>
+                            </div>
+                            <Progress
+                                aria-label="초월 진행도"
+                                className="mt-2"
+                                color={game.completedGrade !== null ? "success" : "primary"}
+                                maxValue={100}
+                                size="sm"
+                                value={progressPercent}/>
+                        </section>
 
                         <section className="rounded-2xl border border-default-200 bg-default-100/45 px-4 py-3">
                             <div className="mb-2.5 flex items-center justify-between">
