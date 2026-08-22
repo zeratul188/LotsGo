@@ -164,6 +164,129 @@ type ReorderEntry<T> = {
     value: T
 }
 
+type ChecklistAnimationColor = 'primary' | 'secondary' | 'secondary-muted' | 'warning' | 'warning-muted';
+
+type AnimatedChecklistCheckIconProps = {
+    isSelected: boolean,
+    className?: string
+}
+
+const checklistAnimationColors: Record<ChecklistAnimationColor, { background: string, stroke: string, hover: string }> = {
+    primary: {
+        background: 'bg-primary-50/70 dark:bg-primary-500/10',
+        stroke: 'text-primary-200 dark:text-primary-700/60',
+        hover: 'hover:bg-gray-100/70 dark:hover:bg-white/[0.04]'
+    },
+    secondary: {
+        background: 'bg-secondary-50/70 dark:bg-secondary-400/[0.06]',
+        stroke: 'text-secondary-200 dark:text-[#3a3342]',
+        hover: 'hover:bg-gray-100/70 dark:hover:bg-white/[0.04]'
+    },
+    'secondary-muted': {
+        background: 'bg-secondary-50/70 dark:bg-secondary-950/20',
+        stroke: 'text-secondary-200 dark:text-secondary-900',
+        hover: 'hover:bg-gray-100/70 dark:hover:bg-gray-900/70'
+    },
+    warning: {
+        background: 'bg-warning-50/70 dark:bg-warning-500/10',
+        stroke: 'text-warning-200 dark:text-warning-700/60',
+        hover: 'hover:bg-warning-50/40 dark:hover:bg-warning-950/20'
+    },
+    'warning-muted': {
+        background: 'bg-warning-50/70 dark:bg-warning-950/20',
+        stroke: 'text-warning-200 dark:text-warning-900',
+        hover: 'hover:bg-gray-100/70 dark:hover:bg-gray-900/70'
+    }
+};
+
+function AnimatedChecklistCheckIcon({ isSelected, className }: AnimatedChecklistCheckIconProps) {
+    return (
+        <svg
+            aria-hidden="true"
+            className={clsx(className, "!opacity-100 motion-reduce:transition-none")}
+            fill="none"
+            role="presentation"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2.25"
+            viewBox="0 0 17 18">
+            <polyline
+                points="1 9 7 14 15 4"
+                pathLength="1"
+                strokeDasharray="1"
+                strokeDashoffset={isSelected ? 0 : 1}
+                style={{ transition: 'stroke-dashoffset 0.4s ease-out' }}/>
+        </svg>
+    );
+}
+
+type AnimatedChecklistStrikeProps = {
+    children: React.ReactNode,
+    className?: string,
+    isSelected: boolean
+}
+
+function AnimatedChecklistStrike({ children, className, isSelected }: AnimatedChecklistStrikeProps) {
+    return (
+        <span className={clsx("relative inline-block whitespace-nowrap", className)}>
+            {children}
+            <span
+                aria-hidden="true"
+                className={clsx(
+                    "pointer-events-none absolute inset-x-0 top-1/2 z-10 h-[1px] -translate-y-1/2 origin-left bg-current transition-transform duration-[400ms] ease-out motion-reduce:transition-none",
+                    isSelected ? 'scale-x-100' : 'scale-x-0'
+                )}/>
+        </span>
+    );
+}
+
+type AnimatedChecklistFrameProps = {
+    children: React.ReactNode,
+    className?: string,
+    color: ChecklistAnimationColor,
+    isSelected: boolean
+}
+
+function AnimatedChecklistFrame({ children, className, color, isSelected }: AnimatedChecklistFrameProps) {
+    const colors = checklistAnimationColors[color];
+
+    return (
+        <div className={clsx(
+            "relative isolate overflow-hidden rounded-lg border border-transparent",
+            !isSelected && colors.hover,
+            className
+        )}>
+            <span
+                aria-hidden="true"
+                className={clsx(
+                    "pointer-events-none absolute inset-0 z-0 transition-opacity duration-[400ms] ease-out motion-reduce:transition-none",
+                    colors.background,
+                    isSelected ? 'opacity-100' : 'opacity-0'
+                )}/>
+            <svg
+                aria-hidden="true"
+                className={clsx("pointer-events-none absolute inset-0 z-20 h-full w-full", colors.stroke)}
+                preserveAspectRatio="none">
+                <rect
+                    x="1"
+                    y="1"
+                    width="calc(100% - 2px)"
+                    height="calc(100% - 2px)"
+                    rx="8"
+                    fill="none"
+                    pathLength="1"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeDasharray="1"
+                    strokeDashoffset={isSelected ? 0 : 1}
+                    style={{ transition: 'stroke-dashoffset 0.4s ease-out' }}/>
+            </svg>
+            {children}
+        </div>
+    );
+}
+
 function createReorderEntries<T>(items: T[], prefix: string): ReorderEntry<T>[] {
     return items.map((value, index) => ({
         id: `${prefix}-${index}-${Math.random().toString(36).slice(2)}`,
@@ -1261,20 +1384,22 @@ export function ChecklistComponent({
                                     <RestCheckButton checklist={checklist} character={character} type="가디언" dispatch={dispatch}/>
                                     <div className="w-full">
                                         {character.daylist.map((item, idx) => (
-                                            <div key={idx}>
-                                                <Checkbox
+                                            <AnimatedChecklistFrame
+                                                key={idx}
+                                                color="secondary-muted"
+                                                isSelected={item.isCheck}
+                                                className="mt-2 w-full">
+                                                 <Checkbox
                                                     aria-label={`checklist-${item.name}-${idx}`}
                                                     size="sm"
                                                     color="secondary"
                                                     radius="full"
                                                     isSelected={item.isCheck}
-                                                    className={clsx(
-                                                        "mt-2 box-border w-full max-w-full rounded-lg border border-transparent px-2 py-1.5",
-                                                        item.isCheck ? 'border-secondary-200 bg-secondary-50/70 dark:border-secondary-900 dark:bg-secondary-950/20' : 'hover:bg-gray-100/70 dark:hover:bg-gray-900/70'
-                                                    )}
+                                                    icon={AnimatedChecklistCheckIcon}
+                                                    className="relative z-10 box-border w-full max-w-full px-2 py-1.5"
                                                     onChange={async () => await handleDayListCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                     {item.name}</Checkbox>
-                                            </div>
+                                            </AnimatedChecklistFrame>
                                         ))}
                                     </div>
                                     <Button 
@@ -1372,9 +1497,11 @@ export function ChecklistComponent({
                                             </div>
                                         ) : null}
                                         {character.checklist.map((item, idx) => (
-                                            <div key={idx} className={clsx(
-                                                "mt-2 w-full rounded-lg border py-1",
-                                                isCheckHomework(item) ? 'border-primary-200 bg-primary-50/70 dark:border-primary-700/60 dark:bg-primary-500/10' : 'border-transparent hover:bg-gray-100/70 dark:hover:bg-white/[0.04]',
+                                            <AnimatedChecklistFrame key={idx}
+                                                color="primary"
+                                                isSelected={isCheckHomework(item)}
+                                                className={clsx(
+                                                "mt-2 w-full py-1",
                                                 isHideCompleteContent ? isCheckHomework(item) ? 'hidden' : '' : ''
                                             )}>
                                                 <Checkbox
@@ -1382,16 +1509,18 @@ export function ChecklistComponent({
                                                     size="sm"
                                                     radius="full"
                                                     isSelected={isCheckHomework(item)}
+                                                    icon={AnimatedChecklistCheckIcon}
                                                      classNames={{base: "box-border m-0 w-full max-w-none p-0 pl-2", label: "flex min-w-0 flex-1 items-center justify-start text-left"}}
-                                                     className="py-0.5 pr-2"
+                                                     className="relative z-10 py-0.5 pr-2"
                                                     onValueChange={async () => await useOnClickWeekCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                     <div className="w-full flex items-center gap-1">
                                                         <div className="min-w-0">
                                                             <div className="flex gap-1 items-center">
-                                                                <p className={clsx(
-                                                                    "whitespace-nowrap",
-                                                                    isCheckHomework(item) ? 'line-through fadedtext' : ''
-                                                                )}>{getSimpleBossName(bosses, item.name)}</p>
+                                                                 <AnimatedChecklistStrike
+                                                                     isSelected={isCheckHomework(item)}
+                                                                     className={isCheckHomework(item) ? 'fadedtext' : ''}>
+                                                                     {getSimpleBossName(bosses, item.name)}
+                                                                 </AnimatedChecklistStrike>
                                                                 {item.isGold ? <img 
                                                                     src="/icons/gold.png" 
                                                                     alt="goldicon"
@@ -1434,10 +1563,11 @@ export function ChecklistComponent({
                                                                     </PopoverContent>
                                                                 </Popover>
                                                             </div>
-                                                            <p className={clsx(
-                                                                "fadedtext text-[9pt]",
-                                                                isCheckHomework(item) ? 'line-through' : ''
-                                                            )}>{printDifficulty(item.items)}</p>
+                                                             <AnimatedChecklistStrike
+                                                                 isSelected={isCheckHomework(item)}
+                                                                 className="fadedtext text-[9pt]">
+                                                                 {printDifficulty(item.items)}
+                                                             </AnimatedChecklistStrike>
                                                         </div>
                                                         <div className="grow"/>
                                                         <div className="z-9">
@@ -1591,12 +1721,14 @@ export function ChecklistComponent({
                                                         </div>
                                                     </div>
                                                 </Checkbox>
-                                            </div>
+                                            </AnimatedChecklistFrame>
                                         ))}
                                         {character.weeklist.map((item, idx) => (
-                                            <div key={idx} className={clsx(
-                                                "mt-2 w-full cursor-pointer rounded-lg border",
-                                                item.isCheck ? 'border-secondary-200 bg-secondary-50/70 dark:border-[#3a3342] dark:bg-secondary-400/[0.06]' : 'border-transparent hover:bg-gray-100/70 dark:hover:bg-white/[0.04]',
+                                            <AnimatedChecklistFrame key={idx}
+                                                color="secondary"
+                                                isSelected={item.isCheck}
+                                                className={clsx(
+                                                "mt-2 w-full cursor-pointer",
                                                 isHideCompleteContent ? item.isCheck ? 'hidden' : '' : ''
                                             )}>
                                                 <button
@@ -1604,22 +1736,24 @@ export function ChecklistComponent({
                                                     role="checkbox"
                                                     aria-checked={item.isCheck}
                                                     aria-label={`checklist-${item.name}-${idx}`}
-                                                    className="flex w-full cursor-pointer items-center gap-2 px-2.5 py-1.5 text-left text-sm"
+                                                    className="relative z-10 flex w-full cursor-pointer items-center gap-2 px-2.5 py-1.5 text-left text-sm"
                                                      onClick={async () => await handleWeekListCheck(checklist, getIndexByNickname(checklist, character.nickname), idx, dispatch)}>
                                                     <span className={clsx(
                                                         "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
                                                         item.isCheck ? "border-secondary bg-secondary text-white" : "border-gray-400 dark:border-gray-600"
                                                     )}>
-                                                        {item.isCheck ? <CheckIcon size={10}/> : null}
+                                                        <AnimatedChecklistCheckIcon isSelected={item.isCheck} className="h-2.5 w-2.5"/>
                                                     </span>
                                                     <span className={item.isCheck ? "line-through fadedtext" : ""}>{item.name}</span>
                                                 </button>
-                                            </div>
+                                            </AnimatedChecklistFrame>
                                          ))}
                                          {character.level >= 1730 && character.hallsHourglassVisible !== false ? (
-                                             <div className={clsx(
-                                                 "mt-2 w-full rounded-lg border py-1",
-                                                 character.hallsHourglassCheck ? 'border-warning-200 bg-warning-50/70 dark:border-warning-700/60 dark:bg-warning-500/10' : 'border-transparent hover:bg-warning-50/40 dark:hover:bg-warning-950/20',
+                                             <AnimatedChecklistFrame
+                                                 color="warning"
+                                                 isSelected={character.hallsHourglassCheck ?? false}
+                                                 className={clsx(
+                                                 "mt-2 w-full py-1",
                                                  isHideCompleteContent && character.hallsHourglassCheck ? 'hidden' : ''
                                              )}>
                                                  <Checkbox
@@ -1628,19 +1762,22 @@ export function ChecklistComponent({
                                                      size="sm"
                                                      radius="full"
                                                      isSelected={character.hallsHourglassCheck ?? false}
+                                                     icon={AnimatedChecklistCheckIcon}
                                                      classNames={{base: "w-full max-w-none", label: "flex min-w-0 flex-1 items-center justify-start text-left"}}
-                                                     className="box-border w-full max-w-none py-1.5 pl-4 pr-2.5"
+                                                     className="relative z-10 box-border w-full max-w-none py-1.5 pl-4 pr-2.5"
                                                      onValueChange={async (isCheck) => {
                                                          await handleHallsHourglassCheck(checklist, character.nickname, isCheck, dispatch);
                                                      }}>
                                                      <span className={character.hallsHourglassCheck ? 'line-through fadedtext' : ''}>할의 모래시계</span>
                                                  </Checkbox>
-                                             </div>
+                                             </AnimatedChecklistFrame>
                                          ) : null}
                                           {character.level >= 1640 && character.paradiseVisible !== false ? (
-                                              <div className={clsx(
-                                                  "mt-2 w-full rounded-lg border py-1",
-                                                  character.paradiseCheck ? 'border-warning-200 bg-warning-50/70 dark:border-warning-700/60 dark:bg-warning-500/10' : 'border-transparent hover:bg-warning-50/40 dark:hover:bg-warning-950/20',
+                                              <AnimatedChecklistFrame
+                                                  color="warning"
+                                                  isSelected={character.paradiseCheck ?? false}
+                                                  className={clsx(
+                                                  "mt-2 w-full py-1",
                                                   isHideCompleteContent && character.paradiseCheck ? 'hidden' : ''
                                               )}>
                                                   <Checkbox
@@ -1649,14 +1786,15 @@ export function ChecklistComponent({
                                                       size="sm"
                                                       radius="full"
                                                       isSelected={character.paradiseCheck ?? false}
+                                                      icon={AnimatedChecklistCheckIcon}
                                                       classNames={{base: "w-full max-w-none", label: "flex min-w-0 flex-1 items-center justify-start text-left"}}
-                                                      className="box-border w-full max-w-none py-1.5 pl-4 pr-2.5"
+                                                      className="relative z-10 box-border w-full max-w-none py-1.5 pl-4 pr-2.5"
                                                       onValueChange={async (isCheck) => {
                                                           await handleParadiseCheck(checklist, character.nickname, isCheck, dispatch);
                                                       }}>
                                                       <span className={character.paradiseCheck ? 'line-through fadedtext' : ''}>낙원</span>
                                                   </Checkbox>
-                                              </div>
+                                              </AnimatedChecklistFrame>
                                           ) : null}
                                       </div>
                                      <Button
@@ -2154,20 +2292,21 @@ type RestCheckButtonProps = {
 function RestCheckButton({ checklist, character, type, dispatch }: RestCheckButtonProps) {
     const dayValue: DayValue = getTypeDayValue(character, type);
     const onClickDayCheck = useOnClickDayCheck(checklist, character.nickname, type, character.day, dispatch);
+    const isSelected = type === '에포나' ? dayValue.value === 3 : dayValue.value === 1;
     return (
-        <div 
-            className={clsx(
-                "mt-2 box-border w-full max-w-full rounded-lg border border-transparent",
-                type === '에포나' ? dayValue.value === 3 ? 'border-warning-200 bg-warning-50/70 dark:border-warning-900 dark:bg-warning-950/20' : 'hover:bg-gray-100/70 dark:hover:bg-gray-900/70' : dayValue.value === 1 ? 'border-warning-200 bg-warning-50/70 dark:border-warning-900 dark:bg-warning-950/20' : 'hover:bg-gray-100/70 dark:hover:bg-gray-900/70'
-            )}>
+        <AnimatedChecklistFrame
+            color="warning-muted"
+            isSelected={isSelected}
+            className="mt-2 box-border w-full max-w-full">
             <Checkbox
                 aria-label={`${character.nickname}'s ${type}`}
                 size="sm"
                 color="warning"
                 lineThrough
                 radius="full"
-                isSelected={type === '에포나' ? dayValue.value === 3 : dayValue.value === 1}
-                className="w-full p-0 px-2 py-1.5"
+                isSelected={isSelected}
+                icon={AnimatedChecklistCheckIcon}
+                className="relative z-10 w-full p-0 px-2 py-1.5"
                 onChange={onClickDayCheck}>
                 {getDayName(type, character.level)} ({dayValue.value}/{type === '에포나' ? 3 : 1})
             </Checkbox>
@@ -2181,7 +2320,7 @@ function RestCheckButton({ checklist, character, type, dispatch }: RestCheckButt
                 <p className="fadedtext">휴식 게이지</p>
                 <p className="ml-auto">{dayValue.restValue}</p>
             </div>
-        </div>
+        </AnimatedChecklistFrame>
     )
 }
 
