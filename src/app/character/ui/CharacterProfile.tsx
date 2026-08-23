@@ -6,14 +6,17 @@ import { useMobileQuery } from "@/utiils/utils";
 import VegaIcon from "@/Icons/VegaIcon";
 import { ItemLevelIcon } from "@/Icons/ItemLevelIcon";
 import type { CharacterInfo } from "../model/types";
-import { getParsedText } from "../lib/characterFeat";
+import { getParsedText, getTitleData } from "../lib/characterFeat";
 import { TitleIcon } from "./TitleIcon";
+import { getColorTextByGrade } from "@/utiils/utils";
 
 const upperClass = ['도화가', '기상술사', '환수사'];
 
 export function ProfileComponent({ info, isBadge }: { info: CharacterInfo, isBadge: boolean }) {
     const isMobile = useMobileQuery();
     const title = info.profile.title ? getParsedText(info.profile.title) : '';
+    const titleData = getTitleData(title);
+    const titleClassName = clsx(titleData && getColorTextByGrade(titleData.grade), titleData && "font-bold");
     return (
         <div className="w-full h-[max-content] sm:h-[300px] border-b-1 border-[#dddddd] dark:border-[#333333] bg-[#F6F6F6] dark:bg-[#111111]">
             <div className="w-full h-full max-w-[1280px] mx-auto flex flex-col-reverse sm:flex-row relative">
@@ -25,7 +28,10 @@ export function ProfileComponent({ info, isBadge }: { info: CharacterInfo, isBad
                     </div>
                     <p className="mt-2 flex items-center gap-1">
                         <TitleIcon title={title} className="mr-1 h-[1em] w-[1em] scale-[1.75]"/>
-                        <span>{title || '-'}{info.profile.guildName !== '-' ?` · ${info.profile.guildName} 길드` : ''}</span>
+                        <span>
+                            <span className={titleClassName}>{title || '-'}</span>
+                            {info.profile.guildName !== '-' ? ` · ${info.profile.guildName} 길드` : ''}
+                        </span>
                     </p>
                     {isBadge ? (
                         <div className="flex gap-2 items-center">
@@ -87,7 +93,10 @@ export function ProfileComponent({ info, isBadge }: { info: CharacterInfo, isBad
                     </Chip>
                     <p className="text-[#dddddd] text-sm mt-4 flex items-center gap-1">
                         <TitleIcon title={title} className="mr-1 h-[1em] w-[1em] scale-[1.75]"/>
-                        <span>{title}{info.profile.guildName !== '-' ?` · ${info.profile.guildName} 길드` : ''}</span>
+                        <span>
+                            <span className={titleClassName}>{title}</span>
+                            {info.profile.guildName !== '-' ? ` · ${info.profile.guildName} 길드` : ''}
+                        </span>
                     </p>
                     {isBadge ? (
                         <div className="flex gap-2 items-center">
