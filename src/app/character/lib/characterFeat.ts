@@ -249,7 +249,7 @@ export function useClickUpdate(ui: UpdateUI, payload: UpdatePayload) {
                     }
                 }
             }
-            const cooldownMS = 1 * 60 * 1000;
+            const cooldownMS = decryptedApiKey ? 10 * 1000 : 1 * 60 * 1000;
             const cooldownEnd = Date.now() + cooldownMS;
             localStorage.setItem("refreshCooldownTime", cooldownEnd.toString());
             ui.setDisable(true);

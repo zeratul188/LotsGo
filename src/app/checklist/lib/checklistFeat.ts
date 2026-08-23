@@ -72,7 +72,8 @@ export async function loadChecklist(
     setLife: SetStateFn<number>,
     setBlessing: SetStateFn<boolean>,
     setMax: SetStateFn<number>,
-    setBiweekly: SetStateFn<number>
+    setBiweekly: SetStateFn<number>,
+    bossesPromise?: Promise<Boss[]>
 ) {
     const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
@@ -174,7 +175,7 @@ export async function loadChecklist(
         dispatch(saveData(checklist));
         setLoading(false);
     } else {
-        const initializationBosses = await getBosses().catch(() => bosses);
+        const initializationBosses = bossesPromise ? await bossesPromise : bosses;
         const top6: Character[] = expedition.slice().sort((a, b) => b.level - a.level).slice(0, 6);
         const notImportedList: string[] = [];
         for (const character of top6) {

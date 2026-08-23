@@ -22,6 +22,36 @@ import { ExpeditionCharacter } from "./characterlist/model/types";
 import { fetchCharacterList } from "./characterlist/lib/characterListFeat";
 import { CombatSimulatorComponent } from "./ui/CombatSimulatorForm";
 
+function RefreshIcon({ className }: { className?: string }) {
+    return (
+        <svg
+            aria-hidden="true"
+            className={className}
+            fill="none"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg">
+            <path
+                d="M20 11a8.1 8.1 0 0 0-14.9-4.4L3 9"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"/>
+            <path
+                d="M3 4v5h5M4 13a8.1 8.1 0 0 0 14.9 4.4L21 15"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"/>
+            <path
+                d="M21 20v-5h-5"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"/>
+        </svg>
+    );
+}
+
 export default function CharacterClient() {
     const characterForm = useCharacterForm();
     const searchParams = useSearchParams();
@@ -34,7 +64,10 @@ export default function CharacterClient() {
     const [loadedExpeditionStatNickname, setLoadedExpeditionStatNickname] = useState<string | null>(null);
     const [loadedExpeditionStatRefreshKey, setLoadedExpeditionStatRefreshKey] = useState(-1);
     const [isSettingConfirmOpen, setSettingConfirmOpen] = useState(false);
+    const [tabIndicator, setTabIndicator] = useState({ left: 0, width: 0 });
     const settingConfirmResolver = useRef<((useCachedCharacter: boolean) => void) | null>(null);
+    const tabListRef = useRef<HTMLDivElement | null>(null);
+    const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
     //const onClickUpdate = useClickUpdate(nickname, characterForm.setDisable, characterForm.setLoadingUpdate, characterForm.file, characterForm.setFile, characterForm.setExpeditions, characterForm.setGems, characterForm.setCombat, characterForm.combat);
 
     const confirmUseCachedCharacter = useCallback(() => {
@@ -49,6 +82,37 @@ export default function CharacterClient() {
         settingConfirmResolver.current = null;
         setSettingConfirmOpen(false);
     }, []);
+
+    const syncTabIndicator = useCallback(() => {
+        const activeTab = tabButtonRefs.current[selectedTab];
+        if (!activeTab) {
+            return;
+        }
+
+        setTabIndicator((current) => {
+            const next = { left: activeTab.offsetLeft, width: activeTab.offsetWidth };
+            return current.left === next.left && current.width === next.width ? current : next;
+        });
+    }, [selectedTab]);
+
+    useEffect(() => {
+        const frame = requestAnimationFrame(syncTabIndicator);
+        const resizeObserver = new ResizeObserver(syncTabIndicator);
+        const tabList = tabListRef.current;
+        const activeTab = tabButtonRefs.current[selectedTab];
+
+        if (tabList) {
+            resizeObserver.observe(tabList);
+        }
+        if (activeTab) {
+            resizeObserver.observe(activeTab);
+        }
+
+        return () => {
+            cancelAnimationFrame(frame);
+            resizeObserver.disconnect();
+        };
+    }, [characterForm.characterInfo, characterForm.isLoading, selectedTab, syncTabIndicator]);
 
     const settingConfirmModal = (
         <Modal
@@ -356,20 +420,32 @@ export default function CharacterClient() {
                 ) : <></>}
                 <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto">
                     <div className="rounded-2xl border border-default-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-[#171717] md960:flex md960:items-center md960:gap-3">
-                    <div role="tablist" aria-label="전투정보실 메뉴" className="flex min-w-0 grow gap-1 overflow-x-auto rounded-xl bg-default-100/80 p-1 scrollbar-hide dark:bg-white/[0.05]">
-                        {tabs.map((tab) => (
-                            <button
-                                key={tab.id}
-                                type="button"
-                                role="tab"
-                                aria-selected={selectedTab === tab.id}
-                                className={selectedTab === tab.id
-                                    ? "h-10 shrink-0 cursor-pointer rounded-lg bg-white px-4 text-sm font-semibold text-primary shadow-sm transition-colors dark:bg-white/10"
-                                    : "h-10 shrink-0 cursor-pointer rounded-lg px-4 text-sm font-semibold text-default-500 transition-colors hover:bg-white/60 hover:text-foreground dark:hover:bg-white/[0.06]"}
-                                onClick={() => setSelectedTab(tab.id)}>
-                                {tab.label}
-                            </button>
-                        ))}
+                    <div className="min-w-0 grow overflow-x-auto rounded-xl bg-gradient-to-r from-default-100 via-primary-50/80 to-default-100 scrollbar-hide dark:from-white/[0.05] dark:via-primary/10 dark:to-white/[0.05]">
+                        <div ref={tabListRef} role="tablist" aria-label="전투정보실 메뉴" className="relative flex w-max min-w-full gap-1 p-1">
+                            <span
+                                aria-hidden="true"
+                                className={`pointer-events-none absolute inset-y-1 left-0 rounded-lg border border-primary/15 bg-white shadow-[0_3px_12px_rgba(0,111,238,0.14)] transition-[width,transform,opacity] duration-300 ease-out dark:border-primary/30 dark:bg-primary/20 dark:shadow-[0_3px_14px_rgba(0,111,238,0.16)] ${tabIndicator.width > 0 ? "opacity-100" : "opacity-0"}`}
+                                style={{
+                                    width: tabIndicator.width,
+                                    transform: `translateX(${tabIndicator.left}px)`
+                                }}/>
+                            {tabs.map((tab) => (
+                                <button
+                                    ref={(element) => {
+                                        tabButtonRefs.current[tab.id] = element;
+                                    }}
+                                    key={tab.id}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={selectedTab === tab.id}
+                                    className={selectedTab === tab.id
+                                        ? "relative z-10 h-10 shrink-0 cursor-pointer rounded-lg px-4 text-sm font-bold text-primary outline-none transition-colors duration-300 focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset"
+                                        : "relative z-10 h-10 shrink-0 cursor-pointer rounded-lg px-4 text-sm font-semibold text-default-500 outline-none transition-colors duration-300 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset"}
+                                    onClick={() => setSelectedTab(tab.id)}>
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                     <div className="mt-2 flex w-full flex-col items-center gap-2 md960:mt-0 md960:w-auto md960:shrink-0 md960:flex-row">
                         <Input
@@ -403,7 +479,7 @@ export default function CharacterClient() {
                                 isDisabled={characterForm.isDisable || characterForm.isLoadingUpdate}
                                 className="h-10 w-full min-w-28 font-bold md960:w-auto"
                                 onPress={onPressUpdate}>
-                                <span className={characterForm.isLoadingUpdate ? "text-base animate-spin" : "text-base"}>↻</span>
+                                <RefreshIcon className={`h-[18px] w-[18px] ${characterForm.isLoadingUpdate ? "animate-spin [animation-direction:reverse]" : ""}`}/>
                                 정보 갱신
                             </Button>
                         </Tooltip>
