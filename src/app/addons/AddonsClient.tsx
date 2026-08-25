@@ -36,6 +36,12 @@ const tabs = [
         path: '/addons/bus'
     },
     {
+        key: 'fine-calculator',
+        label: '벌금 계산기',
+        description: '레이드 벌금 기록과 정산',
+        path: '/addons/fine-calculator'
+    },
+    {
         key: 'transcendence',
         label: '초월 시뮬레이터',
         description: '초월 결과와 보상 시뮬레이션',
