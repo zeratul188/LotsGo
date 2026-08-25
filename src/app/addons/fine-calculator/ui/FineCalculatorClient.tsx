@@ -10,15 +10,17 @@ import {
     ModalContent,
     ModalFooter,
     ModalHeader,
-    NumberInput,
     Pagination,
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
     Select,
     SelectItem,
     Tab,
     Tabs,
     useDisclosure
 } from "@heroui/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 import { jobEmblemMap } from "@/Icons/job-emblems";
@@ -34,13 +36,15 @@ import {
 import type {
     FineAction,
     FineParticipant,
+    FinePreset,
     FineSettlement,
     FineTransfer,
     ParticipantFineTotal
 } from "../model/types";
 
 const JOBS = Object.keys(jobEmblemMap);
-const RESULT_PAGE_SIZE = 20;
+const RESULT_PAGE_SIZE = 7;
+const PRESET_STORAGE_KEY = "lotsgo-fine-calculator-presets";
 
 function createId(prefix: string): string {
     return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -57,7 +61,7 @@ function GoldValue({ value, className = "" }: { value: number; className?: strin
 
 function DeleteIcon() {
     return (
-        <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4" stroke="currentColor" strokeWidth="1.7">
+        <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-5 w-5" stroke="currentColor" strokeWidth="1.7">
             <path d="M4.5 6h11M8 3.5h4M6.25 6l.55 10h6.4l.55-10M8.25 8.5v5M11.75 8.5v5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
     );
@@ -336,11 +340,113 @@ export default function FineCalculatorClient() {
     const [job, setJob] = useState("");
     const [ignoreMailFee, setIgnoreMailFee] = useState(true);
     const [settlement, setSettlement] = useState<FineSettlement | null>(null);
+    const [presets, setPresets] = useState<FinePreset[]>([]);
+    const [presetName, setPresetName] = useState("");
+    const [isPresetHydrated, setIsPresetHydrated] = useState(false);
+    const [resetSettings, setResetSettings] = useState(false);
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
+    const {
+        isOpen: isResetOpen,
+        onOpen: onResetOpen,
+        onClose: onResetClose
+    } = useDisclosure();
+
+    useEffect(() => {
+        try {
+            const stored = window.localStorage.getItem(PRESET_STORAGE_KEY);
+            const parsed = stored ? JSON.parse(stored) : [];
+            if (Array.isArray(parsed)) {
+                setPresets(parsed.filter((preset): preset is FinePreset => Boolean(
+                    preset
+                    && typeof preset.id === "string"
+                    && typeof preset.name === "string"
+                    && Array.isArray(preset.actions)
+                    && Array.isArray(preset.participants)
+                )));
+            }
+        } catch {
+            setPresets([]);
+        } finally {
+            setIsPresetHydrated(true);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!isPresetHydrated) return;
+        window.localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(presets));
+    }, [isPresetHydrated, presets]);
 
     const participantTotals = useMemo(() => new Map(
         participants.map((participant) => [participant.id, getParticipantFineTotal(participant, actions)])
     ), [actions, participants]);
+
+    function cloneState<T>(value: T): T {
+        return JSON.parse(JSON.stringify(value)) as T;
+    }
+
+    function savePreset() {
+        const trimmedName = presetName.trim();
+        if (!trimmedName) {
+            addToast({ title: "프리셋 이름을 입력해주세요.", color: "warning" });
+            return;
+        }
+        const nextPreset: FinePreset = {
+            id: createId("preset"),
+            name: trimmedName,
+            actions: cloneState(actions),
+            participants: cloneState(participants),
+            createdAt: Date.now()
+        };
+        setPresets((current) => [nextPreset, ...current]);
+        setPresetName("");
+        addToast({ title: "프리셋 저장 완료", description: `${trimmedName} 프리셋을 저장했습니다.`, color: "success" });
+    }
+
+    function loadPreset(preset: FinePreset) {
+        setActions(cloneState(preset.actions));
+        setParticipants(cloneState(preset.participants));
+        setActionName("");
+        setActionGold(0);
+        setNickname("");
+        setJob("");
+        setSettlement(null);
+        addToast({ title: "프리셋 불러오기 완료", description: `${preset.name} 프리셋을 적용했습니다.`, color: "success" });
+    }
+
+    function deletePreset(presetId: string) {
+        setPresets((current) => current.filter((preset) => preset.id !== presetId));
+        addToast({ title: "프리셋 삭제 완료", color: "success" });
+    }
+
+    function resetFineRecords() {
+        setParticipants((current) => current.map((participant) => ({
+            ...participant,
+            counts: {}
+        })));
+        setSettlement(null);
+        setResetSettings(false);
+        onResetClose();
+    }
+
+    function resetAllSettings() {
+        setActions([]);
+        setParticipants([]);
+        setActionName("");
+        setActionGold(0);
+        setNickname("");
+        setJob("");
+        setSettlement(null);
+        setResetSettings(false);
+        onResetClose();
+    }
+
+    function handleReset() {
+        if (resetSettings) {
+            resetAllSettings();
+            return;
+        }
+        resetFineRecords();
+    }
 
     function addAction() {
         const trimmedName = actionName.trim();
@@ -449,6 +555,57 @@ export default function FineCalculatorClient() {
                 <p className="mt-1 text-sm text-default-500">레이드 중 발생한 벌금을 기록하고, 서로 주고받을 금액을 상계해 간편하게 정산합니다.</p>
             </section>
 
+            <section className="mb-4 rounded-2xl border border-default-200/80 bg-content1/95 p-4 shadow-sm dark:border-white/10 dark:bg-[#18181b] sm:p-5">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h2 className="text-lg font-bold">저장 프리셋</h2>
+                        <p className="mt-0.5 text-xs text-default-500">벌금 행위, 참여 캐릭터, 기록한 횟수를 브라우저에 저장해 다음에도 바로 불러올 수 있습니다.</p>
+                    </div>
+                    <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">{presets.length}개 저장</span>
+                </div>
+                <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-end">
+                    <Input
+                        placeholder="ex) 고정 파티"
+                        value={presetName}
+                        maxLength={30}
+                        radius="lg"
+                        onValueChange={setPresetName}
+                        onKeyDown={(event) => {
+                            if (event.key === "Enter") savePreset();
+                        }}/>
+                    <Button color="primary" radius="lg" className="h-10 shrink-0 font-semibold sm:px-5" onPress={savePreset}>프리셋 저장</Button>
+                </div>
+                <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {presets.length === 0 ? (
+                        <div className="sm:col-span-2 lg:col-span-3">
+                            <EmptyBox title="저장된 프리셋이 없습니다." description="현재 설정을 저장해두면 다음 레이드에서 바로 불러올 수 있습니다."/>
+                        </div>
+                    ) : presets.map((preset) => (
+                        <div key={preset.id} className="flex min-w-0 items-center gap-2 rounded-xl border border-default-200/70 bg-default-50/70 p-2 dark:border-white/10 dark:bg-white/[0.04]">
+                            <button
+                                type="button"
+                                className="min-w-0 grow cursor-pointer rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-primary-50/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary dark:hover:bg-primary-500/10"
+                                aria-label={`${preset.name} 프리셋 불러오기`}
+                                onClick={() => loadPreset(preset)}>
+                                <p className="truncate text-sm font-bold">{preset.name}</p>
+                                <p className="mt-0.5 text-xs text-default-400">행위 {preset.actions.length}개 · 참여자 {preset.participants.length}명</p>
+                            </button>
+                            <Button
+                                isIconOnly
+                                size="sm"
+                                radius="lg"
+                                variant="light"
+                                color="danger"
+                                className="h-9 min-h-9 w-9 min-w-9"
+                                aria-label={`${preset.name} 프리셋 삭제`}
+                                onPress={() => deletePreset(preset.id)}>
+                                <DeleteIcon/>
+                            </Button>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
             <div className="grid gap-4 lg:grid-cols-2">
                 <section className="rounded-2xl border border-default-200/80 bg-content1/95 p-4 shadow-sm dark:border-white/10 dark:bg-[#18181b] sm:p-5">
                     <div className="mb-4 flex items-start justify-between gap-3">
@@ -464,21 +621,23 @@ export default function FineCalculatorClient() {
                             labelPlacement="outside"
                             placeholder="예: 특정 패턴에 잡히기"
                             value={actionName}
-                            maxLength={30}
+                            maxLength={20}
                             radius="lg"
                             onValueChange={setActionName}
                             onKeyDown={(event) => {
                                 if (event.key === "Enter") addAction();
                             }}/>
-                        <NumberInput
+                        <Input
                             label="1회 벌금"
                             labelPlacement="outside"
-                            value={actionGold}
-                            minValue={0}
-                            maxValue={MAX_FINE_GOLD}
+                            type="number"
+                            value={String(actionGold)}
+                            min={0}
+                            max={MAX_FINE_GOLD}
                             radius="lg"
                             startContent={<img src="/icons/gold.png" alt="골드" className="h-4 w-4"/>}
-                            onValueChange={(value) => setActionGold(normalizeFineGold(value))}/>
+                            classNames={{ input: "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" }}
+                            onValueChange={(value) => setActionGold(normalizeFineGold(Number(value)))}/>
                         <Button
                             color="primary"
                             radius="lg"
@@ -490,28 +649,31 @@ export default function FineCalculatorClient() {
                         {actions.length === 0 ? (
                             <EmptyBox title="등록된 벌금 행위가 없습니다." description="행위를 추가하면 참여자별 횟수를 기록할 수 있습니다."/>
                         ) : actions.map((action, index) => (
-                            <div key={action.id} className="grid items-center gap-2 rounded-xl border border-default-200/70 bg-default-50/70 p-2.5 dark:border-white/10 dark:bg-white/[0.04] sm:grid-cols-[28px_minmax(0,1fr)_170px_34px]">
+                            <div key={action.id} className="grid items-center gap-2 rounded-xl border border-default-200/70 bg-default-50/70 p-2.5 dark:border-white/10 dark:bg-white/[0.04] sm:grid-cols-[28px_minmax(0,1fr)_minmax(0,1fr)_40px]">
                                 <span className="hidden h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary sm:flex">{index + 1}</span>
                                 <Input
                                     aria-label={`${index + 1}번 벌금 행위 이름`}
                                     size="sm"
                                     value={action.name}
-                                    maxLength={30}
+                                    maxLength={20}
                                     onValueChange={(value) => updateAction(action.id, "name", value)}/>
-                                <NumberInput
+                                <Input
                                     aria-label={`${action.name} 1회 벌금`}
                                     size="sm"
-                                    value={action.gold}
-                                    minValue={0}
-                                    maxValue={MAX_FINE_GOLD}
+                                    type="number"
+                                    value={String(action.gold)}
+                                    min={0}
+                                    max={MAX_FINE_GOLD}
                                     startContent={<img src="/icons/gold.png" alt="골드" className="h-4 w-4"/>}
-                                    onValueChange={(value) => updateAction(action.id, "gold", value)}/>
+                                    classNames={{ input: "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" }}
+                                    onValueChange={(value) => updateAction(action.id, "gold", Number(value))}/>
                                 <Button
                                     isIconOnly
                                     size="sm"
                                     radius="lg"
                                     variant="light"
                                     color="danger"
+                                    className="h-9 min-h-9 w-9 min-w-9"
                                     aria-label={`${action.name} 삭제`}
                                     onPress={() => deleteAction(action.id)}>
                                     <DeleteIcon/>
@@ -535,7 +697,7 @@ export default function FineCalculatorClient() {
                             labelPlacement="outside"
                             placeholder="캐릭터명 입력"
                             value={nickname}
-                            maxLength={20}
+                            maxLength={12}
                             radius="lg"
                             onValueChange={setNickname}
                             onKeyDown={(event) => {
@@ -578,6 +740,7 @@ export default function FineCalculatorClient() {
                                     radius="lg"
                                     variant="light"
                                     color="danger"
+                                    className="h-9 min-h-9 w-9 min-w-9"
                                     aria-label={`${participant.nickname} 삭제`}
                                     onPress={() => setParticipants((current) => current.filter((item) => item.id !== participant.id))}>
                                     <DeleteIcon/>
@@ -589,12 +752,42 @@ export default function FineCalculatorClient() {
             </div>
 
             <section className="mt-4 overflow-hidden rounded-2xl border border-default-200/80 bg-content1/95 shadow-sm dark:border-white/10 dark:bg-[#18181b]">
-                <div className="flex flex-wrap items-end justify-between gap-2 border-b border-default-200/70 px-4 py-4 dark:border-white/10 sm:px-5">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-default-200/70 px-4 py-4 dark:border-white/10 sm:px-5">
                     <div>
                         <h2 className="text-lg font-bold">참여자별 벌금 기록</h2>
                         <p className="mt-0.5 text-xs text-default-500">행위 횟수를 조절하면 발생 금액과 총 벌금이 바로 반영됩니다.</p>
                     </div>
-                    <span className="hidden text-xs text-default-400 sm:inline">가운데 영역을 좌우로 스크롤할 수 있습니다.</span>
+                    <div className="flex items-center gap-2">
+                        <span className="hidden text-xs text-default-400 sm:inline">가운데 영역을 좌우로 스크롤할 수 있습니다.</span>
+                        <Popover
+                            isOpen={isResetOpen}
+                            placement="bottom-end"
+                            showArrow
+                            onOpenChange={(open) => {
+                                if (!open) setResetSettings(false);
+                                if (open) onResetOpen();
+                                else onResetClose();
+                            }}>
+                            <PopoverTrigger>
+                                <Button size="sm" radius="lg" variant="flat" color="danger" className="font-semibold">초기화</Button>
+                            </PopoverTrigger>
+                            <PopoverContent>
+                                <div className="w-[280px] p-3">
+                                    <p className="text-sm font-bold">벌금 기록 초기화</p>
+                                    <p className="mt-1 text-xs leading-5 text-default-500">기본 초기화는 참여자별 행위 횟수만 0으로 되돌립니다.</p>
+                                    <Checkbox
+                                        className="mt-3"
+                                        size="sm"
+                                        isSelected={resetSettings}
+                                        onValueChange={setResetSettings}>
+                                        설정 모두 초기화
+                                    </Checkbox>
+                                    {resetSettings ? <p className="mt-1 text-[11px] leading-4 text-danger">벌금 행위와 참여 캐릭터 목록도 모두 삭제됩니다.</p> : null}
+                                    <Button color="danger" radius="lg" size="sm" className="mt-3 w-full font-semibold" onPress={handleReset}>초기화</Button>
+                                </div>
+                            </PopoverContent>
+                        </Popover>
+                    </div>
                 </div>
                 {participants.length === 0 ? (
                     <div className="p-4 sm:p-5">

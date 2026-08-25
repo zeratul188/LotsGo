@@ -11,6 +11,14 @@ export type FineParticipant = {
     counts: Record<string, number>;
 };
 
+export type FinePreset = {
+    id: string;
+    name: string;
+    actions: FineAction[];
+    participants: FineParticipant[];
+    createdAt: number;
+};
+
 export type ParticipantFineTotal = Pick<FineParticipant, "id" | "nickname" | "job"> & {
     total: number;
 };
