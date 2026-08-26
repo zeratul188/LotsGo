@@ -170,19 +170,19 @@ export default function ChecklistComponent() {
                     </div>
 
                     <div className="grid w-full grid-cols-1 gap-3 p-3 sm:p-4 lg1200:grid-cols-[minmax(330px,1.15fr)_minmax(300px,1fr)_minmax(250px,0.82fr)]">
-                        <div className="flex items-center justify-center gap-4 rounded-xl border border-gray-200/80 bg-gray-50/60 px-2 py-3 sm:gap-6 dark:border-white/10 dark:bg-white/[0.025]">
+                        <div className="grid h-full grid-rows-2 gap-2 rounded-xl border border-gray-200/80 bg-gray-50/60 p-2 dark:border-white/10 dark:bg-white/[0.025]">
                             <CutCircularProgress
                                 label="주간 골드량"
-                                size={isMobile ? 140 : 160}
-                                strokeWidth={12}
+                                size={isMobile ? 70 : 76}
+                                strokeWidth={8}
                                 isMobile={isMobile}
                                 value={weeklyGold}
                                 max={totalGold}
                                 progressClassName="stroke-warning"/>
                             <CutCircularProgress
                                 label="숙제 진행 상황"
-                                size={isMobile ? 140 : 160}
-                                strokeWidth={12}
+                                size={isMobile ? 70 : 76}
+                                strokeWidth={8}
                                 isMobile={isMobile}
                                 value={completedHomework}
                                 max={totalHomework}

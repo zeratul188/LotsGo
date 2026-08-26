@@ -54,6 +54,8 @@ export default function CutCircularProgress({
 }: CutCircularProgressProps) {
   const percent =
     max <= 0 ? 0 : Math.max(0, Math.min(1, value / max));
+  const percentage = Math.round(percent * 100);
+  const isGoldProgress = progressClassName.includes("warning");
 
   const cx = size / 2;
   const cy = size / 2;
@@ -75,43 +77,55 @@ export default function CutCircularProgress({
       : describeArc(cx, cy, r, startAngle, progressEndAngle);
 
   return (
-    <div className="relative inline-flex items-center justify-center">
-      <svg width={size} height={size}>
-        {/* 트랙 */}
-        <path
-          d={trackPath}
-          fill="none"
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          className={trackClassName}
-        />
-
-        {/* 진행 */}
-        {percent > 0 && (
+    <div className="relative flex h-full min-w-0 items-center gap-3 overflow-hidden rounded-xl border border-gray-200/80 bg-white/90 px-3 py-2.5 shadow-[0_2px_10px_rgba(15,23,42,0.03)] dark:border-white/10 dark:bg-white/[0.035] dark:shadow-none">
+      <div className={clsx(
+        "pointer-events-none absolute -right-5 -top-8 h-20 w-20 rounded-full blur-2xl",
+        isGoldProgress ? "bg-warning/10" : "bg-secondary/10"
+      )}/>
+      <div className="relative shrink-0">
+        <svg width={size} height={size} aria-hidden="true">
           <path
-            d={progressPath}
+            d={trackPath}
             fill="none"
             strokeWidth={strokeWidth}
             strokeLinecap="round"
-            className={progressClassName}
+            className={trackClassName}
           />
-        )}
-      </svg>
+          {percent > 0 && (
+            <path
+              d={progressPath}
+              fill="none"
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+              className={progressClassName}
+            />
+          )}
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center pb-1 text-center tabular-nums">
+          <span className={clsx(
+            "text-lg font-extrabold tracking-tight",
+            isGoldProgress ? "text-warning-600 dark:text-warning-400" : "text-secondary-600 dark:text-secondary-400"
+          )}>{percentage}<span className="ml-0.5 text-[10px] font-bold">%</span></span>
+        </div>
+      </div>
 
       {showLabel && (
-        <div className="absolute text-sm tabular-nums text-center">
+        <div className="relative min-w-0 grow">
+          <div className="flex items-center justify-between gap-2">
             <p className={clsx(
-                "font-normal",
-                isMobile ? "text-[8pt]" : "text-[9pt]"
+              "truncate font-semibold text-default-700 dark:text-default-600",
+              isMobile ? "text-xs" : "text-sm"
             )}>{label}</p>
-            <p className={clsx(
-                "font-bold",
-                isMobile ? "text-xl" : "text-2xl"
-            )}>{value.toLocaleString()}</p>
-            <p className={clsx(
-                "font-normal fadedtext",
-                isMobile ? "text-sm" : "text-md"
-            )}>/ {max.toLocaleString()}</p>
+          </div>
+          <div className="mt-1.5 flex min-w-0 items-baseline gap-1 tabular-nums">
+            <span className="truncate text-base font-bold text-foreground">{value.toLocaleString()}</span>
+            <span className="shrink-0 text-[11px] text-default-400">/ {max.toLocaleString()}</span>
+          </div>
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-default-200/80 dark:bg-white/10">
+            <div
+              className={clsx("h-full rounded-full transition-[width] duration-500", isGoldProgress ? "bg-warning" : "bg-secondary")}
+              style={{ width: `${percentage}%` }}/>
+          </div>
         </div>
       )}
     </div>
