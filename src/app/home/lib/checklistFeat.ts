@@ -35,7 +35,8 @@ export type FixedWeeklyContentStatus = {
 
 export type IncompleteRaidStatus = {
     name: string,
-    remainingStageCount: number
+    remainingStageCount: number,
+    isGold: boolean
 }
 
 const fixedWeeklyContentSettings: Array<{
@@ -196,7 +197,8 @@ export function getIncompleteRaidStatuses(character: CheckCharacter, bosses: Bos
 
         incompleteRaids.set(name, {
             name,
-            remainingStageCount: (existingRaid?.remainingStageCount || 0) + remainingStageCount
+            remainingStageCount: (existingRaid?.remainingStageCount || 0) + remainingStageCount,
+            isGold: Boolean(existingRaid?.isGold || (character.isGold && checkItem.isGold))
         });
     });
 

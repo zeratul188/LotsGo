@@ -26,6 +26,7 @@ import {
     CardBody,
     CardHeader,
     Chip,
+    Checkbox,
     Pagination,
     Progress,
     Select,
@@ -63,6 +64,7 @@ export default function ChecklistComponent() {
     const [page, setPage] = useState(1);
     const [statusView, setStatusView] = useState<'overview' | 'incomplete'>('incomplete');
     const [selectedRaid, setSelectedRaid] = useState('all');
+    const [goldOnly, setGoldOnly] = useState(false);
     const [remainingPage, setRemainingPage] = useState(1);
     const isMobile = useMobileQuery();
     const maxSize = isMobile ? 3 : 5;
@@ -114,8 +116,17 @@ export default function ChecklistComponent() {
             raids: getIncompleteRaidStatuses(character, checklistForm.bosses)
         }))
         .filter(entry => entry.raids.length > 0);
+    const goldFilteredCharacterEntries = goldOnly
+        ? incompleteCharacterEntries
+            .filter(entry => entry.character.isGold)
+            .map(entry => ({
+                ...entry,
+                raids: entry.raids.filter(raid => raid.isGold)
+            }))
+            .filter(entry => entry.raids.length > 0)
+        : incompleteCharacterEntries;
     const incompleteRaidOptions = Array.from(new Set(
-        incompleteCharacterEntries.flatMap(entry => entry.raids.map(raid => raid.name))
+        goldFilteredCharacterEntries.flatMap(entry => entry.raids.map(raid => raid.name))
     )).map((name, index) => ({
         key: `raid-${index}`,
         name
@@ -125,7 +136,7 @@ export default function ChecklistComponent() {
         ...incompleteRaidOptions
     ];
     const selectedRaidName = incompleteRaidOptions.find(raid => raid.key === selectedRaid)?.name;
-    const filteredIncompleteEntries = incompleteCharacterEntries
+    const filteredIncompleteEntries = goldFilteredCharacterEntries
         .map(entry => ({
             ...entry,
             raids: selectedRaid === 'all'
@@ -411,31 +422,49 @@ export default function ChecklistComponent() {
                         </>
                     ) : (
                         <>
-                            <div className="mx-3 mb-3 flex flex-col gap-3 rounded-xl border border-gray-200/80 bg-gray-50/70 p-3 sm:mx-4 sm:flex-row sm:items-center sm:justify-between dark:border-white/10 dark:bg-white/[0.025]">
-                                <Select
-                                    aria-label="남은 레이드 필터"
-                                    label="레이드 필터"
-                                    size="sm"
-                                    radius="lg"
-                                    variant="bordered"
-                                    items={raidSelectOptions}
-                                    selectedKeys={new Set([selectedRaid])}
-                                    onChange={(event) => {
-                                        setSelectedRaid(event.target.value || 'all');
-                                        setRemainingPage(1);
-                                    }}
-                                    className="w-full sm:max-w-[280px]"
-                                    classNames={{
-                                        trigger: "border-gray-200 bg-white shadow-none dark:border-white/10 dark:bg-white/[0.035]",
-                                        label: "fadedtext"
-                                    }}>
-                                    {(item) => (
-                                        <SelectItem key={item.key}>{item.name}</SelectItem>
-                                    )}
-                                </Select>
-                                <div className="flex flex-wrap items-center gap-2 text-xs sm:justify-end">
-                                    <Chip size="sm" radius="sm" color="danger" variant="flat">미완료 {remainingRaidCount}건</Chip>
-                                    <span className="fadedtext">대상 캐릭터 {filteredIncompleteEntries.length}명</span>
+                            <div className="mx-3 mb-3 rounded-xl border border-gray-200/80 bg-gray-50/70 p-3 dark:border-white/10 dark:bg-white/[0.025] sm:mx-4">
+                                <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start">
+                                    <Select
+                                        aria-label="남은 레이드 필터"
+                                        label="레이드 필터"
+                                        size="sm"
+                                        radius="lg"
+                                        variant="bordered"
+                                        items={raidSelectOptions}
+                                        selectedKeys={new Set([selectedRaid])}
+                                        onChange={(event) => {
+                                            setSelectedRaid(event.target.value || 'all');
+                                            setRemainingPage(1);
+                                        }}
+                                        className="w-full sm:w-[280px] sm:shrink-0"
+                                        classNames={{
+                                            trigger: "border-gray-200 bg-white shadow-none dark:border-white/10 dark:bg-white/[0.035]",
+                                            label: "fadedtext"
+                                        }}>
+                                        {(item) => (
+                                            <SelectItem key={item.key}>{item.name}</SelectItem>
+                                        )}
+                                    </Select>
+                                    <div className="hidden flex-1 sm:block" />
+                                    <div className="flex flex-col items-end gap-1 text-xs sm:shrink-0">
+                                    <div className="flex flex-wrap items-center justify-end gap-2">
+                                        <Chip size="sm" radius="sm" color="danger" variant="flat">미완료 {remainingRaidCount}건</Chip>
+                                        <span className="fadedtext">대상 캐릭터 {filteredIncompleteEntries.length}명</span>
+                                    </div>
+                                    <Checkbox
+                                        size="sm"
+                                        color="warning"
+                                        className="self-end pb-0"
+                                        classNames={{ label: "whitespace-nowrap text-right" }}
+                                        isSelected={goldOnly}
+                                        onValueChange={(isSelected) => {
+                                            setGoldOnly(isSelected);
+                                            setSelectedRaid('all');
+                                            setRemainingPage(1);
+                                        }}>
+                                        골드 지정 캐릭터 또는 레이드만 보기
+                                    </Checkbox>
+                                    </div>
                                 </div>
                             </div>
 
@@ -477,7 +506,10 @@ export default function ChecklistComponent() {
                                                             base: "max-w-full border border-danger-100 bg-danger-50/80 dark:border-danger-500/20 dark:bg-danger-500/10",
                                                             content: "truncate text-xs font-medium text-danger-600 dark:text-danger-300"
                                                         }}>
-                                                        {raid.name}
+                                                        <span className="flex min-w-0 items-center gap-1">
+                                                            {raid.isGold ? <img src="/icons/gold.png" alt="골드 획득 가능" className="h-3 w-3 shrink-0"/> : null}
+                                                            <span className="truncate">{raid.name}</span>
+                                                        </span>
                                                     </Chip>
                                                 ))}
                                             </div>
