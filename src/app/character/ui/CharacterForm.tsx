@@ -62,7 +62,7 @@ import { CardPiece, CharacterInfo, ExpeditionCharacterInfo } from "../model/type
 import { getCore } from "../lib/arkGridPrints";
 import data from "@/data/characters/data.json";
 import { calculateBraceletCombatPowerPercent, createInitialState } from "../lib/combatSimulatorFeat";
-import { TitleIcon } from "./TitleIcon";
+import { hasTitleIcon, TitleIcon } from "./TitleIcon";
 
 // state 관리
 export function useCharacterForm() {
@@ -186,7 +186,14 @@ function TitleComponent({titles}: { titles: string[] }) {
                 return aOrder - bOrder;
             }
 
-            return a.index - b.index;
+            const aHasIcon = hasTitleIcon(a.title);
+            const bHasIcon = hasTitleIcon(b.title);
+
+            if (aHasIcon !== bHasIcon) {
+                return aHasIcon ? -1 : 1;
+            }
+
+            return b.index - a.index;
         })
         .map(({ title }) => title);
     const totalPages = Math.max(1, Math.ceil(sortedTitles.length / titlesPerPage));

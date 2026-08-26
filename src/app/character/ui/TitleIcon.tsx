@@ -18,6 +18,10 @@ const titleIconSrc: Record<string, string> = {
     "죽음을 부르는 자": "/title-icons/death-caller.png"
 };
 
+export function hasTitleIcon(title: string): boolean {
+    return Boolean(titleIconSrc[title]);
+}
+
 export function TitleIcon({ title, className }: { title: string, className?: string }) {
     const src = titleIconSrc[title];
 
