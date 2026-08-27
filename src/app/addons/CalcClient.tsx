@@ -46,7 +46,6 @@ export default function CalcClient() {
     return (
         <div className="w-full">
             <section className="mb-5 overflow-hidden rounded-2xl border border-default-200/80 bg-gradient-to-br from-primary-50 via-content1 to-content1 px-5 py-5 shadow-sm dark:border-white/10 dark:from-primary-950/30 dark:via-[#18181b] dark:to-[#18181b] sm:px-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Auction Calculator</p>
                 <h1 className="mt-1 text-2xl font-bold">경매 계산기</h1>
                 <p className="mt-1 text-sm text-default-500">아이템 가격과 참여 인원을 입력하면 안전한 입찰 기준과 예상 분배금을 계산합니다.</p>
             </section>
@@ -76,29 +75,58 @@ export default function CalcClient() {
                             저장
                         </Button>
                     </div>
-                    <div className="mt-3 rounded-xl bg-default-50 p-2.5 dark:bg-white/[0.04]">
+                    <div className="mt-3 rounded-xl bg-default-50 p-3 dark:bg-white/[0.04]">
                         <p className="mb-2 text-xs font-medium text-default-500">참여 인원</p>
-                    <RadioGroup 
-                        orientation="horizontal" 
-                        defaultValue="4" 
-                        className="mb-0"
-                        onValueChange={onClickPersons}>
-                        <Radio value="4"><span className="pl-1 sm:pl-2 pr-2 sm:pr-4">4인</span></Radio>
-                        <Radio value="8"><span className="pl-1 sm:pl-2 pr-2 sm:pr-4">8인</span></Radio>
-                        <Radio value="16"><span className="pl-1 sm:pl-2 pr-2 sm:pr-4">16인</span></Radio>
-                        <Radio value="custom">
-                        </Radio>
-                        <div className="flex items-center gap-1">
-                            <NumberInput
-                                maxLength={2}
-                                value={inputPerson}
-                                radius="md"
-                                size="sm"
-                                onValueChange={setInputPerson}
-                                className="w-[80px]"/>
-                            <span>인</span>
-                        </div>
-                    </RadioGroup>
+                        <RadioGroup
+                            aria-label="참여 인원"
+                            value={type}
+                            classNames={{
+                                wrapper: "grid w-full grid-cols-2 gap-2 sm:grid-cols-4",
+                            }}
+                            onValueChange={onClickPersons}>
+                            {['4', '8', '16'].map((value) => (
+                                <Radio
+                                    key={value}
+                                    value={value}
+                                    classNames={{
+                                        base: "m-0 flex h-11 max-w-none cursor-pointer items-center justify-center rounded-lg border border-default-200 bg-content1 px-3 transition-colors hover:border-primary-300 hover:bg-primary-50/60 data-[selected=true]:border-primary data-[selected=true]:bg-primary-50 data-[selected=true]:text-primary dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-primary-500/60 dark:hover:bg-primary-500/10 dark:data-[selected=true]:border-primary dark:data-[selected=true]:bg-primary-500/15",
+                                        wrapper: "hidden",
+                                        labelWrapper: "m-0",
+                                        label: "flex items-baseline font-semibold",
+                                    }}>
+                                    <span>{value}</span>
+                                    <span className="ml-0.5 text-xs font-medium opacity-70">인</span>
+                                </Radio>
+                            ))}
+                            <div
+                                className={`relative flex h-11 min-w-0 items-center justify-center gap-1 rounded-lg border px-2 transition-colors focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-default-50 ${
+                                    type === 'custom'
+                                        ? 'border-primary bg-primary-50 text-primary dark:border-primary dark:bg-primary-500/15'
+                                        : 'border-default-200 bg-content1 hover:border-primary-300 hover:bg-primary-50/60 dark:border-white/10 dark:bg-white/[0.03] dark:hover:border-primary-500/60 dark:hover:bg-primary-500/10'
+                                }`}>
+                                <Radio
+                                    aria-label="직접 입력"
+                                    value="custom"
+                                    classNames={{
+                                        base: "absolute inset-0 z-0 m-0 max-w-none cursor-pointer opacity-0",
+                                        wrapper: "hidden",
+                                        labelWrapper: "hidden",
+                                    }}/>
+                                <NumberInput
+                                    maxLength={2}
+                                    value={inputPerson}
+                                    radius="md"
+                                    size="sm"
+                                    onValueChange={setInputPerson}
+                                    onFocus={() => onClickPersons('custom')}
+                                    className="relative z-10 w-[76px]"
+                                    classNames={{
+                                        inputWrapper: "h-8 min-h-8 bg-default-100 shadow-none group-data-[focus=true]:bg-content1",
+                                        input: "text-center font-semibold",
+                                    }}/>
+                                <span className="relative z-10 shrink-0 text-xs font-medium opacity-70">인</span>
+                            </div>
+                        </RadioGroup>
                     </div>
                     <div className="mb-2 mt-4 flex items-center justify-between gap-2">
                         <div>
