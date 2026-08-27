@@ -10,7 +10,7 @@ export default function RaidAutoCheckGuide() {
         <div className="w-full [&_p]:text-base [&_h1]:text-2xl">
             <h1 className="font-bold mb-3">레이드 자동 체크</h1>
             <p>
-                레이드 자동 체크는 게임 화면을 분석해 현재 레이드와 관문 진행도를 확인하고, 레이드가 완료되면 로츠고의 체크 상태를 자동으로 갱신하는 Beta 기능입니다.
+                레이드 자동 체크는 게임 화면을 분석해 현재 레이드와 관문 진행도를 확인하고, 레이드가 완료되면 로츠고의 체크 상태를 자동으로 갱신하는 기능입니다.
                 화면 공유 중인 캐릭터를 기준으로 작동하므로 먼저 플레이할 캐릭터와 공유할 게임 화면을 정확하게 선택해야 합니다.
             </p>
 
@@ -29,7 +29,7 @@ export default function RaidAutoCheckGuide() {
 
             <h2 className="mt-10 mb-4 text-xl font-bold">화면 공유 시작하기</h2>
             <ol className="list-decimal space-y-2 pl-5 text-base">
-                <li>숙제 페이지에서 <strong>자동 체크 기능 켜기 (Beta)</strong>를 눌러 자동 체크 창을 엽니다.</li>
+                <li>숙제 페이지에서 <strong>자동 체크 기능 켜기</strong>를 눌러 자동 체크 창을 엽니다.</li>
                 <li>플레이할 캐릭터 목록에서 현재 게임으로 플레이할 캐릭터를 선택합니다.</li>
                 <li><strong>화면 공유 시작</strong>을 누르면 브라우저의 화면 공유 선택 창이 열립니다.</li>
                 <li>Chrome 또는 Edge의 공유 목록에서 로스트아크 게임 창을 선택하고 공유를 시작합니다.</li>
@@ -90,7 +90,7 @@ export default function RaidAutoCheckGuide() {
             <section className="mt-8 rounded-2xl border border-warning-200 bg-warning-50/70 p-5 dark:border-warning-500/20 dark:bg-warning-500/10">
                 <h2 className="text-xl font-bold">주의사항</h2>
                 <ul className="mt-3 list-disc space-y-2 pl-5 text-base">
-                    <li>자동 체크는 화면을 읽어 추정하는 Beta 기능이므로 모든 상황에서 정확하게 작동하지 않을 수 있습니다.</li>
+                    <li>자동 체크는 화면을 읽어 추정하는 기능이므로 모든 상황에서 정확하게 작동하지 않을 수 있습니다.</li>
                     <li>인식 결과와 숙제 체크 상태를 직접 확인하고, 누락된 관문은 숙제 카드에서 수동으로 체크하세요.</li>
                     <li>브라우저 최소화, 게임 창 이동, 화면 공유 중단, 다른 창으로 가리기 등의 상황에서는 분석이 멈추거나 인식이 늦어질 수 있습니다.</li>
                     <li>화면은 서버에 전송하거나 저장하지 않고 현재 브라우저에서만 분석합니다. 화면 공유를 종료하면 자동 체크도 함께 중지됩니다.</li>

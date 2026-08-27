@@ -305,7 +305,7 @@ const AutoChecklistControl = dynamic(() => import("./AutoChecklistControl"), {
             size="sm"
             className="hidden h-9 border border-primary/30 px-2 text-xs font-medium md960:flex sm:text-sm"
             isDisabled>
-            자동 체크 기능 켜기 (Beta)
+            자동 체크 기능 켜기
         </Button>
     )
 });
@@ -1077,7 +1077,7 @@ export function SelectServer({ checklist, server, setServer, compact = false }: 
             }}
             className="w-full"
             classNames={compact ? {
-                trigger: "h-10 min-h-10 rounded-lg border-gray-200/80 bg-white px-3 shadow-sm transition-colors data-[hover=true]:border-gray-300 data-[hover=true]:bg-gray-50/80 dark:border-white/10 dark:bg-[#171717] dark:data-[hover=true]:border-white/20 dark:data-[hover=true]:bg-white/[0.06]",
+                trigger: "h-10 min-h-10 cursor-pointer rounded-lg border-gray-200/80 bg-white px-3 shadow-sm transition-colors data-[hover=true]:border-gray-300 data-[hover=true]:bg-gray-50/80 dark:border-white/10 dark:bg-[#171717] dark:data-[hover=true]:border-white/20 dark:data-[hover=true]:bg-white/[0.06]",
                 value: "text-xs font-semibold text-gray-700 dark:text-gray-200",
                 selectorIcon: "text-gray-400 dark:text-gray-500",
                 popoverContent: "rounded-xl border border-gray-200/80 shadow-xl dark:border-white/10"
@@ -1447,8 +1447,8 @@ export function ChecklistComponent({
                                                 className={clsx(
                                                     "group h-8 min-w-fit shrink-0 gap-1.5 overflow-visible px-2.5 text-xs font-semibold",
                                                     (isBonusMode[character.nickname] ?? false)
-                                                        ? "!border-secondary-400 !bg-secondary-100 !text-secondary-800 shadow-[0_4px_14px_rgba(147,51,234,0.2)] dark:!border-secondary-500 dark:!bg-[#2b1740] dark:!text-[#f3e8ff] dark:shadow-[0_4px_14px_rgba(168,85,247,0.24)]"
-                                                        : "!border-secondary-200 !bg-secondary-50 !text-secondary-700 shadow-sm hover:!border-secondary-400 hover:!bg-secondary-100 dark:!border-secondary-700 dark:!bg-[#1d1724] dark:!text-secondary-200 dark:hover:!border-secondary-500 dark:hover:!bg-[#281b32]",
+                                                        ? "!border-secondary-400 !bg-white !text-secondary-800 dark:!border-secondary-500 dark:!bg-[#18181b] dark:!text-secondary-200"
+                                                        : "!border-secondary-200 !bg-white !text-secondary-700 hover:!border-secondary-400 hover:!bg-gray-50 dark:!border-secondary-700 dark:!bg-[#18181b] dark:!text-secondary-200 dark:hover:!border-secondary-500 dark:hover:!bg-[#222225]",
                                                     isHideBonusMode ? 'hidden' : ''
                                                 )}
                                                 onPress={() => {
@@ -1460,8 +1460,8 @@ export function ChecklistComponent({
                                                 <span className={clsx(
                                                     "flex h-5 w-5 items-center justify-center rounded-full transition-colors",
                                                     (isBonusMode[character.nickname] ?? false)
-                                                        ? "bg-secondary-500 text-white shadow-[0_0_0_3px_rgba(168,85,247,0.14)] dark:bg-secondary-400 dark:text-[#1d1028]"
-                                                        : "bg-secondary-200 text-secondary-700 group-hover:bg-secondary-300 dark:bg-secondary-800 dark:text-secondary-200 dark:group-hover:bg-secondary-700"
+                                                        ? "bg-default-100 text-secondary-700 dark:bg-white/10 dark:text-secondary-200"
+                                                        : "bg-default-100 text-secondary-700 group-hover:bg-default-200 dark:bg-white/10 dark:text-secondary-200 dark:group-hover:bg-white/15"
                                                 )}>
                                                     {(isBonusMode[character.nickname] ?? false) ? <CheckIcon size={12}/> : <AddIcon size={12}/>}
                                                 </span>
@@ -3936,7 +3936,7 @@ export function FilterComponent({
                     onSelectionChange={setFilterAccount}
                     className="w-full"
                     classNames={{
-                        trigger: "h-10 min-h-10 rounded-lg border-gray-200/80 bg-white px-3 shadow-sm transition-colors data-[hover=true]:border-gray-300 data-[hover=true]:bg-gray-50/80 dark:border-white/10 dark:bg-[#171717] dark:data-[hover=true]:border-white/20 dark:data-[hover=true]:bg-white/[0.06]",
+                        trigger: "h-10 min-h-10 cursor-pointer rounded-lg border-gray-200/80 bg-white px-3 shadow-sm transition-colors data-[hover=true]:border-gray-300 data-[hover=true]:bg-gray-50/80 dark:border-white/10 dark:bg-[#171717] dark:data-[hover=true]:border-white/20 dark:data-[hover=true]:bg-white/[0.06]",
                         value: "text-xs font-semibold text-gray-700 dark:text-gray-200",
                         selectorIcon: "text-gray-400 dark:text-gray-500",
                         popoverContent: "rounded-xl border border-gray-200/80 shadow-xl dark:border-white/10"
@@ -3963,7 +3963,7 @@ export function FilterComponent({
                     onSelectionChange={setFilterContent}
                     className="w-full"
                     classNames={{
-                        trigger: "h-10 min-h-10 rounded-lg border-gray-200/80 bg-white px-3 shadow-sm transition-colors data-[hover=true]:border-gray-300 data-[hover=true]:bg-gray-50/80 dark:border-white/10 dark:bg-[#171717] dark:data-[hover=true]:border-white/20 dark:data-[hover=true]:bg-white/[0.06]",
+                        trigger: "h-10 min-h-10 cursor-pointer rounded-lg border-gray-200/80 bg-white px-3 shadow-sm transition-colors data-[hover=true]:border-gray-300 data-[hover=true]:bg-gray-50/80 dark:border-white/10 dark:bg-[#171717] dark:data-[hover=true]:border-white/20 dark:data-[hover=true]:bg-white/[0.06]",
                         value: "text-xs font-semibold text-gray-700 dark:text-gray-200",
                         selectorIcon: "text-gray-400 dark:text-gray-500",
                         popoverContent: "rounded-xl border border-gray-200/80 shadow-xl dark:border-white/10"
@@ -4163,34 +4163,42 @@ export function RemainChecklistComponent({ checklist, bosses }: RemainChecklistC
                                 </div>
                             </div>
                     </div>
-                    <div className="grid h-full w-full gap-2 sm:grid-cols-2">
+                    <div className="grid w-full auto-rows-max content-start gap-2 sm:grid-cols-2">
                         {results.map((data, index) => (
-                            <Card key={index} radius="lg" shadow="none" className={clsx(
-                                "h-[max-content] border border-gray-200/80 border-l-4 dark:border-gray-800",
-                                data.isGold && data.isGoldCharacter ? "border-[#F3B600]" : "border-[#cccccc] dark:border-[#333333]"
-                            )}>
-                                <CardBody className="p-3">
-                                    <div className="w-full flex gap-3 items-center justify-end">
-                                        <JobAvatar size="md" job={data.job}/>
-                                        <div className="grow">
-                                            <p>{data.nickname}</p>
-                                            <p className="fadedtext text-[10pt]">{data.job} · Lv.{data.level.toLocaleString()}</p>
+                            <Card
+                                key={index}
+                                radius="lg"
+                                shadow="none"
+                                className="relative h-max overflow-hidden border border-gray-200/80 bg-white/90 shadow-[0_2px_8px_rgba(15,23,42,0.04)] dark:border-white/10 dark:bg-white/[0.025] dark:shadow-none">
+                                <span className={clsx(
+                                    "absolute inset-y-0 left-0 w-1",
+                                    data.isGold && data.isGoldCharacter ? "bg-warning" : "bg-default-300 dark:bg-default-600"
+                                )}/>
+                                <CardBody className="p-3 pl-4">
+                                    <div className="flex w-full items-center gap-3">
+                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-default-100 ring-1 ring-black/5 dark:bg-white/[0.06] dark:ring-white/10">
+                                            <JobAvatar size="md" job={data.job}/>
                                         </div>
-                                        <div className="flex flex-col items-end">
-                                            <div className="grow">
-                                                <p className={clsx(
-                                                    "text-yellow-600 dark:text-yellow-500 text-[10pt] mb-1",
-                                                    data.isGold && data.isGoldCharacter ? "" : "hidden"
-                                                )}>골드 획득 가능</p>
-                                            </div>
-                                            <div className="flex gap-1">
+                                        <div className="min-w-0 grow">
+                                            <p className="truncate text-sm font-semibold text-foreground">{data.nickname}</p>
+                                            <p className="mt-0.5 truncate text-[11px] text-default-400">{data.job} · Lv.{data.level.toLocaleString()}</p>
+                                        </div>
+                                        <div className="flex shrink-0 flex-col items-end gap-1.5">
+                                            {data.isGold && data.isGoldCharacter ? (
+                                                <span className="inline-flex items-center gap-1 rounded-full bg-warning-50 px-2 py-0.5 text-[10px] font-semibold text-warning-700 dark:bg-warning-500/10 dark:text-warning-400">
+                                                    <img src="/icons/gold.png" alt="" className="h-3 w-3"/>
+                                                    골드 획득 가능
+                                                </span>
+                                            ) : null}
+                                            <div className="flex items-center gap-1">
+                                                <span className="mr-0.5 text-[10px] text-default-400">남은 관문</span>
                                                 {data.difficultys.map((diff, idx) => (
                                                     <Tooltip
                                                         key={idx}
                                                         showArrow
                                                         content={diff.difficulty}>
                                                         <div className={clsx(
-                                                            "w-5 h-5 flex items-center justify-center p-1 rounded-full text-[9pt] border-1",
+                                                            "flex h-5 w-5 items-center justify-center rounded-full border text-[10px] font-semibold shadow-sm",
                                                             getBackground50ByStage(diff.difficulty, false),
                                                             getBorderByStage(diff.difficulty, false)
                                                         )}>
