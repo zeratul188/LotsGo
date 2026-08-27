@@ -970,7 +970,7 @@ export default function AutoChecklistControl({
                 className="hidden h-9 border border-primary/30 px-2 text-xs font-medium md960:flex sm:text-sm"
                 isDisabled={isDisabled}
                 onPress={onOpen}>
-                {status === 'active' ? '자동 체크 작동 중 (Beta)' : '자동 체크 기능 켜기 (Beta)'}
+                {status === 'active' ? '자동 체크 작동 중' : '자동 체크 기능 켜기'}
             </Button>
             {isSharing ? (
                 <div className="hidden min-w-0 items-center gap-2 rounded-lg border border-primary-200/80 bg-primary-50/80 px-3 py-2 text-sm text-primary-700 md960:col-span-4 md960:flex dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-sky-200">
@@ -997,7 +997,7 @@ export default function AutoChecklistControl({
                             <ModalHeader className="flex flex-col gap-1 border-b border-gray-200/80 px-6 py-5 dark:border-white/10">
                                 <div className="flex items-center gap-2">
                                     <span className="h-5 w-1 rounded-full bg-secondary"/>
-                                    <p className="text-xl font-semibold">레이드 자동 체크 (Beta)</p>
+                                    <p className="text-xl font-semibold">레이드 자동 체크</p>
                                 </div>
                                 <p className="pl-3 text-sm font-normal fadedtext">게임 화면에서 레이드 이름과 완료 문구를 인식합니다.</p>
                             </ModalHeader>

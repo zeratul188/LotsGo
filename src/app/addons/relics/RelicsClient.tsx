@@ -163,13 +163,114 @@ function ChartModal({ selectedRelic, isOpen, onOpenChange }: ChartModalProps) {
     )
 }
 
+type ChangeType = "increase" | "decrease";
+
+type ChangeListModalProps = {
+    relics: RelicBook[];
+    type: ChangeType;
+    isOpen: boolean;
+    onOpenChange: () => void;
+}
+
+function getChangeRate(relic: RelicBook) {
+    const previousPrice = getUndoPrice(relic);
+    if (previousPrice === 0) return 0;
+    return Math.round((getDiffPrice(relic) / previousPrice) * 1000) / 10;
+}
+
+function ChangeListModal({ relics, type, isOpen, onOpenChange }: ChangeListModalProps) {
+    const isIncrease = type === "increase";
+    const changedRelics = relics.filter((relic) => (
+        isIncrease ? getDiffPrice(relic) > 0 : getDiffPrice(relic) < 0
+    ));
+    const title = isIncrease ? "가격이 상승한 각인서" : "가격이 하락한 각인서";
+    const accent = isIncrease ? "success" : "danger";
+
+    return (
+        <Modal isOpen={isOpen} onOpenChange={onOpenChange} size="3xl" scrollBehavior="inside">
+            <ModalContent>
+                {() => (
+                    <>
+                        <ModalHeader className="border-b border-default-100 px-5 py-4 dark:border-white/[0.06]">
+                            <div className="flex items-center gap-3">
+                                <span className={`flex h-10 w-10 items-center justify-center rounded-xl text-xl font-bold ${
+                                    isIncrease
+                                        ? "bg-success-50 text-success-600 dark:bg-success-500/15 dark:text-success-400"
+                                        : "bg-danger-50 text-danger-600 dark:bg-danger-500/15 dark:text-danger-400"
+                                }`}>
+                                    {isIncrease ? "↑" : "↓"}
+                                </span>
+                                <div>
+                                    <p className="text-base font-bold">{title}</p>
+                                    <p className="mt-0.5 text-xs font-normal text-default-500">현재가와 직전 가격을 비교한 목록입니다.</p>
+                                </div>
+                                <Chip size="sm" variant="flat" color={accent} className="ml-auto">{changedRelics.length}종</Chip>
+                            </div>
+                        </ModalHeader>
+                        <ModalBody className="gap-3 px-5 py-4">
+                            {changedRelics.length > 0 ? changedRelics.map((relic) => {
+                                const diff = getDiffPrice(relic);
+                                const changeRate = getChangeRate(relic);
+
+                                return (
+                                    <div key={relic.name} className="grid gap-3 rounded-xl border border-default-200/80 bg-default-50/60 p-3 dark:border-white/10 dark:bg-white/[0.035] sm:grid-cols-[minmax(0,1.4fr)_minmax(110px,0.8fr)_minmax(110px,0.8fr)_auto] sm:items-center">
+                                        <div className="flex min-w-0 items-center gap-3">
+                                            <img
+                                                src={getEngravingSrcByName(relic.name.replaceAll(' 각인서', ''))}
+                                                alt={`${relic.name} 아이콘`}
+                                                className="h-11 w-11 shrink-0 rounded-xl ring-1 ring-black/5 dark:ring-white/10"/>
+                                            <div className="min-w-0">
+                                                <p className="truncate font-semibold text-relics">{relic.name}</p>
+                                                <p className="mt-0.5 text-[11px] text-default-400">유물 등급 각인서</p>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] text-default-400">이전 골드</p>
+                                            <div className="mt-1 flex items-center gap-1.5 text-sm font-medium tabular-nums text-default-600 dark:text-default-400">
+                                                <img src="/icons/gold.png" alt="goldicon" className="h-3.5 w-3.5 opacity-70"/>
+                                                {getUndoPrice(relic).toLocaleString()}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] text-default-400">현재 골드</p>
+                                            <div className="mt-1 flex items-center gap-1.5 text-sm font-bold tabular-nums">
+                                                <img src="/icons/gold.png" alt="goldicon" className="h-3.5 w-3.5"/>
+                                                {relic.price.toLocaleString()}
+                                            </div>
+                                        </div>
+                                        <div className={clsx(
+                                            "inline-flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums sm:justify-self-end",
+                                            isIncrease
+                                                ? "bg-success-50 text-success-700 dark:bg-success-500/10 dark:text-success-400"
+                                                : "bg-danger-50 text-danger-700 dark:bg-danger-500/10 dark:text-danger-400"
+                                        )}>
+                                            <span>{isIncrease ? "↑" : "↓"} {Math.abs(diff).toLocaleString()} 골드</span>
+                                            <span className="font-medium opacity-75">({Math.abs(changeRate)}%)</span>
+                                        </div>
+                                    </div>
+                                );
+                            }) : (
+                                <div className="rounded-xl border border-dashed border-default-200 px-4 py-12 text-center text-sm text-default-400 dark:border-white/10">
+                                    해당하는 각인서가 없습니다.
+                                </div>
+                            )}
+                        </ModalBody>
+                    </>
+                )}
+            </ModalContent>
+        </Modal>
+    )
+}
+
 type RelicsClientProps = {
     relics: RelicBook[]
 }
 
 export default function RelicsClient({ relics }: RelicsClientProps) {
     const [selectedRelic, setSelectedRelic] = useState<RelicBook | null>(null);
-    const {isOpen, onOpen, onOpenChange} = useDisclosure();
+    const {isOpen: isChartOpen, onOpen: onChartOpen, onOpenChange: onChartOpenChange} = useDisclosure();
+    const {isOpen: isChangeOpen, onOpen: onChangeOpen, onOpenChange: onChangeOpenChange} = useDisclosure();
+    const [changeType, setChangeType] = useState<ChangeType>("increase");
     const isMobile = useMobileQuery();
     const highestRelic = relics.length > 0
         ? relics.reduce((highest, relic) => relic.price > highest.price ? relic : highest)
@@ -177,15 +278,14 @@ export default function RelicsClient({ relics }: RelicsClientProps) {
     const increasedCount = relics.filter((relic) => getDiffPrice(relic) > 0).length;
     const decreasedCount = relics.filter((relic) => getDiffPrice(relic) < 0).length;
 
-    const getChangeRate = (relic: RelicBook) => {
-        const previousPrice = getUndoPrice(relic);
-        if (previousPrice === 0) return 0;
-        return Math.round((getDiffPrice(relic) / previousPrice) * 1000) / 10;
-    }
-
     const openHistory = (relic: RelicBook) => {
         setSelectedRelic(relic);
-        onOpen();
+        onChartOpen();
+    }
+
+    const openChangeList = (type: ChangeType) => {
+        setChangeType(type);
+        onChangeOpen();
     }
 
     return (
@@ -205,15 +305,15 @@ export default function RelicsClient({ relics }: RelicsClientProps) {
                             매 정각 업데이트
                         </div>
                     </div>
-                    <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                        <div className="col-span-2 rounded-xl bg-default-50 px-3 py-3 dark:bg-white/[0.04] sm:col-span-1">
+                    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        <div className="col-span-2 rounded-xl border border-default-200/80 bg-default-50/60 px-3 py-2.5 dark:border-white/10 dark:bg-white/[0.03] sm:col-span-1">
                             <p className="text-xs text-default-500">현재 최고가</p>
                             {highestRelic ? (
                                 <div className="mt-1 flex items-center gap-2">
                                     <img
                                         src={getEngravingSrcByName(highestRelic.name.replaceAll(' 각인서', ''))}
                                         alt="relic book icon"
-                                        className="h-8 w-8 rounded-lg"/>
+                                        className="h-7 w-7 rounded-lg"/>
                                     <div className="min-w-0">
                                         <p className="truncate text-sm font-semibold text-relics">{highestRelic.name}</p>
                                         <div className="flex items-center gap-1">
@@ -224,14 +324,32 @@ export default function RelicsClient({ relics }: RelicsClientProps) {
                                 </div>
                             ) : <p className="mt-2 text-sm text-default-400">데이터 없음</p>}
                         </div>
-                        <div className="rounded-xl bg-success-50 px-3 py-3 dark:bg-success-500/10">
-                            <p className="text-xs text-success-700 dark:text-success-400">가격 상승</p>
-                            <p className="mt-1 text-xl font-bold text-success-700 dark:text-success-400">{increasedCount}<span className="ml-1 text-xs font-medium">종</span></p>
-                        </div>
-                        <div className="rounded-xl bg-danger-50 px-3 py-3 dark:bg-danger-500/10">
-                            <p className="text-xs text-danger-700 dark:text-danger-400">가격 하락</p>
-                            <p className="mt-1 text-xl font-bold text-danger-700 dark:text-danger-400">{decreasedCount}<span className="ml-1 text-xs font-medium">종</span></p>
-                        </div>
+                        <button
+                            type="button"
+                            onClick={() => openChangeList("increase")}
+                            className="group cursor-pointer rounded-xl border border-success-200 bg-default-50/60 px-3 py-2.5 text-left transition-colors hover:border-success-400 hover:bg-success-50/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-success-500 dark:border-success-500/30 dark:bg-white/[0.03] dark:hover:border-success-500/60 dark:hover:bg-success-500/[0.06]">
+                            <div className="flex items-center justify-between gap-2">
+                                <p className="text-sm text-success-700 dark:text-success-400">가격 상승</p>
+                                <span className="text-sm text-success-600 transition-transform group-hover:-translate-y-0.5 dark:text-success-400">↗</span>
+                            </div>
+                            <div className="mt-1 flex items-baseline justify-start gap-1.5 text-success-700 dark:text-success-400">
+                                <span className="text-lg font-bold tabular-nums">{increasedCount}<span className="ml-0.5 text-xs font-medium">종</span></span>
+                                <span className="text-[11px] opacity-70">· 상승한 각인서 보기</span>
+                            </div>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => openChangeList("decrease")}
+                            className="group cursor-pointer rounded-xl border border-danger-200 bg-default-50/60 px-3 py-2.5 text-left transition-colors hover:border-danger-400 hover:bg-danger-50/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-danger-500 dark:border-danger-500/30 dark:bg-white/[0.03] dark:hover:border-danger-500/60 dark:hover:bg-danger-500/[0.06]">
+                            <div className="flex items-center justify-between gap-2">
+                                <p className="text-sm text-danger-700 dark:text-danger-400">가격 하락</p>
+                                <span className="text-sm text-danger-600 transition-transform group-hover:translate-y-0.5 dark:text-danger-400">↘</span>
+                            </div>
+                            <div className="mt-1 flex items-baseline justify-start gap-1.5 text-danger-700 dark:text-danger-400">
+                                <span className="text-lg font-bold tabular-nums">{decreasedCount}<span className="ml-0.5 text-xs font-medium">종</span></span>
+                                <span className="text-[11px] opacity-70">· 하락한 각인서 보기</span>
+                            </div>
+                        </button>
                     </div>
                 </div>
 
@@ -385,7 +503,8 @@ export default function RelicsClient({ relics }: RelicsClientProps) {
                     </div>
                 </div>
             )}
-            <ChartModal isOpen={isOpen} selectedRelic={selectedRelic} onOpenChange={onOpenChange}/>
+            <ChartModal isOpen={isChartOpen} selectedRelic={selectedRelic} onOpenChange={onChartOpenChange}/>
+            <ChangeListModal isOpen={isChangeOpen} relics={relics} type={changeType} onOpenChange={onChangeOpenChange}/>
             <Script
                 async
                 src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"

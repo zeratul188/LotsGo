@@ -3,10 +3,12 @@ export function LogoComponent() {
     return (
         <>
             <img
-                src="title(L).png" 
+                src="/title(L).png"
+                alt="로츠고 로고"
                 className="w-[190px] cursor-pointer dark:hidden sm:w-[210px]"/>
             <img 
-                src="title(D).png" 
+                src="/title(D).png"
+                alt="로츠고 로고"
                 className="hidden w-[190px] cursor-pointer dark:block sm:w-[210px]"/>
         </>
     )

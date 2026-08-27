@@ -469,9 +469,6 @@ export default function ChecklistClient() {
                     <div className="min-w-0 grow">
                         <div className="flex flex-wrap items-center gap-2">
                             <h2 className="text-sm font-semibold text-foreground">주간 초기화가 되지 않았나요?</h2>
-                            <span className="rounded-full bg-danger/10 px-2 py-0.5 text-[11px] font-medium text-danger dark:bg-danger/15">
-                                수동 초기화
-                            </span>
                         </div>
                         <p className="mt-1 text-xs leading-5 text-default-500 dark:text-default-400">
                             수요일 오전 6시 이후에도 초기화되지 않았다면 페이지를 새로고침한 뒤 다시 시도해주세요.
@@ -487,7 +484,7 @@ export default function ChecklistClient() {
                                 className="w-full font-semibold sm:w-auto"
                                 isLoading={isLoadingReset}
                                 onPress={async () => await handleResetChecklist(checklist, checklistForm.biweekly, dispatch, setLoadingReset)}>
-                                수동으로 초기화
+                                초기화
                             </Button>
                         </div>
                     </div>

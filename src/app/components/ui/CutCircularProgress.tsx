@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 type CutCircularProgressProps = {
   value: number;
@@ -55,7 +55,12 @@ export default function CutCircularProgress({
   const percent =
     max <= 0 ? 0 : Math.max(0, Math.min(1, value / max));
   const percentage = Math.round(percent * 100);
+  const [animatedPercent, setAnimatedPercent] = useState(0);
   const isGoldProgress = progressClassName.includes("warning");
+
+  useEffect(() => {
+    setAnimatedPercent(percent);
+  }, [percent]);
 
   const cx = size / 2;
   const cy = size / 2;
@@ -69,12 +74,9 @@ export default function CutCircularProgress({
   const trackPath = describeArc(cx, cy, r, startAngle, endAngle);
 
   // ✅ 진행 각도 계산
-  const progressEndAngle = startAngle + totalArc * percent;
+  const progressEndAngle = startAngle + totalArc;
 
-  const progressPath =
-    percent === 0
-      ? ""
-      : describeArc(cx, cy, r, startAngle, progressEndAngle);
+  const progressPath = describeArc(cx, cy, r, startAngle, progressEndAngle);
 
   return (
     <div className="relative flex h-full min-w-0 items-center gap-3 overflow-hidden rounded-xl border border-gray-200/80 bg-white/90 px-3 py-2.5 shadow-[0_2px_10px_rgba(15,23,42,0.03)] dark:border-white/10 dark:bg-white/[0.035] dark:shadow-none">
@@ -91,15 +93,18 @@ export default function CutCircularProgress({
             strokeLinecap="round"
             className={trackClassName}
           />
-          {percent > 0 && (
-            <path
-              d={progressPath}
-              fill="none"
-              strokeWidth={strokeWidth}
-              strokeLinecap="round"
-              className={progressClassName}
-            />
-          )}
+          <path
+            d={progressPath}
+            fill="none"
+            pathLength={100}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            className={clsx(progressClassName, "transition-[stroke-dashoffset] duration-700 ease-out")}
+            style={{
+              strokeDasharray: 100,
+              strokeDashoffset: 100 - animatedPercent * 100,
+            }}
+          />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center pb-1 text-center tabular-nums">
           <span className={clsx(
@@ -124,7 +129,7 @@ export default function CutCircularProgress({
           <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-default-200/80 dark:bg-white/10">
             <div
               className={clsx("h-full rounded-full transition-[width] duration-500", isGoldProgress ? "bg-warning" : "bg-secondary")}
-              style={{ width: `${percentage}%` }}/>
+              style={{ width: `${animatedPercent * 100}%` }}/>
           </div>
         </div>
       )}
