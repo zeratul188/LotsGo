@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 
 const DISCORD_API_BASE = "https://discord.com/api/v10";
 const DISCORD_CALLBACK_PATH = "/api/integrations/discord/callback";
+const DISCORD_LOGIN_CALLBACK_PATH = "/api/auth/discord/callback";
 
 export type DiscordUser = {
     id: string,
@@ -34,14 +35,34 @@ export function getDiscordOAuthConfig(req: NextRequest): DiscordOAuthConfig {
     return { clientId, clientSecret, redirectUri };
 }
 
-export function createDiscordAuthorizationUrl(config: DiscordOAuthConfig, state: string): string {
+export function getDiscordLoginOAuthConfig(req: NextRequest): DiscordOAuthConfig {
+    const clientId = process.env.DISCORD_CLIENT_ID?.trim();
+    const clientSecret = process.env.DISCORD_CLIENT_SECRET?.trim();
+    const configuredRedirectUri = process.env.DISCORD_LOGIN_REDIRECT_URI?.trim();
+    const isLocal = req.nextUrl.hostname === "localhost" || req.nextUrl.hostname === "127.0.0.1";
+    const redirectUri = isLocal
+        ? `${req.nextUrl.origin}${DISCORD_LOGIN_CALLBACK_PATH}`
+        : configuredRedirectUri ?? `${req.nextUrl.origin}${DISCORD_LOGIN_CALLBACK_PATH}`;
+
+    if (!clientId || !clientSecret || !redirectUri) {
+        throw new Error("DISCORD_LOGIN_CONFIGURATION_ERROR");
+    }
+
+    return { clientId, clientSecret, redirectUri };
+}
+
+export function createDiscordAuthorizationUrl(
+    config: DiscordOAuthConfig,
+    state: string,
+    prompt: "consent" | null = "consent"
+): string {
     const url = new URL("https://discord.com/oauth2/authorize");
     url.searchParams.set("client_id", config.clientId);
     url.searchParams.set("response_type", "code");
     url.searchParams.set("redirect_uri", config.redirectUri);
     url.searchParams.set("scope", "identify");
     url.searchParams.set("state", state);
-    url.searchParams.set("prompt", "consent");
+    if (prompt) url.searchParams.set("prompt", prompt);
     return url.toString();
 }
 

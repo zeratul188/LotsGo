@@ -8,6 +8,7 @@ import { hashToken } from "@/lib/auth";
 export type AuthenticatedMemberSession = {
     userId: string,
     sessionId: string,
+    sessionData: DocumentData,
     memberRef: DocumentReference<DocumentData>,
     memberData: DocumentData
 }
@@ -58,6 +59,7 @@ export async function getAuthenticatedMemberSession(
     return {
         userId,
         sessionId: sessionDoc.id,
+        sessionData,
         memberRef: memberDoc.ref,
         memberData: memberDoc.data()
     };

@@ -4,11 +4,19 @@ import { useSearchParams } from "next/navigation";
 import DiscordIcon from "@/Icons/DiscordIcon";
 import type { DiscordConnectionStatus } from "../model/discordTypes";
 import { LoadingComponent } from "../../UtilsCompnents";
+import { signOut } from "firebase/auth";
+import Cookies from "js-cookie";
+import { auth } from "@/utiils/firebase";
 
 const resultMessages: Record<string, { title: string, description: string, color: "success" | "danger" | "warning" }> = {
     connected: {
         title: "Discord 연동 완료",
         description: "Discord 계정이 로츠고 계정에 연결되었습니다.",
+        color: "success"
+    },
+    refreshed: {
+        title: "Discord 프로필 갱신 완료",
+        description: "최신 Discord 닉네임과 프로필 사진을 반영했습니다.",
         color: "success"
     },
     cancelled: {
@@ -52,6 +60,7 @@ const resultMessages: Record<string, { title: string, description: string, color
         color: "danger"
     }
 };
+
 
 function formatConnectedAt(value: string | null): string {
     if (!value) return "-";
@@ -103,6 +112,7 @@ export default function DiscordComponent() {
         if (message) addToast(message);
     }, [searchParams]);
 
+
     const unlink = async () => {
         setUnlinking(true);
         try {
@@ -111,8 +121,19 @@ export default function DiscordComponent() {
                 credentials: "include"
             });
             if (!response.ok) throw new Error("DISCORD_UNLINK_FAILED");
+            const data = await response.json() as { loggedOut?: boolean };
             setStatus({ linked: false });
             window.dispatchEvent(new CustomEvent("discord-connection-changed"));
+            if (data.loggedOut) {
+                sessionStorage.removeItem("token");
+                sessionStorage.removeItem("user");
+                localStorage.removeItem("sessionExpiresAt");
+                localStorage.removeItem("userSettings");
+                Cookies.remove("userApiKey", { path: "/" });
+                await signOut(auth).catch(() => undefined);
+                window.location.href = "/login?discord=unlinked";
+                return;
+            }
             addToast({
                 title: "Discord 연동 해제",
                 description: "Discord 계정 연동을 해제했습니다.",

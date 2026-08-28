@@ -5,6 +5,7 @@ import { SetStateFn } from "@/utiils/utils";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../store/store";
+import DiscordIcon from "@/Icons/DiscordIcon";
 
 export type User = {
     id: string,
@@ -75,6 +76,13 @@ export function InputsComponent({
     
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
+    const returnTo = typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get("returnTo")
+        : null;
+    const safeReturnTo = returnTo?.startsWith("/") && !returnTo.startsWith("//") ? returnTo : null;
+    const discordLoginHref = safeReturnTo
+        ? `/api/auth/discord/login?returnTo=${encodeURIComponent(safeReturnTo)}`
+        : "/api/auth/discord/login";
 
     return (
         <>
@@ -127,6 +135,21 @@ export function InputsComponent({
                 className="mt-8 font-semibold shadow-sm"
                 onPress={onClickLogin}>
                 로그인
+            </Button>
+            <div className="my-5 flex items-center gap-3">
+                <Divider className="w-auto flex-1"/>
+                <span className="shrink-0 text-xs fadedtext">또는</span>
+                <Divider className="w-auto flex-1"/>
+            </div>
+            <Button
+                fullWidth
+                size="lg"
+                as={Link}
+                href={discordLoginHref}
+                radius="sm"
+                className="bg-[#5865F2] font-semibold text-white shadow-sm"
+                startContent={<DiscordIcon className="h-5 w-5"/>}>
+                Discord로 로그인
             </Button>
             <div className="my-6 flex items-center gap-3">
                 <Divider className="w-auto flex-1"/>

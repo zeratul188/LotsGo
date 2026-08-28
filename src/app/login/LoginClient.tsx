@@ -1,13 +1,58 @@
 'use client'
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { FindPasswordModal, InputsComponent, LogoComponent } from "./LoginForm";
 import { useLoginForm } from "./LoginForm";
 import { addToast, useDisclosure } from "@heroui/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+
+const discordLoginMessages: Record<string, { title: string, description: string, color: "danger" | "warning" }> = {
+    "not-linked": {
+        title: "연결된 로츠고 계정 없음",
+        description: "기존 방식으로 로그인한 뒤 설정에서 Discord 계정을 먼저 연동해 주세요.",
+        color: "danger"
+    },
+    cancelled: {
+        title: "Discord 로그인 취소",
+        description: "Discord 로그인을 취소했습니다.",
+        color: "warning"
+    },
+    "state-error": {
+        title: "로그인 요청 만료",
+        description: "안전한 로그인을 위해 처음부터 다시 시도해 주세요.",
+        color: "danger"
+    },
+    "configuration-error": {
+        title: "Discord 설정 오류",
+        description: "Discord 로그인 설정을 확인해 주세요.",
+        color: "danger"
+    },
+    "oauth-error": {
+        title: "Discord 인증 오류",
+        description: "Discord 인증을 완료하지 못했습니다.",
+        color: "danger"
+    },
+    "callback-error": {
+        title: "Discord 로그인 오류",
+        description: "Discord 로그인을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+        color: "danger"
+    },
+    "complete-error": {
+        title: "로그인 완료 오류",
+        description: "로그인 정보를 불러오지 못했습니다. 다시 시도해 주세요.",
+        color: "danger"
+    },
+    unlinked: {
+        title: "Discord 연동 해제",
+        description: "Discord 로그인 세션이 종료되었습니다. 다시 로그인해 주세요.",
+        color: "warning"
+    }
+};
 
 export default function LoginClient() {
     const loginForm = useLoginForm();
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const shownDiscordResult = useRef<string | null>(null);
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
 
     useEffect(() => {
@@ -21,6 +66,14 @@ export default function LoginClient() {
             router.back();
         }
     }, []);
+
+    useEffect(() => {
+        const result = searchParams.get("discord");
+        if (!result || shownDiscordResult.current === result) return;
+        shownDiscordResult.current = result;
+        const message = discordLoginMessages[result];
+        if (message) addToast(message);
+    }, [searchParams]);
 
     return (
         <main className="relative flex min-h-[calc(100vh-65px)] items-center justify-center overflow-hidden bg-gray-50/70 px-4 py-8 sm:px-6 lg:py-12 dark:bg-[#111111]">

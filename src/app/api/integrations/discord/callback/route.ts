@@ -8,11 +8,15 @@ const OAUTH_COOKIE = "discordOAuthState";
 
 type OAuthCookie = {
     state: string,
-    sessionId: string
+    sessionId: string,
+    mode: "connect" | "refresh",
+    returnTo: string
 }
 
-function redirectToSetting(req: NextRequest, result: string): NextResponse {
-    const response = NextResponse.redirect(new URL(`/setting?tab=discord&discord=${result}`, req.url));
+function redirectToSetting(req: NextRequest, result: string, returnTo = "/setting?tab=discord"): NextResponse {
+    const target = new URL(returnTo, req.url);
+    target.searchParams.set("discord", result);
+    const response = NextResponse.redirect(target);
     response.cookies.set({
         name: OAUTH_COOKIE,
         value: "",
@@ -30,7 +34,14 @@ function parseOAuthCookie(value: string | undefined): OAuthCookie | null {
     try {
         const parsed = JSON.parse(Buffer.from(value, "base64url").toString("utf8")) as Partial<OAuthCookie>;
         if (typeof parsed.state !== "string" || typeof parsed.sessionId !== "string") return null;
-        return { state: parsed.state, sessionId: parsed.sessionId };
+        return {
+            state: parsed.state,
+            sessionId: parsed.sessionId,
+            mode: parsed.mode === "refresh" ? "refresh" : "connect",
+            returnTo: typeof parsed.returnTo === "string" && parsed.returnTo.startsWith("/") && !parsed.returnTo.startsWith("//")
+                ? parsed.returnTo
+                : "/setting?tab=discord"
+        };
     } catch {
         return null;
     }
@@ -80,6 +91,9 @@ export async function GET(req: NextRequest) {
                 ? currentDiscord.userId
                 : "";
 
+            if (oauthCookie.mode === "refresh" && currentDiscordId !== discordUser.id) {
+                throw new Error("DISCORD_REFRESH_NOT_LINKED");
+            }
             if (currentDiscordId && currentDiscordId !== discordUser.id) {
                 throw new Error("LOTSGO_ALREADY_LINKED");
             }
@@ -107,11 +121,12 @@ export async function GET(req: NextRequest) {
             transaction.update(session.memberRef, { discord });
         });
 
-        return redirectToSetting(req, "connected");
+        return redirectToSetting(req, oauthCookie.mode === "refresh" ? "refreshed" : "connected", oauthCookie.returnTo);
     } catch (error) {
         const message = error instanceof Error ? error.message : "";
         if (message === "LOTSGO_ALREADY_LINKED") return redirectToSetting(req, "lotsgo-already-linked");
         if (message === "DISCORD_ALREADY_LINKED") return redirectToSetting(req, "discord-already-linked");
+        if (message === "DISCORD_REFRESH_NOT_LINKED") return redirectToSetting(req, "not-linked");
         console.error("Failed to complete Discord OAuth", error);
         return redirectToSetting(req, "callback-error");
     }

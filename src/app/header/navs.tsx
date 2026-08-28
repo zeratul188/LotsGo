@@ -23,9 +23,20 @@ import JobAvatar from "@/Icons/JobAvatar";
 import VegaIcon from "@/Icons/VegaIcon";
 import DiscordIcon from "@/Icons/DiscordIcon";
 import type { DiscordConnectionStatus } from "../setting/model/discordTypes";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import "./profileEffects.css";
+
+const DISCORD_REFRESH_COOLDOWN_KEY = "discordProfileRefreshCooldownUntil";
+const DISCORD_REFRESH_COOLDOWN_MS = 60 * 1000;
+
+function RefreshIcon({ className }: { className?: string }) {
+    return <svg aria-hidden="true" className={className} fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 11a8.1 8.1 0 0 0-14.9-4.4L3 9" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+        <path d="M3 4v5h5M4 13a8.1 8.1 0 0 0 14.9 4.4L21 15" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+        <path d="M21 20v-5h-5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+    </svg>;
+}
 
 // 헤더 메뉴
 const menuItems = [
@@ -277,6 +288,7 @@ export function NavToggle({ isMenuOpen }: NavToggleProps) {
 function ProfileButton() {
     const dispatch = useDispatch<AppDispatch>();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const onActionProfile = useOnActionProfile();
     const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
     const isLogined = useSelector((state: RootState) => state.login.isLogined);
@@ -287,6 +299,28 @@ function ProfileButton() {
     const mainCharacter: Character | undefined = expedition.find(character => character.nickname === nickname);
     const [isAdministrator, setAdministrator] = useState(false);
     const [discordStatus, setDiscordStatus] = useState<DiscordConnectionStatus | null>(null);
+    const [discordRefreshCooldownUntil, setDiscordRefreshCooldownUntil] = useState(0);
+
+    useEffect(() => {
+        const stored = Number(localStorage.getItem(DISCORD_REFRESH_COOLDOWN_KEY) ?? 0);
+        if (!Number.isFinite(stored) || stored <= Date.now()) {
+            localStorage.removeItem(DISCORD_REFRESH_COOLDOWN_KEY);
+            return;
+        }
+        setDiscordRefreshCooldownUntil(stored);
+        const timer = window.setTimeout(() => {
+            localStorage.removeItem(DISCORD_REFRESH_COOLDOWN_KEY);
+            setDiscordRefreshCooldownUntil(0);
+        }, stored - Date.now());
+        return () => window.clearTimeout(timer);
+    }, []);
+
+    useEffect(() => {
+        if (searchParams.get("discord") !== "refreshed") return;
+        const cooldownUntil = Date.now() + DISCORD_REFRESH_COOLDOWN_MS;
+        localStorage.setItem(DISCORD_REFRESH_COOLDOWN_KEY, String(cooldownUntil));
+        setDiscordRefreshCooldownUntil(cooldownUntil);
+    }, [searchParams]);
 
     useEffect(() => {
         const run = async () => {
@@ -418,7 +452,7 @@ function ProfileButton() {
                             showDivider
                             isReadOnly
                             textValue={`연결된 Discord 계정 ${discordStatus.user.globalName || discordStatus.user.username}`}
-                            className="pointer-events-none mb-1 min-h-16 cursor-default px-3 data-[hover=true]:bg-transparent data-[focus=true]:bg-transparent data-[selected=true]:bg-transparent">
+                            className="mb-1 min-h-16 cursor-default px-3 data-[hover=true]:bg-transparent data-[focus=true]:bg-transparent data-[selected=true]:bg-transparent">
                             <div className="flex items-center gap-2.5">
                                 <Avatar
                                     showFallback
@@ -431,6 +465,19 @@ function ProfileButton() {
                                     <div className="flex min-w-0 items-center gap-1.5">
                                         <p className="truncate text-xs font-semibold">{discordStatus.user.globalName || discordStatus.user.username}</p>
                                         <span className="shrink-0 text-[10px] text-default-400">Discord 계정</span>
+                                        <Tooltip showArrow content="정보 갱신">
+                                            <Button
+                                                as={Link}
+                                                href="/api/integrations/discord/connect?mode=refresh&returnTo=/"
+                                                isIconOnly
+                                                isDisabled={discordRefreshCooldownUntil > Date.now()}
+                                                aria-label="Discord 정보 갱신"
+                                                radius="full"
+                                                variant="light"
+                                                className="h-5 w-5 min-w-5 shrink-0 cursor-pointer p-0 text-default-400 hover:text-primary disabled:cursor-not-allowed">
+                                                <RefreshIcon className="h-3.5 w-3.5"/>
+                                            </Button>
+                                        </Tooltip>
                                     </div>
                                     <p className="mt-0.5 truncate text-[11px] text-default-500">@{discordStatus.user.username}</p>
                                 </div>

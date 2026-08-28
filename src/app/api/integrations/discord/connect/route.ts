@@ -13,12 +13,19 @@ export async function GET(req: NextRequest) {
         }
 
         const state = crypto.randomBytes(32).toString("base64url");
+        const mode = req.nextUrl.searchParams.get("mode") === "refresh" ? "refresh" : "connect";
+        const requestedReturnTo = req.nextUrl.searchParams.get("returnTo");
+        const returnTo = requestedReturnTo?.startsWith("/") && !requestedReturnTo.startsWith("//")
+            ? requestedReturnTo
+            : "/setting?tab=discord";
         const cookieValue = Buffer.from(JSON.stringify({
             state,
-            sessionId: session.sessionId
+            sessionId: session.sessionId,
+            mode,
+            returnTo
         })).toString("base64url");
         const config = getDiscordOAuthConfig(req);
-        const response = NextResponse.redirect(createDiscordAuthorizationUrl(config, state));
+        const response = NextResponse.redirect(createDiscordAuthorizationUrl(config, state, mode === "refresh" ? null : "consent"));
 
         response.cookies.set({
             name: OAUTH_COOKIE,

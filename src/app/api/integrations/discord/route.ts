@@ -64,25 +64,54 @@ export async function DELETE(req: NextRequest) {
             return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
         }
 
-        await adminDB.runTransaction(async transaction => {
+        const loggedOut = await adminDB.runTransaction(async transaction => {
             const memberSnapshot = await transaction.get(session.memberRef);
             if (!memberSnapshot.exists) throw new Error("MEMBER_NOT_FOUND");
 
             const discord = memberSnapshot.data()?.discord as StoredDiscordConnection | undefined;
             const discordUserId = typeof discord?.userId === "string" ? discord.userId : "";
-            if (!discordUserId) return;
+            if (!discordUserId) return false;
 
             const connectionRef = adminDB.collection("discordConnections").doc(discordUserId);
             const connectionSnapshot = await transaction.get(connectionRef);
+            const userSessionsSnapshot = await transaction.get(
+                adminDB.collection("sessions").where("userId", "==", session.userId)
+            );
             if (connectionSnapshot.exists && connectionSnapshot.data()?.lotsgoUserId === session.userId) {
                 transaction.delete(connectionRef);
             }
             transaction.update(session.memberRef, {
                 discord: FieldValue.delete()
             });
+            const revokedAt = new Date();
+            userSessionsSnapshot.docs.forEach(sessionDoc => {
+                const sessionData = sessionDoc.data();
+                if (sessionData.authProvider === "discord" && sessionData.revoked !== true) {
+                    transaction.update(sessionDoc.ref, {
+                        revoked: true,
+                        revokedAt
+                    });
+                }
+            });
+            return session.sessionData.authProvider === "discord";
         });
 
-        return NextResponse.json({ message: "Discord 연동을 해제했습니다." });
+        const response = NextResponse.json({
+            message: "Discord 연동을 해제했습니다.",
+            loggedOut
+        });
+        if (loggedOut) {
+            response.cookies.set({
+                name: "refreshToken",
+                value: "",
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                path: "/",
+                maxAge: 0
+            });
+        }
+        return response;
     } catch (error) {
         console.error("Failed to unlink Discord account", error);
         return NextResponse.json({ error: "Discord 연동을 해제하지 못했습니다." }, { status: 500 });
