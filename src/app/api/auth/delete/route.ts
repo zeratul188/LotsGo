@@ -29,6 +29,10 @@ export async function POST(req: NextRequest) {
         }
         
         const targetDoc = snapshot.docs[0];
+        const discordUserId = targetDoc.data().discord?.userId;
+        if (typeof discordUserId === "string" && discordUserId) {
+            await deleteDoc(doc(firestore, "discordConnections", discordUserId));
+        }
         const docRef = doc(firestore, "members", targetDoc.id);
         await deleteDoc(docRef);
         

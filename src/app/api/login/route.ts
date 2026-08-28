@@ -67,7 +67,8 @@ export async function POST(req: NextRequest) {
             expiresAt,
             revoked: false,
             ipAddress,
-            deleteAfter
+            deleteAfter,
+            authProvider: "password"
         });
 
         const isAdministrator: boolean = targetDoc.data().isAdministrator ?? false;

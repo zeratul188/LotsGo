@@ -10,6 +10,7 @@ import DeleteComponent from "./ui/DeleteForm";
 import APIComponent from "./ui/ApiForm";
 import OptionComponent from "./ui/OptionForm";
 import HistoryComponent from "./ui/HistoryForm";
+import DiscordComponent from "./ui/DiscordForm";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { LoadingComponent } from "../UtilsCompnents";
@@ -32,6 +33,12 @@ const tabs = [
         title: '로스트아크 API 키',
         description: '게임 데이터 연동 키 관리',
         component: <APIComponent/>
+    },
+    {
+        key: 'discord',
+        title: 'Discord 연동',
+        description: 'Discord 계정 연결 및 관리',
+        component: <DiscordComponent/>
     },
     {
         key: 'history',

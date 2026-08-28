@@ -17,6 +17,9 @@ export function useOnActionProfile() {
 
     return async (key: Key) => {
         switch(key) {
+            case "discord":
+                router.push('/setting?tab=discord');
+                break;
             case "setting":
                 router.push('/setting');
                 break;
