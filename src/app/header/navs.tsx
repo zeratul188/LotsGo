@@ -72,12 +72,15 @@ export function NavMenu() {
     const dispatch = useDispatch<AppDispatch>();
     const router = useRouter();
     const pathname = usePathname();
+    const searchParams = useSearchParams();
     const nickname = useSelector((state: RootState) => state.login.user.character);
     const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
     const mainCharacter: Character | undefined = expedition.find(character => character.nickname === nickname);
     const [isAdministrator, setAdministrator] = useState(false);
     const isLogined = useSelector((state: RootState) => state.login.isLogined);
     const onClickLogout = useLogout();
+    const [discordStatus, setDiscordStatus] = useState<DiscordConnectionStatus | null>(null);
+    const [discordRefreshCooldownUntil, setDiscordRefreshCooldownUntil] = useState(0);
 
     useEffect(() => {
         const run = async () => {
@@ -86,6 +89,40 @@ export function NavMenu() {
         }
         run();
     }, [isLogined]);
+
+    useEffect(() => {
+        if (!isLogined) {
+            setDiscordStatus(null);
+            return;
+        }
+        const loadDiscordStatus = async () => {
+            try {
+                const response = await fetch("/api/integrations/discord", { credentials: "include", cache: "no-store" });
+                if (response.ok) setDiscordStatus(await response.json() as DiscordConnectionStatus);
+            } catch {
+                // 부가 메뉴 정보이므로 조회 실패 시 기본 메뉴를 유지합니다.
+            }
+        };
+        void loadDiscordStatus();
+    }, [isLogined]);
+
+    useEffect(() => {
+        const stored = Number(localStorage.getItem(DISCORD_REFRESH_COOLDOWN_KEY) ?? 0);
+        if (!Number.isFinite(stored) || stored <= Date.now()) return;
+        setDiscordRefreshCooldownUntil(stored);
+        const timer = window.setTimeout(() => {
+            localStorage.removeItem(DISCORD_REFRESH_COOLDOWN_KEY);
+            setDiscordRefreshCooldownUntil(0);
+        }, stored - Date.now());
+        return () => window.clearTimeout(timer);
+    }, []);
+
+    useEffect(() => {
+        if (searchParams.get("discord") !== "refreshed") return;
+        const cooldownUntil = Date.now() + DISCORD_REFRESH_COOLDOWN_MS;
+        localStorage.setItem(DISCORD_REFRESH_COOLDOWN_KEY, String(cooldownUntil));
+        setDiscordRefreshCooldownUntil(cooldownUntil);
+    }, [searchParams]);
 
     return (
         <NavbarMenu className="gap-1 border-t border-gray-200/80 pt-4 dark:border-white/10">
@@ -152,17 +189,47 @@ export function NavMenu() {
                 <>
                     <Divider className="mt-2 mb-2"/>
                     <NavbarMenuItem key="discord">
-                        <Button
-                            fullWidth
-                            as={Link}
-                            radius="sm"
-                            href="/setting?tab=discord"
-                            color={pathname.startsWith('/setting') ? "primary" : "default"}
-                            variant={pathname.startsWith('/setting') ? "flat" : "light"}
-                            startContent={<DiscordIcon className="h-6 w-6 text-[#5865F2]"/>}
-                            className="h-11 justify-start px-3 text-md font-medium">
-                            Discord 연동
-                        </Button>
+                        {discordStatus?.linked ? (
+                            <div className="flex w-full items-center gap-3 rounded-xl bg-default-100/70 p-3">
+                                <Avatar
+                                    showFallback
+                                    name={discordStatus.user.globalName || discordStatus.user.username}
+                                    src={discordStatus.user.avatar ? `https://cdn.discordapp.com/avatars/${discordStatus.user.id}/${discordStatus.user.avatar}.png?size=64` : undefined}
+                                    className="h-10 w-10 shrink-0 bg-[#5865F2] text-white"/>
+                                <div className="min-w-0 grow">
+                                    <p className="truncate text-sm font-semibold">{discordStatus.user.globalName || discordStatus.user.username}</p>
+                                    <div className="flex min-w-0 items-center gap-1.5">
+                                        <p className="truncate text-xs text-default-500">@{discordStatus.user.username}</p>
+                                        <span className="shrink-0 text-[10px] text-default-400">Discord 계정</span>
+                                    </div>
+                                </div>
+                                <Tooltip showArrow content="정보 갱신">
+                                    <Button
+                                        as={Link}
+                                        href="/api/integrations/discord/connect?mode=refresh&returnTo=/"
+                                        isIconOnly
+                                        isDisabled={discordRefreshCooldownUntil > Date.now()}
+                                        aria-label="Discord 정보 갱신"
+                                        radius="full"
+                                        variant="light"
+                                        className="h-10 w-10 min-w-10 shrink-0 cursor-pointer p-0 text-default-500 hover:text-primary disabled:cursor-not-allowed">
+                                        <RefreshIcon className="h-5 w-5"/>
+                                    </Button>
+                                </Tooltip>
+                            </div>
+                        ) : (
+                            <Button
+                                fullWidth
+                                as={Link}
+                                radius="sm"
+                                href="/setting?tab=discord"
+                                color={pathname.startsWith('/setting') ? "primary" : "default"}
+                                variant={pathname.startsWith('/setting') ? "flat" : "light"}
+                                startContent={<DiscordIcon className="h-6 w-6 text-[#5865F2]"/>}
+                                className="h-11 justify-start px-3 text-md font-medium">
+                                Discord 연동
+                            </Button>
+                        )}
                     </NavbarMenuItem>
                     <Divider className="mt-2 mb-2"/>
                     {isAdministrator ? (
@@ -464,7 +531,6 @@ function ProfileButton() {
                                 <div className="min-w-0 text-left">
                                     <div className="flex min-w-0 items-center gap-1.5">
                                         <p className="truncate text-xs font-semibold">{discordStatus.user.globalName || discordStatus.user.username}</p>
-                                        <span className="shrink-0 text-[10px] text-default-400">Discord 계정</span>
                                         <Tooltip showArrow content="정보 갱신">
                                             <Button
                                                 as={Link}
@@ -479,7 +545,10 @@ function ProfileButton() {
                                             </Button>
                                         </Tooltip>
                                     </div>
-                                    <p className="mt-0.5 truncate text-[11px] text-default-500">@{discordStatus.user.username}</p>
+                                    <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
+                                        <p className="truncate text-[11px] text-default-500">@{discordStatus.user.username}</p>
+                                        <span className="shrink-0 text-[10px] text-default-400">Discord 계정</span>
+                                    </div>
                                 </div>
                             </div>
                         </DropdownItem>
