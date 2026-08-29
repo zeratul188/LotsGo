@@ -27,6 +27,7 @@ export default function DiscordLoginCompleteClient() {
         started.current = true;
 
         const completeLogin = async () => {
+            let serverSessionEstablished = false;
             try {
                 const response = await fetch("/api/auth/refresh", {
                     method: "POST",
@@ -36,6 +37,7 @@ export default function DiscordLoginCompleteClient() {
                 if (!response.ok || !data?.userData || typeof data.accessToken !== "string") {
                     throw new Error("DISCORD_LOGIN_REFRESH_FAILED");
                 }
+                serverSessionEstablished = true;
 
                 const loginUser: LoginUser = {
                     id: data.userData.id,
@@ -53,7 +55,13 @@ export default function DiscordLoginCompleteClient() {
                     sameSite: "lax"
                 });
                 dispatch(logined(loginUser));
-                await ensureFirebaseAuth(true);
+                try {
+                    await ensureFirebaseAuth();
+                } catch (firebaseError) {
+                    // Firebase 초기화가 일시적으로 실패해도 LotsGo 서버 세션은 유효하므로
+                    // 로그인 자체를 실패 처리하지 않고 StoreClient의 후속 동기화에 맡깁니다.
+                    console.warn("Firebase sync deferred after Discord login", firebaseError);
+                }
                 dispatch(setCheckToken(true));
                 addToast({
                     title: "Discord 로그인 완료",
@@ -63,10 +71,17 @@ export default function DiscordLoginCompleteClient() {
                 router.replace(getSafeReturnTo(searchParams.get("returnTo")));
             } catch (error) {
                 console.error("Failed to finish Discord login", error);
-                await fetch("/api/auth/logout", {
-                    method: "POST",
-                    credentials: "include"
-                }).catch(() => undefined);
+                if (serverSessionEstablished) {
+                    // 서버 세션이 만들어진 뒤의 클라이언트 초기화 오류로 세션을 폐기하지 않습니다.
+                    dispatch(setCheckToken(true));
+                    router.replace(getSafeReturnTo(searchParams.get("returnTo")));
+                    return;
+                } else {
+                    await fetch("/api/auth/logout", {
+                        method: "POST",
+                        credentials: "include"
+                    }).catch(() => undefined);
+                }
                 sessionStorage.removeItem("token");
                 sessionStorage.removeItem("user");
                 localStorage.removeItem("sessionExpiresAt");
