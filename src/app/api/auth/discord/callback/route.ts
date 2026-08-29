@@ -5,6 +5,7 @@ import { adminDB } from "@/utiils/firebaseAdmin";
 import { generateRefreshToken, hashToken } from "@/lib/auth";
 import { getDiscordLoginOAuthConfig, getDiscordUserByAuthorizationCode } from "@/lib/discord";
 import { getClientIp } from "@/app/api/login/loginFeat";
+import { createDiscordSignupIntent, getDiscordSignupIntent, setDiscordSignupCookie } from "@/lib/discordSignup";
 
 const OAUTH_COOKIE = "discordLoginOAuthState";
 
@@ -75,7 +76,15 @@ export async function GET(req: NextRequest) {
         const discordUser = await getDiscordUserByAuthorizationCode(config, code);
         const connectionRef = adminDB.collection("discordConnections").doc(discordUser.id);
         const initialConnectionSnapshot = await connectionRef.get();
-        if (!initialConnectionSnapshot.exists) return redirectToLogin(req, "not-linked");
+        if (!initialConnectionSnapshot.exists) {
+            const previousIntent = await getDiscordSignupIntent(req);
+            if (previousIntent) await previousIntent.ref.delete().catch(() => undefined);
+            const signupToken = await createDiscordSignupIntent(discordUser);
+            const response = NextResponse.redirect(new URL("/signup/discord", req.url));
+            setDiscordSignupCookie(response, signupToken);
+            clearOAuthCookie(response);
+            return response;
+        }
 
         const initialConnection = initialConnectionSnapshot.data();
         const lotsgoUserId = typeof initialConnection?.lotsgoUserId === "string"

@@ -55,6 +55,7 @@ export default function PolicyClient() {
                 <li>선택 수집항목</li>
                 <ol className="list-decimal pl-4">
                     <li>IP 주소, 인증 토큰값 : 불량 회원의 부정 이용 방지와 비인가 사용 방지 목적</li>
+                    <li>Discord 연동 정보(사용자 ID, 사용자명, 표시 이름, 프로필 이미지) : Discord 계정 인증, 로그인 및 계정 연동 목적</li>
                     <li>은행계좌정보 - 예금주, 은행명, 계좌번호 : 서비스 또는 부가 서비스 이용에 대한 결제</li>
                 </ol>
             </ul>
@@ -70,6 +71,7 @@ export default function PolicyClient() {
             </p>
             <ul className="list-disc pl-4 mt-2">
                 <li>Google Firebase : 사용자 인증 및 계정 관리 기능 제공</li>
+                <li>Discord : Discord 계정 인증 및 연동 기능 제공</li>
             </ul>
             <h2 className="mt-4 mb-2 text-2xl font-bold">정보 주체의 권리, 의무 및 행사방법</h2>
             <Divider/>
