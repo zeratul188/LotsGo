@@ -49,7 +49,7 @@ export function LogoComponent({ className = "w-[220px]" }: LogoComponentProps) {
 }
 
 // 원정대 목록 요소
-function ExpeditionComponent({ expedition }: {expedition: Character[]}) {
+export function ExpeditionComponent({ expedition }: {expedition: Character[]}) {
     if (expedition.length === 0) return null;
 
     return (

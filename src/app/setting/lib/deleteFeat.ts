@@ -27,11 +27,15 @@ export function useDeleteUser(
 
             const credential = EmailAuthProvider.credential(user.email, password);
             await reauthenticateWithCredential(user, credential);
+            const idToken = await user.getIdToken(true);
 
             const deleteRes = await fetch("/api/auth/delete", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id })
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${idToken}`
+                },
+                body: JSON.stringify({ idToken })
             });
             if (!deleteRes.ok) throw new Error("DELETE_MEMBER_FAILED");
 
