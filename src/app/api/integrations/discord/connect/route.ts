@@ -13,7 +13,12 @@ export async function GET(req: NextRequest) {
         }
 
         const state = crypto.randomBytes(32).toString("base64url");
-        const mode = req.nextUrl.searchParams.get("mode") === "refresh" ? "refresh" : "connect";
+        const requestedMode = req.nextUrl.searchParams.get("mode");
+        const mode = requestedMode === "refresh"
+            ? "refresh"
+            : requestedMode === "guilds"
+                ? "guilds"
+                : "connect";
         const requestedReturnTo = req.nextUrl.searchParams.get("returnTo");
         const returnTo = requestedReturnTo?.startsWith("/") && !requestedReturnTo.startsWith("//")
             ? requestedReturnTo
@@ -25,7 +30,12 @@ export async function GET(req: NextRequest) {
             returnTo
         })).toString("base64url");
         const config = getDiscordOAuthConfig(req);
-        const response = NextResponse.redirect(createDiscordAuthorizationUrl(config, state, mode === "refresh" ? null : "consent"));
+        const response = NextResponse.redirect(createDiscordAuthorizationUrl(
+            config,
+            state,
+            mode === "refresh" ? null : "consent",
+            mode === "guilds" ? ["identify", "guilds"] : ["identify"]
+        ));
 
         response.cookies.set({
             name: OAUTH_COOKIE,

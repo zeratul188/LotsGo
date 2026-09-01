@@ -77,6 +77,9 @@ export async function DELETE(req: NextRequest) {
             const userSessionsSnapshot = await transaction.get(
                 adminDB.collection("sessions").where("userId", "==", session.userId)
             );
+            const guildAuthorizationsSnapshot = await transaction.get(
+                adminDB.collection("discordGuildAuthorizations").where("lotsgoUserId", "==", session.userId)
+            );
             if (connectionSnapshot.exists && connectionSnapshot.data()?.lotsgoUserId === session.userId) {
                 transaction.delete(connectionRef);
             }
@@ -93,6 +96,7 @@ export async function DELETE(req: NextRequest) {
                     });
                 }
             });
+            guildAuthorizationsSnapshot.docs.forEach(document => transaction.delete(document.ref));
             return session.sessionData.authProvider === "discord";
         });
 
