@@ -1,15 +1,16 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { adminDB } from "@/utiils/firebaseAdmin";
-import { getDiscordOAuthConfig, getDiscordUserByAuthorizationCode } from "@/lib/discord";
+import { getDiscordAuthorizationByCode, getDiscordOAuthConfig } from "@/lib/discord";
 import { getAuthenticatedMemberSession } from "@/lib/serverSession";
+import { createStoredGuildAuthorization, getDiscordGuildAuthorizationId } from "@/lib/discordGuild";
 
 const OAUTH_COOKIE = "discordOAuthState";
 
 type OAuthCookie = {
     state: string,
     sessionId: string,
-    mode: "connect" | "refresh",
+    mode: "connect" | "refresh" | "guilds",
     returnTo: string
 }
 
@@ -37,7 +38,7 @@ function parseOAuthCookie(value: string | undefined): OAuthCookie | null {
         return {
             state: parsed.state,
             sessionId: parsed.sessionId,
-            mode: parsed.mode === "refresh" ? "refresh" : "connect",
+            mode: parsed.mode === "refresh" ? "refresh" : parsed.mode === "guilds" ? "guilds" : "connect",
             returnTo: typeof parsed.returnTo === "string" && parsed.returnTo.startsWith("/") && !parsed.returnTo.startsWith("//")
                 ? parsed.returnTo
                 : "/setting?tab=discord"
@@ -76,8 +77,15 @@ export async function GET(req: NextRequest) {
         }
 
         const config = getDiscordOAuthConfig(req);
-        const discordUser = await getDiscordUserByAuthorizationCode(config, code);
+        const authorization = await getDiscordAuthorizationByCode(config, code);
+        const discordUser = authorization.user;
+        if (oauthCookie.mode === "guilds" && !authorization.tokens.scope.split(" ").includes("guilds")) {
+            throw new Error("DISCORD_GUILDS_SCOPE_MISSING");
+        }
         const connectionRef = adminDB.collection("discordConnections").doc(discordUser.id);
+        const guildAuthorizationRef = adminDB
+            .collection("discordGuildAuthorizations")
+            .doc(getDiscordGuildAuthorizationId(discordUser.id));
         const now = new Date();
 
         await adminDB.runTransaction(async transaction => {
@@ -119,9 +127,20 @@ export async function GET(req: NextRequest) {
                 ...discord
             });
             transaction.update(session.memberRef, { discord });
+            if (oauthCookie.mode === "guilds") {
+                transaction.set(
+                    guildAuthorizationRef,
+                    createStoredGuildAuthorization(discordUser.id, session.userId, authorization.tokens)
+                );
+            }
         });
 
-        return redirectToSetting(req, oauthCookie.mode === "refresh" ? "refreshed" : "connected", oauthCookie.returnTo);
+        const result = oauthCookie.mode === "refresh"
+            ? "refreshed"
+            : oauthCookie.mode === "guilds"
+                ? "guild-authorized"
+                : "connected";
+        return redirectToSetting(req, result, oauthCookie.returnTo);
     } catch (error) {
         const message = error instanceof Error ? error.message : "";
         if (message === "LOTSGO_ALREADY_LINKED") return redirectToSetting(req, "lotsgo-already-linked");

@@ -175,6 +175,14 @@ export async function POST(req: NextRequest) {
         if (typeof discordUserId === "string" && discordUserId) {
             await deleteDoc(doc(firestore, "discordConnections", discordUserId));
         }
+        const guildAuthorizationQuery = query(
+            collection(firestore, "discordGuildAuthorizations"),
+            where("lotsgoUserId", "==", id)
+        );
+        const guildAuthorizationSnapshot = await getDocs(guildAuthorizationQuery);
+        if (!guildAuthorizationSnapshot.empty) {
+            await Promise.all(guildAuthorizationSnapshot.docs.map(snapshot => deleteDoc(snapshot.ref)));
+        }
         const docRef = doc(firestore, "members", targetDoc.id);
 
         await deleteDoc(docRef);

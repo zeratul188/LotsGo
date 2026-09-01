@@ -11,6 +11,7 @@ import APIComponent from "./ui/ApiForm";
 import OptionComponent from "./ui/OptionForm";
 import HistoryComponent from "./ui/HistoryForm";
 import DiscordComponent from "./ui/DiscordForm";
+import DiscordGuildComponent from "./ui/DiscordGuildForm";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { LoadingComponent } from "../UtilsCompnents";
@@ -39,6 +40,12 @@ const tabs = [
         title: 'Discord 연동',
         description: 'Discord 계정 연결 및 관리',
         component: <DiscordComponent/>
+    },
+    {
+        key: 'discord-guilds',
+        title: 'Discord 길드 서버 관리',
+        description: 'Discord 서버 기능 및 권한 관리',
+        component: <DiscordGuildComponent/>
     },
     {
         key: 'history',

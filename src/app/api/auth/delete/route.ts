@@ -30,11 +30,12 @@ export async function POST(req: NextRequest) {
             : "";
 
         await adminDB.runTransaction(async transaction => {
-            const [memberSnapshot, raidSnapshot, sessionSnapshot, linkedConnectionSnapshot] = await Promise.all([
+            const [memberSnapshot, raidSnapshot, sessionSnapshot, linkedConnectionSnapshot, guildAuthorizationSnapshot] = await Promise.all([
                 transaction.get(memberRef),
                 transaction.get(adminDB.collection("raids").where("members", "array-contains", session.userId)),
                 transaction.get(adminDB.collection("sessions").where("userId", "==", session.userId)),
-                transaction.get(adminDB.collection("discordConnections").where("lotsgoUserId", "==", session.userId))
+                transaction.get(adminDB.collection("discordConnections").where("lotsgoUserId", "==", session.userId)),
+                transaction.get(adminDB.collection("discordGuildAuthorizations").where("lotsgoUserId", "==", session.userId))
             ]);
             if (!memberSnapshot.exists) throw new Error("ID_NOT_FOUND");
 
@@ -45,6 +46,7 @@ export async function POST(req: NextRequest) {
             });
             sessionSnapshot.docs.forEach(sessionDoc => transaction.delete(sessionDoc.ref));
             linkedConnectionSnapshot.docs.forEach(connectionDoc => transaction.delete(connectionDoc.ref));
+            guildAuthorizationSnapshot.docs.forEach(authorizationDoc => transaction.delete(authorizationDoc.ref));
             if (discordUserId && !linkedConnectionSnapshot.docs.some(connectionDoc => connectionDoc.id === discordUserId)) {
                 transaction.delete(adminDB.collection("discordConnections").doc(discordUserId));
             }
