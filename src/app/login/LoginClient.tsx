@@ -63,9 +63,11 @@ export default function LoginClient() {
                 description: `이미 로그인이 완료되어 있습니다.`,
                 color: "danger"
             });
-            router.back();
+            // 이전 페이지가 로그인 페이지이거나 외부 경로일 수 있으므로
+            // 브라우저 히스토리에 의존하지 않고 메인 페이지로 이동합니다.
+            router.replace("/");
         }
-    }, []);
+    }, [router]);
 
     useEffect(() => {
         const result = searchParams.get("discord");
