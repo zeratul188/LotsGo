@@ -1,4 +1,4 @@
-import { hashToken } from "@/lib/auth";
+import { getLotsGoCookieDomain, hashToken } from "@/lib/auth";
 import { firestore } from "@/utiils/firebase";
 import { collection, getDocs, limit, query, Timestamp, updateDoc, where } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
@@ -20,6 +20,11 @@ export async function POST(req: NextRequest) {
         res.cookies.set({
             name: "refreshToken",
             value: "",
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+            domain: getLotsGoCookieDomain(req.nextUrl.hostname),
             maxAge: 0
         });
         return res;

@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { adminDB } from "@/utiils/firebaseAdmin";
 import { getDiscordAuthorizationByCode, getDiscordOAuthConfig } from "@/lib/discord";
+import { getLotsGoCookieDomain } from "@/lib/auth";
 import { getAuthenticatedMemberSession } from "@/lib/serverSession";
 import { createStoredGuildAuthorization, getDiscordGuildAuthorizationId } from "@/lib/discordGuild";
 
@@ -25,6 +26,7 @@ function redirectToSetting(req: NextRequest, result: string, returnTo = "/settin
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/api/integrations/discord",
+        domain: getLotsGoCookieDomain(req.nextUrl.hostname),
         maxAge: 0
     });
     return response;

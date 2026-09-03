@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDB } from "@/utiils/firebaseAdmin";
 import { getAuthenticatedMemberSession } from "@/lib/serverSession";
+import { getLotsGoCookieDomain } from "@/lib/auth";
 
 type StoredDiscordConnection = {
     userId?: unknown,
@@ -112,6 +113,7 @@ export async function DELETE(req: NextRequest) {
                 secure: process.env.NODE_ENV === "production",
                 sameSite: "lax",
                 path: "/",
+                domain: getLotsGoCookieDomain(req.nextUrl.hostname),
                 maxAge: 0
             });
         }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { firestore } from "@/utiils/firebase";
 import type { Character } from "@/app/store/loginSlice";
 import { addDoc, collection, doc, getDocs, limit, query, Timestamp, updateDoc, where } from "firebase/firestore";
-import { generateRefreshToken, hashToken, signAccessToken } from "@/lib/auth";
+import { generateRefreshToken, getLotsGoCookieDomain, hashToken, signAccessToken } from "@/lib/auth";
 import { getClientIp } from "./loginFeat";
 import { adminAuth } from "@/utiils/firebaseAdmin";
 import { decrypt } from "@/utiils/crypto";
@@ -87,6 +87,7 @@ export async function POST(req: NextRequest) {
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
             path: "/",
+            domain: getLotsGoCookieDomain(req.nextUrl.hostname),
             maxAge: 60 * 60 * 24 * 30
         });
 

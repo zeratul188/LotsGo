@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { Timestamp } from "firebase-admin/firestore";
 import { adminAuth, adminDatabase, adminDB } from "@/utiils/firebaseAdmin";
 import { encrypt } from "@/utiils/crypto";
-import { generateRefreshToken, hashToken } from "@/lib/auth";
+import { generateRefreshToken, getLotsGoCookieDomain, hashToken } from "@/lib/auth";
 import { clearDiscordSignupCookie, getDiscordSignupIntent } from "@/lib/discordSignup";
 import { getClientIp } from "@/app/api/login/loginFeat";
 
@@ -250,6 +250,7 @@ export async function POST(req: NextRequest) {
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
             path: "/",
+            domain: getLotsGoCookieDomain(req.nextUrl.hostname),
             maxAge: 60 * 60 * 24 * 30
         });
         clearDiscordSignupCookie(response);

@@ -1,10 +1,10 @@
-import { hashToken, signAccessToken } from "@/lib/auth";
+import { getLotsGoCookieDomain, hashToken, signAccessToken } from "@/lib/auth";
 import { firestore } from "@/utiils/firebase";
 import { collection, getDocs, limit, query, updateDoc, where } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
 import { User } from "../../login/route";
 
-function clearRefreshCookie(res: NextResponse) {
+function clearRefreshCookie(res: NextResponse, hostname: string) {
     res.cookies.set({
         name: "refreshToken",
         value: "",
@@ -12,6 +12,7 @@ function clearRefreshCookie(res: NextResponse) {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
+        domain: getLotsGoCookieDomain(hostname),
         maxAge: 0
     });
     return res;
@@ -61,13 +62,13 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ type: 'null', code: 'MISSING_REFRESH_TOKEN', error: '저장된 토큰이 없습니다.' }, { status: 401 });
         }
         if (e.message === "TOKEN_IS_EMPTY") {
-            return clearRefreshCookie(NextResponse.json({ type: 'logout', code: 'INVALID_REFRESH_TOKEN', error: '토큰을 찾을 수 없습니다.' }, { status: 401 }));
+            return clearRefreshCookie(NextResponse.json({ type: 'logout', code: 'INVALID_REFRESH_TOKEN', error: '토큰을 찾을 수 없습니다.' }, { status: 401 }), req.nextUrl.hostname);
         }
         if (e.message === "EXPIRED_TOKEN") {
-            return clearRefreshCookie(NextResponse.json({ type: 'logout', code: 'EXPIRED_REFRESH_TOKEN', error: '로그인 시간이 만료되었습니다. 다시 로그인해주세요.' }, { status: 401 }));
+            return clearRefreshCookie(NextResponse.json({ type: 'logout', code: 'EXPIRED_REFRESH_TOKEN', error: '로그인 시간이 만료되었습니다. 다시 로그인해주세요.' }, { status: 401 }), req.nextUrl.hostname);
         }
         if (e.message === "MEMBER_IS_EMPTY") {
-            return clearRefreshCookie(NextResponse.json({ type: 'null', code: 'MEMBER_NOT_FOUND', error: '회원을 찾을 수 없습니다.' }, { status: 404 }));
+            return clearRefreshCookie(NextResponse.json({ type: 'null', code: 'MEMBER_NOT_FOUND', error: '회원을 찾을 수 없습니다.' }, { status: 404 }), req.nextUrl.hostname);
         }
         return NextResponse.json({ type: 'null', code: 'REFRESH_FAILED', error: '데이터 처리 중 문제가 발생했습니다.' }, { status: 500 });
     }
