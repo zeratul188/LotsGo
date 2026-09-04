@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { Timestamp } from "firebase-admin/firestore";
 import { adminDB } from "@/utiils/firebaseAdmin";
-import { generateRefreshToken, hashToken } from "@/lib/auth";
+import { generateRefreshToken, getLotsGoCookieDomain, hashToken } from "@/lib/auth";
 import { getDiscordLoginOAuthConfig, getDiscordUserByAuthorizationCode } from "@/lib/discord";
 import { getClientIp } from "@/app/api/login/loginFeat";
 import { createDiscordSignupIntent, getDiscordSignupIntent, setDiscordSignupCookie } from "@/lib/discordSignup";
@@ -43,11 +43,11 @@ function statesMatch(expected: string, received: string): boolean {
 
 function redirectToLogin(req: NextRequest, result: string): NextResponse {
     const response = NextResponse.redirect(new URL(`/login?discord=${result}`, req.url));
-    clearOAuthCookie(response);
+    clearOAuthCookie(response, req);
     return response;
 }
 
-function clearOAuthCookie(response: NextResponse) {
+function clearOAuthCookie(response: NextResponse, req: NextRequest) {
     response.cookies.set({
         name: OAUTH_COOKIE,
         value: "",
@@ -55,6 +55,7 @@ function clearOAuthCookie(response: NextResponse) {
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/api/auth/discord",
+        domain: getLotsGoCookieDomain(req.nextUrl.hostname),
         maxAge: 0
     });
 }
@@ -82,7 +83,7 @@ export async function GET(req: NextRequest) {
             const signupToken = await createDiscordSignupIntent(discordUser);
             const response = NextResponse.redirect(new URL("/signup/discord", req.url));
             setDiscordSignupCookie(response, signupToken);
-            clearOAuthCookie(response);
+            clearOAuthCookie(response, req);
             return response;
         }
 
@@ -158,9 +159,10 @@ export async function GET(req: NextRequest) {
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
             path: "/",
+            domain: getLotsGoCookieDomain(req.nextUrl.hostname),
             maxAge: 60 * 60 * 24 * 30
         });
-        clearOAuthCookie(response);
+        clearOAuthCookie(response, req);
         return response;
     } catch (error) {
         const message = error instanceof Error ? error.message : "";

@@ -2140,6 +2140,35 @@ export function handleSelectCharacter(
     setResult(newResult);
 }
 
+// 조회된 캐릭터 전체 선택 이벤트 함수
+export function handleSelectAllCharacters(
+    isSelected: boolean,
+    checklist: CheckCharacter[],
+    result: SearchCharacter[],
+    setResult: SetStateFn<SearchCharacter[]>,
+    maxCharacterCount: number
+) {
+    let selectedCount = result.filter(item => item.isCheck).length;
+    const availableCount = Math.max(maxCharacterCount - checklist.length, 0);
+    const newResult = result.map(item => {
+        if (isHaveCharacter(checklist, item.nickname)) {
+            return { ...item, isCheck: false };
+        }
+        if (!isSelected) {
+            return { ...item, isCheck: false };
+        }
+        if (item.isCheck) {
+            return { ...item };
+        }
+        if (selectedCount >= availableCount) {
+            return { ...item, isCheck: false };
+        }
+        selectedCount += 1;
+        return { ...item, isCheck: true };
+    });
+    setResult(newResult);
+}
+
 // 조회된 캐릭터의 체크 갯수
 export function getCheckedResult(result: SearchCharacter[]): number {
     let sum = 0;
@@ -3141,6 +3170,44 @@ export function getBossGoldByContent(bosses: Boss[], name: string, stage: number
         bossGold.bonus = item.bonus;
     }
     return bossGold;
+}
+
+// 체크리스트 카드에 표시할 콘텐츠 골드 요약입니다.
+// 캐릭터가 골드 지정이 아니면 클리어 골드와 더보기 비용을 모두 표시하지 않습니다.
+// 콘텐츠가 골드 지정이 아니어도, 골드 지정 캐릭터가 더보기를 사용한 비용은 차감합니다.
+export type ChecklistContentGoldSummary = {
+    gold: number,
+    boundGold: number,
+}
+
+export function getChecklistContentGoldSummary(
+    bosses: Boss[],
+    content: Checklist,
+    isGoldCharacter: boolean,
+): ChecklistContentGoldSummary {
+    if (!isGoldCharacter) {
+        return { gold: 0, boundGold: 0 };
+    }
+
+    const summary = content.items.reduce((total, item) => {
+        if (item.isDisable) return total;
+
+        const gold = getBossGoldByContent(bosses, content.name, item.stage, item.difficulty);
+
+        return {
+            gold: total.gold + (content.isGold ? gold.gold : 0),
+            boundGold: total.boundGold + (content.isGold ? gold.boundGold : 0),
+            bonusGold: total.bonusGold + (item.isBonus ? gold.bonus : 0),
+        };
+    }, { gold: 0, boundGold: 0, bonusGold: 0 });
+
+    const boundGold = Math.max(summary.boundGold - summary.bonusGold, 0);
+    const remainingBonusGold = Math.max(summary.bonusGold - summary.boundGold, 0);
+
+    return {
+        gold: summary.gold - remainingBonusGold,
+        boundGold,
+    };
 }
 
 // 체크리스트 난이도 출력 함수

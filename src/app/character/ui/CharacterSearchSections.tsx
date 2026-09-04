@@ -176,6 +176,49 @@ export function HistoryComponent({ setSearched, setLoading, setNickname }: Searc
     )
 }
 
+export function RecentCharacterSearchMenu({
+    historys,
+    onSelect
+}: {
+    historys: CharacterHistory[];
+    onSelect: (nickname: string) => void;
+}) {
+    return (
+        <div
+            role="listbox"
+            aria-label="최근 검색한 캐릭터"
+            className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-50 overflow-hidden rounded-xl border border-default-200 bg-content1 p-2 shadow-xl dark:border-white/10 dark:bg-[#1b1b1b]">
+            <div className="flex items-center justify-between px-2 pb-2 pt-1">
+                <p className="text-xs font-semibold text-default-500">최근 검색</p>
+                <span className="text-[11px] text-default-400">최대 5개</span>
+            </div>
+            {historys.length > 0 ? (
+                <div className="space-y-1">
+                    {historys.map((character) => (
+                        <button
+                            key={character.nickname}
+                            type="button"
+                            role="option"
+                            aria-selected="false"
+                            className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2 text-left outline-none transition-colors hover:bg-primary/10 focus-visible:bg-primary/10 focus-visible:ring-2 focus-visible:ring-primary/30"
+                            onClick={() => onSelect(character.nickname)}>
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-default-100 text-foreground dark:bg-white/[0.06]">
+                                <JobEmblemIcon job={character.job} size={30}/>
+                            </span>
+                            <span className="min-w-0 flex-1">
+                                <span className="block truncate text-sm font-semibold text-foreground">{character.nickname}</span>
+                                <span className="mt-0.5 block truncate text-xs text-default-500">{character.job} · Lv.{character.level.toLocaleString()}</span>
+                            </span>
+                        </button>
+                    ))}
+                </div>
+            ) : (
+                <p className="px-2 py-4 text-center text-xs text-default-400">최근 검색한 캐릭터가 없습니다.</p>
+            )}
+        </div>
+    );
+}
+
 export function ExpeditionComponent({ setSearched, setLoading, setNickname }: SearchComponentProps) {
     const expedition: Character[] = useSelector((state: RootState) => state.login.user.expedition);
     return (

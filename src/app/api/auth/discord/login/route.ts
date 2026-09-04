@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { createDiscordAuthorizationUrl, getDiscordLoginOAuthConfig } from "@/lib/discord";
+import { getLotsGoCookieDomain } from "@/lib/auth";
 
 const OAUTH_COOKIE = "discordLoginOAuthState";
 
@@ -23,6 +24,7 @@ export async function GET(req: NextRequest) {
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
             path: "/api/auth/discord",
+            domain: getLotsGoCookieDomain(req.nextUrl.hostname),
             maxAge: 60 * 10
         });
         return response;

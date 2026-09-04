@@ -93,6 +93,48 @@ export async function handleHideBonusMode(
     }
 }
 
+export async function handleHideParadisePower(
+    settings: Settings | null,
+    setSettings: SetStateFn<Settings | null>
+) {
+    await updateSetting(settings, setSettings, 'isHideParadisePower');
+}
+
+export async function handleHideCharacterMemo(
+    settings: Settings | null,
+    setSettings: SetStateFn<Settings | null>
+) {
+    await updateSetting(settings, setSettings, 'isHideCharacterMemo');
+}
+
+async function updateSetting(
+    settings: Settings | null,
+    setSettings: SetStateFn<Settings | null>,
+    key: 'isHideParadisePower' | 'isHideCharacterMemo'
+) {
+    const userStr = sessionStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    if (!storedUser || !settings) return;
+
+    const cloneSettings = structuredClone(settings);
+    cloneSettings[key] = !cloneSettings[key];
+    const res = await fetch('/api/setting', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: storedUser.id, settings: cloneSettings })
+    });
+    if (res.ok) {
+        localStorage.setItem('userSettings', JSON.stringify(cloneSettings));
+        setSettings(cloneSettings);
+    } else {
+        addToast({
+            title: '저장 오류',
+            description: '변경된 옵션이 정상적으로 저장되지 않았습니다.',
+            color: 'danger'
+        });
+    }
+}
+
 export async function handleAutoDeleteUnselectedRaids(
     settings: Settings | null,
     setSettings: SetStateFn<Settings | null>

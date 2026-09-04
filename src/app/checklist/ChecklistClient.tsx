@@ -10,7 +10,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { CheckCharacter } from "../store/checklistSlice";
 import { Character, LoginUser } from "../store/loginSlice";
-import { addToast, Button } from "@heroui/react";
+import { addToast, Button, Drawer, DrawerBody, DrawerContent, DrawerHeader, Tooltip } from "@heroui/react";
 import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
@@ -34,7 +34,9 @@ import { useLoadingTask } from "../components/loading/LoadingProgress";
 export const defaultSettings: Settings = {
     isHideDayContent: false,
     isHideBonusMode: false,
-    isAutoDeleteUnselectedRaids: false
+    isAutoDeleteUnselectedRaids: false,
+    isHideParadisePower: false,
+    isHideCharacterMemo: false
 }
 
 
@@ -60,20 +62,14 @@ function CubeIcon() {
     )
 }
 
-function ActionChevron({ isOpen = false }: { isOpen?: boolean }) {
+function LookupSettingsIcon() {
     return (
-        <svg
-            aria-hidden="true"
-            className={clsx("transition-transform duration-200", isOpen && "rotate-180")}
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.4"
-            strokeLinecap="round"
-            strokeLinejoin="round">
-            <path d="m7 10 5 5 5-5"/>
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 6h10"/>
+            <path d="M4 12h7"/>
+            <path d="M4 18h5"/>
+            <circle cx="17" cy="15" r="4"/>
+            <path d="m20 18 2 2"/>
         </svg>
     )
 }
@@ -98,6 +94,7 @@ export default function ChecklistClient() {
     const lastFetchRef = useRef(Date.now());
     
     const [isOpenBosses, setOpenBosses] = useState(false);
+    const [isOpenLookupDrawer, setOpenLookupDrawer] = useState(false);
     const onOpenChangeBosses = (isOpen: boolean) => setOpenBosses(isOpen);
     useLoadingTask("레이드를 자동 등록하고 있어요", isAutoRegisteringRaids);
 
@@ -222,6 +219,8 @@ export default function ChecklistClient() {
                 checklistForm.setHideDayContent(settings.isHideDayContent);
                 checklistForm.setHideBonusMode(settings.isHideBonusMode);
                 checklistForm.setAutoDeleteUnselectedRaids(settings.isAutoDeleteUnselectedRaids);
+                checklistForm.setHideParadisePower(settings.isHideParadisePower);
+                checklistForm.setHideCharacterMemo(settings.isHideCharacterMemo);
                 return;
             }
             const userStr = sessionStorage.getItem('user');
@@ -235,6 +234,8 @@ export default function ChecklistClient() {
                     checklistForm.setHideDayContent(settings.isHideDayContent);
                     checklistForm.setHideBonusMode(settings.isHideBonusMode);
                     checklistForm.setAutoDeleteUnselectedRaids(settings.isAutoDeleteUnselectedRaids);
+                    checklistForm.setHideParadisePower(settings.isHideParadisePower);
+                    checklistForm.setHideCharacterMemo(settings.isHideCharacterMemo);
                 } else {
                     addToast({
                         title: "로드 오류",
@@ -272,6 +273,129 @@ export default function ChecklistClient() {
 
     return (
         <div className="min-h-[calc(100vh-65px)] p-5 w-full relative">
+            <Tooltip showArrow placement="right" content="숙제 조회 설정">
+                <Button
+                    isIconOnly
+                    aria-label="숙제 조회 설정 열기"
+                    color="primary"
+                    radius="none"
+                    className={clsx(
+                        "fixed left-0 top-[170px] z-[60] h-16 w-11 min-w-0 rounded-r-2xl border border-primary-300/70 bg-gradient-to-b from-primary-500 to-primary-600 text-white shadow-[0_8px_24px_rgba(0,111,238,0.3)] transition-all hover:w-12 hover:shadow-[0_10px_28px_rgba(0,111,238,0.4)] dark:border-primary-400/40 dark:from-primary-500 dark:to-primary-700",
+                        isOpenLookupDrawer && "pointer-events-none -translate-x-full opacity-0"
+                    )}
+                    onPress={() => setOpenLookupDrawer(true)}>
+                    <LookupSettingsIcon/>
+                </Button>
+            </Tooltip>
+            <Drawer
+                placement="left"
+                size={isMobile ? "full" : "sm"}
+                radius={isMobile ? "none" : "lg"}
+                isOpen={isOpenLookupDrawer}
+                onOpenChange={setOpenLookupDrawer}
+                classNames={{
+                    base: "border-r border-gray-200/80 bg-white dark:border-white/10 dark:bg-[#151515]",
+                    backdrop: "bg-black/35 backdrop-blur-[2px]"
+                }}>
+                <DrawerContent>
+                    {(onClose) => (
+                        <>
+                            <DrawerHeader className="flex flex-col items-start gap-1 border-b border-gray-200/80 px-5 py-5 dark:border-white/10">
+                                <div className="flex items-center gap-2 text-primary">
+                                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-400/15">
+                                        <LookupSettingsIcon/>
+                                    </span>
+                                    <p className="text-lg font-bold text-foreground">숙제 조회 설정</p>
+                                </div>
+                                <p className="pl-11 text-xs font-normal fadedtext">서버와 필터를 선택하고 필요한 현황을 빠르게 확인하세요.</p>
+                            </DrawerHeader>
+                            <DrawerBody className="gap-5 px-4 py-5 sm:px-5">
+                                <section className="rounded-2xl border border-gray-200/80 bg-gray-50/70 p-4 dark:border-white/10 dark:bg-white/[0.035]">
+                                    <div className="mb-3">
+                                        <p className="text-sm font-semibold">정보 및 현황</p>
+                                        <p className="mt-0.5 text-xs fadedtext">필요한 상세 정보와 관리 기능을 실행합니다.</p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Button
+                                            aria-label="전체 캐릭터 레이드 자동 등록"
+                                            size="sm"
+                                            radius="lg"
+                                            variant="bordered"
+                                            color="primary"
+                                            isLoading={isAutoRegisteringRaids}
+                                            isDisabled={checklistForm.isLoading || checklist.length === 0}
+                                            className="col-span-2 h-10 justify-start border-primary-200 bg-white px-3 text-xs font-semibold text-primary-700 shadow-sm dark:border-primary-400/30 dark:bg-[#171717] dark:text-primary-300"
+                                            startContent={!isAutoRegisteringRaids ? <RaidIcon size={15}/> : null}
+                                            onPress={() => handleRaidAutoRegistration()}>
+                                            전체 자동 등록
+                                        </Button>
+                                        <Button
+                                            aria-label="콘텐츠 정보 열기"
+                                            size="sm"
+                                            radius="lg"
+                                            variant="flat"
+                                            className="h-10 justify-start gap-2 bg-white text-xs font-semibold text-gray-700 shadow-sm dark:bg-white/[0.06] dark:text-gray-200"
+                                            startContent={<ContentInfoIcon/>}
+                                            onPress={() => {
+                                                onClose();
+                                                setOpenBosses(true);
+                                            }}>
+                                            콘텐츠 정보
+                                        </Button>
+                                        <Button
+                                            aria-label={`남은 숙제 현황 ${checklistForm.isShowList ? '닫기' : '보기'}`}
+                                            aria-pressed={checklistForm.isShowList}
+                                            size="sm"
+                                            radius="lg"
+                                            variant="flat"
+                                            color={checklistForm.isShowList ? "primary" : "default"}
+                                            className="h-10 justify-start gap-2 text-xs font-semibold shadow-sm"
+                                            startContent={<HomeworkIcon size={15}/>}
+                                            onPress={() => {
+                                                checklistForm.setShowList(!checklistForm.isShowList);
+                                                onClose();
+                                            }}>
+                                            남은 숙제
+                                        </Button>
+                                        <Button
+                                            aria-label={`큐브 현황 ${checklistForm.isShowCubeDetail ? '닫기' : '보기'}`}
+                                            aria-pressed={checklistForm.isShowCubeDetail}
+                                            size="sm"
+                                            radius="lg"
+                                            variant="flat"
+                                            color={checklistForm.isShowCubeDetail ? "secondary" : "default"}
+                                            className="col-span-2 h-10 justify-start gap-2 text-xs font-semibold shadow-sm"
+                                            startContent={<CubeIcon/>}
+                                            onPress={() => {
+                                                checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail);
+                                                onClose();
+                                            }}>
+                                            큐브 현황
+                                        </Button>
+                                    </div>
+                                </section>
+                                <FilterComponent
+                                    server={checklistForm.server}
+                                    setServer={checklistForm.setServer}
+                                    filterContent={checklistForm.filterContent}
+                                    setFilterContent={checklistForm.setFilterContent}
+                                    bosses={checklistForm.bosses}
+                                    checklist={checklist}
+                                    isRemainHomework={checklistForm.isRemainHomework}
+                                    setRemainHomework={checklistForm.setRemainHomework}
+                                    isShowGoldCharacter={checklistForm.isShowGoldCharacter}
+                                    setShowGoldCharacter={checklistForm.setShowGoldCharacter}
+                                    filterAccount={checklistForm.filterAccount}
+                                    setFilterAccount={checklistForm.setFilterAccount}
+                                    isHideCompleteContent={checklistForm.isHideCompleteContent}
+                                    setHideCompleteContent={checklistForm.setHideCompleteContent}
+                                    isHideDayContent={checklistForm.isHideDayContent}
+                                    setHideDayContent={checklistForm.setHideDayContent}/>
+                            </DrawerBody>
+                        </>
+                    )}
+                </DrawerContent>
+            </Drawer>
             <div className="w-full max-w-[1280px] mx-auto">
                 <ChecklistStatue 
                     server={checklistForm.server}
@@ -309,107 +433,6 @@ export default function ChecklistClient() {
                 </div>
             ) : <></>}
             <div>
-                    <div className="w-full max-w-[1280px] mx-auto">
-                        <section className="mt-5 overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]">
-                            <div className="flex flex-col gap-1 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-white/10">
-                                <h2 className="text-lg font-semibold">숙제 조회 설정</h2>
-                                <p className="text-sm fadedtext">서버와 필터를 선택하고 필요한 현황을 빠르게 확인하세요.</p>
-                            </div>
-                            <div className="flex flex-col gap-3 border-t border-gray-200/80 bg-gray-50/50 px-4 py-3 dark:border-white/10 dark:bg-white/[0.025] sm:flex-row sm:items-center sm:justify-between sm:px-5">
-                                <div className="shrink-0">
-                                    <p className="text-sm font-semibold">정보 및 현황</p>
-                                    <p className="text-xs fadedtext">필요한 상세 정보를 별도로 열어봅니다.</p>
-                                </div>
-                                <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-                                    <Button
-                                        aria-label="전체 캐릭터 레이드 자동 등록"
-                                        size="sm"
-                                        radius="sm"
-                                        variant="bordered"
-                                        color="primary"
-                                        isLoading={isAutoRegisteringRaids}
-                                        isDisabled={checklistForm.isLoading || checklist.length === 0}
-                                        className="h-8 min-h-0 w-full shrink-0 gap-1.5 border-primary-200 bg-white px-3 text-xs font-semibold text-primary-700 shadow-sm dark:border-primary-400/30 dark:bg-[#171717] dark:text-primary-300 sm:w-auto"
-                                        startContent={!isAutoRegisteringRaids ? <RaidIcon size={15}/> : null}
-                                        onPress={() => handleRaidAutoRegistration()}>
-                                        전체 자동 등록
-                                    </Button>
-                                    <div className="flex h-8 w-full shrink-0 divide-x divide-gray-200/80 overflow-hidden rounded-lg border border-gray-200/80 bg-white shadow-sm dark:divide-white/10 dark:border-white/10 dark:bg-[#171717] sm:w-auto">
-                                    <Button
-                                        aria-label="콘텐츠 정보 열기"
-                                        size="sm"
-                                        radius="none"
-                                        variant="light"
-                                        className="h-full min-h-0 min-w-0 flex-1 gap-1.5 rounded-none bg-white px-2.5 text-xs font-semibold text-gray-600 data-[hover=true]:bg-gray-100 sm:flex-none sm:px-3 dark:bg-[#171717] dark:text-gray-300 dark:data-[hover=true]:bg-white/10"
-                                        startContent={<ContentInfoIcon/>}
-                                        endContent={<ActionChevron/>}
-                                        onPress={() => {
-                                            setOpenBosses(true);
-                                        }}>
-                                        콘텐츠 정보
-                                    </Button>
-                                    <Button
-                                        aria-label={`남은 숙제 현황 ${checklistForm.isShowList ? '닫기' : '보기'}`}
-                                        aria-pressed={checklistForm.isShowList}
-                                        size="sm"
-                                        radius="none"
-                                        variant="light"
-                                        className={clsx(
-                                            "h-full min-h-0 min-w-0 flex-1 gap-1.5 rounded-none px-2.5 text-xs font-semibold sm:flex-none sm:px-3",
-                                            checklistForm.isShowList
-                                                ? "bg-primary-100/80 text-primary-700 data-[hover=true]:bg-primary-100 dark:bg-primary-400/15 dark:text-primary-300 dark:data-[hover=true]:bg-primary-400/20"
-                                                : "bg-white text-gray-600 data-[hover=true]:bg-gray-100 dark:bg-[#171717] dark:text-gray-300 dark:data-[hover=true]:bg-white/10"
-                                        )}
-                                        startContent={<HomeworkIcon size={15}/>}
-                                        endContent={<ActionChevron isOpen={checklistForm.isShowList}/>}
-                                        onPress={() => {
-                                            checklistForm.setShowList(!checklistForm.isShowList);
-                                        }}>
-                                        남은 숙제
-                                    </Button>
-                                    <Button
-                                        aria-label={`큐브 현황 ${checklistForm.isShowCubeDetail ? '닫기' : '보기'}`}
-                                        aria-pressed={checklistForm.isShowCubeDetail}
-                                        size="sm"
-                                        radius="none"
-                                        variant="light"
-                                        className={clsx(
-                                            "h-full min-h-0 min-w-0 flex-1 gap-1.5 rounded-none px-2.5 text-xs font-semibold sm:flex-none sm:px-3",
-                                            checklistForm.isShowCubeDetail
-                                                ? "bg-secondary-100/80 text-secondary-700 data-[hover=true]:bg-secondary-100 dark:bg-secondary-400/15 dark:text-secondary-300 dark:data-[hover=true]:bg-secondary-400/20"
-                                                : "bg-white text-gray-600 data-[hover=true]:bg-gray-100 dark:bg-[#171717] dark:text-gray-300 dark:data-[hover=true]:bg-white/10"
-                                        )}
-                                        startContent={<CubeIcon/>}
-                                        endContent={<ActionChevron isOpen={checklistForm.isShowCubeDetail}/>}
-                                        onPress={() => {
-                                            checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail);
-                                        }}>
-                                        큐브 현황
-                                     </Button>
-                                 </div>
-                                </div>
-                             </div>
-                            <div className="border-t border-gray-200/80 px-4 pb-4 sm:px-5 sm:pb-5 dark:border-white/10">
-                                <FilterComponent
-                                    server={checklistForm.server}
-                                    setServer={checklistForm.setServer}
-                                    filterContent={checklistForm.filterContent}
-                                    setFilterContent={checklistForm.setFilterContent}
-                                    bosses={checklistForm.bosses}
-                                    checklist={checklist}
-                                    isRemainHomework={checklistForm.isRemainHomework}
-                                    setRemainHomework={checklistForm.setRemainHomework}
-                                    isShowGoldCharacter={checklistForm.isShowGoldCharacter}
-                                    setShowGoldCharacter={checklistForm.setShowGoldCharacter}
-                                    filterAccount={checklistForm.filterAccount}
-                                    setFilterAccount={checklistForm.setFilterAccount}
-                                    isHideCompleteContent={checklistForm.isHideCompleteContent}
-                                    setHideCompleteContent={checklistForm.setHideCompleteContent}
-                                    isHideDayContent={checklistForm.isHideDayContent}
-                                    setHideDayContent={checklistForm.setHideDayContent}/>
-                            </div>
-                        </section>
-                    </div>
                     {checklistForm.isLoading ? (
                         <ChecklistLoadingSkeleton/>
                     ) : (
@@ -442,6 +465,8 @@ export default function ChecklistClient() {
                                 filterAccount={checklistForm.filterAccount}
                                 isHideCompleteContent={checklistForm.isHideCompleteContent}
                                 isHideBonusMode={checklistForm.isHideBonusMode}
+                                isHideParadisePower={checklistForm.isHideParadisePower}
+                                isHideCharacterMemo={checklistForm.isHideCharacterMemo}
                                 autoChecklistNickname={autoChecklistNickname}
                                 isAutoChecklistSharing={isAutoChecklistSharing}
                                 setAutoChecklistNickname={setAutoChecklistNickname}

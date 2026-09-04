@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { LoadingComponent } from "../UtilsCompnents";
 import { AbilityComponent, InfomationComponent, NotFoundComponent, useCharacterForm } from "./ui/CharacterForm"
-import { ExpeditionComponent, HistoryComponent, SearchComponent } from "./ui/CharacterSearchSections"
+import { ExpeditionComponent, HistoryComponent, RecentCharacterSearchMenu, SearchComponent } from "./ui/CharacterSearchSections"
 import { ProfileComponent } from "./ui/CharacterProfile"
 import { useSearchParams } from "next/navigation";
 import { Button, Divider, Input, Modal, ModalBody, ModalContent, ModalFooter, Tooltip } from "@heroui/react";
@@ -21,6 +21,7 @@ import { ExpeditionStatComponent } from "./ui/ExpeditionStatForm";
 import { ExpeditionCharacter } from "./characterlist/model/types";
 import { fetchCharacterList } from "./characterlist/lib/characterListFeat";
 import { CombatSimulatorComponent } from "./ui/CombatSimulatorForm";
+import { CharacterHistory, getRecentCharacterHistory } from "./lib/history";
 
 function RefreshIcon({ className }: { className?: string }) {
     return (
@@ -256,6 +257,40 @@ export default function CharacterClient() {
         selectedTab
     ]);
     const [inputSearch, setInputSearch] = useState('');
+    const [recentSearches, setRecentSearches] = useState<CharacterHistory[]>([]);
+    const [isRecentSearchOpen, setRecentSearchOpen] = useState(false);
+    const recentSearchRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        const handlePointerDown = (event: PointerEvent) => {
+            if (!recentSearchRef.current?.contains(event.target as Node)) {
+                setRecentSearchOpen(false);
+            }
+        };
+
+        document.addEventListener('pointerdown', handlePointerDown);
+        return () => document.removeEventListener('pointerdown', handlePointerDown);
+    }, []);
+
+    const openRecentSearches = () => {
+        setRecentSearches(getRecentCharacterHistory(5));
+        setRecentSearchOpen(true);
+    };
+
+    const searchOtherCharacter = (searchValue: string) => {
+        const trimmedSearch = searchValue.trim();
+        if (!trimmedSearch) {
+            return;
+        }
+
+        handleSearch(trimmedSearch, characterForm.setSearched, characterForm.setLoading, characterForm.setNickname);
+        const params = new URLSearchParams(window.location.search);
+        params.set("nickname", trimmedSearch);
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.pushState({}, "", newUrl);
+        setInputSearch('');
+        setRecentSearchOpen(false);
+    };
 
     if (!characterForm.isSearched) {
         return (
@@ -448,30 +483,36 @@ export default function CharacterClient() {
                         </div>
                     </div>
                     <div className="mt-2 flex w-full flex-col items-center gap-2 md960:mt-0 md960:w-auto md960:shrink-0 md960:flex-row">
-                        <Input
-                            radius="lg"
-                            variant="bordered"
-                            aria-label="다른 캐릭터 검색"
-                            placeholder="다른 캐릭터 검색"
-                            value={inputSearch}
-                            onValueChange={setInputSearch}
-                            maxLength={12}
-                            startContent={<span className="text-lg text-default-400">⌕</span>}
-                            className="w-full md960:w-[220px]"
-                            classNames={{
-                                inputWrapper: "h-10 border-default-200 bg-default-50 shadow-none data-[hover=true]:border-primary/50 dark:border-white/10 dark:bg-white/[0.05]",
-                                input: "text-sm"
-                            }}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    handleSearch(inputSearch, characterForm.setSearched, characterForm.setLoading, characterForm.setNickname);
-                                    const params = new URLSearchParams(window.location.search);
-                                    params.set("nickname", inputSearch);
-                                    const newUrl = `${window.location.pathname}?${params.toString()}`;
-                                    setInputSearch('');
-                                    window.history.pushState({}, "", newUrl);
-                                }
-                            }}/>
+                        <div ref={recentSearchRef} className="relative w-full md960:w-[220px]">
+                            <Input
+                                radius="lg"
+                                variant="bordered"
+                                aria-label="다른 캐릭터 검색"
+                                placeholder="다른 캐릭터 검색"
+                                value={inputSearch}
+                                onValueChange={setInputSearch}
+                                onFocus={openRecentSearches}
+                                maxLength={12}
+                                startContent={<span className="text-lg text-default-400">⌕</span>}
+                                className="w-full"
+                                classNames={{
+                                    inputWrapper: "h-10 border-default-200 bg-default-50 shadow-none data-[hover=true]:border-primary/50 dark:border-white/10 dark:bg-white/[0.05]",
+                                    input: "text-sm"
+                                }}
+                                onKeyDown={(event) => {
+                                    if (event.key === 'Enter') {
+                                        event.preventDefault();
+                                        searchOtherCharacter(inputSearch);
+                                    } else if (event.key === 'Escape') {
+                                        setRecentSearchOpen(false);
+                                    }
+                                }}/>
+                            {isRecentSearchOpen ? (
+                                <RecentCharacterSearchMenu
+                                    historys={recentSearches}
+                                    onSelect={searchOtherCharacter}/>
+                            ) : null}
+                        </div>
                         <Tooltip showArrow content="해당 캐릭터 접속을 종료하고 갱신해주세요.">
                             <Button
                                 radius="lg"

@@ -1,6 +1,7 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { NextRequest, NextResponse } from "next/server";
 import { adminAuth, adminDB } from "@/utiils/firebaseAdmin";
+import { getLotsGoCookieDomain } from "@/lib/auth";
 import { getAuthenticatedMemberSession } from "@/lib/serverSession";
 
 export async function POST(req: NextRequest) {
@@ -61,6 +62,7 @@ export async function POST(req: NextRequest) {
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
             path: "/",
+            domain: getLotsGoCookieDomain(req.nextUrl.hostname),
             maxAge: 0
         });
         return response;

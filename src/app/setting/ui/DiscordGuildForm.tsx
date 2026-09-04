@@ -96,6 +96,7 @@ async function responseError(response: Response, fallback: string): Promise<Erro
     const data = await response.json().catch(() => null) as { error?: unknown, code?: unknown } | null;
     const error = new Error(typeof data?.error === "string" ? data.error : fallback);
     if (typeof data?.code === "string") (error as Error & { code?: string }).code = data.code;
+    (error as Error & { status?: number }).status = response.status;
     return error;
 }
 
@@ -122,6 +123,8 @@ export default function DiscordGuildComponent() {
     const [needsAuthorization, setNeedsAuthorization] = useState(false);
     const [isLoadingGuilds, setLoadingGuilds] = useState(true);
     const [isLoadingResources, setLoadingResources] = useState(false);
+    const [resourceLoadError, setResourceLoadError] = useState("");
+    const [resourceReloadKey, setResourceReloadKey] = useState(0);
     const [isSaving, setSaving] = useState(false);
     const [isPublishing, setPublishing] = useState(false);
 
@@ -186,39 +189,60 @@ export default function DiscordGuildComponent() {
     }, [searchParams]);
 
     useEffect(() => {
-        if (!selectedGuildId || !selectedGuild?.botInstalled) {
+        // 설정 페이지 진입 직후에는 길드 목록과 선택된 길드가 아직 같은 렌더에
+        // 반영되지 않을 수 있으므로, 목록 요청이 끝난 뒤에만 상세 조회를 시작합니다.
+        if (isLoadingGuilds || !selectedGuildId || !selectedGuild?.botInstalled) {
             setResources(null);
             setSavedConfig(null);
             setForm({ ...defaultForm });
+            setResourceLoadError("");
             return;
         }
         let cancelled = false;
         const load = async () => {
             setLoadingResources(true);
+            setResourceLoadError("");
             try {
-                const response = await fetch(`/api/integrations/discord/guilds/${selectedGuildId}`, {
-                    credentials: "include",
-                    cache: "no-store"
-                });
-                if (!response.ok) throw await responseError(response, "Discord 서버 설정을 불러오지 못했습니다.");
-                const data = await response.json() as DiscordGuildResources;
+                let data: DiscordGuildResources | null = null;
+                let lastError: unknown;
+                for (let attempt = 0; attempt < 3 && !cancelled; attempt += 1) {
+                    try {
+                        const response = await fetch(`/api/integrations/discord/guilds/${selectedGuildId}`, {
+                            credentials: "include",
+                            cache: "no-store"
+                        });
+                        if (!response.ok) throw await responseError(response, "Discord 서버 설정을 불러오지 못했습니다.");
+                        data = await response.json() as DiscordGuildResources;
+                        break;
+                    } catch (error) {
+                        lastError = error;
+                        const status = (error as Error & { status?: number }).status;
+                        if ((status && status < 500) || attempt === 2) throw error;
+                        await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+                    }
+                }
+                if (!data) throw lastError ?? new Error("Discord 서버 설정을 불러오지 못했습니다.");
                 if (cancelled) return;
                 setResources(data);
                 setSavedConfig(data.config);
                 setForm(toForm(data.config));
             } catch (error) {
-                if (!cancelled) addToast({
-                    title: "서버 설정 조회 오류",
-                    description: error instanceof Error ? error.message : "Discord 서버 설정을 불러오지 못했습니다.",
-                    color: "danger"
-                });
+                if (!cancelled) {
+                    const message = error instanceof Error ? error.message : "Discord 서버 설정을 불러오지 못했습니다.";
+                    setResourceLoadError(message);
+                    addToast({
+                        title: "서버 설정 조회 오류",
+                        description: message,
+                        color: "danger"
+                    });
+                }
             } finally {
                 if (!cancelled) setLoadingResources(false);
             }
         };
         void load();
         return () => { cancelled = true; };
-    }, [selectedGuildId, selectedGuild?.botInstalled]);
+    }, [isLoadingGuilds, resourceReloadKey, selectedGuildId, selectedGuild?.botInstalled]);
 
     const updateForm = <K extends keyof DiscordWelcomeForm>(key: K, value: DiscordWelcomeForm[K]) => {
         setForm(current => ({ ...current, [key]: value }));
@@ -382,6 +406,23 @@ export default function DiscordGuildComponent() {
                                 <CardBody className="items-center gap-2 p-8 text-center">
                                     <p className="font-bold">관리 가능한 서버가 없습니다.</p>
                                     <p className="text-sm text-default-500">서버 소유자이거나 관리자 권한을 가진 Discord 계정인지 확인해 주세요.</p>
+                                </CardBody>
+                            </Card>
+                        ) : null}
+
+                        {resourceLoadError && selectedGuild?.botInstalled ? (
+                            <Card radius="lg" shadow="none" className="border border-danger-300/50 bg-danger-50/50 dark:border-danger-500/20 dark:bg-danger-500/5">
+                                <CardBody className="items-center gap-3 p-8 text-center">
+                                    <p className="font-bold text-danger">서버 설정을 불러오지 못했습니다.</p>
+                                    <p className="text-sm text-default-500">{resourceLoadError}</p>
+                                    <Button
+                                        radius="lg"
+                                        color="primary"
+                                        variant="flat"
+                                        className="font-semibold"
+                                        onPress={() => setResourceReloadKey(current => current + 1)}>
+                                        다시 불러오기
+                                    </Button>
                                 </CardBody>
                             </Card>
                         ) : null}

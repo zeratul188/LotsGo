@@ -58,6 +58,7 @@ import {
     getBossesByHaveContent, 
     getBossesById, 
     getBossGoldByContent, 
+    getChecklistContentGoldSummary,
     getCheckedResult, 
     getCompleteBoundGoldCharacter, 
     getCompleteChecklist, 
@@ -99,6 +100,7 @@ import {
     handleParadiseCheck,
     handleFixedContentVisibility,
     handleSelectCharacter, 
+    handleSelectAllCharacters,
     handleWeekBonusCheckStage, 
     handleWeekCheckStage, 
     handleWeekListCheck, 
@@ -340,6 +342,8 @@ export function useChecklistForm(initialBosses: Boss[] = [], initialCubes: Cube[
     const [isHideDayContent, setHideDayContent] = useState(false);
     const [isHideBonusMode, setHideBonusMode] = useState(false);
     const [isAutoDeleteUnselectedRaids, setAutoDeleteUnselectedRaids] = useState(false);
+    const [isHideParadisePower, setHideParadisePower] = useState(false);
+    const [isHideCharacterMemo, setHideCharacterMemo] = useState(false);
 
     // 필터 설정값
     const [isRemainHomework, setRemainHomework] = useState(false);
@@ -368,7 +372,9 @@ export function useChecklistForm(initialBosses: Boss[] = [], initialCubes: Cube[
         filterAccount, setFilterAccount,
         isHideCompleteContent, setHideCompleteContent,
         isHideBonusMode, setHideBonusMode,
-        isAutoDeleteUnselectedRaids, setAutoDeleteUnselectedRaids
+        isAutoDeleteUnselectedRaids, setAutoDeleteUnselectedRaids,
+        isHideParadisePower, setHideParadisePower,
+        isHideCharacterMemo, setHideCharacterMemo
     }
 }
 
@@ -557,6 +563,8 @@ export function ChecklistStatue({
     const onClickUpdatedCharacters = useClickUpdatedCharacters(checklist, dispatch, setLoading, setDisableUpdate);
     const onClickLoadCharacters = useClickLoadCharacters(inputValue, setResult, setLoadingSearch);
     const onCloseModal = useCloseModal(setResult, setInputValue);
+    const selectableResults = result.filter(item => !isHaveCharacter(checklist, item.nickname));
+    const isAllCharactersSelected = selectableResults.length > 0 && selectableResults.every(item => item.isCheck);
     const onChangeBlessing = useChangeBlessing(life, max, setBlessing);
     const onClickLife = useClickLife(newLife, isBlessing, setLife, setNewLife, newMax, setMax, setNewMax);
 
@@ -920,6 +928,12 @@ export function ChecklistStatue({
                                             variant="bordered"
                                             value={inputValue}
                                             onValueChange={setInputValue}
+                                            onKeyDown={async (event) => {
+                                                if (event.key === 'Enter') {
+                                                    event.preventDefault();
+                                                    await onClickLoadCharacters();
+                                                }
+                                            }}
                                             className="grow"/>
                                         <Button
                                             size="lg"
@@ -929,6 +943,22 @@ export function ChecklistStatue({
                                             variant="flat"
                                             className="w-full shrink-0 font-semibold sm:w-[96px] sm:self-end"
                                             onPress={onClickLoadCharacters}>조회</Button>
+                                    </div>
+                                    <div className={clsx(
+                                        "mb-2 items-center justify-between rounded-xl border border-primary-200/70 bg-primary-50/50 px-3 py-2 dark:border-primary-900/60 dark:bg-primary-950/20",
+                                        result.length !== 0 ? 'flex' : 'hidden'
+                                    )}>
+                                        <Checkbox
+                                            size="sm"
+                                            color="primary"
+                                            isSelected={isAllCharactersSelected}
+                                            isDisabled={selectableResults.length === 0}
+                                            onValueChange={(isSelected) => {
+                                                handleSelectAllCharacters(isSelected, checklist, result, setResult, MAX_CHARACTER_COUNT);
+                                            }}>
+                                            전체 선택
+                                        </Checkbox>
+                                        <span className="text-xs text-default-500">선택 {getCheckedResult(result)}명</span>
                                     </div>
                                     <div className="mb-4 max-h-[360px] space-y-2 overflow-y-auto overflow-x-hidden pr-1">
                                         {result.map((item, index) => (
@@ -1126,6 +1156,8 @@ type ChecklistProps = {
     filterAccount: Selection,
     isHideCompleteContent: boolean,
     isHideBonusMode: boolean,
+    isHideParadisePower: boolean,
+    isHideCharacterMemo: boolean,
     autoChecklistNickname: string,
     isAutoChecklistSharing: boolean,
     setAutoChecklistNickname: (nickname: string) => void,
@@ -1150,6 +1182,8 @@ export function ChecklistComponent({
     filterAccount,
     isHideCompleteContent,
     isHideBonusMode,
+    isHideParadisePower,
+    isHideCharacterMemo,
     autoChecklistNickname,
     isAutoChecklistSharing,
     setAutoChecklistNickname,
@@ -1245,7 +1279,7 @@ export function ChecklistComponent({
                                         </div>
                                     </div>
                                     </div>
-                                    {isHideDayContent && (
+                                    {isHideDayContent && !isHideCharacterMemo && (
                                         <div className="w-full min-w-0">
                                             <CharacterMemo
                                                 checklist={checklist}
@@ -1356,7 +1390,7 @@ export function ChecklistComponent({
                                     </Popover>
                                 </div>
                             </div>
-                            {!isHideDayContent && (
+                            {!isHideDayContent && !isHideCharacterMemo && (
                                 <div className="mt-2 w-full border-t border-gray-200/70 pt-2 dark:border-white/10">
                                     <CharacterMemo
                                         checklist={checklist}
@@ -1563,11 +1597,29 @@ export function ChecklistComponent({
                                                                     </PopoverContent>
                                                                 </Popover>
                                                             </div>
-                                                             <AnimatedChecklistStrike
-                                                                 isSelected={isCheckHomework(item)}
-                                                                 className="fadedtext text-[9pt]">
-                                                                 {printDifficulty(item.items)}
-                                                             </AnimatedChecklistStrike>
+                                                             {(() => {
+                                                                 const goldSummary = getChecklistContentGoldSummary(bosses, item, character.isGold);
+                                                                 return (
+                                                                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[9pt]">
+                                                                         <AnimatedChecklistStrike
+                                                                             isSelected={isCheckHomework(item)}
+                                                                             className={clsx(
+                                                                                 "flex items-center gap-1",
+                                                                                 isCheckHomework(item) ? "fadedtext" : "text-amber-600 dark:text-amber-400"
+                                                                             )}>
+                                                                             <span>일반 {goldSummary.gold.toLocaleString()}</span>
+                                                                         </AnimatedChecklistStrike>
+                                                                         <AnimatedChecklistStrike
+                                                                             isSelected={isCheckHomework(item)}
+                                                                             className={clsx(
+                                                                                 "flex items-center gap-1",
+                                                                                 isCheckHomework(item) ? "fadedtext" : "text-blue-600 dark:text-blue-400"
+                                                                             )}>
+                                                                             <span>귀속 {goldSummary.boundGold.toLocaleString()}</span>
+                                                                         </AnimatedChecklistStrike>
+                                                                     </div>
+                                                                 );
+                                                             })()}
                                                         </div>
                                                         <div className="grow"/>
                                                         <div className="z-9">
@@ -1828,8 +1880,12 @@ export function ChecklistComponent({
                                 <div className="mb-3">
                                     <OtherGoldManager character={character} dispatch={dispatch}/>
                                 </div>
-                                <CharacterParadisePower checklist={checklist} nickname={character.nickname} dispatch={dispatch}/>
-                                <Divider/>
+                                {!isHideParadisePower && (
+                                    <>
+                                        <CharacterParadisePower checklist={checklist} nickname={character.nickname} dispatch={dispatch}/>
+                                        <Divider/>
+                                    </>
+                                )}
                                 <Accordion>
                                     <AccordionItem key="0" title={<span className="flex gap-2 items-center cursor-pointer">
                                         <img 
@@ -2013,7 +2069,7 @@ function CharacterMemo({ checklist, nickname, dispatch }: CharacterMemoProps) {
                 <span className={clsx(
                     "max-h-[4.5rem] overflow-hidden whitespace-pre-wrap break-words leading-6",
                     memo ? "line-clamp-3 text-sm text-foreground" : "text-xs fadedtext"
-                )}>{memo || "메모를 입력해주세요."}</span>
+                )}>{memo || "ex) 97돌 없음, 1750레벨 올리기"}</span>
             </button>
             <Modal
                 isOpen={isOpen}
@@ -2306,7 +2362,7 @@ function RestCheckButton({ checklist, character, type, dispatch }: RestCheckButt
                 radius="full"
                 isSelected={isSelected}
                 icon={AnimatedChecklistCheckIcon}
-                className="relative z-10 w-full p-0 px-2 py-1.5"
+                className="relative z-10 w-full p-0 pl-3.5 pr-2 py-1.5"
                 onChange={onClickDayCheck}>
                 {getDayName(type, character.level)} ({dayValue.value}/{type === '에포나' ? 3 : 1})
             </Checkbox>
@@ -2360,12 +2416,127 @@ type ChecklistModalProps = {
     dispatch: AppDispatch,
     bosses: Boss[]
 }
+
+type WeekCharacterSelectorProps = {
+    checklist: CheckCharacter[],
+    selectedNickname: string,
+    isDisabled: boolean,
+    onSelect: (nickname: string) => void,
+    children: React.ReactNode
+}
+
+function WeekCharacterSelector({ checklist, selectedNickname, isDisabled, onSelect, children }: WeekCharacterSelectorProps) {
+    const selectedCharacter = checklist.find(character => character.nickname === selectedNickname) ?? checklist[0] ?? null;
+
+    return (
+        <div className="w-full">
+            <div className="mb-4 lg:hidden">
+                <Select
+                    label="관리할 캐릭터"
+                    placeholder="캐릭터를 선택해 주세요"
+                    selectedKeys={selectedCharacter ? new Set([selectedCharacter.nickname]) : new Set()}
+                    onSelectionChange={keys => {
+                        if (isDisabled) return;
+                        const nickname = Array.from(keys)[0];
+                        if (nickname) onSelect(String(nickname));
+                    }}
+                    isDisabled={isDisabled}
+                    radius="lg"
+                    classNames={{
+                        trigger: "min-h-14 border-gray-200/80 bg-white dark:border-gray-800 dark:bg-gray-950",
+                        value: "text-sm"
+                    }}>
+                    {checklist.map(character => (
+                        <SelectItem
+                            key={character.nickname}
+                            textValue={`${character.nickname} ${character.job} ${character.level}`}>
+                            <div className="flex items-center gap-2">
+                                <JobEmblemIcon job={character.job} size={28}/>
+                                <div className="min-w-0">
+                                    <p className="truncate text-sm font-semibold">{character.nickname}</p>
+                                    <p className="truncate text-xs fadedtext">@{character.server} · {character.job} · Lv.{character.level}</p>
+                                </div>
+                            </div>
+                        </SelectItem>
+                    ))}
+                </Select>
+            </div>
+
+            <div className="grid min-w-0 gap-5 lg:grid-cols-[250px_minmax(0,1fr)]">
+                <aside className="hidden min-h-0 lg:block">
+                    <div className="sticky top-0 max-h-[min(640px,calc(100vh-220px))] overflow-y-auto rounded-2xl border border-gray-200/80 bg-gray-50/70 p-2 dark:border-gray-800 dark:bg-gray-900/40">
+                        <div className="px-2 pb-2 pt-1">
+                            <p className="text-sm font-semibold">캐릭터 선택</p>
+                            <p className="mt-0.5 text-xs fadedtext">숙제 정렬 순서</p>
+                        </div>
+                        <div className="space-y-2">
+                            {checklist.map(character => {
+                                const isSelected = character.nickname === selectedCharacter?.nickname;
+                                return (
+                                    <Button
+                                        key={character.nickname}
+                                        fullWidth
+                                        variant="light"
+                                        radius="lg"
+                                        isDisabled={isDisabled}
+                                        aria-label={`${character.nickname} 주간 콘텐츠 관리`}
+                                        onPress={() => onSelect(character.nickname)}
+                                        className={clsx(
+                                            "h-auto min-h-[68px] justify-start border px-2.5 py-2 text-left transition-all",
+                                            isSelected
+                                                ? "border-secondary-400 bg-secondary-50 shadow-sm ring-1 ring-secondary-300/50 dark:border-secondary-500/70 dark:bg-secondary-950/40 dark:ring-secondary-500/30"
+                                                : "border-gray-200/80 bg-white hover:border-secondary-300 hover:bg-secondary-50/60 dark:border-gray-800 dark:bg-gray-950 dark:hover:border-secondary-700 dark:hover:bg-secondary-950/30",
+                                            isDisabled && "cursor-not-allowed opacity-60"
+                                        )}>
+                                        <div className="flex min-w-0 w-full items-center gap-2">
+                                            <JobEmblemIcon job={character.job} size={34} className="shrink-0"/>
+                                            <div className="min-w-0 grow">
+                                                <p className="truncate text-[11px] leading-4 fadedtext">
+                                                    @{character.server} · {character.job} · Lv.{character.level}
+                                                </p>
+                                                <div className="flex min-w-0 items-center gap-1.5">
+                                                    <p className="min-w-0 grow truncate text-sm font-semibold text-gray-800 dark:text-gray-100">
+                                                        {character.nickname}
+                                                    </p>
+                                                    {character.isGold ? (
+                                                        <img src="/icons/gold.png" alt="골드 지정" className="h-4 w-4 shrink-0"/>
+                                                    ) : null}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </aside>
+                <div className="min-w-0">
+                    {children}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dispatch, bosses }: ChecklistModalProps) {
     const [hasUnsavedOrder, setHasUnsavedOrder] = useState(false);
+    const [selectedWeekTab, setSelectedWeekTab] = useState("content");
+    const [selectedWeekNickname, setSelectedWeekNickname] = useState(
+        checklist[modalData.characterIndex]?.nickname ?? ""
+    );
 
     useEffect(() => {
-        if (!isOpen) setHasUnsavedOrder(false);
+        if (!isOpen) {
+            setHasUnsavedOrder(false);
+            setSelectedWeekTab("content");
+        }
     }, [isOpen]);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const target = checklist[modalData.characterIndex];
+        if (target) setSelectedWeekNickname(target.nickname);
+    }, [isOpen, modalData.characterIndex]);
 
     const requestClose = () => {
         if (hasUnsavedOrder) {
@@ -2379,11 +2550,17 @@ export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dis
         onOpenChange(false);
     };
 
-    if (modalData.characterIndex !== -1) {
+    if (modalData.characterIndex !== -1 && checklist[modalData.characterIndex]) {
+        const selectedWeekIndex = checklist.findIndex(character => character.nickname === selectedWeekNickname);
+        const weekIndex = selectedWeekIndex >= 0 ? selectedWeekIndex : modalData.characterIndex;
+        const selectedWeekCharacter = checklist[weekIndex];
+        const headerCharacter = modalData.type === 'week'
+            ? selectedWeekCharacter
+            : checklist[modalData.characterIndex];
         return (
             <Modal
                 radius="lg"
-                size="2xl"
+                size={modalData.type === 'week' ? "5xl" : "2xl"}
                 scrollBehavior="inside"
                 isDismissable={false}
                 isOpen={isOpen}
@@ -2397,26 +2574,45 @@ export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dis
                             <ModalHeader className="flex flex-col gap-1 border-b border-gray-200/80 px-6 py-5 dark:border-gray-800">
                                 <div className="flex items-center gap-2">
                                     <span className={clsx("h-5 w-1 rounded-full", modalData.type === 'day' ? "bg-success" : "bg-secondary")}/>
-                                    <p className="text-xl font-semibold">{checklist[modalData.characterIndex].nickname} 콘텐츠 관리</p>
+                                    <p className="text-xl font-semibold">{headerCharacter.nickname} 콘텐츠 관리</p>
                                 </div>
                                 <p className="pl-3 text-sm font-normal fadedtext">{modalData.type === 'day' ? '휴식 게이지와 일일 기타 숙제를 관리합니다.' : '레이드 및 주간 기타 숙제를 관리합니다.'}</p>
                             </ModalHeader>
                             <ModalBody className="px-6 py-5">
                                 <div className="w-full">
-                                    {modalData.type === 'day' ? 
+                                    {modalData.type === 'day' ?
                                         <DayModalContent
                                             checklist={checklist}
                                             index={modalData.characterIndex}
                                             dispatch={dispatch}
                                             onClose={requestClose}
                                             onOrderDirtyChange={setHasUnsavedOrder}/> :
-                                        <WeekModalContent 
-                                            checklist={checklist} 
-                                            index={modalData.characterIndex} 
-                                            dispatch={dispatch}
-                                            bosses={bosses}
-                                            onClose={requestClose}
-                                            onOrderDirtyChange={setHasUnsavedOrder}/>}
+                                        <WeekCharacterSelector
+                                            checklist={checklist}
+                                            selectedNickname={selectedWeekCharacter.nickname}
+                                            isDisabled={hasUnsavedOrder}
+                                            onSelect={nickname => {
+                                                if (hasUnsavedOrder) {
+                                                    addToast({
+                                                        title: "저장되지 않은 순서 변경",
+                                                        description: "순서 저장 또는 취소를 먼저 눌러주세요.",
+                                                        color: "warning"
+                                                    });
+                                                    return;
+                                                }
+                                                setSelectedWeekNickname(nickname);
+                                            }}>
+                                            <WeekModalContent
+                                                key={selectedWeekCharacter.nickname}
+                                                checklist={checklist}
+                                                index={weekIndex}
+                                                dispatch={dispatch}
+                                                bosses={bosses}
+                                                onClose={requestClose}
+                                                selectedKey={selectedWeekTab}
+                                                setSelectedKey={setSelectedWeekTab}
+                                                onOrderDirtyChange={setHasUnsavedOrder}/>
+                                        </WeekCharacterSelector>}
                                 </div>
                             </ModalBody>
                         </>
@@ -2774,13 +2970,14 @@ type WeekModalContentProps = {
     dispatch: AppDispatch,
     bosses: Boss[],
     onClose: () => void,
+    selectedKey: string,
+    setSelectedKey: SetStateFn<string>,
     onOrderDirtyChange: (isDirty: boolean) => void
 }
-function WeekModalContent({ checklist, index, dispatch, bosses, onClose, onOrderDirtyChange }: WeekModalContentProps) {
+function WeekModalContent({ checklist, index, dispatch, bosses, onClose, selectedKey, setSelectedKey, onOrderDirtyChange }: WeekModalContentProps) {
     const [content, setContent] = useState<Selection>(new Set([]));
     const [difficulty, setDifficulty] = useState<Selection>(new Set([]));
     const [isGold, setGold] = useState(false);
-    const [selectedKey, setSelectedKey] = useState('content');
     const [isOrderDirty, setOrderDirty] = useState(false);
 
     useEffect(() => {
@@ -3898,31 +4095,12 @@ export function FilterComponent({
 }: FilterComponentProps) {
 
     return (
-        <div className="w-full pt-3 sm:pt-4">
-            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h3 className="font-semibold">검색 필터</h3>
-                    <p className="mt-1 text-xs fadedtext">계정, 서버, 콘텐츠를 조합해 필요한 캐릭터만 확인하세요.</p>
-                </div>
-                <div className="flex items-center justify-between gap-4 rounded-xl border border-gray-200/80 bg-white px-3.5 py-2.5 shadow-sm dark:border-white/10 dark:bg-white/[0.04] sm:min-w-[260px]">
-                    <div className="min-w-0">
-                        <p className="text-sm font-medium">일일 콘텐츠</p>
-                        <p className="mt-0.5 text-xs fadedtext">
-                            {isHideDayContent ? '캐릭터 목록에서 숨김' : '캐릭터 목록에 함께 표시'}
-                        </p>
-                    </div>
-                    <Tooltip showArrow content="설정값을 유지하려면 프로필 설정에서 설정하세요.">
-                        <Switch
-                            aria-label="일일 콘텐츠 숨기기"
-                            color="primary"
-                            size="sm"
-                            isSelected={isHideDayContent}
-                            onValueChange={setHideDayContent}
-                            className="shrink-0"/>
-                    </Tooltip>
-                </div>
+        <section className="rounded-2xl border border-gray-200/80 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.025]">
+            <div className="mb-4">
+                <h3 className="font-semibold">검색 필터</h3>
+                <p className="mt-1 text-xs fadedtext">계정, 서버, 콘텐츠를 조합해 필요한 캐릭터만 확인하세요.</p>
             </div>
-            <div className="grid w-full gap-3 sm:grid-cols-2 md960:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] md960:items-end">
+            <div className="flex flex-col gap-3">
                 <Select
                     aria-label="계정 검색"
                     placeholder="계정을 선택하세요."
@@ -3972,94 +4150,97 @@ export function FilterComponent({
                         <SelectItem key={index}>{boss}</SelectItem>
                     ))}
                 </Select>
-                <div className="flex gap-2 sm:col-span-2 md960:col-span-1">
-                    <Popover showArrow placement="bottom-end">
-                        <PopoverTrigger>
-                            <Button
-                                radius="lg"
-                                color="primary"
-                                variant="bordered"
-                                startContent={<AddIcon size={14}/>}
-                                className="h-10 min-w-0 flex-1 whitespace-nowrap border-primary-200/90 bg-white px-3 text-xs font-semibold text-primary-700 shadow-sm transition-colors hover:border-primary-300 hover:bg-primary-50/70 dark:border-white/10 dark:bg-[#171717] dark:text-primary-300 dark:hover:border-white/20 dark:hover:bg-white/[0.06] dark:hover:text-primary-200">
-                                추가 옵션
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="border border-gray-200/80 p-0 shadow-lg dark:border-gray-800">
-                            <div className="w-full min-[301px]:w-[330px] p-4">
-                                <div className="mb-3">
-                                    <p className="font-semibold">추가 필터</p>
-                                    <p className="mt-0.5 text-xs fadedtext">캐릭터와 콘텐츠 표시 조건을 설정합니다.</p>
-                                </div>
-                                <div className="flex w-full flex-col gap-2">
-                                    <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-white/[0.05]">
-                                    <p className="cursor-pointer text-sm" onClick={() => {
-                                        localStorage.setItem('isRemainHomework', String(!isRemainHomework));
-                                        setRemainHomework(!isRemainHomework);
-                                    }}>주간 숙제를 완료한 캐릭터 숨기기</p>
-                                    <Switch
-                                        size="sm"
-                                        isSelected={isRemainHomework}
-                                        onValueChange={(isSelected) => {
-                                            localStorage.setItem('isRemainHomework', String(isSelected));
-                                            setRemainHomework(isSelected);
-                                        }}/>
-                                    </div>
-                                    <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-white/[0.05]">
-                                    <p className="cursor-pointer text-sm" onClick={() => {
-                                        localStorage.setItem('isShowGoldCharacter', String(!isShowGoldCharacter));
-                                        setShowGoldCharacter(!isShowGoldCharacter);
-                                    }}>골드 지정 캐릭터만 표시하기</p>
-                                    <Switch
-                                        size="sm"
-                                        isSelected={isShowGoldCharacter}
-                                        onValueChange={(isSelected) => {
-                                            localStorage.setItem('isShowGoldCharacter', String(isSelected));
-                                            setShowGoldCharacter(isSelected);
-                                        }}/>
-                                    </div>
-                                    <div className="flex items-center justify-between gap-4 rounded-lg bg-gray-100/70 px-3 py-2.5 dark:bg-white/[0.05]">
-                                    <p className="cursor-pointer text-sm" onClick={() => {
-                                        localStorage.setItem('isHideCompleteContent', String(!isHideCompleteContent));
-                                        setHideCompleteContent(!isHideCompleteContent);
-                                    }}>숙제 완료한 콘텐츠 숨기기</p>
-                                    <Switch
-                                        size="sm"
-                                        isSelected={isHideCompleteContent}
-                                        onValueChange={(isSelected) => {
-                                            localStorage.setItem('isHideCompleteContent', String(isSelected));
-                                            setHideCompleteContent(isSelected);
-                                        }}/>
-                                    </div>
-                                </div>
-                                <Divider className="mt-3"/>
-                                <p className="mt-3 text-xs fadedtext">해당 설정값은 브라우저에 저장됩니다.</p>
-                            </div>
-                        </PopoverContent>
-                    </Popover>
-                    <Button
-                        radius="lg"
-                        color="danger"
-                        variant="bordered"
-                        startContent={<span className="text-base leading-none">×</span>}
-                        className="h-10 min-w-0 flex-1 whitespace-nowrap border-danger-200/90 bg-white px-3 text-xs font-semibold text-danger-600 shadow-sm transition-colors hover:border-danger-300 hover:bg-danger-50/70 dark:border-white/10 dark:bg-[#171717] dark:text-danger-300 dark:hover:border-white/20 dark:hover:bg-white/[0.06] dark:hover:text-danger-200"
-                        onPress={() => {
-                            setFilterAccount(new Set([]));
-                            setFilterContent(new Set([]));
-                            localStorage.removeItem('isRemainHomework');
-                            setRemainHomework(false);
-                            localStorage.removeItem('isShowGoldCharacter');
-                            setShowGoldCharacter(false);
-                            addToast({
-                                title: "필터 해제",
-                                description: `모든 필터를 제거하였습니다.`,
-                                color: "success"
-                            });
-                        }}>
-                        필터 해제
-                    </Button>
+                <div className="flex items-center justify-between gap-4 rounded-xl border border-gray-200/80 bg-gray-50/70 px-3.5 py-3 dark:border-white/10 dark:bg-white/[0.04]">
+                    <div className="min-w-0">
+                        <p className="text-sm font-medium">일일 콘텐츠</p>
+                        <p className="mt-0.5 text-xs fadedtext">
+                            {isHideDayContent ? '캐릭터 목록에서 숨김' : '캐릭터 목록에 함께 표시'}
+                        </p>
+                    </div>
+                    <Tooltip showArrow placement="left" content="설정값을 유지하려면 프로필 설정에서 설정하세요.">
+                        <Switch
+                            aria-label="일일 콘텐츠 숨기기"
+                            color="primary"
+                            size="sm"
+                            isSelected={isHideDayContent}
+                            onValueChange={setHideDayContent}
+                            className="shrink-0"/>
+                    </Tooltip>
                 </div>
             </div>
-        </div>
+            <Divider className="my-5"/>
+            <div className="mb-3">
+                <p className="font-semibold">추가 필터</p>
+                <p className="mt-1 text-xs fadedtext">캐릭터와 콘텐츠 표시 조건을 설정합니다.</p>
+            </div>
+            <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-4 rounded-xl bg-gray-100/70 px-3 py-3 dark:bg-white/[0.05]">
+                    <p className="cursor-pointer text-sm" onClick={() => {
+                        localStorage.setItem('isRemainHomework', String(!isRemainHomework));
+                        setRemainHomework(!isRemainHomework);
+                    }}>주간 숙제를 완료한 캐릭터 숨기기</p>
+                    <Switch
+                        aria-label="주간 숙제를 완료한 캐릭터 숨기기"
+                        size="sm"
+                        isSelected={isRemainHomework}
+                        onValueChange={(isSelected) => {
+                            localStorage.setItem('isRemainHomework', String(isSelected));
+                            setRemainHomework(isSelected);
+                        }}/>
+                </div>
+                <div className="flex items-center justify-between gap-4 rounded-xl bg-gray-100/70 px-3 py-3 dark:bg-white/[0.05]">
+                    <p className="cursor-pointer text-sm" onClick={() => {
+                        localStorage.setItem('isShowGoldCharacter', String(!isShowGoldCharacter));
+                        setShowGoldCharacter(!isShowGoldCharacter);
+                    }}>골드 지정 캐릭터만 표시하기</p>
+                    <Switch
+                        aria-label="골드 지정 캐릭터만 표시하기"
+                        size="sm"
+                        isSelected={isShowGoldCharacter}
+                        onValueChange={(isSelected) => {
+                            localStorage.setItem('isShowGoldCharacter', String(isSelected));
+                            setShowGoldCharacter(isSelected);
+                        }}/>
+                </div>
+                <div className="flex items-center justify-between gap-4 rounded-xl bg-gray-100/70 px-3 py-3 dark:bg-white/[0.05]">
+                    <p className="cursor-pointer text-sm" onClick={() => {
+                        localStorage.setItem('isHideCompleteContent', String(!isHideCompleteContent));
+                        setHideCompleteContent(!isHideCompleteContent);
+                    }}>숙제 완료한 콘텐츠 숨기기</p>
+                    <Switch
+                        aria-label="숙제 완료한 콘텐츠 숨기기"
+                        size="sm"
+                        isSelected={isHideCompleteContent}
+                        onValueChange={(isSelected) => {
+                            localStorage.setItem('isHideCompleteContent', String(isSelected));
+                            setHideCompleteContent(isSelected);
+                        }}/>
+                </div>
+            </div>
+            <p className="mt-3 text-xs fadedtext">추가 필터 설정은 현재 브라우저에 저장됩니다.</p>
+            <Button
+                fullWidth
+                radius="lg"
+                color="danger"
+                variant="bordered"
+                startContent={<span className="text-base leading-none">×</span>}
+                className="mt-5 h-10 border-danger-200/90 bg-white text-xs font-semibold text-danger-600 shadow-sm transition-colors hover:border-danger-300 hover:bg-danger-50/70 dark:border-white/10 dark:bg-[#171717] dark:text-danger-300 dark:hover:border-white/20 dark:hover:bg-white/[0.06] dark:hover:text-danger-200"
+                onPress={() => {
+                    setFilterAccount(new Set([]));
+                    setFilterContent(new Set([]));
+                    localStorage.removeItem('isRemainHomework');
+                    setRemainHomework(false);
+                    localStorage.removeItem('isShowGoldCharacter');
+                    setShowGoldCharacter(false);
+                    addToast({
+                        title: "필터 해제",
+                        description: `모든 필터를 제거하였습니다.`,
+                        color: "success"
+                    });
+                }}>
+                필터 해제
+            </Button>
+        </section>
     )
 }
 
