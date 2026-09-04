@@ -77,6 +77,23 @@ function serializeConfig(data: StoredWelcomeConfig | undefined) {
     };
 }
 
+async function readWelcomeConfig(guildId: string): Promise<StoredWelcomeConfig | undefined> {
+    let lastError: unknown;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+            const snapshot = await adminDB
+                .collection("discordGuildWelcomeConfigs")
+                .doc(getDiscordGuildConfigId(guildId))
+                .get();
+            return snapshot.data() as StoredWelcomeConfig | undefined;
+        } catch (error) {
+            lastError = error;
+            if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 250 * (attempt + 1)));
+        }
+    }
+    throw lastError;
+}
+
 function errorResponse(error: unknown): NextResponse {
     const code = error instanceof Error ? error.message : "";
     if (code === "DISCORD_GUILD_AUTH_REQUIRED") {
@@ -99,8 +116,8 @@ export async function GET(req: NextRequest, context: RouteContext) {
         const { guildId } = await context.params;
         const guild = await assertDiscordGuildAdministrator(req, session, guildId);
         const resources = await getDiscordGuildResources(guild);
-        const snapshot = await adminDB.collection("discordGuildWelcomeConfigs").doc(getDiscordGuildConfigId(guildId)).get();
-        return NextResponse.json({ ...resources, config: serializeConfig(snapshot.data() as StoredWelcomeConfig | undefined) });
+        const config = await readWelcomeConfig(guildId);
+        return NextResponse.json({ ...resources, config: serializeConfig(config) });
     } catch (error) {
         return errorResponse(error);
     }

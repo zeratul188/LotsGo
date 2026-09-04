@@ -67,18 +67,20 @@ const tabs = [
     }
 ]
 
+function getValidTab(value: string | null): string {
+    return value && tabs.some((item) => item.key === value) ? value : 'expeditions';
+}
+
 export default function SettingClient() {
     const isMobile = useMobileQuery();
     const router = useRouter();
     const searchParams = useSearchParams();
     const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
-    const [selectedTab, setSelectedTab] = useState('expeditions');
+    const [selectedTab, setSelectedTab] = useState(() => getValidTab(searchParams.get('tab')));
 
     useEffect(() => {
         const tab = searchParams.get('tab');
-        if (tab && tabs.some((item) => item.key === tab)) {
-            setSelectedTab(tab);
-        }
+        setSelectedTab(getValidTab(tab));
     }, [searchParams]);
 
     useEffect(() => {
@@ -133,7 +135,7 @@ export default function SettingClient() {
                         }
                         className="min-w-[200px] flex-1">
                         <div className="w-full sm:min-h-[calc(100vh-105px)] rounded-2xl border border-default-200/80 bg-content1 p-3 dark:border-white/10 dark:bg-[#18181b] md:pl-4 overflow-y-auto max-h-[calc(100vh-105px)] scrollbar-none">
-                            {tab.component}
+                            {tab.key === selectedTab ? tab.component : null}
                         </div>
                     </Tab>
                 ))}

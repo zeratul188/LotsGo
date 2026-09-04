@@ -173,6 +173,21 @@ function toDate(value: unknown): Date | null {
     return null;
 }
 
+function toPermission(value: unknown): bigint {
+    if (typeof value === "bigint" && value >= BigInt(0)) return value;
+    if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0) return BigInt(value);
+    if (typeof value === "string" && /^\d+$/.test(value)) return BigInt(value);
+    return BigInt(0);
+}
+
+function toStringArray(value: unknown): string[] {
+    return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function toFiniteNumber(value: unknown, fallback = 0): number {
+    return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
 export function createStoredGuildAuthorization(
     discordUserId: string,
     lotsgoUserId: string,
@@ -231,23 +246,51 @@ async function getGuildAccessToken(
 }
 
 async function discordFetch<T>(path: string, authorization: string, init?: RequestInit): Promise<T> {
-    const response = await fetch(`${DISCORD_API_BASE}${path}`, {
-        ...init,
-        headers: {
-            Authorization: authorization,
-            ...(init?.body ? { "Content-Type": "application/json" } : {}),
-            ...init?.headers
-        },
-        cache: "no-store",
-        signal: AbortSignal.timeout(10_000)
-    });
-    if (!response.ok) {
-        const error = new Error(`DISCORD_API_ERROR_${response.status}`);
-        (error as Error & { status?: number }).status = response.status;
-        throw error;
+    const method = (init?.method ?? "GET").toUpperCase();
+    const canRetry = method === "GET";
+    const maxAttempts = canRetry ? 3 : 1;
+
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+        try {
+            const response = await fetch(`${DISCORD_API_BASE}${path}`, {
+                ...init,
+                headers: {
+                    Authorization: authorization,
+                    ...(init?.body ? { "Content-Type": "application/json" } : {}),
+                    ...init?.headers
+                },
+                cache: "no-store",
+                signal: AbortSignal.timeout(10_000)
+            });
+            if (response.ok) {
+                if (response.status === 204) return undefined as T;
+                return await response.json() as T;
+            }
+
+            const shouldRetry = canRetry
+                && (response.status === 429 || response.status >= 500)
+                && attempt < maxAttempts - 1;
+            if (!shouldRetry) {
+                const error = new Error(`DISCORD_API_ERROR_${response.status}`);
+                (error as Error & { status?: number }).status = response.status;
+                throw error;
+            }
+
+            const retryAfter = Number(response.headers.get("retry-after"));
+            const delay = Number.isFinite(retryAfter) && retryAfter > 0
+                ? Math.min(retryAfter * 1000, 2_000)
+                : 300 * (attempt + 1);
+            await new Promise(resolve => setTimeout(resolve, delay));
+        } catch (error) {
+            if (error instanceof Error && error.message.startsWith("DISCORD_API_ERROR_")) {
+                throw error;
+            }
+            if (!canRetry || attempt >= maxAttempts - 1) throw error;
+            await new Promise(resolve => setTimeout(resolve, 300 * (attempt + 1)));
+        }
     }
-    if (response.status === 204) return undefined as T;
-    return await response.json() as T;
+
+    throw new Error("DISCORD_API_REQUEST_FAILED");
 }
 
 function getBotAuthorization(): string {
@@ -267,11 +310,15 @@ export async function getManageableDiscordGuilds(
         discordFetch<DiscordGuild[]>("/users/@me/guilds", botAuthorization),
         discordFetch<{ id: string }>("/users/@me", botAuthorization)
     ]);
-    const botGuildIds = new Set(botGuilds.map(guild => guild.id));
+    if (!Array.isArray(userGuilds) || !Array.isArray(botGuilds) || typeof botUser?.id !== "string") {
+        throw new Error("DISCORD_API_RESPONSE_INVALID");
+    }
+    const botGuildIds = new Set(botGuilds.flatMap(guild => typeof guild?.id === "string" ? [guild.id] : []));
     return {
         botUserId: botUser.id,
         guilds: userGuilds
-            .filter(guild => guild.owner === true || (BigInt(guild.permissions ?? "0") & ADMINISTRATOR) === ADMINISTRATOR)
+            .filter(guild => typeof guild?.id === "string" && typeof guild.name === "string")
+            .filter(guild => guild.owner === true || (toPermission(guild.permissions) & ADMINISTRATOR) === ADMINISTRATOR)
             .map(guild => ({
                 id: guild.id,
                 name: guild.name,
@@ -291,15 +338,16 @@ export async function assertDiscordGuildAdministrator(
     if (!/^\d{17,20}$/.test(guildId)) throw new Error("DISCORD_GUILD_INVALID");
     const accessToken = await getGuildAccessToken(req, session);
     const guilds = await discordFetch<DiscordGuild[]>("/users/@me/guilds", `Bearer ${accessToken}`);
+    if (!Array.isArray(guilds)) throw new Error("DISCORD_API_RESPONSE_INVALID");
     const guild = guilds.find(item => item.id === guildId);
-    if (!guild || (!guild.owner && (BigInt(guild.permissions ?? "0") & ADMINISTRATOR) !== ADMINISTRATOR)) {
+    if (!guild || (!guild.owner && (toPermission(guild.permissions) & ADMINISTRATOR) !== ADMINISTRATOR)) {
         throw new Error("DISCORD_GUILD_FORBIDDEN");
     }
     return guild;
 }
 
-function applyOverwrite(permissions: bigint, deny: string, allow: string): bigint {
-    return (permissions & ~BigInt(deny)) | BigInt(allow);
+function applyOverwrite(permissions: bigint, deny: unknown, allow: unknown): bigint {
+    return (permissions & ~toPermission(deny)) | toPermission(allow);
 }
 
 function getChannelPermissions(
@@ -310,13 +358,14 @@ function getChannelPermissions(
     channel: DiscordChannel
 ): bigint {
     const everyone = roles.find(role => role.id === guildId);
-    let permissions = BigInt(everyone?.permissions ?? "0");
-    member.roles.forEach(roleId => {
-        permissions |= BigInt(roles.find(role => role.id === roleId)?.permissions ?? "0");
+    const memberRoleIds = toStringArray(member.roles);
+    let permissions = toPermission(everyone?.permissions);
+    memberRoleIds.forEach(roleId => {
+        permissions |= toPermission(roles.find(role => role.id === roleId)?.permissions);
     });
     if ((permissions & ADMINISTRATOR) === ADMINISTRATOR) return ~BigInt(0);
 
-    const overwrites = channel.permission_overwrites ?? [];
+    const overwrites = Array.isArray(channel.permission_overwrites) ? channel.permission_overwrites : [];
     const everyoneOverwrite = overwrites.find(overwrite => overwrite.type === 0 && overwrite.id === guildId);
     if (everyoneOverwrite) {
         permissions = applyOverwrite(permissions, everyoneOverwrite.deny, everyoneOverwrite.allow);
@@ -325,9 +374,9 @@ function getChannelPermissions(
     let roleAllow = BigInt(0);
     let roleDeny = BigInt(0);
     overwrites.forEach(overwrite => {
-        if (overwrite.type === 0 && member.roles.includes(overwrite.id)) {
-            roleAllow |= BigInt(overwrite.allow);
-            roleDeny |= BigInt(overwrite.deny);
+        if (overwrite.type === 0 && memberRoleIds.includes(overwrite.id)) {
+            roleAllow |= toPermission(overwrite.allow);
+            roleDeny |= toPermission(overwrite.deny);
         }
     });
     permissions = (permissions & ~roleDeny) | roleAllow;
@@ -349,14 +398,26 @@ export async function getDiscordGuildResources(
         discordFetch<DiscordChannel[]>(`/guilds/${guild.id}/channels`, authorization),
         discordFetch<DiscordMember>(`/guilds/${guild.id}/members/${botUser.id}`, authorization)
     ]);
-    const botRoles = roles.filter(role => botMember.roles.includes(role.id));
+    if (
+        typeof botUser?.id !== "string"
+        || !Array.isArray(roles)
+        || !Array.isArray(channels)
+        || !botMember
+        || typeof botMember !== "object"
+    ) {
+        throw new Error("DISCORD_API_RESPONSE_INVALID");
+    }
+    const botMemberRoleIds = toStringArray(botMember.roles);
+    const validRoles = roles.filter(role => role && typeof role.id === "string" && typeof role.name === "string");
+    const validChannels = channels.filter(channel => channel && typeof channel.id === "string" && typeof channel.name === "string");
+    const botRoles = validRoles.filter(role => botMemberRoleIds.includes(role.id));
     const basePermissions = botRoles.reduce(
-        (permissions, role) => permissions | BigInt(role.permissions),
-        BigInt(roles.find(role => role.id === guild.id)?.permissions ?? "0")
+        (permissions, role) => permissions | toPermission(role.permissions),
+        toPermission(validRoles.find(role => role.id === guild.id)?.permissions)
     );
     const botCanManageRoles = (basePermissions & ADMINISTRATOR) === ADMINISTRATOR
         || (basePermissions & MANAGE_ROLES) === MANAGE_ROLES;
-    const highestBotPosition = Math.max(0, ...botRoles.map(role => role.position));
+    const highestBotPosition = Math.max(0, ...botRoles.map(role => toFiniteNumber(role.position)));
 
     return {
         guild: {
@@ -368,24 +429,28 @@ export async function getDiscordGuildResources(
         },
         botUserId: botUser.id,
         botCanManageRoles,
-        channels: channels
+        channels: validChannels
             .filter(channel => channel.type === 0 || channel.type === 5)
             .filter(channel => {
-                const permissions = getChannelPermissions(guild.id, botUser.id, botMember, roles, channel);
+                const permissions = getChannelPermissions(guild.id, botUser.id, { roles: botMemberRoleIds }, validRoles, channel);
                 return (permissions & MESSAGE_PERMISSIONS) === MESSAGE_PERMISSIONS;
             })
-            .sort((a, b) => a.position - b.position)
-            .map(channel => ({ id: channel.id, name: channel.name, parentId: channel.parent_id })),
-        roles: roles
+            .sort((a, b) => toFiniteNumber(a.position) - toFiniteNumber(b.position))
+            .map(channel => ({
+                id: channel.id,
+                name: channel.name,
+                parentId: typeof channel.parent_id === "string" ? channel.parent_id : null
+            })),
+        roles: validRoles
             .filter(role => role.id !== guild.id)
-            .filter(role => !role.managed && role.position < highestBotPosition)
-            .filter(role => (BigInt(role.permissions) & DANGEROUS_ROLE_PERMISSIONS) === BigInt(0))
-            .sort((a, b) => b.position - a.position)
+            .filter(role => !role.managed && toFiniteNumber(role.position) < highestBotPosition)
+            .filter(role => (toPermission(role.permissions) & DANGEROUS_ROLE_PERMISSIONS) === BigInt(0))
+            .sort((a, b) => toFiniteNumber(b.position) - toFiniteNumber(a.position))
             .map(role => ({
                 id: role.id,
                 name: role.name,
-                color: role.color,
-                position: role.position
+                color: toFiniteNumber(role.color),
+                position: toFiniteNumber(role.position)
             }))
     };
 }
