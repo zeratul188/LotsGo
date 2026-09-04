@@ -58,6 +58,7 @@ import {
     getBossesByHaveContent, 
     getBossesById, 
     getBossGoldByContent, 
+    getChecklistContentGoldSummary,
     getCheckedResult, 
     getCompleteBoundGoldCharacter, 
     getCompleteChecklist, 
@@ -1563,11 +1564,29 @@ export function ChecklistComponent({
                                                                     </PopoverContent>
                                                                 </Popover>
                                                             </div>
-                                                             <AnimatedChecklistStrike
-                                                                 isSelected={isCheckHomework(item)}
-                                                                 className="fadedtext text-[9pt]">
-                                                                 {printDifficulty(item.items)}
-                                                             </AnimatedChecklistStrike>
+                                                             {(() => {
+                                                                 const goldSummary = getChecklistContentGoldSummary(bosses, item, character.isGold);
+                                                                 return (
+                                                                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[9pt]">
+                                                                         <AnimatedChecklistStrike
+                                                                             isSelected={isCheckHomework(item)}
+                                                                             className={clsx(
+                                                                                 "flex items-center gap-1",
+                                                                                 isCheckHomework(item) ? "fadedtext" : "text-amber-600 dark:text-amber-400"
+                                                                             )}>
+                                                                             <span>일반 {goldSummary.gold.toLocaleString()}</span>
+                                                                         </AnimatedChecklistStrike>
+                                                                         <AnimatedChecklistStrike
+                                                                             isSelected={isCheckHomework(item)}
+                                                                             className={clsx(
+                                                                                 "flex items-center gap-1",
+                                                                                 isCheckHomework(item) ? "fadedtext" : "text-blue-600 dark:text-blue-400"
+                                                                             )}>
+                                                                             <span>귀속 {goldSummary.boundGold.toLocaleString()}</span>
+                                                                         </AnimatedChecklistStrike>
+                                                                     </div>
+                                                                 );
+                                                             })()}
                                                         </div>
                                                         <div className="grow"/>
                                                         <div className="z-9">
