@@ -280,7 +280,7 @@ export default function ChecklistClient() {
                     color="primary"
                     radius="none"
                     className={clsx(
-                        "fixed left-0 top-[170px] z-[60] h-16 w-11 min-w-0 rounded-r-2xl border border-primary-300/70 bg-gradient-to-b from-primary-500 to-primary-600 text-white shadow-[0_8px_24px_rgba(0,111,238,0.3)] transition-all hover:w-12 hover:shadow-[0_10px_28px_rgba(0,111,238,0.4)] dark:border-primary-400/40 dark:from-primary-500 dark:to-primary-700",
+                        "fixed left-0 top-[330px] z-[60] h-16 w-11 min-w-0 rounded-r-2xl border border-primary-300/70 bg-gradient-to-b from-primary-500 to-primary-600 text-white shadow-[0_8px_24px_rgba(0,111,238,0.3)] transition-all hover:w-12 hover:shadow-[0_10px_28px_rgba(0,111,238,0.4)] dark:border-primary-400/40 dark:from-primary-500 dark:to-primary-700",
                         isOpenLookupDrawer && "pointer-events-none -translate-x-full opacity-0"
                     )}
                     onPress={() => setOpenLookupDrawer(true)}>
