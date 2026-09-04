@@ -341,6 +341,8 @@ export function useChecklistForm(initialBosses: Boss[] = [], initialCubes: Cube[
     const [isHideDayContent, setHideDayContent] = useState(false);
     const [isHideBonusMode, setHideBonusMode] = useState(false);
     const [isAutoDeleteUnselectedRaids, setAutoDeleteUnselectedRaids] = useState(false);
+    const [isHideParadisePower, setHideParadisePower] = useState(false);
+    const [isHideCharacterMemo, setHideCharacterMemo] = useState(false);
 
     // 필터 설정값
     const [isRemainHomework, setRemainHomework] = useState(false);
@@ -369,7 +371,9 @@ export function useChecklistForm(initialBosses: Boss[] = [], initialCubes: Cube[
         filterAccount, setFilterAccount,
         isHideCompleteContent, setHideCompleteContent,
         isHideBonusMode, setHideBonusMode,
-        isAutoDeleteUnselectedRaids, setAutoDeleteUnselectedRaids
+        isAutoDeleteUnselectedRaids, setAutoDeleteUnselectedRaids,
+        isHideParadisePower, setHideParadisePower,
+        isHideCharacterMemo, setHideCharacterMemo
     }
 }
 
@@ -1127,6 +1131,8 @@ type ChecklistProps = {
     filterAccount: Selection,
     isHideCompleteContent: boolean,
     isHideBonusMode: boolean,
+    isHideParadisePower: boolean,
+    isHideCharacterMemo: boolean,
     autoChecklistNickname: string,
     isAutoChecklistSharing: boolean,
     setAutoChecklistNickname: (nickname: string) => void,
@@ -1151,6 +1157,8 @@ export function ChecklistComponent({
     filterAccount,
     isHideCompleteContent,
     isHideBonusMode,
+    isHideParadisePower,
+    isHideCharacterMemo,
     autoChecklistNickname,
     isAutoChecklistSharing,
     setAutoChecklistNickname,
@@ -1246,7 +1254,7 @@ export function ChecklistComponent({
                                         </div>
                                     </div>
                                     </div>
-                                    {isHideDayContent && (
+                                    {isHideDayContent && !isHideCharacterMemo && (
                                         <div className="w-full min-w-0">
                                             <CharacterMemo
                                                 checklist={checklist}
@@ -1357,7 +1365,7 @@ export function ChecklistComponent({
                                     </Popover>
                                 </div>
                             </div>
-                            {!isHideDayContent && (
+                            {!isHideDayContent && !isHideCharacterMemo && (
                                 <div className="mt-2 w-full border-t border-gray-200/70 pt-2 dark:border-white/10">
                                     <CharacterMemo
                                         checklist={checklist}
@@ -1847,8 +1855,12 @@ export function ChecklistComponent({
                                 <div className="mb-3">
                                     <OtherGoldManager character={character} dispatch={dispatch}/>
                                 </div>
-                                <CharacterParadisePower checklist={checklist} nickname={character.nickname} dispatch={dispatch}/>
-                                <Divider/>
+                                {!isHideParadisePower && (
+                                    <>
+                                        <CharacterParadisePower checklist={checklist} nickname={character.nickname} dispatch={dispatch}/>
+                                        <Divider/>
+                                    </>
+                                )}
                                 <Accordion>
                                     <AccordionItem key="0" title={<span className="flex gap-2 items-center cursor-pointer">
                                         <img 

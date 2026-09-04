@@ -4,7 +4,9 @@ import { Settings } from "../../api/setting/route";
 import {
     handleAutoDeleteUnselectedRaids,
     handleHideBonusMode,
+    handleHideCharacterMemo,
     handleHideDayContent,
+    handleHideParadisePower,
     loadSettings,
     useAllLogout
 } from "../lib/optionFeat";
@@ -49,6 +51,14 @@ export default function OptionComponent() {
                         <div className="flex items-center gap-4 px-4 py-4">
                             <div className="grow"><h3 className="text-sm font-semibold">더보기 관리 모드 숨기기</h3><p className="mt-1 text-xs text-default-500">더보기 관리 모드 전환 스위치를 숨깁니다.</p></div>
                             <Switch size="sm" aria-label="더보기 관리 모드 숨기기" isSelected={settings.isHideBonusMode} onValueChange={async () => await handleHideBonusMode(settings, setSettings)}/>
+                        </div>
+                        <div className="flex items-center gap-4 px-4 py-4">
+                            <div className="grow"><h3 className="text-sm font-semibold">낙원력 숨기기</h3><p className="mt-1 text-xs text-default-500">캐릭터 카드에서 낙원력 입력 영역을 숨깁니다.</p></div>
+                            <Switch size="sm" aria-label="낙원력 숨기기" isSelected={settings.isHideParadisePower} onValueChange={async () => await handleHideParadisePower(settings, setSettings)}/>
+                        </div>
+                        <div className="flex items-center gap-4 px-4 py-4">
+                            <div className="grow"><h3 className="text-sm font-semibold">메모 숨기기</h3><p className="mt-1 text-xs text-default-500">캐릭터 카드에서 메모 영역을 숨깁니다.</p></div>
+                            <Switch size="sm" aria-label="메모 숨기기" isSelected={settings.isHideCharacterMemo} onValueChange={async () => await handleHideCharacterMemo(settings, setSettings)}/>
                         </div>
                         <div className="flex items-center gap-4 px-4 py-4">
                             <div className="grow">

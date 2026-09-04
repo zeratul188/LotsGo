@@ -34,7 +34,9 @@ import { useLoadingTask } from "../components/loading/LoadingProgress";
 export const defaultSettings: Settings = {
     isHideDayContent: false,
     isHideBonusMode: false,
-    isAutoDeleteUnselectedRaids: false
+    isAutoDeleteUnselectedRaids: false,
+    isHideParadisePower: false,
+    isHideCharacterMemo: false
 }
 
 
@@ -222,6 +224,8 @@ export default function ChecklistClient() {
                 checklistForm.setHideDayContent(settings.isHideDayContent);
                 checklistForm.setHideBonusMode(settings.isHideBonusMode);
                 checklistForm.setAutoDeleteUnselectedRaids(settings.isAutoDeleteUnselectedRaids);
+                checklistForm.setHideParadisePower(settings.isHideParadisePower);
+                checklistForm.setHideCharacterMemo(settings.isHideCharacterMemo);
                 return;
             }
             const userStr = sessionStorage.getItem('user');
@@ -235,6 +239,8 @@ export default function ChecklistClient() {
                     checklistForm.setHideDayContent(settings.isHideDayContent);
                     checklistForm.setHideBonusMode(settings.isHideBonusMode);
                     checklistForm.setAutoDeleteUnselectedRaids(settings.isAutoDeleteUnselectedRaids);
+                    checklistForm.setHideParadisePower(settings.isHideParadisePower);
+                    checklistForm.setHideCharacterMemo(settings.isHideCharacterMemo);
                 } else {
                     addToast({
                         title: "로드 오류",
@@ -442,6 +448,8 @@ export default function ChecklistClient() {
                                 filterAccount={checklistForm.filterAccount}
                                 isHideCompleteContent={checklistForm.isHideCompleteContent}
                                 isHideBonusMode={checklistForm.isHideBonusMode}
+                                isHideParadisePower={checklistForm.isHideParadisePower}
+                                isHideCharacterMemo={checklistForm.isHideCharacterMemo}
                                 autoChecklistNickname={autoChecklistNickname}
                                 isAutoChecklistSharing={isAutoChecklistSharing}
                                 setAutoChecklistNickname={setAutoChecklistNickname}
