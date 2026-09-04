@@ -10,10 +10,11 @@ export async function POST(req: NextRequest) {
             const refreshHash = hashToken(refreshToken);
             const sessionQuery = query(collection(firestore, 'sessions'), where('refreshTokenHash', '==', refreshHash), limit(1));
             const sessionSnapshot = await getDocs(sessionQuery);
-            if (sessionSnapshot.empty) throw new Error('TOKEN_NOT_FOUND');
-            const sessionRef = sessionSnapshot.docs[0].ref;
-            const now = Timestamp.now();
-            await updateDoc(sessionRef, { revoked: true, revokedAt: now });
+            if (!sessionSnapshot.empty) {
+                const sessionRef = sessionSnapshot.docs[0].ref;
+                const now = Timestamp.now();
+                await updateDoc(sessionRef, { revoked: true, revokedAt: now });
+            }
         }
 
         const res = NextResponse.json({ message: 'logout'});
@@ -29,9 +30,6 @@ export async function POST(req: NextRequest) {
         });
         return res;
     } catch(e: any) {
-        if (e.message === 'TOKEN_NOT_FOUND') {
-            return NextResponse.json({ message: '토큰을 찾을 수 없습니다.' }, { status: 401 });
-        }
         return NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
     }
 }

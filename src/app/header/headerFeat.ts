@@ -27,11 +27,13 @@ export function useOnActionProfile() {
                 router.push("/administrator");
                 break;
             case "logout":
+                window.dispatchEvent(new Event("lotsgo-logout-started"));
                 const logoutRes = await fetch("/api/auth/logout", {
                     method: "POST",
                     credentials: "include",
                 });
                 if (!logoutRes.ok) {
+                    window.dispatchEvent(new Event("lotsgo-logout-failed"));
                     addToast({
                         title: "처리 오류",
                         description: `로그아웃하는데 문제가 발생하였습니다.`,
@@ -41,6 +43,7 @@ export function useOnActionProfile() {
                 }
                 sessionStorage.removeItem('token');
                 sessionStorage.removeItem('user');
+                localStorage.removeItem('sessionExpiresAt');
                 localStorage.removeItem('userSettings');
                 Cookies.remove('userApiKey', {
                     path: '/',
@@ -64,11 +67,13 @@ export function useOnActionProfile() {
 export function useLogout() {
     const dispatch = useDispatch<AppDispatch>();
     return async () => {
+        window.dispatchEvent(new Event("lotsgo-logout-started"));
         const logoutRes = await fetch("/api/auth/logout", {
             method: "POST",
             credentials: "include",
         });
         if (!logoutRes.ok) {
+            window.dispatchEvent(new Event("lotsgo-logout-failed"));
             addToast({
                 title: "처리 오류",
                 description: `로그아웃하는데 문제가 발생하였습니다.`,
@@ -78,6 +83,7 @@ export function useLogout() {
         }
         sessionStorage.removeItem('token');
         sessionStorage.removeItem('user');
+        localStorage.removeItem('sessionExpiresAt');
         dispatch(logout());
         signOut(auth);
         addToast({

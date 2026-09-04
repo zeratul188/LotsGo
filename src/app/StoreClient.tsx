@@ -19,6 +19,8 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
     const router = useRouter();
 
     useEffect(() => {
+      let isLoggingOut = false;
+
       const clearAuthState = async () => {
         sessionStorage.removeItem('token');
         sessionStorage.removeItem('user');
@@ -30,6 +32,7 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
       };
 
       const handleExpiredSession = async () => {
+        if (isLoggingOut) return;
         await clearAuthState();
         dispatch(setCheckToken(true));
         addToast({
@@ -61,6 +64,7 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
       };
 
       const checkToken = async () => {
+            if (isLoggingOut) return;
             // Discord 로그인 완료 화면이 직접 세션을 복구하므로, 여기서 같은
             // refresh 요청을 동시에 보내지 않습니다. 새 브라우저에서 두 요청이
             // 겹치면 일시적인 서버 오류를 세션 만료로 잘못 처리할 수 있습니다.
@@ -88,6 +92,8 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
                     }
                 }
             }
+
+            if (isLoggingOut) return;
 
             let refreshRes: Response | null = null;
             let refreshFailed = false;
@@ -117,6 +123,7 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
             }
 
             if (!refreshRes.ok) {
+                if (isLoggingOut) return;
                 const errorData = await refreshRes.json().catch(() => ({})) as RefreshError;
 
                 if (errorData.code === 'MISSING_REFRESH_TOKEN' && !token && !storedUser) {
@@ -137,6 +144,7 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
                 return;
             }
 
+            if (isLoggingOut) return;
             const data = await refreshRes.json();
             const loginUser: LoginUser = {
                 id: data.userData.id,
@@ -156,6 +164,7 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
         let isHandlingExpiration = false;
 
         const checkSessionExpiration = () => {
+            if (isLoggingOut) return;
             const storedUser = sessionStorage.getItem('user');
             const sessionExpiresAt = localStorage.getItem('sessionExpiresAt');
             if (!storedUser || !sessionExpiresAt) return;
@@ -177,6 +186,7 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
         };
 
         const verifySession = () => {
+            if (isLoggingOut) return;
             const token = sessionStorage.getItem('token');
             const storedUser = sessionStorage.getItem('user');
 
@@ -189,6 +199,7 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
             }
 
             checkToken().catch(() => {
+                if (isLoggingOut) return;
                 const storedUser = sessionStorage.getItem('user');
                 if (restoreStoredUser(storedUser)) {
                     dispatch(setCheckToken(true));
@@ -200,10 +211,20 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
 
         verifySession();
         checkSessionExpiration();
+        const handleLogoutStarted = () => {
+            isLoggingOut = true;
+        };
+        const handleLogoutFailed = () => {
+            isLoggingOut = false;
+        };
+        window.addEventListener('lotsgo-logout-started', handleLogoutStarted);
+        window.addEventListener('lotsgo-logout-failed', handleLogoutFailed);
         window.addEventListener('online', verifySession);
         const expirationInterval = window.setInterval(checkSessionExpiration, 30_000);
 
         return () => {
+            window.removeEventListener('lotsgo-logout-started', handleLogoutStarted);
+            window.removeEventListener('lotsgo-logout-failed', handleLogoutFailed);
             window.removeEventListener('online', verifySession);
             window.clearInterval(expirationInterval);
         };
