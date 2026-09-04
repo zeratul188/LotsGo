@@ -2140,6 +2140,35 @@ export function handleSelectCharacter(
     setResult(newResult);
 }
 
+// 조회된 캐릭터 전체 선택 이벤트 함수
+export function handleSelectAllCharacters(
+    isSelected: boolean,
+    checklist: CheckCharacter[],
+    result: SearchCharacter[],
+    setResult: SetStateFn<SearchCharacter[]>,
+    maxCharacterCount: number
+) {
+    let selectedCount = result.filter(item => item.isCheck).length;
+    const availableCount = Math.max(maxCharacterCount - checklist.length, 0);
+    const newResult = result.map(item => {
+        if (isHaveCharacter(checklist, item.nickname)) {
+            return { ...item, isCheck: false };
+        }
+        if (!isSelected) {
+            return { ...item, isCheck: false };
+        }
+        if (item.isCheck) {
+            return { ...item };
+        }
+        if (selectedCount >= availableCount) {
+            return { ...item, isCheck: false };
+        }
+        selectedCount += 1;
+        return { ...item, isCheck: true };
+    });
+    setResult(newResult);
+}
+
 // 조회된 캐릭터의 체크 갯수
 export function getCheckedResult(result: SearchCharacter[]): number {
     let sum = 0;

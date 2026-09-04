@@ -100,6 +100,7 @@ import {
     handleParadiseCheck,
     handleFixedContentVisibility,
     handleSelectCharacter, 
+    handleSelectAllCharacters,
     handleWeekBonusCheckStage, 
     handleWeekCheckStage, 
     handleWeekListCheck, 
@@ -562,6 +563,8 @@ export function ChecklistStatue({
     const onClickUpdatedCharacters = useClickUpdatedCharacters(checklist, dispatch, setLoading, setDisableUpdate);
     const onClickLoadCharacters = useClickLoadCharacters(inputValue, setResult, setLoadingSearch);
     const onCloseModal = useCloseModal(setResult, setInputValue);
+    const selectableResults = result.filter(item => !isHaveCharacter(checklist, item.nickname));
+    const isAllCharactersSelected = selectableResults.length > 0 && selectableResults.every(item => item.isCheck);
     const onChangeBlessing = useChangeBlessing(life, max, setBlessing);
     const onClickLife = useClickLife(newLife, isBlessing, setLife, setNewLife, newMax, setMax, setNewMax);
 
@@ -925,6 +928,12 @@ export function ChecklistStatue({
                                             variant="bordered"
                                             value={inputValue}
                                             onValueChange={setInputValue}
+                                            onKeyDown={async (event) => {
+                                                if (event.key === 'Enter') {
+                                                    event.preventDefault();
+                                                    await onClickLoadCharacters();
+                                                }
+                                            }}
                                             className="grow"/>
                                         <Button
                                             size="lg"
@@ -934,6 +943,22 @@ export function ChecklistStatue({
                                             variant="flat"
                                             className="w-full shrink-0 font-semibold sm:w-[96px] sm:self-end"
                                             onPress={onClickLoadCharacters}>조회</Button>
+                                    </div>
+                                    <div className={clsx(
+                                        "mb-2 items-center justify-between rounded-xl border border-primary-200/70 bg-primary-50/50 px-3 py-2 dark:border-primary-900/60 dark:bg-primary-950/20",
+                                        result.length !== 0 ? 'flex' : 'hidden'
+                                    )}>
+                                        <Checkbox
+                                            size="sm"
+                                            color="primary"
+                                            isSelected={isAllCharactersSelected}
+                                            isDisabled={selectableResults.length === 0}
+                                            onValueChange={(isSelected) => {
+                                                handleSelectAllCharacters(isSelected, checklist, result, setResult, MAX_CHARACTER_COUNT);
+                                            }}>
+                                            전체 선택
+                                        </Checkbox>
+                                        <span className="text-xs text-default-500">선택 {getCheckedResult(result)}명</span>
                                     </div>
                                     <div className="mb-4 max-h-[360px] space-y-2 overflow-y-auto overflow-x-hidden pr-1">
                                         {result.map((item, index) => (
