@@ -3,6 +3,24 @@ import { firestore } from "@/utiils/firebase";
 import { collection, getDocs, limit, query, Timestamp, updateDoc, where } from "firebase/firestore";
 import { NextRequest, NextResponse } from "next/server";
 
+function clearRefreshCookies(res: NextResponse, hostname: string) {
+    const cookieOptions = {
+        name: "refreshToken",
+        value: "",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax" as const,
+        path: "/",
+        maxAge: 0
+    };
+    res.cookies.set(cookieOptions);
+    const cookieDomain = getLotsGoCookieDomain(hostname);
+    if (cookieDomain) {
+        res.cookies.set({ ...cookieOptions, domain: cookieDomain });
+    }
+    return res;
+}
+
 export async function POST(req: NextRequest) {
     try {
         const refreshToken = req.cookies.get('refreshToken')?.value;
@@ -17,19 +35,11 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        const res = NextResponse.json({ message: 'logout'});
-        res.cookies.set({
-            name: "refreshToken",
-            value: "",
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            path: "/",
-            domain: getLotsGoCookieDomain(req.nextUrl.hostname),
-            maxAge: 0
-        });
-        return res;
+        return clearRefreshCookies(NextResponse.json({ message: 'logout'}), req.nextUrl.hostname);
     } catch(e: any) {
-        return NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 });
+        return clearRefreshCookies(
+            NextResponse.json({ error: '데이터 처리 중 문제가 발생하였습니다.' }, { status: 500 }),
+            req.nextUrl.hostname
+        );
     }
 }

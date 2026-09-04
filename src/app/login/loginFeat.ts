@@ -8,6 +8,7 @@ import type { AppDispatch } from "../store/store";
 import { useDispatch } from "react-redux";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, firestore } from "@/utiils/firebase";
+import { INTENTIONAL_LOGOUT_KEY } from "@/utiils/authSession";
 import { collection, getDocs, limit, query, where } from "firebase/firestore";
 import { decrypt } from "@/utiils/crypto";
 import Cookies from "js-cookie";
@@ -83,6 +84,7 @@ export async function login(
             apiKey: data.userData?.apiKey ?? null,
             isSupporter: data.userData?.isSupporter === true
         };
+        sessionStorage.removeItem(INTENTIONAL_LOGOUT_KEY);
         dispatch(logined(loginUser));
         sessionStorage.setItem("token", data.accessToken);
         sessionStorage.setItem("user", JSON.stringify(loginUser));

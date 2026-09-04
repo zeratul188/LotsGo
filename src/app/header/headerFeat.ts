@@ -7,6 +7,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/utiils/firebase";
 import Cookies from 'js-cookie';
 import { SetStateFn } from "@/utiils/utils";
+import { INTENTIONAL_LOGOUT_KEY } from "@/utiils/authSession";
 
 type Key = string | number;
 const JWT_SECRET = process.env.LOSTARK_JWT_SECRET!;
@@ -27,12 +28,14 @@ export function useOnActionProfile() {
                 router.push("/administrator");
                 break;
             case "logout":
+                sessionStorage.setItem(INTENTIONAL_LOGOUT_KEY, "true");
                 window.dispatchEvent(new Event("lotsgo-logout-started"));
                 const logoutRes = await fetch("/api/auth/logout", {
                     method: "POST",
                     credentials: "include",
                 });
                 if (!logoutRes.ok) {
+                    sessionStorage.removeItem(INTENTIONAL_LOGOUT_KEY);
                     window.dispatchEvent(new Event("lotsgo-logout-failed"));
                     addToast({
                         title: "처리 오류",
@@ -67,12 +70,14 @@ export function useOnActionProfile() {
 export function useLogout() {
     const dispatch = useDispatch<AppDispatch>();
     return async () => {
+        sessionStorage.setItem(INTENTIONAL_LOGOUT_KEY, "true");
         window.dispatchEvent(new Event("lotsgo-logout-started"));
         const logoutRes = await fetch("/api/auth/logout", {
             method: "POST",
             credentials: "include",
         });
         if (!logoutRes.ok) {
+            sessionStorage.removeItem(INTENTIONAL_LOGOUT_KEY);
             window.dispatchEvent(new Event("lotsgo-logout-failed"));
             addToast({
                 title: "처리 오류",

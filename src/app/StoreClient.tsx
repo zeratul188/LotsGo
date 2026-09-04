@@ -8,6 +8,7 @@ import { addToast } from "@heroui/react";
 import { signOut } from 'firebase/auth';
 import { auth } from '@/utiils/firebase';
 import { ensureFirebaseAuth } from '@/utiils/firebaseAuth';
+import { INTENTIONAL_LOGOUT_KEY } from '@/utiils/authSession';
 import Cookies from 'js-cookie';
 
 type RefreshError = {
@@ -65,6 +66,10 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
 
       const checkToken = async () => {
             if (isLoggingOut) return;
+            if (sessionStorage.getItem(INTENTIONAL_LOGOUT_KEY) === 'true') {
+                finishWithoutSession();
+                return;
+            }
             // Discord 로그인 완료 화면이 직접 세션을 복구하므로, 여기서 같은
             // refresh 요청을 동시에 보내지 않습니다. 새 브라우저에서 두 요청이
             // 겹치면 일시적인 서버 오류를 세션 만료로 잘못 처리할 수 있습니다.
@@ -187,6 +192,10 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
 
         const verifySession = () => {
             if (isLoggingOut) return;
+            if (sessionStorage.getItem(INTENTIONAL_LOGOUT_KEY) === 'true') {
+                finishWithoutSession();
+                return;
+            }
             const token = sessionStorage.getItem('token');
             const storedUser = sessionStorage.getItem('user');
 

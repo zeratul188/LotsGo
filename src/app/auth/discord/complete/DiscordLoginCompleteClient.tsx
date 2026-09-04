@@ -8,6 +8,7 @@ import { signOut } from "firebase/auth";
 import Cookies from "js-cookie";
 import DiscordIcon from "@/Icons/DiscordIcon";
 import { auth } from "@/utiils/firebase";
+import { INTENTIONAL_LOGOUT_KEY } from "@/utiils/authSession";
 import { ensureFirebaseAuth } from "@/utiils/firebaseAuth";
 import type { AppDispatch } from "@/app/store/store";
 import { logined, LoginUser, logout, setCheckToken } from "@/app/store/loginSlice";
@@ -58,6 +59,7 @@ export default function DiscordLoginCompleteClient() {
                     apiKey: data.userData.apiKey ?? null,
                     isSupporter: data.userData.isSupporter === true
                 };
+                sessionStorage.removeItem(INTENTIONAL_LOGOUT_KEY);
                 sessionStorage.setItem("token", data.accessToken);
                 sessionStorage.setItem("user", JSON.stringify(loginUser));
                 localStorage.setItem("sessionExpiresAt", data.sessionExpiresAt);
