@@ -29,13 +29,25 @@ export default function DiscordLoginCompleteClient() {
         const completeLogin = async () => {
             let serverSessionEstablished = false;
             try {
-                const response = await fetch("/api/auth/refresh", {
-                    method: "POST",
-                    credentials: "include"
-                });
+                let response: Response | null = null;
+                for (let attempt = 0; attempt < 3; attempt += 1) {
+                    try {
+                        response = await fetch("/api/auth/refresh", {
+                            method: "POST",
+                            credentials: "include"
+                        });
+                        if (response.status < 500 || attempt === 2) break;
+                    } catch {
+                        if (attempt === 2) throw new Error("DISCORD_LOGIN_REFRESH_NETWORK_FAILED");
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+                }
+                if (!response) throw new Error("DISCORD_LOGIN_REFRESH_FAILED");
                 const data = await response.json().catch(() => null);
                 if (!response.ok || !data?.userData || typeof data.accessToken !== "string") {
-                    throw new Error("DISCORD_LOGIN_REFRESH_FAILED");
+                    const error = new Error("DISCORD_LOGIN_REFRESH_FAILED") as Error & { status?: number };
+                    error.status = response.status;
+                    throw error;
                 }
                 serverSessionEstablished = true;
 
@@ -71,6 +83,19 @@ export default function DiscordLoginCompleteClient() {
                 router.replace(getSafeReturnTo(searchParams.get("returnTo")));
             } catch (error) {
                 console.error("Failed to finish Discord login", error);
+                const status = error instanceof Error && "status" in error
+                    ? (error as Error & { status?: number }).status
+                    : undefined;
+                const errorMessage = error instanceof Error ? error.message : "";
+                const isTransientRefreshError = errorMessage === "DISCORD_LOGIN_REFRESH_NETWORK_FAILED"
+                    || (status !== undefined && status >= 500);
+                if (isTransientRefreshError) {
+                    // 서버/네트워크 일시 오류로 서버 세션을 폐기하지 않습니다.
+                    // 다음 화면의 StoreClient가 쿠키로 세션 복구를 재시도합니다.
+                    dispatch(setCheckToken(true));
+                    router.replace(getSafeReturnTo(searchParams.get("returnTo")));
+                    return;
+                }
                 if (serverSessionEstablished) {
                     // 서버 세션이 만들어진 뒤의 클라이언트 초기화 오류로 세션을 폐기하지 않습니다.
                     dispatch(setCheckToken(true));

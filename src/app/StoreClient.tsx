@@ -61,6 +61,10 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
       };
 
       const checkToken = async () => {
+            // Discord 로그인 완료 화면이 직접 세션을 복구하므로, 여기서 같은
+            // refresh 요청을 동시에 보내지 않습니다. 새 브라우저에서 두 요청이
+            // 겹치면 일시적인 서버 오류를 세션 만료로 잘못 처리할 수 있습니다.
+            if (window.location.pathname === "/auth/discord/complete") return;
             const token = sessionStorage.getItem('token');
             const storedUser = sessionStorage.getItem('user');
 
@@ -85,14 +89,29 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
                 }
             }
 
-            let refreshRes: Response;
-            try {
+            let refreshRes: Response | null = null;
+            let refreshFailed = false;
+            for (let attempt = 0; attempt < 3; attempt += 1) {
+              try {
                 refreshRes = await fetch("/api/auth/refresh", {
                     method: "POST",
                     credentials: "include",
                 });
-            } catch {
+                if (refreshRes.status < 500 || attempt === 2) break;
+              } catch {
+                refreshFailed = true;
+                if (attempt === 2) break;
+              }
+              await new Promise(resolve => setTimeout(resolve, 400 * (attempt + 1)));
+            }
+
+            if (refreshFailed && !refreshRes) {
                 // 네트워크가 복구되면 online 이벤트에서 세션을 다시 확인합니다.
+                if (!restoreStoredUser(storedUser)) finishWithoutSession();
+                return;
+            }
+
+            if (!refreshRes) {
                 if (!restoreStoredUser(storedUser)) finishWithoutSession();
                 return;
             }
