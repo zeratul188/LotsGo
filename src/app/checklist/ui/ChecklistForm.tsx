@@ -2337,7 +2337,7 @@ function RestCheckButton({ checklist, character, type, dispatch }: RestCheckButt
                 radius="full"
                 isSelected={isSelected}
                 icon={AnimatedChecklistCheckIcon}
-                className="relative z-10 w-full p-0 px-2 py-1.5"
+                className="relative z-10 w-full p-0 pl-3.5 pr-2 py-1.5"
                 onChange={onClickDayCheck}>
                 {getDayName(type, character.level)} ({dayValue.value}/{type === '에포나' ? 3 : 1})
             </Checkbox>
