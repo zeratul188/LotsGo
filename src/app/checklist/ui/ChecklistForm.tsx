@@ -2360,12 +2360,127 @@ type ChecklistModalProps = {
     dispatch: AppDispatch,
     bosses: Boss[]
 }
+
+type WeekCharacterSelectorProps = {
+    checklist: CheckCharacter[],
+    selectedNickname: string,
+    isDisabled: boolean,
+    onSelect: (nickname: string) => void,
+    children: React.ReactNode
+}
+
+function WeekCharacterSelector({ checklist, selectedNickname, isDisabled, onSelect, children }: WeekCharacterSelectorProps) {
+    const selectedCharacter = checklist.find(character => character.nickname === selectedNickname) ?? checklist[0] ?? null;
+
+    return (
+        <div className="w-full">
+            <div className="mb-4 lg:hidden">
+                <Select
+                    label="관리할 캐릭터"
+                    placeholder="캐릭터를 선택해 주세요"
+                    selectedKeys={selectedCharacter ? new Set([selectedCharacter.nickname]) : new Set()}
+                    onSelectionChange={keys => {
+                        if (isDisabled) return;
+                        const nickname = Array.from(keys)[0];
+                        if (nickname) onSelect(String(nickname));
+                    }}
+                    isDisabled={isDisabled}
+                    radius="lg"
+                    classNames={{
+                        trigger: "min-h-14 border-gray-200/80 bg-white dark:border-gray-800 dark:bg-gray-950",
+                        value: "text-sm"
+                    }}>
+                    {checklist.map(character => (
+                        <SelectItem
+                            key={character.nickname}
+                            textValue={`${character.nickname} ${character.job} ${character.level}`}>
+                            <div className="flex items-center gap-2">
+                                <JobEmblemIcon job={character.job} size={28}/>
+                                <div className="min-w-0">
+                                    <p className="truncate text-sm font-semibold">{character.nickname}</p>
+                                    <p className="truncate text-xs fadedtext">@{character.server} · {character.job} · Lv.{character.level}</p>
+                                </div>
+                            </div>
+                        </SelectItem>
+                    ))}
+                </Select>
+            </div>
+
+            <div className="grid min-w-0 gap-5 lg:grid-cols-[250px_minmax(0,1fr)]">
+                <aside className="hidden min-h-0 lg:block">
+                    <div className="sticky top-0 max-h-[min(640px,calc(100vh-220px))] overflow-y-auto rounded-2xl border border-gray-200/80 bg-gray-50/70 p-2 dark:border-gray-800 dark:bg-gray-900/40">
+                        <div className="px-2 pb-2 pt-1">
+                            <p className="text-sm font-semibold">캐릭터 선택</p>
+                            <p className="mt-0.5 text-xs fadedtext">숙제 정렬 순서</p>
+                        </div>
+                        <div className="space-y-2">
+                            {checklist.map(character => {
+                                const isSelected = character.nickname === selectedCharacter?.nickname;
+                                return (
+                                    <Button
+                                        key={character.nickname}
+                                        fullWidth
+                                        variant="light"
+                                        radius="lg"
+                                        isDisabled={isDisabled}
+                                        aria-label={`${character.nickname} 주간 콘텐츠 관리`}
+                                        onPress={() => onSelect(character.nickname)}
+                                        className={clsx(
+                                            "h-auto min-h-[68px] justify-start border px-2.5 py-2 text-left transition-all",
+                                            isSelected
+                                                ? "border-secondary-400 bg-secondary-50 shadow-sm ring-1 ring-secondary-300/50 dark:border-secondary-500/70 dark:bg-secondary-950/40 dark:ring-secondary-500/30"
+                                                : "border-gray-200/80 bg-white hover:border-secondary-300 hover:bg-secondary-50/60 dark:border-gray-800 dark:bg-gray-950 dark:hover:border-secondary-700 dark:hover:bg-secondary-950/30",
+                                            isDisabled && "cursor-not-allowed opacity-60"
+                                        )}>
+                                        <div className="flex min-w-0 w-full items-center gap-2">
+                                            <JobEmblemIcon job={character.job} size={34} className="shrink-0"/>
+                                            <div className="min-w-0 grow">
+                                                <p className="truncate text-[11px] leading-4 fadedtext">
+                                                    @{character.server} · {character.job} · Lv.{character.level}
+                                                </p>
+                                                <div className="flex min-w-0 items-center gap-1.5">
+                                                    <p className="min-w-0 grow truncate text-sm font-semibold text-gray-800 dark:text-gray-100">
+                                                        {character.nickname}
+                                                    </p>
+                                                    {character.isGold ? (
+                                                        <img src="/icons/gold.png" alt="골드 지정" className="h-4 w-4 shrink-0"/>
+                                                    ) : null}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </aside>
+                <div className="min-w-0">
+                    {children}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dispatch, bosses }: ChecklistModalProps) {
     const [hasUnsavedOrder, setHasUnsavedOrder] = useState(false);
+    const [selectedWeekTab, setSelectedWeekTab] = useState("content");
+    const [selectedWeekNickname, setSelectedWeekNickname] = useState(
+        checklist[modalData.characterIndex]?.nickname ?? ""
+    );
 
     useEffect(() => {
-        if (!isOpen) setHasUnsavedOrder(false);
+        if (!isOpen) {
+            setHasUnsavedOrder(false);
+            setSelectedWeekTab("content");
+        }
     }, [isOpen]);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const target = checklist[modalData.characterIndex];
+        if (target) setSelectedWeekNickname(target.nickname);
+    }, [isOpen, modalData.characterIndex]);
 
     const requestClose = () => {
         if (hasUnsavedOrder) {
@@ -2379,11 +2494,17 @@ export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dis
         onOpenChange(false);
     };
 
-    if (modalData.characterIndex !== -1) {
+    if (modalData.characterIndex !== -1 && checklist[modalData.characterIndex]) {
+        const selectedWeekIndex = checklist.findIndex(character => character.nickname === selectedWeekNickname);
+        const weekIndex = selectedWeekIndex >= 0 ? selectedWeekIndex : modalData.characterIndex;
+        const selectedWeekCharacter = checklist[weekIndex];
+        const headerCharacter = modalData.type === 'week'
+            ? selectedWeekCharacter
+            : checklist[modalData.characterIndex];
         return (
             <Modal
                 radius="lg"
-                size="2xl"
+                size={modalData.type === 'week' ? "5xl" : "2xl"}
                 scrollBehavior="inside"
                 isDismissable={false}
                 isOpen={isOpen}
@@ -2397,26 +2518,45 @@ export function ChecklistModal({ isOpen, modalData, onOpenChange, checklist, dis
                             <ModalHeader className="flex flex-col gap-1 border-b border-gray-200/80 px-6 py-5 dark:border-gray-800">
                                 <div className="flex items-center gap-2">
                                     <span className={clsx("h-5 w-1 rounded-full", modalData.type === 'day' ? "bg-success" : "bg-secondary")}/>
-                                    <p className="text-xl font-semibold">{checklist[modalData.characterIndex].nickname} 콘텐츠 관리</p>
+                                    <p className="text-xl font-semibold">{headerCharacter.nickname} 콘텐츠 관리</p>
                                 </div>
                                 <p className="pl-3 text-sm font-normal fadedtext">{modalData.type === 'day' ? '휴식 게이지와 일일 기타 숙제를 관리합니다.' : '레이드 및 주간 기타 숙제를 관리합니다.'}</p>
                             </ModalHeader>
                             <ModalBody className="px-6 py-5">
                                 <div className="w-full">
-                                    {modalData.type === 'day' ? 
+                                    {modalData.type === 'day' ?
                                         <DayModalContent
                                             checklist={checklist}
                                             index={modalData.characterIndex}
                                             dispatch={dispatch}
                                             onClose={requestClose}
                                             onOrderDirtyChange={setHasUnsavedOrder}/> :
-                                        <WeekModalContent 
-                                            checklist={checklist} 
-                                            index={modalData.characterIndex} 
-                                            dispatch={dispatch}
-                                            bosses={bosses}
-                                            onClose={requestClose}
-                                            onOrderDirtyChange={setHasUnsavedOrder}/>}
+                                        <WeekCharacterSelector
+                                            checklist={checklist}
+                                            selectedNickname={selectedWeekCharacter.nickname}
+                                            isDisabled={hasUnsavedOrder}
+                                            onSelect={nickname => {
+                                                if (hasUnsavedOrder) {
+                                                    addToast({
+                                                        title: "저장되지 않은 순서 변경",
+                                                        description: "순서 저장 또는 취소를 먼저 눌러주세요.",
+                                                        color: "warning"
+                                                    });
+                                                    return;
+                                                }
+                                                setSelectedWeekNickname(nickname);
+                                            }}>
+                                            <WeekModalContent
+                                                key={selectedWeekCharacter.nickname}
+                                                checklist={checklist}
+                                                index={weekIndex}
+                                                dispatch={dispatch}
+                                                bosses={bosses}
+                                                onClose={requestClose}
+                                                selectedKey={selectedWeekTab}
+                                                setSelectedKey={setSelectedWeekTab}
+                                                onOrderDirtyChange={setHasUnsavedOrder}/>
+                                        </WeekCharacterSelector>}
                                 </div>
                             </ModalBody>
                         </>
@@ -2774,13 +2914,14 @@ type WeekModalContentProps = {
     dispatch: AppDispatch,
     bosses: Boss[],
     onClose: () => void,
+    selectedKey: string,
+    setSelectedKey: SetStateFn<string>,
     onOrderDirtyChange: (isDirty: boolean) => void
 }
-function WeekModalContent({ checklist, index, dispatch, bosses, onClose, onOrderDirtyChange }: WeekModalContentProps) {
+function WeekModalContent({ checklist, index, dispatch, bosses, onClose, selectedKey, setSelectedKey, onOrderDirtyChange }: WeekModalContentProps) {
     const [content, setContent] = useState<Selection>(new Set([]));
     const [difficulty, setDifficulty] = useState<Selection>(new Set([]));
     const [isGold, setGold] = useState(false);
-    const [selectedKey, setSelectedKey] = useState('content');
     const [isOrderDirty, setOrderDirty] = useState(false);
 
     useEffect(() => {
