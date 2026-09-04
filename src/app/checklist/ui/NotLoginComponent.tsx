@@ -480,7 +480,7 @@ function CharacterMemoPreview({ memo }: { memo?: string }) {
                 "max-h-[4.5rem] overflow-hidden whitespace-pre-wrap break-words leading-6 line-clamp-3",
                 value ? "text-sm text-foreground" : "text-xs fadedtext"
             )}>
-                {value || "메모를 입력해주세요."}
+                {value || "ex) 97돌 없음, 1750레벨 올리기"}
                 </p>
             </div>
         </div>

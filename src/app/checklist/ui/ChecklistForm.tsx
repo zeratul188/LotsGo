@@ -2044,7 +2044,7 @@ function CharacterMemo({ checklist, nickname, dispatch }: CharacterMemoProps) {
                 <span className={clsx(
                     "max-h-[4.5rem] overflow-hidden whitespace-pre-wrap break-words leading-6",
                     memo ? "line-clamp-3 text-sm text-foreground" : "text-xs fadedtext"
-                )}>{memo || "메모를 입력해주세요."}</span>
+                )}>{memo || "ex) 97돌 없음, 1750레벨 올리기"}</span>
             </button>
             <Modal
                 isOpen={isOpen}
