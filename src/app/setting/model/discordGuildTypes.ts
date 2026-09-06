@@ -39,6 +39,7 @@ export type DiscordGuildResources = {
     guild: ManageableDiscordGuild,
     botUserId: string,
     botCanManageRoles: boolean,
+    botCanManageNicknames: boolean,
     channels: DiscordGuildChannel[],
     roles: DiscordGuildRole[],
     config: DiscordWelcomeConfig | null
@@ -55,4 +56,27 @@ export type DiscordWelcomeForm = {
     memberRoleId: string,
     memberPassword: string,
     removeGuestRole: boolean
+}
+
+export type DiscordNicknameConfig = {
+    channelId: string,
+    embedTitle: string,
+    embedDescription: string,
+    buttonLabel: string,
+    validateCharacter: boolean,
+    grantRoleEnabled: boolean,
+    grantRoleId: string,
+    messageId: string | null,
+    messageChannelId: string | null,
+    messageUrl: string | null
+}
+
+export type DiscordNicknameForm = {
+    channelId: string,
+    embedTitle: string,
+    embedDescription: string,
+    buttonLabel: string,
+    validateCharacter: boolean,
+    grantRoleEnabled: boolean,
+    grantRoleId: string
 }

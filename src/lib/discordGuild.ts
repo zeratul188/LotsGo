@@ -17,6 +17,7 @@ const ADMINISTRATOR = BigInt(1) << BigInt(3);
 const VIEW_CHANNEL = BigInt(1) << BigInt(10);
 const SEND_MESSAGES = BigInt(1) << BigInt(11);
 const EMBED_LINKS = BigInt(1) << BigInt(14);
+const MANAGE_NICKNAMES = BigInt(1) << BigInt(27);
 const MANAGE_ROLES = BigInt(1) << BigInt(28);
 const DANGEROUS_ROLE_PERMISSIONS = ADMINISTRATOR
     | (BigInt(1) << BigInt(1))
@@ -107,6 +108,7 @@ export type DiscordGuildResources = {
     guild: ManageableDiscordGuild,
     botUserId: string,
     botCanManageRoles: boolean,
+    botCanManageNicknames: boolean,
     channels: DiscordGuildChannel[],
     roles: DiscordGuildRole[]
 }
@@ -429,6 +431,8 @@ export async function getDiscordGuildResources(
         },
         botUserId: botUser.id,
         botCanManageRoles,
+        botCanManageNicknames: (basePermissions & ADMINISTRATOR) === ADMINISTRATOR
+            || (basePermissions & MANAGE_NICKNAMES) === MANAGE_NICKNAMES,
         channels: validChannels
             .filter(channel => channel.type === 0 || channel.type === 5)
             .filter(channel => {
