@@ -22,6 +22,7 @@ import { isAdministratorByToken } from "../administrator/lib/administratorFeat";
 import JobAvatar from "@/Icons/JobAvatar";
 import VegaIcon from "@/Icons/VegaIcon";
 import DiscordIcon from "@/Icons/DiscordIcon";
+import AdminIcon from "@/Icons/AdminIcon";
 import type { DiscordConnectionStatus } from "../setting/model/discordTypes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
@@ -242,7 +243,7 @@ export function NavMenu() {
                                 href="/administrator"
                                 color={pathname.startsWith('/administrator') ? "primary" : "default"}
                                 variant={pathname.startsWith('/administrator') ? "flat" : "light"}
-                                startContent={<SettingIcon/>}
+                                startContent={<AdminIcon/>}
                                 className="h-11 justify-start px-3 text-md font-medium">
                                 관리자 페이지
                             </Button>
@@ -571,7 +572,7 @@ function ProfileButton() {
                         <DropdownItem
                             key="administrator"
                             color="secondary"
-                            startContent={<SettingIcon/>}
+                            startContent={<AdminIcon/>}
                             className="min-h-10 px-3 font-medium">
                             관리자 페이지
                         </DropdownItem>

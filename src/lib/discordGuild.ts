@@ -17,7 +17,10 @@ const ADMINISTRATOR = BigInt(1) << BigInt(3);
 const VIEW_CHANNEL = BigInt(1) << BigInt(10);
 const SEND_MESSAGES = BigInt(1) << BigInt(11);
 const EMBED_LINKS = BigInt(1) << BigInt(14);
+const MANAGE_NICKNAMES = BigInt(1) << BigInt(27);
 const MANAGE_ROLES = BigInt(1) << BigInt(28);
+const MANAGE_CHANNELS = BigInt(1) << BigInt(4);
+const MOVE_MEMBERS = BigInt(1) << BigInt(24);
 const DANGEROUS_ROLE_PERMISSIONS = ADMINISTRATOR
     | (BigInt(1) << BigInt(1))
     | (BigInt(1) << BigInt(2))
@@ -96,6 +99,11 @@ export type DiscordGuildChannel = {
     parentId: string | null
 }
 
+export type DiscordGuildCategory = {
+    id: string,
+    name: string
+}
+
 export type DiscordGuildRole = {
     id: string,
     name: string,
@@ -107,7 +115,11 @@ export type DiscordGuildResources = {
     guild: ManageableDiscordGuild,
     botUserId: string,
     botCanManageRoles: boolean,
+    botCanManageNicknames: boolean,
+    botCanManageChannels: boolean,
+    botCanMoveMembers: boolean,
     channels: DiscordGuildChannel[],
+    categories: DiscordGuildCategory[],
     roles: DiscordGuildRole[]
 }
 
@@ -132,7 +144,7 @@ function getEncryptionKey(): Buffer {
     return key;
 }
 
-function encrypt(value: string): EncryptedValue {
+export function encryptDiscordToken(value: string): EncryptedValue {
     const iv = crypto.randomBytes(12);
     const cipher = crypto.createCipheriv("aes-256-gcm", getEncryptionKey(), iv);
     const ciphertext = Buffer.concat([cipher.update(value, "utf8"), cipher.final()]);
@@ -143,7 +155,7 @@ function encrypt(value: string): EncryptedValue {
     };
 }
 
-function decrypt(value: unknown): string {
+export function decryptDiscordToken(value: unknown): string {
     if (!value || typeof value !== "object") throw new Error("DISCORD_OAUTH_TOKEN_INVALID");
     const encrypted = value as Partial<EncryptedValue>;
     if (
@@ -197,8 +209,8 @@ export function createStoredGuildAuthorization(
         environment: getEnvironmentKey(),
         discordUserId,
         lotsgoUserId,
-        accessToken: encrypt(tokens.accessToken),
-        refreshToken: encrypt(tokens.refreshToken),
+        accessToken: encryptDiscordToken(tokens.accessToken),
+        refreshToken: encryptDiscordToken(tokens.refreshToken),
         expiresAt: new Date(Date.now() + tokens.expiresIn * 1000),
         scope: tokens.scope,
         updatedAt: new Date(),
@@ -229,13 +241,13 @@ async function getGuildAccessToken(
 
     const expiresAt = toDate(stored.expiresAt);
     if (expiresAt && expiresAt.getTime() > Date.now() + 60_000) {
-        return decrypt(stored.accessToken);
+        return decryptDiscordToken(stored.accessToken);
     }
 
     try {
         const tokens = await refreshDiscordAuthorization(
             getDiscordOAuthConfig(req),
-            decrypt(stored.refreshToken)
+            decryptDiscordToken(stored.refreshToken)
         );
         await authorizationRef.set(createStoredGuildAuthorization(discordUserId, session.userId, tokens));
         return tokens.accessToken;
@@ -429,6 +441,12 @@ export async function getDiscordGuildResources(
         },
         botUserId: botUser.id,
         botCanManageRoles,
+        botCanManageNicknames: (basePermissions & ADMINISTRATOR) === ADMINISTRATOR
+            || (basePermissions & MANAGE_NICKNAMES) === MANAGE_NICKNAMES,
+        botCanManageChannels: (basePermissions & ADMINISTRATOR) === ADMINISTRATOR
+            || (basePermissions & MANAGE_CHANNELS) === MANAGE_CHANNELS,
+        botCanMoveMembers: (basePermissions & ADMINISTRATOR) === ADMINISTRATOR
+            || (basePermissions & MOVE_MEMBERS) === MOVE_MEMBERS,
         channels: validChannels
             .filter(channel => channel.type === 0 || channel.type === 5)
             .filter(channel => {
@@ -441,6 +459,10 @@ export async function getDiscordGuildResources(
                 name: channel.name,
                 parentId: typeof channel.parent_id === "string" ? channel.parent_id : null
             })),
+        categories: validChannels
+            .filter(channel => channel.type === 4)
+            .map(channel => ({ id: channel.id, name: channel.name }))
+            .sort((a, b) => a.name.localeCompare(b.name, "ko")),
         roles: validRoles
             .filter(role => role.id !== guild.id)
             .filter(role => !role.managed && toFiniteNumber(role.position) < highestBotPosition)
