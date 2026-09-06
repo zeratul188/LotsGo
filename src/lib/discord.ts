@@ -79,7 +79,7 @@ export function createDiscordAuthorizationUrl(
     return url.toString();
 }
 
-async function loadDiscordUser(accessToken: string): Promise<DiscordUser> {
+export async function getDiscordUserByAccessToken(accessToken: string): Promise<DiscordUser> {
     const userResponse = await fetch(`${DISCORD_API_BASE}/users/@me`, {
         headers: { Authorization: `Bearer ${accessToken}` },
         cache: "no-store",
@@ -139,7 +139,7 @@ export async function getDiscordAuthorizationByCode(
     }
 
     return {
-        user: await loadDiscordUser(accessToken),
+        user: await getDiscordUserByAccessToken(accessToken),
         tokens: {
             accessToken,
             refreshToken,

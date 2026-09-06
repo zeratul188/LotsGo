@@ -132,7 +132,7 @@ function getEncryptionKey(): Buffer {
     return key;
 }
 
-function encrypt(value: string): EncryptedValue {
+export function encryptDiscordToken(value: string): EncryptedValue {
     const iv = crypto.randomBytes(12);
     const cipher = crypto.createCipheriv("aes-256-gcm", getEncryptionKey(), iv);
     const ciphertext = Buffer.concat([cipher.update(value, "utf8"), cipher.final()]);
@@ -143,7 +143,7 @@ function encrypt(value: string): EncryptedValue {
     };
 }
 
-function decrypt(value: unknown): string {
+export function decryptDiscordToken(value: unknown): string {
     if (!value || typeof value !== "object") throw new Error("DISCORD_OAUTH_TOKEN_INVALID");
     const encrypted = value as Partial<EncryptedValue>;
     if (
@@ -197,8 +197,8 @@ export function createStoredGuildAuthorization(
         environment: getEnvironmentKey(),
         discordUserId,
         lotsgoUserId,
-        accessToken: encrypt(tokens.accessToken),
-        refreshToken: encrypt(tokens.refreshToken),
+        accessToken: encryptDiscordToken(tokens.accessToken),
+        refreshToken: encryptDiscordToken(tokens.refreshToken),
         expiresAt: new Date(Date.now() + tokens.expiresIn * 1000),
         scope: tokens.scope,
         updatedAt: new Date(),
@@ -229,13 +229,13 @@ async function getGuildAccessToken(
 
     const expiresAt = toDate(stored.expiresAt);
     if (expiresAt && expiresAt.getTime() > Date.now() + 60_000) {
-        return decrypt(stored.accessToken);
+        return decryptDiscordToken(stored.accessToken);
     }
 
     try {
         const tokens = await refreshDiscordAuthorization(
             getDiscordOAuthConfig(req),
-            decrypt(stored.refreshToken)
+            decryptDiscordToken(stored.refreshToken)
         );
         await authorizationRef.set(createStoredGuildAuthorization(discordUserId, session.userId, tokens));
         return tokens.accessToken;

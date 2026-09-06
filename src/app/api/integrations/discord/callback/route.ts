@@ -4,7 +4,7 @@ import { adminDB } from "@/utiils/firebaseAdmin";
 import { getDiscordAuthorizationByCode, getDiscordOAuthConfig } from "@/lib/discord";
 import { getLotsGoCookieDomain } from "@/lib/auth";
 import { getAuthenticatedMemberSession } from "@/lib/serverSession";
-import { createStoredGuildAuthorization, getDiscordGuildAuthorizationId } from "@/lib/discordGuild";
+import { createStoredGuildAuthorization, encryptDiscordToken, getDiscordGuildAuthorizationId } from "@/lib/discordGuild";
 
 const OAUTH_COOKIE = "discordOAuthState";
 
@@ -89,6 +89,13 @@ export async function GET(req: NextRequest) {
             .collection("discordGuildAuthorizations")
             .doc(getDiscordGuildAuthorizationId(discordUser.id));
         const now = new Date();
+        const oauth = {
+            accessToken: encryptDiscordToken(authorization.tokens.accessToken),
+            refreshToken: encryptDiscordToken(authorization.tokens.refreshToken),
+            expiresAt: new Date(now.getTime() + authorization.tokens.expiresIn * 1000),
+            scope: authorization.tokens.scope,
+            updatedAt: now
+        };
 
         await adminDB.runTransaction(async transaction => {
             const memberSnapshot = await transaction.get(session.memberRef);
@@ -126,7 +133,8 @@ export async function GET(req: NextRequest) {
                 memberDocumentId: session.memberRef.id,
                 provider: "discord",
                 schemaVersion: 1,
-                ...discord
+                ...discord,
+                oauth
             });
             transaction.update(session.memberRef, { discord });
             if (oauthCookie.mode === "guilds") {
