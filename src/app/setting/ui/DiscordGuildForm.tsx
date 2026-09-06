@@ -25,6 +25,7 @@ import type {
     ManageableDiscordGuild
 } from "../model/discordGuildTypes";
 import DiscordNicknameForm from "./DiscordNicknameForm";
+import DiscordVoiceForm from "./DiscordVoiceForm";
 
 const defaultForm: DiscordWelcomeForm = {
     channelId: "",
@@ -437,7 +438,7 @@ export default function DiscordGuildComponent() {
                                     </div>
                                     <Button
                                         as="a"
-                                        href={`https://discord.com/oauth2/authorize?client_id=${botUserId}&permissions=402738176&integration_type=0&scope=bot+applications.commands`}
+                                        href={`https://discord.com/oauth2/authorize?client_id=${botUserId}&permissions=420563984&integration_type=0&scope=bot+applications.commands`}
                                         target="_blank"
                                         rel="noreferrer"
                                         radius="lg"
@@ -664,6 +665,11 @@ export default function DiscordGuildComponent() {
                 </Tab>
                 <Tab key="nickname" title="닉네임 변경">
                     <DiscordNicknameForm
+                        selectedGuildId={selectedGuildId}
+                        botInstalled={selectedGuild?.botInstalled === true}/>
+                </Tab>
+                <Tab key="voice" title="음성 채널 생성">
+                    <DiscordVoiceForm
                         selectedGuildId={selectedGuildId}
                         botInstalled={selectedGuild?.botInstalled === true}/>
                 </Tab>

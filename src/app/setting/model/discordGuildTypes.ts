@@ -12,6 +12,11 @@ export type DiscordGuildChannel = {
     parentId: string | null
 }
 
+export type DiscordGuildCategory = {
+    id: string,
+    name: string
+}
+
 export type DiscordGuildRole = {
     id: string,
     name: string,
@@ -40,7 +45,10 @@ export type DiscordGuildResources = {
     botUserId: string,
     botCanManageRoles: boolean,
     botCanManageNicknames: boolean,
+    botCanManageChannels: boolean,
+    botCanMoveMembers: boolean,
     channels: DiscordGuildChannel[],
+    categories: DiscordGuildCategory[],
     roles: DiscordGuildRole[],
     config: DiscordWelcomeConfig | null
 }
@@ -79,4 +87,24 @@ export type DiscordNicknameForm = {
     validateCharacter: boolean,
     grantRoleEnabled: boolean,
     grantRoleId: string
+}
+
+export type DiscordVoiceButtonConfig = {
+    id: string,
+    label: string,
+    channelName: string,
+    categoryId: string,
+    userLimit: number | null,
+    maxChannels: number
+}
+
+export type DiscordVoiceConfig = {
+    channelId: string,
+    embedTitle: string,
+    embedDescription: string,
+    autoMove: boolean,
+    buttons: DiscordVoiceButtonConfig[],
+    messageId: string | null,
+    messageChannelId: string | null,
+    messageUrl: string | null
 }

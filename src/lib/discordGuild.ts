@@ -19,6 +19,8 @@ const SEND_MESSAGES = BigInt(1) << BigInt(11);
 const EMBED_LINKS = BigInt(1) << BigInt(14);
 const MANAGE_NICKNAMES = BigInt(1) << BigInt(27);
 const MANAGE_ROLES = BigInt(1) << BigInt(28);
+const MANAGE_CHANNELS = BigInt(1) << BigInt(4);
+const MOVE_MEMBERS = BigInt(1) << BigInt(24);
 const DANGEROUS_ROLE_PERMISSIONS = ADMINISTRATOR
     | (BigInt(1) << BigInt(1))
     | (BigInt(1) << BigInt(2))
@@ -97,6 +99,11 @@ export type DiscordGuildChannel = {
     parentId: string | null
 }
 
+export type DiscordGuildCategory = {
+    id: string,
+    name: string
+}
+
 export type DiscordGuildRole = {
     id: string,
     name: string,
@@ -109,7 +116,10 @@ export type DiscordGuildResources = {
     botUserId: string,
     botCanManageRoles: boolean,
     botCanManageNicknames: boolean,
+    botCanManageChannels: boolean,
+    botCanMoveMembers: boolean,
     channels: DiscordGuildChannel[],
+    categories: DiscordGuildCategory[],
     roles: DiscordGuildRole[]
 }
 
@@ -433,6 +443,10 @@ export async function getDiscordGuildResources(
         botCanManageRoles,
         botCanManageNicknames: (basePermissions & ADMINISTRATOR) === ADMINISTRATOR
             || (basePermissions & MANAGE_NICKNAMES) === MANAGE_NICKNAMES,
+        botCanManageChannels: (basePermissions & ADMINISTRATOR) === ADMINISTRATOR
+            || (basePermissions & MANAGE_CHANNELS) === MANAGE_CHANNELS,
+        botCanMoveMembers: (basePermissions & ADMINISTRATOR) === ADMINISTRATOR
+            || (basePermissions & MOVE_MEMBERS) === MOVE_MEMBERS,
         channels: validChannels
             .filter(channel => channel.type === 0 || channel.type === 5)
             .filter(channel => {
@@ -445,6 +459,10 @@ export async function getDiscordGuildResources(
                 name: channel.name,
                 parentId: typeof channel.parent_id === "string" ? channel.parent_id : null
             })),
+        categories: validChannels
+            .filter(channel => channel.type === 4)
+            .map(channel => ({ id: channel.id, name: channel.name }))
+            .sort((a, b) => a.name.localeCompare(b.name, "ko")),
         roles: validRoles
             .filter(role => role.id !== guild.id)
             .filter(role => !role.managed && toFiniteNumber(role.position) < highestBotPosition)
