@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { addToast, Button, Card, CardBody, Input, Select, SelectItem, Switch, Textarea } from "@heroui/react";
 import { LoadingComponent } from "../../UtilsCompnents";
+import DiscordBotInstallNotice from "./DiscordBotInstallNotice";
 import type { DiscordGuildResources, DiscordVoiceButtonConfig, DiscordVoiceConfig } from "../model/discordGuildTypes";
 
-type Props = { selectedGuildId: string, botInstalled: boolean };
+type Props = { selectedGuildId: string, botInstalled: boolean, botUserId: string };
 type Resources = DiscordGuildResources & { voiceConfig: DiscordVoiceConfig | null };
 type Form = { channelId: string, embedTitle: string, embedDescription: string, autoMove: boolean, buttons: DiscordVoiceButtonConfig[] };
 const makeButton = (index: number): DiscordVoiceButtonConfig => ({ id: `button-${index + 1}`, label: `음성 채널 ${index + 1}`, channelName: `레이드 파티 ${index + 1}`, categoryId: "", userLimit: null, maxChannels: 1 });
@@ -11,13 +12,14 @@ const defaultForm: Form = { channelId: "", embedTitle: "레이드 음성 채널 
 function toForm(config: DiscordVoiceConfig | null): Form { return config ? { channelId: config.channelId, embedTitle: config.embedTitle, embedDescription: config.embedDescription, autoMove: config.autoMove, buttons: config.buttons } : { ...defaultForm, buttons: [makeButton(0)] }; }
 async function responseError(response: Response, fallback: string): Promise<Error> { const data = await response.json().catch(() => null) as { error?: unknown } | null; return new Error(typeof data?.error === "string" ? data.error : fallback); }
 
-export default function DiscordVoiceForm({ selectedGuildId, botInstalled }: Props) {
+export default function DiscordVoiceForm({ selectedGuildId, botInstalled, botUserId }: Props) {
     const [resources, setResources] = useState<Resources | null>(null); const [saved, setSaved] = useState<DiscordVoiceConfig | null>(null); const [form, setForm] = useState<Form>({ ...defaultForm, buttons: [makeButton(0)] }); const [loading, setLoading] = useState(false); const [saving, setSaving] = useState(false); const [publishing, setPublishing] = useState(false);
     const dirty = useMemo(() => JSON.stringify(form) !== JSON.stringify(toForm(saved)), [form, saved]);
     useEffect(() => { if (!selectedGuildId || !botInstalled) { setResources(null); return; } setLoading(true); fetch(`/api/integrations/discord/guilds/${selectedGuildId}/voice`).then(async response => { if (!response.ok) throw await responseError(response, "음성 채널 설정을 불러오지 못했습니다."); return response.json() as Promise<Resources>; }).then(data => { setResources(data); setSaved(data.voiceConfig); setForm(toForm(data.voiceConfig)); }).catch(error => addToast({ title: "불러오기 실패", description: error instanceof Error ? error.message : "음성 채널 설정을 불러오지 못했습니다.", color: "danger" })).finally(() => setLoading(false)); }, [selectedGuildId, botInstalled]);
     const update = <K extends keyof Form>(key: K, value: Form[K]) => setForm(current => ({ ...current, [key]: value }));
     const updateButton = (index: number, key: keyof DiscordVoiceButtonConfig, value: string | number | null) => setForm(current => ({ ...current, buttons: current.buttons.map((button, buttonIndex) => buttonIndex === index ? { ...button, [key]: value } : button) }));
     async function save(publish: boolean) { setSaving(!publish); setPublishing(publish); try { const put = await fetch(`/api/integrations/discord/guilds/${selectedGuildId}/voice`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) }); if (!put.ok) throw await responseError(put, "음성 채널 설정을 저장하지 못했습니다."); let config = (await put.json() as { config: DiscordVoiceConfig }).config; if (publish) { const post = await fetch(`/api/integrations/discord/guilds/${selectedGuildId}/voice`, { method: "POST" }); if (!post.ok) throw await responseError(post, "음성 채널 메시지를 전송하지 못했습니다."); config = (await post.json() as { config: DiscordVoiceConfig }).config; } setSaved(config); setForm(toForm(config)); addToast({ title: publish ? "메시지 반영 완료" : "저장 완료", description: publish ? "Discord에 음성 채널 생성 메시지를 반영했습니다.": "설정을 저장했습니다.", color: "success" }); } catch (error) { addToast({ title: "처리 실패", description: error instanceof Error ? error.message : "요청을 처리하지 못했습니다.", color: "danger" }); } finally { setSaving(false); setPublishing(false); } }
+    if (!botInstalled) return <DiscordBotInstallNotice botUserId={botUserId}/>;
     if (loading) return <LoadingComponent heightStyle="min-h-[360px]" message="음성 채널 설정을 불러오고 있어요"/>;
     if (!resources) return <Card><CardBody>Discord 서버와 봇 설치 상태를 확인해 주세요.</CardBody></Card>;
     return <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">

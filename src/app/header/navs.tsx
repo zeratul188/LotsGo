@@ -191,17 +191,20 @@ export function NavMenu() {
                     <Divider className="mt-2 mb-2"/>
                     <NavbarMenuItem key="discord">
                         {discordStatus?.linked ? (
-                            <div className="flex w-full items-center gap-3 rounded-xl bg-default-100/70 p-3">
+                            <div className="discord-account-card flex w-full items-center gap-3 rounded-xl p-3">
                                 <Avatar
                                     showFallback
                                     name={discordStatus.user.globalName || discordStatus.user.username}
                                     src={discordStatus.user.avatar ? `https://cdn.discordapp.com/avatars/${discordStatus.user.id}/${discordStatus.user.avatar}.png?size=64` : undefined}
-                                    className="h-10 w-10 shrink-0 bg-[#5865F2] text-white"/>
+                                    className="discord-account-avatar h-10 w-10 shrink-0 bg-[#5865F2] text-white"/>
                                 <div className="min-w-0 grow">
+                                    <p className="discord-account-label mb-0.5 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide">
+                                        <DiscordIcon className="h-3.5 w-3.5"/>
+                                        Discord 연결 계정
+                                    </p>
                                     <p className="truncate text-sm font-semibold">{discordStatus.user.globalName || discordStatus.user.username}</p>
                                     <div className="flex min-w-0 items-center gap-1.5">
                                         <p className="truncate text-xs text-default-500">@{discordStatus.user.username}</p>
-                                        <span className="shrink-0 text-[10px] text-default-400">Discord 계정</span>
                                     </div>
                                 </div>
                                 <Tooltip showArrow content="정보 갱신">
@@ -520,36 +523,43 @@ function ProfileButton() {
                             showDivider
                             isReadOnly
                             textValue={`연결된 Discord 계정 ${discordStatus.user.globalName || discordStatus.user.username}`}
-                            className="mb-1 min-h-16 cursor-default px-3 data-[hover=true]:bg-transparent data-[focus=true]:bg-transparent data-[selected=true]:bg-transparent">
-                            <div className="flex items-center gap-2.5">
-                                <Avatar
-                                    showFallback
-                                    name={discordStatus.user.globalName || discordStatus.user.username}
-                                    src={discordStatus.user.avatar
-                                        ? `https://cdn.discordapp.com/avatars/${discordStatus.user.id}/${discordStatus.user.avatar}.png?size=64`
-                                        : undefined}
-                                    className="h-9 w-9 shrink-0 bg-[#5865F2] text-white"/>
-                                <div className="min-w-0 text-left">
-                                    <div className="flex min-w-0 items-center gap-1.5">
+                            className="discord-account-card mb-2 min-h-[76px] cursor-default rounded-xl px-3 py-2.5 data-[hover=true]:bg-[#5865F2]/10 data-[focus=true]:bg-[#5865F2]/10 data-[selected=true]:bg-[#5865F2]/10">
+                            <div className="w-full">
+                                <div className="mb-1.5 flex items-center justify-between gap-2">
+                                    <p className="discord-account-label flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide">
+                                        <DiscordIcon className="h-3.5 w-3.5"/>
+                                        Discord 연결 계정
+                                    </p>
+                                    <span className="discord-account-status inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-current"/>
+                                        연결됨
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2.5">
+                                    <Avatar
+                                        showFallback
+                                        name={discordStatus.user.globalName || discordStatus.user.username}
+                                        src={discordStatus.user.avatar
+                                            ? `https://cdn.discordapp.com/avatars/${discordStatus.user.id}/${discordStatus.user.avatar}.png?size=64`
+                                            : undefined}
+                                        className="discord-account-avatar h-9 w-9 shrink-0 bg-[#5865F2] text-white"/>
+                                    <div className="min-w-0 grow text-left">
                                         <p className="truncate text-xs font-semibold">{discordStatus.user.globalName || discordStatus.user.username}</p>
-                                        <Tooltip showArrow content="정보 갱신">
-                                            <Button
-                                                as={Link}
-                                                href="/api/integrations/discord/connect?mode=refresh&returnTo=/"
-                                                isIconOnly
-                                                isDisabled={discordRefreshCooldownUntil > Date.now()}
-                                                aria-label="Discord 정보 갱신"
-                                                radius="full"
-                                                variant="light"
-                                                className="h-5 w-5 min-w-5 shrink-0 cursor-pointer p-0 text-default-400 hover:text-primary disabled:cursor-not-allowed">
-                                                <RefreshIcon className="h-3.5 w-3.5"/>
-                                            </Button>
-                                        </Tooltip>
+                                        <p className="mt-0.5 truncate text-[11px] text-default-500">@{discordStatus.user.username}</p>
                                     </div>
-                                    <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
-                                        <p className="truncate text-[11px] text-default-500">@{discordStatus.user.username}</p>
-                                        <span className="shrink-0 text-[10px] text-default-400">Discord 계정</span>
-                                    </div>
+                                    <Tooltip showArrow content="정보 갱신">
+                                        <Button
+                                            as={Link}
+                                            href="/api/integrations/discord/connect?mode=refresh&returnTo=/"
+                                            isIconOnly
+                                            isDisabled={discordRefreshCooldownUntil > Date.now()}
+                                            aria-label="Discord 정보 갱신"
+                                            radius="full"
+                                            variant="light"
+                                            className="discord-account-refresh h-7 w-7 min-w-7 shrink-0 cursor-pointer p-0 disabled:cursor-not-allowed">
+                                            <RefreshIcon className="h-3.5 w-3.5"/>
+                                        </Button>
+                                    </Tooltip>
                                 </div>
                             </div>
                         </DropdownItem>

@@ -5,7 +5,6 @@ import { ReactNode, useEffect, useState } from "react";
 import Checklist from "./ui/Checklist";
 import { useMobileQuery } from "@/utiils/utils";
 import MembersComponent from "./ui/MembersForm";
-import CryptoComponent from "./ui/CryptoForm";
 import DonateComponent from "./ui/DonateForm";
 import BadgeComponent from "./ui/BadgeForm";
 import { isAdministratorByToken } from "./lib/administratorFeat";
@@ -45,12 +44,6 @@ export default function AdministratorClient() {
             title: '멤버 관리',
             description: '회원 정보와 권한',
             component: <MembersComponent/>
-        },
-        {
-            key: 'crypto',
-            title: '자동화 관리',
-            description: '자동 체크 계정',
-            component: <CryptoComponent/>
         },
         {
             key: 'donate',

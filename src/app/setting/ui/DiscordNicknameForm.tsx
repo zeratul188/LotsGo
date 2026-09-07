@@ -14,6 +14,7 @@ import {
 } from "@heroui/react";
 import DiscordIcon from "@/Icons/DiscordIcon";
 import { LoadingComponent } from "../../UtilsCompnents";
+import DiscordBotInstallNotice from "./DiscordBotInstallNotice";
 import type {
     DiscordGuildResources,
     DiscordNicknameConfig,
@@ -22,7 +23,8 @@ import type {
 
 type Props = {
     selectedGuildId: string,
-    botInstalled: boolean
+    botInstalled: boolean,
+    botUserId: string
 };
 
 type NicknameResources = DiscordGuildResources & {
@@ -61,7 +63,7 @@ function roleColor(color: number): string {
     return color > 0 ? `#${color.toString(16).padStart(6, "0")}` : "#99aab5";
 }
 
-export default function DiscordNicknameForm({ selectedGuildId, botInstalled }: Props) {
+export default function DiscordNicknameForm({ selectedGuildId, botInstalled, botUserId }: Props) {
     const [resources, setResources] = useState<NicknameResources | null>(null);
     const [savedConfig, setSavedConfig] = useState<DiscordNicknameConfig | null>(null);
     const [form, setForm] = useState<DiscordNicknameForm>({ ...defaultForm });
@@ -163,15 +165,7 @@ export default function DiscordNicknameForm({ selectedGuildId, botInstalled }: P
     };
 
     if (!botInstalled) {
-        return (
-            <Card radius="lg" shadow="none" className="border border-warning-300/50 bg-warning-50/50 dark:border-warning-500/20 dark:bg-warning-500/5">
-                <CardBody className="items-center gap-3 p-8 text-center">
-                    <DiscordIcon className="h-10 w-10 text-[#5865F2]"/>
-                    <p className="font-bold">로츠고봇 설치가 필요합니다.</p>
-                    <p className="text-sm text-default-500">서버 선택 화면에서 로츠고봇을 먼저 설치해 주세요.</p>
-                </CardBody>
-            </Card>
-        );
+        return <DiscordBotInstallNotice botUserId={botUserId}/>;
     }
 
     if (isLoading) return <LoadingComponent heightStyle="min-h-[360px]" message="닉네임 변경 설정을 불러오고 있어요"/>;
