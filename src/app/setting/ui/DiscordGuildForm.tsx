@@ -26,6 +26,7 @@ import type {
 } from "../model/discordGuildTypes";
 import DiscordNicknameForm from "./DiscordNicknameForm";
 import DiscordVoiceForm from "./DiscordVoiceForm";
+import DiscordBotInstallNotice from "./DiscordBotInstallNotice";
 
 const defaultForm: DiscordWelcomeForm = {
     channelId: "",
@@ -429,26 +430,7 @@ export default function DiscordGuildComponent() {
                             </Card>
                         ) : null}
 
-                        {selectedGuild && !selectedGuild.botInstalled ? (
-                            <Card radius="lg" shadow="none" className="border border-warning-300/50 bg-warning-50/50 dark:border-warning-500/20 dark:bg-warning-500/5">
-                                <CardBody className="gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-                                    <div>
-                                        <p className="font-bold text-warning-700 dark:text-warning-400">로츠고봇 설치가 필요합니다.</p>
-                                        <p className="mt-1 text-sm leading-6 text-default-500">봇을 서버에 추가한 뒤 역할 목록에서 로츠고봇 역할을 지급할 역할보다 위로 이동해 주세요.</p>
-                                    </div>
-                                    <Button
-                                        as="a"
-                                        href={`https://discord.com/oauth2/authorize?client_id=${botUserId}&permissions=420563984&integration_type=0&scope=bot+applications.commands`}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        radius="lg"
-                                        color="warning"
-                                        className="shrink-0 font-semibold">
-                                        로츠고봇 초대
-                                    </Button>
-                                </CardBody>
-                            </Card>
-                        ) : null}
+                        {selectedGuild && !selectedGuild.botInstalled ? <DiscordBotInstallNotice botUserId={botUserId}/> : null}
 
                         {isLoadingResources ? (
                             <LoadingComponent heightStyle="min-h-[360px]" message="서버의 채널과 역할을 확인하고 있어요"/>
@@ -666,12 +648,14 @@ export default function DiscordGuildComponent() {
                 <Tab key="nickname" title="닉네임 변경">
                     <DiscordNicknameForm
                         selectedGuildId={selectedGuildId}
-                        botInstalled={selectedGuild?.botInstalled === true}/>
+                        botInstalled={selectedGuild?.botInstalled === true}
+                        botUserId={botUserId}/>
                 </Tab>
                 <Tab key="voice" title="음성 채널 생성">
                     <DiscordVoiceForm
                         selectedGuildId={selectedGuildId}
-                        botInstalled={selectedGuild?.botInstalled === true}/>
+                        botInstalled={selectedGuild?.botInstalled === true}
+                        botUserId={botUserId}/>
                 </Tab>
             </Tabs>
         </div>
