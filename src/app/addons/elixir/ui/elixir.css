@@ -1,0 +1,52 @@
+@keyframes elixir-cell-gain {
+    0% { opacity: 0.15; transform: scaleX(0.2) scaleY(0.7); filter: brightness(1.8); }
+    55% { opacity: 1; transform: scale(1.22); box-shadow: 0 0 14px currentColor; }
+    100% { transform: scale(1); box-shadow: none; }
+}
+
+@keyframes elixir-cell-loss {
+    0% { opacity: 1; transform: scale(1); background-color: rgb(244 63 94); }
+    55% { opacity: 0.35; transform: scale(0.65); box-shadow: 0 0 12px rgb(244 63 94 / 0.8); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes elixir-slot-change {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(3px); }
+    50% { transform: translateX(-2px); }
+    75% { transform: translateX(1px); }
+}
+
+@keyframes elixir-great-success {
+    0% { box-shadow: 0 0 0 0 rgb(251 191 36 / 0.9); filter: brightness(1.8); }
+    45% { box-shadow: 0 0 0 7px rgb(251 191 36 / 0.22), 0 0 34px rgb(251 191 36 / 0.85); }
+    100% { box-shadow: 0 0 0 0 transparent; filter: brightness(1); }
+}
+
+@keyframes elixir-great-badge {
+    0% { opacity: 0; transform: translateY(8px) scale(0.5) rotate(-8deg); }
+    60% { opacity: 1; transform: translateY(-2px) scale(1.15) rotate(2deg); }
+    100% { transform: translateY(0) scale(1) rotate(0); }
+}
+
+.elixir-track-cell--gain { animation: elixir-cell-gain 720ms cubic-bezier(0.2, 0.9, 0.25, 1) both; }
+.elixir-track-cell--loss { animation: elixir-cell-loss 720ms ease-out both; }
+.elixir-slot--changed { animation: elixir-slot-change 420ms ease-out; }
+.elixir-slot--great-success { animation: elixir-great-success 1100ms ease-out; }
+.elixir-great-badge { animation: elixir-great-badge 650ms cubic-bezier(0.2, 0.9, 0.25, 1) both; }
+
+.elixir-stack-full-order {
+    box-shadow: 0 0 0 1px rgb(14 165 233 / 0.45), 0 0 24px rgb(14 165 233 / 0.5), inset 0 0 18px rgb(14 165 233 / 0.1);
+}
+
+.elixir-stack-full-chaos {
+    box-shadow: 0 0 0 1px rgb(217 70 239 / 0.45), 0 0 24px rgb(217 70 239 / 0.5), inset 0 0 18px rgb(217 70 239 / 0.1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .elixir-track-cell--gain,
+    .elixir-track-cell--loss,
+    .elixir-slot--changed,
+    .elixir-slot--great-success,
+    .elixir-great-badge { animation: none; }
+}

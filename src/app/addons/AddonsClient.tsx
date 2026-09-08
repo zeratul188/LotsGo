@@ -46,6 +46,12 @@ const tabs = [
         label: '초월 시뮬레이터',
         description: '초월 결과와 보상 시뮬레이션',
         path: '/addons/transcendence'
+    },
+    {
+        key: 'elixir',
+        label: '엘릭서 시뮬레이션',
+        description: '엘릭서 정제·연성과 장착 효과 관리',
+        path: '/addons/elixir'
     }
 ]
 
