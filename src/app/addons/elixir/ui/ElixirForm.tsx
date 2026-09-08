@@ -78,15 +78,16 @@ const LEVEL_TRACK_COLORS = [
     "border-rose-600 bg-rose-500",
 ];
 
-function PointTrack({ points, sealed, delta = 0, animationId = 0 }: {
+function PointTrack({ points, sealed, delta = 0, animationId = 0, compact = false }: {
     points: number;
     sealed?: boolean;
     delta?: number;
     animationId?: number;
+    compact?: boolean;
 }) {
     const color = LEVEL_TRACK_COLORS[elixirLevel(points)];
     return (
-        <div className="grid grid-cols-10 gap-1" aria-label={`${points}/10칸`}>
+        <div className={clsx("grid grid-cols-10", compact ? "gap-0.5" : "gap-1")} aria-label={`${points}/10칸`}>
             {Array.from({ length: 10 }, (_, index) => {
                 const gained = delta > 0 && index >= points - delta && index < points;
                 const lost = delta < 0 && index >= points && index < points - delta;
@@ -94,7 +95,8 @@ function PointTrack({ points, sealed, delta = 0, animationId = 0 }: {
                 <span
                     key={`${animationId}-${index}`}
                     className={clsx(
-                        "h-3 rounded-sm border",
+                        "rounded-sm border",
+                        compact ? "h-1.5" : "h-3",
                         sealed
                             ? "border-danger-300 bg-danger-100 dark:bg-danger-950/40"
                             : index < points
@@ -110,18 +112,18 @@ function PointTrack({ points, sealed, delta = 0, animationId = 0 }: {
 }
 
 function AlignmentStack({ alignment, stack }: { alignment: "order" | "chaos" | null; stack: number }) {
-    if (alignment === null) return <span className="text-xs font-semibold text-default-400">중립</span>;
+    if (alignment === null) return <span className="text-[10px] font-semibold text-default-400 min-[700px]:text-xs">중립</span>;
     const maximum = alignment === "order" ? 3 : 6;
     return (
-        <div className="flex items-center gap-2" aria-label={`${alignment === "order" ? "질서" : "혼돈"} ${stack}/${maximum}`}>
-            <span className={clsx("text-xs font-bold", alignment === "order" ? "text-sky-600" : "text-fuchsia-600")}>
+        <div className="flex items-center gap-1 min-[700px]:gap-2" aria-label={`${alignment === "order" ? "질서" : "혼돈"} ${stack}/${maximum}`}>
+            <span className={clsx("text-[10px] font-bold min-[700px]:text-xs", alignment === "order" ? "text-sky-600" : "text-fuchsia-600")}>
                 {alignment === "order" ? "질서" : "혼돈"}
             </span>
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-0.5 min-[700px]:gap-1">
                 {Array.from({ length: maximum }, (_, index) => <span
                     key={index}
                     className={clsx(
-                        "block h-3 w-3 border-2 transition-all",
+                        "block h-2 w-2 border transition-all min-[700px]:h-3 min-[700px]:w-3 min-[700px]:border-2",
                         alignment === "order" ? "rotate-45 border-sky-500" : "rounded-full border-fuchsia-500",
                         index < stack
                             ? alignment === "order" ? "bg-sky-500" : "bg-fuchsia-500"
@@ -236,8 +238,84 @@ function ForgingWorkspace({ game, completionProgress, pendingSage, pendingTarget
         ? getAdvicePreview(game, pendingAdvice, pendingTarget ?? undefined)
         : null;
     return (
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
-            <Card className="border border-default-200 shadow-sm">
+        <div className="grid gap-5 min-[700px]:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+            <div className="fixed inset-x-2 bottom-2 z-40 flex max-h-[40vh] flex-col overflow-hidden rounded-2xl border border-secondary-200 bg-content1/95 p-3 shadow-2xl backdrop-blur-md min-[700px]:hidden">
+                <div className="mb-2 flex shrink-0 items-center justify-between gap-3">
+                    <div>
+                        <p className="text-sm font-black">효과 현황</p>
+                        <p className="text-[11px] text-default-500">{needsTarget && !adviceApplied ? "효과를 눌러 조언 대상을 선택하세요." : `남은 연성 ${game.turnsRemaining}회`}</p>
+                    </div>
+                    <Chip size="sm" color={sealing ? "danger" : "secondary"} variant="flat">{sealing ? "봉인 연성" : "효과 연성"}</Chip>
+                </div>
+                <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto">
+                    {game.slots.map((slot, index) => {
+                        const canTarget = Boolean(needsTarget && !adviceApplied && targets.includes(index));
+                        const change = lastChanges.find((entry) => entry.index === index);
+                        const great = greatSuccessSlots.includes(index);
+                        const displayedProbability = adviceApplied
+                            ? game.turnPlan?.probabilities[index] ?? slot.probability
+                            : preview?.[index].probability ?? slot.probability;
+                        const displayedGreatSuccess = preview?.[index].greatSuccess ?? slot.greatSuccess;
+                        const displayedPoints = preview?.[index].points ?? slot.points;
+                        const probabilityPreviewed = !adviceApplied && Math.abs(displayedProbability - slot.probability) > 0.001;
+                        const greatSuccessPreviewed = !adviceApplied && Math.abs(displayedGreatSuccess - slot.greatSuccess) > 0.001;
+                        const pointsPreviewed = !adviceApplied && displayedPoints !== slot.points;
+                        return (
+                            <button
+                                key={`mobile-${slot.effect.name}-${index}-${animationId}`}
+                                type="button"
+                                disabled={!canTarget}
+                                onClick={() => onTarget(index)}
+                                className={clsx(
+                                    "w-full rounded-xl border px-2.5 py-2 text-left transition",
+                                    slot.sealed ? "border-danger-300/60 bg-danger-50/70 opacity-65 dark:bg-danger-950/20" : "border-default-200 bg-content1",
+                                    canTarget && "cursor-pointer hover:border-warning hover:bg-warning-50/60 dark:hover:bg-warning-950/20",
+                                    canTarget && pendingTarget === index && "border-warning bg-warning-50 ring-2 ring-warning/30 dark:bg-warning-950/20",
+                                    change?.pointsDelta && "elixir-slot--changed",
+                                    great && "elixir-slot--great-success",
+                                )}>
+                                <div className="flex items-center justify-between gap-2">
+                                    <div className="flex min-w-0 items-center gap-1.5">
+                                        <span className="shrink-0 text-[10px] font-bold text-default-400">{index + 1}번</span>
+                                        <span className={clsx("truncate text-xs font-bold", slot.sealed && "line-through")}>{slot.effect.name}</span>
+                                        {slot.sealed && <span className="shrink-0 text-[10px] font-bold text-danger">봉인</span>}
+                                    </div>
+                                    <div className="flex shrink-0 items-center gap-1.5 text-[11px] font-black tabular-nums">
+                                        {change?.pointsDelta ? <span className="text-secondary">{change.pointsDelta > 0 ? "+" : ""}{change.pointsDelta}</span> : null}
+                                        {great && <span className="text-amber-500">대성공</span>}
+                                        <span>Lv.{elixirLevel(displayedPoints)} · {displayedPoints}/10</span>
+                                    </div>
+                                </div>
+                                <div className="mt-1.5">
+                                    <PointTrack
+                                        points={displayedPoints}
+                                        sealed={slot.sealed}
+                                        delta={pointsPreviewed ? displayedPoints - slot.points : change?.pointsDelta ?? 0}
+                                        animationId={pointsPreviewed ? animationId + pendingSage! + 1 : animationId}
+                                        compact/>
+                                </div>
+                                <div className="mt-1 flex items-center justify-between gap-2 text-[10px] tabular-nums text-default-500">
+                                    <span>연성 {probabilityPreviewed ? `${slot.probability.toFixed(1)}% → ` : ""}<strong className={clsx(probabilityPreviewed && "text-secondary")}>{displayedProbability.toFixed(1)}%</strong></span>
+                                    <span>대성공 {greatSuccessPreviewed ? `${slot.greatSuccess.toFixed(1)}% → ` : ""}<strong className={clsx(greatSuccessPreviewed && "text-amber-600")}>{displayedGreatSuccess.toFixed(1)}%</strong></span>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+                {!finalizing && (
+                    <div className="mt-2 shrink-0 border-t border-default-200 pt-2">
+                        {!adviceApplied ? (
+                            <Button color="secondary" size="sm" isDisabled={!canConfirm} onPress={onConfirmAdvice} className="w-full font-bold">
+                                {needsTarget && pendingTarget === null ? "효과를 선택하세요" : "조언 선택"}
+                            </Button>
+                        ) : (
+                            <Button color="warning" size="sm" onPress={onForge} className="w-full font-black">연성하기</Button>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            <Card className="hidden border border-default-200 shadow-sm min-[700px]:flex">
                 <CardBody className="gap-3 p-5">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
@@ -340,7 +418,7 @@ function ForgingWorkspace({ game, completionProgress, pendingSage, pendingTarget
                         </div>
                         {!finalizing && <AdviceRefreshButton count={adviceApplied ? 0 : game.refreshes} onPress={onRefresh}/>} 
                     </div>
-                    {!finalizing && <div className="grid gap-3 md:grid-cols-3">
+                    {!finalizing && <div className="grid grid-cols-1 gap-2 min-[700px]:gap-3 md:grid-cols-3">
                         {game.advices.map((advice) => {
                             const sage = game.sages[advice.sageIndex];
                             const exhausted = Boolean(advice.disabled || sage.exhausted);
@@ -353,7 +431,7 @@ function ForgingWorkspace({ game, completionProgress, pendingSage, pendingTarget
                                     disabled={adviceApplied || exhausted}
                                     onClick={() => onPending(selected ? null : advice.sageIndex)}
                                     className={clsx(
-                                        "flex min-h-56 cursor-pointer flex-col rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-default disabled:hover:translate-y-0",
+                                        "flex min-h-28 cursor-pointer flex-col rounded-xl border p-3 text-left transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-default disabled:hover:translate-y-0 min-[700px]:min-h-56 min-[700px]:rounded-2xl min-[700px]:p-4",
                                         selected ? "border-warning bg-warning-50/60 ring-2 ring-warning/25 dark:bg-warning-950/20" : "border-default-200 bg-content1",
                                         adviceApplied && !selected && "opacity-45",
                                         advice.special === "order" && "border-sky-400 bg-sky-50/60 dark:bg-sky-950/20",
@@ -364,11 +442,11 @@ function ForgingWorkspace({ game, completionProgress, pendingSage, pendingTarget
                                         exhausted && "cursor-not-allowed border-default-200 bg-default-100 opacity-55 grayscale disabled:cursor-not-allowed",
                                     )}>
                                     <div className="flex w-full items-center">
-                                        <span className="text-sm font-black">{SAGE_NAMES[advice.sageIndex]}</span>
+                                        <span className="text-[11px] font-black min-[700px]:text-sm">{SAGE_NAMES[advice.sageIndex]}</span>
                                     </div>
-                                    <p className="my-auto break-keep py-5 text-base font-bold leading-relaxed">{formatAdviceText(advice, game.slots)}</p>
+                                    <p className="my-auto break-keep py-2 text-[11px] font-bold leading-snug min-[700px]:py-5 min-[700px]:text-base min-[700px]:leading-relaxed">{formatAdviceText(advice, game.slots)}</p>
                                     {exhausted
-                                        ? <span className="text-xs text-default-400">선택할 수 없습니다</span>
+                                        ? <span className="text-[10px] text-default-400 min-[700px]:text-xs">선택할 수 없습니다</span>
                                         : <AlignmentStack alignment={sage.alignment} stack={sage.stack}/>} 
                                 </button>
                             );
@@ -394,13 +472,18 @@ function ForgingWorkspace({ game, completionProgress, pendingSage, pendingTarget
                                 size="md"
                                 aria-label="완성 화면 전환까지 남은 시간"/>
                         </div>
-                    ) : !adviceApplied ? (
-                        <Button color="secondary" size="lg" isDisabled={!canConfirm} onPress={onConfirmAdvice} className="w-full font-bold">
-                            {needsTarget && pendingTarget === null ? "왼쪽에서 효과를 선택하세요" : "조언 선택"}
-                        </Button>
                     ) : (
-                        <Button color="warning" size="lg" onPress={onForge} className="w-full font-black">연성하기</Button>
+                        <div className="hidden min-[700px]:block">
+                            {!adviceApplied ? (
+                                <Button color="secondary" size="lg" isDisabled={!canConfirm} onPress={onConfirmAdvice} className="w-full font-bold">
+                                    {needsTarget && pendingTarget === null ? "왼쪽에서 효과를 선택하세요" : "조언 선택"}
+                                </Button>
+                            ) : (
+                                <Button color="warning" size="lg" onPress={onForge} className="w-full font-black">연성하기</Button>
+                            )}
+                        </div>
                     )}
+                    <div className="h-[min(40vh,20rem)] min-[700px]:hidden" aria-hidden="true"/>
                 </CardBody>
             </Card>
         </div>
