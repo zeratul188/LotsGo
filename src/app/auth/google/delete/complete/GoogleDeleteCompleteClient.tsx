@@ -7,6 +7,7 @@ import { signOut } from "firebase/auth";
 import Cookies from "js-cookie";
 import GoogleIcon from "@/Icons/GoogleIcon";
 import { auth } from "@/utiils/firebase";
+import { INTENTIONAL_LOGOUT_KEY } from "@/utiils/authSession";
 import type { AppDispatch } from "@/app/store/store";
 import { logout, setCheckToken } from "@/app/store/loginSlice";
 
@@ -18,13 +19,16 @@ export default function GoogleDeleteCompleteClient() {
         if (started.current) return;
         started.current = true;
         const finish = async () => {
-            await signOut(auth).catch(() => undefined);
+            sessionStorage.setItem(INTENTIONAL_LOGOUT_KEY, "true");
+            window.dispatchEvent(new Event("lotsgo-logout-started"));
             sessionStorage.removeItem("token");
             sessionStorage.removeItem("user");
             localStorage.removeItem("sessionExpiresAt");
+            localStorage.removeItem("userSettings");
             Cookies.remove("userApiKey", { path: "/" });
             dispatch(logout());
             dispatch(setCheckToken(true));
+            await signOut(auth).catch(() => undefined);
             addToast({ title: "탈퇴 완료", description: "회원 탈퇴가 완료되었습니다.", color: "success" });
             window.location.replace("/");
         };

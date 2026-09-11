@@ -21,6 +21,10 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
 
     useEffect(() => {
       let isLoggingOut = false;
+      let isDisposed = false;
+      const shouldStopAuth = () => isDisposed || isLoggingOut
+        || sessionStorage.getItem(INTENTIONAL_LOGOUT_KEY) === 'true'
+        || window.location.pathname === '/auth/google/delete/complete';
 
       const clearAuthState = async () => {
         sessionStorage.removeItem('token');
@@ -33,8 +37,9 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
       };
 
       const handleExpiredSession = async () => {
-        if (isLoggingOut) return;
+        if (shouldStopAuth()) return;
         await clearAuthState();
+        if (shouldStopAuth()) return;
         dispatch(setCheckToken(true));
         addToast({
             title: "로그인 세션 만료",
@@ -45,6 +50,7 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
       };
 
       const restoreStoredUser = (storedUser: string | null) => {
+        if (shouldStopAuth()) return false;
         if (!storedUser) return false;
 
         try {
@@ -65,7 +71,7 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
       };
 
       const checkToken = async () => {
-            if (isLoggingOut) return;
+            if (shouldStopAuth()) return;
             if (sessionStorage.getItem(INTENTIONAL_LOGOUT_KEY) === 'true') {
                 finishWithoutSession();
                 return;
@@ -84,12 +90,15 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
                             authorization: `Bearer ${token}`
                         }
                     });
+                    if (shouldStopAuth()) return;
                     if (res.ok && restoreStoredUser(storedUser)) {
                         await ensureFirebaseAuth();
+                        if (shouldStopAuth()) return;
                         dispatch(setCheckToken(true));
                         return;
                     }
                 } catch {
+                    if (shouldStopAuth()) return;
                     // 오프라인 상태는 세션 만료가 아니므로 현재 로그인 정보를 유지합니다.
                     if (restoreStoredUser(storedUser)) {
                         dispatch(setCheckToken(true));
@@ -98,11 +107,12 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
                 }
             }
 
-            if (isLoggingOut) return;
+            if (shouldStopAuth()) return;
 
             let refreshRes: Response | null = null;
             let refreshFailed = false;
             for (let attempt = 0; attempt < 3; attempt += 1) {
+              if (shouldStopAuth()) return;
               try {
                 refreshRes = await fetch("/api/auth/refresh", {
                     method: "POST",
@@ -116,6 +126,8 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
               await new Promise(resolve => setTimeout(resolve, 400 * (attempt + 1)));
             }
 
+            if (shouldStopAuth()) return;
+
             if (refreshFailed && !refreshRes) {
                 // 네트워크가 복구되면 online 이벤트에서 세션을 다시 확인합니다.
                 if (!restoreStoredUser(storedUser)) finishWithoutSession();
@@ -128,8 +140,9 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
             }
 
             if (!refreshRes.ok) {
-                if (isLoggingOut) return;
+                if (shouldStopAuth()) return;
                 const errorData = await refreshRes.json().catch(() => ({})) as RefreshError;
+                if (shouldStopAuth()) return;
 
                 if (errorData.code === 'MISSING_REFRESH_TOKEN' && !token && !storedUser) {
                     finishWithoutSession();
@@ -149,8 +162,9 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
                 return;
             }
 
-            if (isLoggingOut) return;
+            if (shouldStopAuth()) return;
             const data = await refreshRes.json();
+            if (shouldStopAuth()) return;
             const loginUser: LoginUser = {
                 id: data.userData.id,
                 expedition: data.userData.expeditions,
@@ -164,13 +178,14 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
             localStorage.setItem('sessionExpiresAt', data.sessionExpiresAt);
             dispatch(logined(loginUser));
             await ensureFirebaseAuth();
+            if (shouldStopAuth()) return;
             dispatch(setCheckToken(true));
         };
 
         let isHandlingExpiration = false;
 
         const checkSessionExpiration = () => {
-            if (isLoggingOut) return;
+            if (shouldStopAuth()) return;
             const storedUser = sessionStorage.getItem('user');
             const sessionExpiresAt = localStorage.getItem('sessionExpiresAt');
             if (!storedUser || !sessionExpiresAt) return;
@@ -192,7 +207,8 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
         };
 
         const verifySession = () => {
-            if (isLoggingOut) return;
+            if (isDisposed || isLoggingOut) return;
+            if (window.location.pathname === '/auth/google/delete/complete') return;
             if (sessionStorage.getItem(INTENTIONAL_LOGOUT_KEY) === 'true') {
                 finishWithoutSession();
                 return;
@@ -209,7 +225,7 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
             }
 
             checkToken().catch(() => {
-                if (isLoggingOut) return;
+                if (shouldStopAuth()) return;
                 const storedUser = sessionStorage.getItem('user');
                 if (restoreStoredUser(storedUser)) {
                     dispatch(setCheckToken(true));
@@ -233,6 +249,7 @@ export default function StoreClient({children}: { children: React.ReactNode }) {
         const expirationInterval = window.setInterval(checkSessionExpiration, 30_000);
 
         return () => {
+            isDisposed = true;
             window.removeEventListener('lotsgo-logout-started', handleLogoutStarted);
             window.removeEventListener('lotsgo-logout-failed', handleLogoutFailed);
             window.removeEventListener('online', verifySession);

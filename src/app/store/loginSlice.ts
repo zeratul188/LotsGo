@@ -50,6 +50,7 @@ const loginSlice = createSlice({
         },
         logout(state) {
             state.user.id = '';
+            state.user.apiKey = null;
             state.user.expedition = [];
             state.user.character = '';
             state.user.isSupporter = false;
