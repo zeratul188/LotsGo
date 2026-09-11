@@ -16,11 +16,11 @@ type FirebaseIdpResponse = {
 };
 
 function errorRedirect(req: NextRequest, code: string) {
-    return NextResponse.redirect(new URL(`/login?google=${encodeURIComponent(code)}`, req.url));
+    return NextResponse.redirect(new URL(`/login?google=${encodeURIComponent(code)}`, req.url), 303);
 }
 
 function deleteErrorRedirect(req: NextRequest, code: string) {
-    return NextResponse.redirect(new URL(`/setting?tab=exit-site&googleDelete=${encodeURIComponent(code)}`, req.url));
+    return NextResponse.redirect(new URL(`/setting?tab=exit-site&googleDelete=${encodeURIComponent(code)}`, req.url), 303);
 }
 
 async function exchangeGoogleToken(req: NextRequest, googleIdToken: string): Promise<FirebaseIdpResponse> {
@@ -60,7 +60,7 @@ async function createSession(req: NextRequest, member: FirebaseFirestore.Documen
     });
     const completionUrl = new URL("/auth/google/complete", req.url);
     completionUrl.searchParams.set("returnTo", returnTo);
-    const response = NextResponse.redirect(completionUrl);
+    const response = NextResponse.redirect(completionUrl, 303);
     response.cookies.set({
         name: "refreshToken",
         value: refreshToken,
@@ -101,7 +101,7 @@ async function deleteGoogleMember(req: NextRequest, userId: string, uid: string)
     });
 
     await adminAuth.deleteUser(uid);
-    const response = NextResponse.redirect(new URL("/auth/google/delete/complete", req.url));
+    const response = NextResponse.redirect(new URL("/auth/google/delete/complete", req.url), 303);
     response.cookies.set({
         name: "refreshToken",
         value: "",
@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
         });
         const signupUrl = new URL("/signup/google", req.url);
         signupUrl.searchParams.set("returnTo", state.returnTo);
-        const response = NextResponse.redirect(signupUrl);
+        const response = NextResponse.redirect(signupUrl, 303);
         setGoogleSignupCookie(response, token);
         return response;
     } catch (error) {
