@@ -20,14 +20,20 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ type: 'id', error: '해당 아이디를 가진 회원 정보가 없습니다.' }, { status: 404 });
     }
 
-    const email = decrypt(memberSnapshot.docs[0].data().email, secretKey);
+    const memberData = memberSnapshot.docs[0].data();
+    const email = decrypt(memberData.email, secretKey);
     if (!email) {
         return NextResponse.json({ type: 'identity', error: '회원 인증 정보를 확인할 수 없습니다.' }, { status: 500 });
     }
 
     let hasFirebaseAuth = true;
+    let isGoogleOnly = false;
     try {
-        await adminAuth.getUserByEmail(email);
+        const firebaseUser = await adminAuth.getUserByEmail(email);
+        const providerIds = firebaseUser.providerData.map(provider => provider.providerId);
+        isGoogleOnly = memberData.accountAuthProvider === "google"
+            && providerIds.includes("google.com")
+            && !providerIds.includes("password");
     } catch (error: any) {
         if (error?.code === 'auth/user-not-found') {
             hasFirebaseAuth = false;
@@ -36,5 +42,5 @@ export async function POST(req: NextRequest) {
         }
     }
 
-    return NextResponse.json({ email, hasFirebaseAuth });
+    return NextResponse.json({ email, hasFirebaseAuth, isGoogleOnly });
 }

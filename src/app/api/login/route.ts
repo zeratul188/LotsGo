@@ -16,6 +16,7 @@ export type User = {
     nickname: string,
     apiKey: string | null,
     isSupporter: boolean
+    authProvider?: string
 }
 
 export async function POST(req: NextRequest) {
@@ -34,7 +35,8 @@ export async function POST(req: NextRequest) {
             expeditions: targetDoc.data().expeditions,
             nickname: targetDoc.data().character,
             apiKey: targetDoc.data().apiKey ? targetDoc.data().apiKey : null,
-            isSupporter: targetDoc.data().isSupporter === true
+            isSupporter: targetDoc.data().isSupporter === true,
+            authProvider: "password"
         };
 
         if (typeof idToken !== "string" || !idToken) {

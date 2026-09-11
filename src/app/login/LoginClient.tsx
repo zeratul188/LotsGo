@@ -48,11 +48,50 @@ const discordLoginMessages: Record<string, { title: string, description: string,
     }
 };
 
+const googleLoginMessages: Record<string, { title: string, description: string, color: "danger" | "warning" }> = {
+    access_denied: {
+        title: "Google 로그인 취소",
+        description: "Google 로그인을 취소했습니다.",
+        color: "warning"
+    },
+    "invalid-state": {
+        title: "로그인 요청 만료",
+        description: "안전한 로그인을 위해 처음부터 다시 시도해 주세요.",
+        color: "danger"
+    },
+    "invalid-nonce": {
+        title: "Google 인증 확인 실패",
+        description: "인증 요청을 확인하지 못했습니다. 처음부터 다시 시도해 주세요.",
+        color: "danger"
+    },
+    "account-not-verified": {
+        title: "Google 계정 확인 필요",
+        description: "이메일 인증이 완료된 Google 계정으로 다시 시도해 주세요.",
+        color: "danger"
+    },
+    "complete-error": {
+        title: "Google 로그인 오류",
+        description: "Google 로그인을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+        color: "danger"
+    },
+    "start-error": {
+        title: "Google 로그인 설정 오류",
+        description: "Google 로그인을 시작하지 못했습니다. 관리자에게 문의해 주세요.",
+        color: "danger"
+    },
+    "invalid-response": {
+        title: "Google 인증 응답 오류",
+        description: "Google 인증 결과를 받지 못했습니다. 다시 시도해 주세요.",
+        color: "danger"
+    }
+};
+
 export default function LoginClient() {
     const loginForm = useLoginForm();
     const router = useRouter();
     const searchParams = useSearchParams();
     const shownDiscordResult = useRef<string | null>(null);
+    const shownGoogleResult = useRef<string | null>(null);
     const {isOpen, onOpen, onOpenChange} = useDisclosure();
 
     useEffect(() => {
@@ -75,6 +114,14 @@ export default function LoginClient() {
         shownDiscordResult.current = result;
         const message = discordLoginMessages[result];
         if (message) addToast(message);
+    }, [searchParams]);
+
+    useEffect(() => {
+        const result = searchParams.get("google");
+        if (!result || shownGoogleResult.current === result) return;
+        shownGoogleResult.current = result;
+        const message = googleLoginMessages[result] ?? googleLoginMessages["complete-error"];
+        addToast(message);
     }, [searchParams]);
 
     return (
@@ -121,8 +168,8 @@ export default function LoginClient() {
                             setLoading={loginForm.setLoading}
                             isIdDuplicated={loginForm.isIdDuplicated}
                             setIdDuplicated={loginForm.setIdDuplicated}
-                            isPasswordNotMatch={loginForm.isPasswordNotMatch}
-                            setPasswordNotMatch={loginForm.setPasswordNotMatch}
+                            loginError={loginForm.loginError}
+                            setLoginError={loginForm.setLoginError}
                             user={loginForm.user}
                             setUser={loginForm.setUser}
                             onOpen={onOpen}/>

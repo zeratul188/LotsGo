@@ -6,17 +6,20 @@ import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../store/store";
 import DiscordIcon from "@/Icons/DiscordIcon";
+import GoogleIcon from "@/Icons/GoogleIcon";
 
 export type User = {
     id: string,
     password: string
 }
 
+export type LoginError = "password" | "google" | null;
+
 // state 관리
 export function useLoginForm() {
     const [isLoading, setLoading] = useState<boolean>(false);
     const [isIdDuplicated, setIdDuplicated] = useState<boolean>(false);
-    const [isPasswordNotMatch, setPasswordNotMatch] = useState<boolean>(false);
+    const [loginError, setLoginError] = useState<LoginError>(null);
     const [user, setUser] = useState<User>({
         id: '',
         password: ''
@@ -25,7 +28,7 @@ export function useLoginForm() {
     return {
         isLoading, setLoading,
         isIdDuplicated, setIdDuplicated,
-        isPasswordNotMatch, setPasswordNotMatch,
+        loginError, setLoginError,
         user, setUser
     };
 }
@@ -55,8 +58,8 @@ type InputsComponentProps = {
     setLoading: SetStateFn<boolean>,
     isIdDuplicated: boolean,
     setIdDuplicated: SetStateFn<boolean>,
-    isPasswordNotMatch: boolean,
-    setPasswordNotMatch: SetStateFn<boolean>,
+    loginError: LoginError,
+    setLoginError: SetStateFn<LoginError>,
     user: User,
     setUser: SetStateFn<User>,
     onOpen: () => void
@@ -64,7 +67,7 @@ type InputsComponentProps = {
 export function InputsComponent({
     isLoading, setLoading,
     isIdDuplicated, setIdDuplicated,
-    isPasswordNotMatch, setPasswordNotMatch,
+    loginError, setLoginError,
     user, setUser,
     onOpen
 }: InputsComponentProps) {
@@ -72,7 +75,7 @@ export function InputsComponent({
         onValueChangeID,
         onValueChangePassword
     } = useLoginHandlers(setUser);
-    const onClickLogin = useLoginHandler(user, setLoading, setIdDuplicated, setPasswordNotMatch);
+    const onClickLogin = useLoginHandler(user, setLoading, setIdDuplicated, setLoginError);
     
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
@@ -83,6 +86,9 @@ export function InputsComponent({
     const discordLoginHref = safeReturnTo
         ? `/api/auth/discord/login?returnTo=${encodeURIComponent(safeReturnTo)}`
         : "/api/auth/discord/login";
+    const googleLoginHref = safeReturnTo
+        ? `/api/auth/google/login?returnTo=${encodeURIComponent(safeReturnTo)}`
+        : "/api/auth/google/login";
 
     return (
         <>
@@ -113,11 +119,13 @@ export function InputsComponent({
                     radius="sm"
                     value={user.password}
                     onValueChange={onValueChangePassword}
-                    isInvalid={isPasswordNotMatch}
-                    errorMessage="비밀번호가 일치하지 않습니다."
+                    isInvalid={loginError !== null}
+                    errorMessage={loginError === "google"
+                        ? "Google 로그인 전용 계정입니다. Google로 로그인해 주세요."
+                        : "비밀번호가 일치하지 않습니다."}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
-                            login(user, setLoading, setIdDuplicated, setPasswordNotMatch, router, dispatch);
+                            login(user, setLoading, setIdDuplicated, setLoginError, router, dispatch);
                         }
                     }}
                     variant="bordered"
@@ -150,6 +158,17 @@ export function InputsComponent({
                 className="bg-[#5865F2] font-semibold text-white shadow-sm"
                 startContent={<DiscordIcon className="h-5 w-5"/>}>
                 Discord로 로그인
+            </Button>
+            <Button
+                fullWidth
+                size="lg"
+                as={Link}
+                href={googleLoginHref}
+                radius="sm"
+                variant="bordered"
+                className="mt-3 border-gray-200 font-semibold dark:border-white/10"
+                startContent={<GoogleIcon className="h-5 w-5"/>}>
+                Google로 로그인
             </Button>
             <div className="my-6 flex items-center gap-3">
                 <Divider className="w-auto flex-1"/>

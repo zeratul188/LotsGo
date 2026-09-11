@@ -9,7 +9,8 @@ export function useDeleteUser(
     password: string,
     setLoading: SetStateFn<boolean>,
     setInvalid: SetStateFn<boolean>,
-    dispatch: AppDispatch
+    dispatch: AppDispatch,
+    isGoogleAccount = false
 ) {
     const userStr = sessionStorage.getItem("user");
     const storedUser: LoginUser | null = userStr ? JSON.parse(userStr) : null;
@@ -20,6 +21,11 @@ export function useDeleteUser(
 
         setLoading(true);
         setInvalid(false);
+
+        if (isGoogleAccount) {
+            window.location.assign("/api/auth/google/delete");
+            return;
+        }
 
         try {
             const user = auth.currentUser;
