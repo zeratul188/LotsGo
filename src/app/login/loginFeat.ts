@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { SetStateFn } from "@/utiils/utils";
-import type { User } from "./LoginForm";
+import type { LoginError, User } from "./LoginForm";
 import { addToast } from "@heroui/react";
 import { logined, LoginUser } from "../store/loginSlice";
 import type { AppDispatch } from "../store/store";
@@ -35,7 +35,7 @@ export async function login(
     user: User,
     setLoading: SetStateFn<boolean>,
     setIdDuplicated: SetStateFn<boolean>,
-    setPasswordNotMatch: SetStateFn<boolean>,
+    setLoginError: SetStateFn<LoginError>,
     router: RouterType,
     dispatch: AppDispatch
 ) {
@@ -61,11 +61,16 @@ export async function login(
 
         if (!identityRes.ok) {
             setIdDuplicated(true);
-            setPasswordNotMatch(false);
+            setLoginError(null);
             return;
         }
 
-        const identityData = await identityRes.json();
+        const identityData = await identityRes.json() as { email: string, isGoogleOnly?: boolean };
+        if (identityData.isGoogleOnly === true) {
+            setIdDuplicated(false);
+            setLoginError("google");
+            return;
+        }
         const firebaseCredential = await signInWithEmailAndPassword(auth, identityData.email, user.password.trim());
         const idToken = await firebaseCredential.user.getIdToken();
         const res = await fetch("/api/login", {
@@ -82,7 +87,8 @@ export async function login(
             expedition: data.expedition,
             character: data.userData?.nickname ?? "",
             apiKey: data.userData?.apiKey ?? null,
-            isSupporter: data.userData?.isSupporter === true
+            isSupporter: data.userData?.isSupporter === true,
+            authProvider: "password"
         };
         sessionStorage.removeItem(INTENTIONAL_LOGOUT_KEY);
         dispatch(logined(loginUser));
@@ -96,13 +102,13 @@ export async function login(
         });
 
         setIdDuplicated(false);
-        setPasswordNotMatch(false);
+        setLoginError(null);
         addToast({ title: "로그인 성공", description: "로그인되었습니다.", color: "success" });
         const returnTo = new URLSearchParams(window.location.search).get('returnTo');
         router.push(returnTo?.startsWith('/') ? returnTo : "/");
     } catch {
         setIdDuplicated(false);
-        setPasswordNotMatch(true);
+        setLoginError("password");
     } finally {
         setLoading(false);
     }
@@ -112,13 +118,13 @@ export function useLoginHandler(
     user: User,
     setLoading: SetStateFn<boolean>,
     setIdDuplicated: SetStateFn<boolean>,
-    setPasswordNotMatch: SetStateFn<boolean>
+    setLoginError: SetStateFn<LoginError>
 ) {
     const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
 
     return async () => {
-        await login(user, setLoading, setIdDuplicated, setPasswordNotMatch, router, dispatch);
+        await login(user, setLoading, setIdDuplicated, setLoginError, router, dispatch);
     };
 }
 

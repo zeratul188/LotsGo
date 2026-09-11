@@ -12,6 +12,7 @@ export type LoginUser = {
     character: string,
     apiKey: string | null,
     isSupporter: boolean
+    authProvider?: "password" | "google" | "discord"
 }
 type LoginState = {
     user: LoginUser,
@@ -44,6 +45,7 @@ const loginSlice = createSlice({
             state.user.character = action.payload.character;
             state.user.apiKey = action.payload.apiKey ? action.payload.apiKey : null;
             state.user.isSupporter = action.payload.isSupporter === true;
+            state.user.authProvider = action.payload.authProvider;
             state.isLogined = true;
         },
         logout(state) {
@@ -51,6 +53,7 @@ const loginSlice = createSlice({
             state.user.expedition = [];
             state.user.character = '';
             state.user.isSupporter = false;
+            state.user.authProvider = undefined;
             state.isLogined = false;
         },
         changeChracter(state, action: PayloadAction<string>) {

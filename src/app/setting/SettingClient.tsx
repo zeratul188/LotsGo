@@ -76,6 +76,7 @@ export default function SettingClient() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
+    const authProvider = useSelector((state: RootState) => state.login.user.authProvider);
     const [selectedTab, setSelectedTab] = useState(() => getValidTab(searchParams.get('tab')));
 
     useEffect(() => {
@@ -124,7 +125,7 @@ export default function SettingClient() {
                     tabContent: "w-full text-left group-data-[selected=true]:text-primary",
                     panel: "w-full min-w-0 px-0 pt-4 sm:pl-5 sm:pt-0"
                 }}>
-                {tabs.map((tab) => (
+                {tabs.filter(tab => tab.key !== 'change-password' || authProvider !== 'google').map((tab) => (
                     <Tab
                         key={tab.key}
                         title={
