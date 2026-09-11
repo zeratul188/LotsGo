@@ -23,6 +23,7 @@ import JobAvatar from "@/Icons/JobAvatar";
 import VegaIcon from "@/Icons/VegaIcon";
 import DiscordIcon from "@/Icons/DiscordIcon";
 import AdminIcon from "@/Icons/AdminIcon";
+import LogoutIcon from "@/Icons/LogoutIcon";
 import type { DiscordConnectionStatus } from "../setting/model/discordTypes";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
@@ -138,6 +139,8 @@ export function NavMenu() {
                         <Button
                             radius="sm"
                             color="danger"
+                            variant="flat"
+                            startContent={<LogoutIcon className="h-4 w-4"/>}
                             onPress={onClickLogout}>
                             로그아웃
                         </Button>
@@ -148,6 +151,8 @@ export function NavMenu() {
                     fullWidth
                     radius="sm"
                     color="danger"
+                    variant="flat"
+                    startContent={<LogoutIcon className="h-4 w-4"/>}
                     onPress={onClickLogout}>
                     로그아웃
                 </Button>
@@ -590,6 +595,8 @@ function ProfileButton() {
                     <DropdownItem
                         key="logout"
                         color="danger"
+                        textValue="로그아웃"
+                        startContent={<LogoutIcon className="h-5 w-5"/>}
                         className="mt-1 min-h-10 border-t border-gray-200/80 px-3 font-medium text-danger dark:border-white/10">
                         로그아웃
                     </DropdownItem>
