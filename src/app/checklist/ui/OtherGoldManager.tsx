@@ -44,6 +44,7 @@ import AnimatedNumber from "./AnimatedNumber";
 type OtherGoldManagerProps = {
     character: CheckCharacter;
     dispatch: AppDispatch;
+    layout?: 'default' | 'inline';
 };
 
 type OtherGoldEditor = {
@@ -113,16 +114,18 @@ function OtherGoldIconSelector({
 function OtherGoldFields({
     editor,
     setEditor,
-    isDisabled
+    isDisabled,
+    isInline = false
 }: {
     editor: OtherGoldEditor;
     setEditor: (editor: OtherGoldEditor) => void;
     isDisabled?: boolean;
+    isInline?: boolean;
 }) {
     const isOther = editor.icon === "other";
     return (
-        <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2">
+        <div className={isInline ? "grid min-w-0 grid-cols-[minmax(240px,1fr)_minmax(180px,0.55fr)] gap-2" : "flex flex-col gap-3"}>
+            <div className="flex min-w-0 items-center gap-2">
                 <OtherGoldIconSelector
                     value={editor.icon}
                     isDisabled={isDisabled}
@@ -156,12 +159,13 @@ function OtherGoldFields({
                 maxValue={999999999}
                 value={editor.gold}
                 isDisabled={isDisabled}
-                onValueChange={(gold) => setEditor({ ...editor, gold })}/>
+                onValueChange={(gold) => setEditor({ ...editor, gold })}
+                classNames={isInline ? { base: "min-w-0", inputWrapper: "h-10 min-h-10" } : undefined}/>
         </div>
     );
 }
 
-export default function OtherGoldManager({ character, dispatch }: OtherGoldManagerProps) {
+export default function OtherGoldManager({ character, dispatch, layout = 'default' }: OtherGoldManagerProps) {
     const [editor, setEditor] = useState<OtherGoldEditor>(emptyEditor);
     const [editEditor, setEditEditor] = useState<OtherGoldEditor>(emptyEditor);
     const [editingRecord, setEditingRecord] = useState<OtherGoldRecord | null>(null);
@@ -291,9 +295,9 @@ export default function OtherGoldManager({ character, dispatch }: OtherGoldManag
 
     return (
         <>
-            <div className="w-full">
-                <OtherGoldFields editor={editor} setEditor={setEditor} isDisabled={isSaving}/>
-                <div className="mt-3 grid grid-cols-2 gap-2">
+            <div className={layout === 'inline' ? "grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-end gap-2" : "w-full"}>
+                <OtherGoldFields editor={editor} setEditor={setEditor} isDisabled={isSaving} isInline={layout === 'inline'}/>
+                <div className={layout === 'inline' ? "contents" : "mt-3 grid grid-cols-2 gap-2"}>
                     <Button
                         color="secondary"
                         variant="flat"

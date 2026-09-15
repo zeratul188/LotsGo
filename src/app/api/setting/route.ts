@@ -3,6 +3,8 @@ import { collection, doc, getDocs, query, updateDoc, where } from "firebase/fire
 import { NextRequest, NextResponse } from "next/server";
 
 export type Settings = {
+    checklistViewStyle: 'legacy' | 'table',
+    isTableBonusMode: boolean,
     isHideDayContent: boolean,
     isHideBonusMode: boolean,
     isAutoDeleteUnselectedRaids: boolean,
@@ -25,6 +27,8 @@ export async function GET(req: NextRequest) {
         const data = targetDoc.data();
 
         const defaultSettings: Settings = {
+            checklistViewStyle: 'legacy',
+            isTableBonusMode: false,
             isHideDayContent: false,
             isHideBonusMode: false,
             isAutoDeleteUnselectedRaids: false,

@@ -998,6 +998,37 @@ export async function handleWeekCheckStage(
     }
 }
 
+// 주간 콘텐츠 셀 배경 클릭 시 전체 관문을 한 번에 체크/해제
+export async function handleWeekCheckAll(
+    checklist: CheckCharacter[],
+    characterIndex: number,
+    checklistIndex: number,
+    dispatch: AppDispatch,
+    isBonusMode: boolean
+) {
+    const userStr = sessionStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    const id = storedUser ? storedUser.id : '';
+    const updatedChecklist = structuredClone(checklist[characterIndex].checklist[checklistIndex]);
+    const prevChecklist = structuredClone(updatedChecklist);
+    const targetItems = isBonusMode ? updatedChecklist.items : updatedChecklist.items.filter(item => !item.isDisable);
+    const isAllChecked = targetItems.length > 0 && targetItems.every(item => isBonusMode ? item.isBonus : item.isCheck);
+    for (const item of targetItems) {
+        if (isBonusMode) item.isBonus = !isAllChecked;
+        else item.isCheck = !isAllChecked;
+    }
+    dispatch(checkWeek({ characterIndex, checklistIndex, checklist: updatedChecklist }));
+    const editRes = await fetch(`/api/checklist/list`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, checklist, type: 'check-week', characterIndex, checklistIndex, checklistItem: updatedChecklist })
+    });
+    if (!editRes.ok) {
+        addToast({ title: "데이터 로드 오류 (콘텐츠)", description: `데이터를 가져오는데 문제가 발생하였습니다.`, color: "danger" });
+        dispatch(checkWeek({ characterIndex, checklistIndex, checklist: prevChecklist }));
+    }
+}
+
 export type AutoRaidCheckResult = {
     changed: boolean,
     nickname: string,

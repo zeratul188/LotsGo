@@ -31,7 +31,9 @@ type AutoChecklistControlProps = {
     isDisabled: boolean,
     selectedNickname: string,
     setSelectedNickname: (nickname: string) => void,
-    onSharingStateChange: (isSharing: boolean) => void
+    onSharingStateChange: (isSharing: boolean) => void,
+    compactLabel?: boolean,
+    className?: string
 }
 
 type CaptureStatus = 'idle' | 'requesting' | 'loading-ocr' | 'active' | 'stopped' | 'error';
@@ -192,7 +194,9 @@ export default function AutoChecklistControl({
     isDisabled,
     selectedNickname,
     setSelectedNickname,
-    onSharingStateChange
+    onSharingStateChange,
+    compactLabel = false,
+    className
 }: AutoChecklistControlProps) {
     const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
     const [status, setStatus] = useState<CaptureStatus>('idle');
@@ -967,10 +971,10 @@ export default function AutoChecklistControl({
                 color={status === 'active' ? 'success' : 'primary'}
                 variant="flat"
                 size="sm"
-                className="hidden h-9 border border-primary/30 px-2 text-xs font-medium md960:flex sm:text-sm"
+                className={`hidden h-9 border border-primary/30 px-2 text-xs font-medium md960:flex sm:text-sm ${className ?? ''}`}
                 isDisabled={isDisabled}
                 onPress={onOpen}>
-                {status === 'active' ? '자동 체크 작동 중' : '자동 체크 기능 켜기'}
+                {status === 'active' ? (compactLabel ? '자동 체크 중' : '자동 체크 작동 중') : (compactLabel ? '자동 체크' : '자동 체크 기능 켜기')}
             </Button>
             {isSharing ? (
                 <div className="hidden min-w-0 items-center gap-2 rounded-lg border border-primary-200/80 bg-primary-50/80 px-3 py-2 text-sm text-primary-700 md960:col-span-4 md960:flex dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-sky-200">
