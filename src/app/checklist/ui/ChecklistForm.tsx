@@ -150,6 +150,7 @@ import RaidIcon from "@/Icons/RaidIcon";
 import JobAvatar from "@/Icons/JobAvatar";
 import { EditIcon } from "@/Icons/EditIcon";
 import SwitchCharacterIcon from "@/Icons/SwitchCharacterIcon";
+import { ListTurnBackIcon } from "@/Icons/ListTurnBackIcon";
 import AnimatedNumber from "./AnimatedNumber";
 import OtherGoldManager from "./OtherGoldManager";
 import OtherGoldOverviewTable from "./OtherGoldOverviewTable";
@@ -467,6 +468,8 @@ function PositionModal({ isOpenModalPosition, onOpenChangePosition, checklist, d
 
 // 체크리스트 현황 컴포넌트
 type ChecklistStatueProps = {
+    isTableView?: boolean,
+    isTableViewWide?: boolean,
     server: string,
     filterContent: Selection,
     filterAccount: Selection,
@@ -489,6 +492,8 @@ type ChecklistStatueProps = {
     setAutoChecklistSharing: (isSharing: boolean) => void
 }
 export function ChecklistStatue({ 
+    isTableView = false,
+    isTableViewWide = false,
     server,
     filterContent,
     filterAccount,
@@ -582,8 +587,12 @@ export function ChecklistStatue({
                 fullWidth 
                 radius="lg"
                 shadow="none"
-                className="overflow-hidden border border-gray-200/80 bg-white/95 shadow-[0_10px_35px_rgba(15,23,42,0.08)] md960:fixed md960:left-1/2 md960:top-[80px] md960:z-50 md960:w-[calc(100vw-40px)] md960:-translate-x-1/2 lg1280:w-[1240px] dark:border-white/10 dark:bg-[#171717]/95 dark:shadow-none">
-                <CardBody className="p-3">
+                className={clsx(
+                    "overflow-hidden border border-gray-200/80 bg-white/95 shadow-[0_10px_35px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-[#171717]/95 dark:shadow-none",
+                    isTableViewWide && "flex flex-row items-stretch",
+                    !isTableView && "md960:fixed md960:left-1/2 md960:top-[80px] md960:z-50 md960:w-[calc(100vw-40px)] md960:-translate-x-1/2 lg1280:w-[1240px]"
+                )}>
+                <CardBody className={clsx("p-3", isTableViewWide && "min-w-0 grow")}>
                     <div className="grid w-full grid-cols-1 gap-2 md960:grid-cols-[1.2fr_1fr_1fr]">
                         <div className="flex w-full flex-col gap-2 rounded-xl border border-warning/20 bg-warning/[0.045] p-3 dark:bg-warning/[0.06]">
                              <div className="w-full min-w-0 grow">
@@ -607,8 +616,8 @@ export function ChecklistStatue({
                              </div>
                             <div className="flex w-full items-center gap-2">
                                 <p className="min-w-0 grow text-[10pt] leading-5 fadedtext">
-                                    이번 주에 <img src="/icons/gold.png" alt="goldicon" className="mx-0.5 inline-block h-[14px] w-[14px]"/>
-                                    <strong className="text-black dark:text-white"><AnimatedNumber value={getAllGolds(bosses, filteredChecklist) - getHaveGolds(bosses, filteredChecklist)}/></strong>를 더 획득하실 수 있습니다.
+                                    <img src="/icons/gold.png" alt="goldicon" className="mr-1 inline-block h-[14px] w-[14px]"/>
+                                    <strong className="text-black dark:text-white"><AnimatedNumber value={getAllGolds(bosses, filteredChecklist) - getHaveGolds(bosses, filteredChecklist)}/></strong>를 획득 가능합니다.
                                 </p>
                                 <Popover showArrow disableAnimation placement="bottom-end">
                                     <PopoverTrigger>
@@ -846,8 +855,22 @@ export function ChecklistStatue({
                         </div>
                     </div>
                 </CardBody>
-                <CardFooter className="border-t border-gray-200/80 bg-gray-50/70 p-2.5 dark:border-white/10 dark:bg-white/[0.025]">
-                    <div className="grid w-full grid-cols-3 gap-2 md960:grid-cols-4">
+                <CardFooter className={clsx("border-t border-gray-200/80 bg-gray-50/70 p-2.5 dark:border-white/10 dark:bg-white/[0.025]", isTableViewWide && "w-[300px] shrink-0 border-l border-t-0")}>
+                    {isTableView ? <div className="grid w-full grid-cols-3 gap-2">
+                        <Tooltip content="순서 변경"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="순서 변경" className="h-9 w-full border border-gray-200/80 bg-white text-default-600 dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isLoadingData} onPress={() => onOpenChangePosition(true)}><ListTurnBackIcon size={17}/></Button></Tooltip>
+                        <Tooltip content="캐릭터 추가"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="캐릭터 추가" className="h-9 w-full border border-gray-200/80 bg-white text-success dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isLoadingData} onPress={onOpen}><AddIcon size={18}/></Button></Tooltip>
+                        <Tooltip content="캐릭터 갱신"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="캐릭터 갱신" className="h-9 w-full border border-gray-200/80 bg-white text-primary dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isDisableUpdate || isLoadingData} isLoading={isLoading} onPress={onClickUpdatedCharacters}><SwitchCharacterIcon size={18}/></Button></Tooltip>
+                        <AutoChecklistControl
+                            checklist={checklist}
+                            bosses={bosses}
+                            dispatch={dispatch}
+                            isDisabled={isLoadingData}
+                            selectedNickname={autoChecklistNickname}
+                            setSelectedNickname={setAutoChecklistNickname}
+                            onSharingStateChange={setAutoChecklistSharing}
+                            compactLabel
+                            className="col-span-3"/>
+                    </div> : <div className="grid w-full grid-cols-3 gap-2 md960:grid-cols-4">
                         <Button
                             fullWidth
                             radius="sm"
@@ -889,7 +912,7 @@ export function ChecklistStatue({
                             selectedNickname={autoChecklistNickname}
                             setSelectedNickname={setAutoChecklistNickname}
                             onSharingStateChange={setAutoChecklistSharing}/>
-                    </div>
+                    </div>}
                 </CardFooter>
             </Card>
             <PositionModal

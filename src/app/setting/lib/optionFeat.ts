@@ -62,6 +62,34 @@ export async function handleHideDayContent(
     }
 }
 
+export async function handleChecklistViewStyle(
+    settings: Settings | null,
+    setSettings: SetStateFn<Settings | null>,
+    checklistViewStyle: Settings['checklistViewStyle']
+) {
+    const userStr = sessionStorage.getItem('user');
+    const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
+    if (!storedUser || !settings || settings.checklistViewStyle === checklistViewStyle) return;
+
+    const cloneSettings = structuredClone(settings);
+    cloneSettings.checklistViewStyle = checklistViewStyle;
+    const res = await fetch('/api/setting', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: storedUser.id, settings: cloneSettings })
+    });
+    if (res.ok) {
+        localStorage.setItem('userSettings', JSON.stringify(cloneSettings));
+        setSettings(cloneSettings);
+    } else {
+        addToast({
+            title: '저장 오류',
+            description: '숙제 화면 스타일을 저장하지 못했습니다.',
+            color: 'danger'
+        });
+    }
+}
+
 export async function handleHideBonusMode(
     settings: Settings | null, 
     setSettings: SetStateFn<Settings | null>

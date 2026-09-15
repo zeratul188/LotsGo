@@ -135,7 +135,7 @@ export default function SettingClient() {
                             </div>
                         }
                         className="min-w-[200px] flex-1">
-                        <div className="w-full sm:min-h-[calc(100vh-105px)] rounded-2xl border border-default-200/80 bg-content1 p-3 dark:border-white/10 dark:bg-[#18181b] md:pl-4 overflow-y-auto max-h-[calc(100vh-105px)] scrollbar-none">
+                        <div className="w-full rounded-2xl border border-default-200/80 bg-content1 p-3 dark:border-white/10 dark:bg-[#18181b] md:pl-4">
                             {tab.key === selectedTab ? tab.component : null}
                         </div>
                     </Tab>

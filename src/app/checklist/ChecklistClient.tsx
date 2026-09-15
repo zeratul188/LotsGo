@@ -10,7 +10,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { CheckCharacter } from "../store/checklistSlice";
 import { Character, LoginUser } from "../store/loginSlice";
-import { addToast, Button, Drawer, DrawerBody, DrawerContent, DrawerHeader, Tooltip } from "@heroui/react";
+import { addToast, Button, Drawer, DrawerBody, DrawerContent, DrawerHeader, Switch, Tooltip } from "@heroui/react";
 import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
@@ -29,9 +29,12 @@ import ChecklistLoadingSkeleton from "./ui/ChecklistLoadingSkeleton";
 import RaidIcon from "@/Icons/RaidIcon";
 import { registerRaidsAutomatically } from "./lib/raidAutoRegistration";
 import { useLoadingTask } from "../components/loading/LoadingProgress";
+import ChecklistTableView from "./ui/ChecklistTableView";
 
 
 export const defaultSettings: Settings = {
+    checklistViewStyle: 'legacy',
+    isTableBonusMode: false,
     isHideDayContent: false,
     isHideBonusMode: false,
     isAutoDeleteUnselectedRaids: false,
@@ -91,12 +94,41 @@ export default function ChecklistClient() {
     const [isAutoRegisteringRaids, setAutoRegisteringRaids] = useState(false);
     const [autoChecklistNickname, setAutoChecklistNickname] = useState('');
     const [isAutoChecklistSharing, setAutoChecklistSharing] = useState(false);
+    const [checklistViewStyle, setChecklistViewStyle] = useState<Settings['checklistViewStyle']>('legacy');
+    const [isTableBonusMode, setTableBonusMode] = useState(false);
+    const [viewportWidth, setViewportWidth] = useState(0);
     const lastFetchRef = useRef(Date.now());
     
     const [isOpenBosses, setOpenBosses] = useState(false);
     const [isOpenLookupDrawer, setOpenLookupDrawer] = useState(false);
     const onOpenChangeBosses = (isOpen: boolean) => setOpenBosses(isOpen);
     useLoadingTask("레이드를 자동 등록하고 있어요", isAutoRegisteringRaids);
+    const isTableView = checklistViewStyle === 'table' && viewportWidth > 720;
+    const showDesktopLookup = isTableView && viewportWidth >= 1200;
+    const toggleBonusManagement = async () => {
+        const stored = localStorage.getItem('userSettings');
+        const current: Settings = { ...defaultSettings, ...(stored ? JSON.parse(stored) : {}) };
+        const next = { ...current, isTableBonusMode: !current.isTableBonusMode };
+        localStorage.setItem('userSettings', JSON.stringify(next));
+        setTableBonusMode(next.isTableBonusMode);
+        const userStr = sessionStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) as LoginUser : null;
+        if (user) {
+            const response = await fetch('/api/setting', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: user.id, settings: next })
+            });
+            if (!response.ok) addToast({ title: '설정 저장 오류', description: '더보기 관리 설정을 저장하지 못했습니다.', color: 'danger' });
+        }
+    };
+
+    useEffect(() => {
+        const updateViewportWidth = () => setViewportWidth(window.innerWidth);
+        updateViewportWidth();
+        window.addEventListener('resize', updateViewportWidth);
+        return () => window.removeEventListener('resize', updateViewportWidth);
+    }, []);
 
     const handleRaidAutoRegistration = async (nickname?: string) => {
         const autoDeleteMessage = checklistForm.isAutoDeleteUnselectedRaids
@@ -216,6 +248,8 @@ export default function ChecklistClient() {
             if (settingLocal) {
                 const localSetting: Settings = JSON.parse(settingLocal);
                 const settings: Settings = { ...defaultSettings, ...localSetting};
+                setChecklistViewStyle(settings.checklistViewStyle);
+                setTableBonusMode(settings.isTableBonusMode);
                 checklistForm.setHideDayContent(settings.isHideDayContent);
                 checklistForm.setHideBonusMode(settings.isHideBonusMode);
                 checklistForm.setAutoDeleteUnselectedRaids(settings.isAutoDeleteUnselectedRaids);
@@ -231,6 +265,8 @@ export default function ChecklistClient() {
                 if (res.ok) {
                     const settings: Settings = await res.json();
                     localStorage.setItem('userSettings', JSON.stringify(settings));
+                    setChecklistViewStyle(settings.checklistViewStyle);
+                    setTableBonusMode(settings.isTableBonusMode);
                     checklistForm.setHideDayContent(settings.isHideDayContent);
                     checklistForm.setHideBonusMode(settings.isHideBonusMode);
                     checklistForm.setAutoDeleteUnselectedRaids(settings.isAutoDeleteUnselectedRaids);
@@ -272,7 +308,7 @@ export default function ChecklistClient() {
     }
 
     return (
-        <div className="min-h-[calc(100vh-65px)] p-5 w-full relative">
+        <div className={clsx("min-h-[calc(100vh-65px)] w-full relative", isTableView ? "checklist-table-view min-h-[calc(100vh-65px)] p-3 lg1200:p-5" : "p-5")}>
             <Tooltip showArrow placement="right" content="숙제 조회 설정">
                 <Button
                     isIconOnly
@@ -280,7 +316,8 @@ export default function ChecklistClient() {
                     color="primary"
                     radius="none"
                     className={clsx(
-                        "fixed left-0 top-[330px] z-[60] h-16 w-11 min-w-0 rounded-r-2xl border border-primary-300/70 bg-gradient-to-b from-primary-500 to-primary-600 text-white shadow-[0_8px_24px_rgba(0,111,238,0.3)] transition-all hover:w-12 hover:shadow-[0_10px_28px_rgba(0,111,238,0.4)] dark:border-primary-400/40 dark:from-primary-500 dark:to-primary-700",
+                        "fixed left-0 top-[330px] z-[60] h-16 w-11 min-w-0 cursor-pointer rounded-r-2xl border border-primary-300/70 bg-gradient-to-b from-primary-500 to-primary-600 text-white shadow-[0_8px_24px_rgba(0,111,238,0.3)] transition-all hover:w-12 hover:shadow-[0_10px_28px_rgba(0,111,238,0.4)] dark:border-primary-400/40 dark:from-primary-500 dark:to-primary-700",
+                        showDesktopLookup && "hidden",
                         isOpenLookupDrawer && "pointer-events-none -translate-x-full opacity-0"
                     )}
                     onPress={() => setOpenLookupDrawer(true)}>
@@ -301,11 +338,14 @@ export default function ChecklistClient() {
                     {(onClose) => (
                         <>
                             <DrawerHeader className="flex flex-col items-start gap-1 border-b border-gray-200/80 px-5 py-5 dark:border-white/10">
-                                <div className="flex items-center gap-2 text-primary">
+                                <div className="flex items-center justify-between gap-3 text-primary">
+                                    <div className="flex items-center gap-2">
                                     <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-50 dark:bg-primary-400/15">
                                         <LookupSettingsIcon/>
                                     </span>
                                     <p className="text-lg font-bold text-foreground">숙제 조회 설정</p>
+                                    </div>
+                                    <Switch size="sm" aria-label="더보기 관리" isSelected={isTableBonusMode} onValueChange={() => void toggleBonusManagement()}/>
                                 </div>
                                 <p className="pl-11 text-xs font-normal fadedtext">서버와 필터를 선택하고 필요한 현황을 빠르게 확인하세요.</p>
                             </DrawerHeader>
@@ -391,13 +431,61 @@ export default function ChecklistClient() {
                                     setHideCompleteContent={checklistForm.setHideCompleteContent}
                                     isHideDayContent={checklistForm.isHideDayContent}
                                     setHideDayContent={checklistForm.setHideDayContent}/>
+                                {isTableView ? (
+                                    <section className="rounded-2xl border border-danger-200/70 bg-danger-50/40 p-4 dark:border-danger-900/50 dark:bg-danger-950/15">
+                                        <p className="text-sm font-semibold">주간 초기화가 되지 않았나요?</p>
+                                        <p className="mt-1 text-xs leading-5 text-default-500">모든 숙제와 이번 주 부수입 기록을 직접 초기화합니다.</p>
+                                        <Button fullWidth radius="lg" color="danger" size="sm" className="mt-3 cursor-pointer font-semibold" isLoading={isLoadingReset} onPress={async () => await handleResetChecklist(checklist, checklistForm.biweekly, dispatch, setLoadingReset)}>초기화</Button>
+                                    </section>
+                                ) : null}
                             </DrawerBody>
                         </>
                     )}
                 </DrawerContent>
             </Drawer>
-            <div className="w-full max-w-[1280px] mx-auto">
+            <div className={clsx(showDesktopLookup && "grid grid-cols-[300px_minmax(0,1fr)] items-start gap-5")}>
+            {showDesktopLookup ? (
+                <aside className="sticky top-0 flex h-[calc(100vh-80px)] flex-col space-y-4 overflow-y-auto rounded-2xl border border-default-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#171717]">
+                    <div className="flex items-center justify-between gap-3 rounded-xl border border-warning-200/70 bg-warning-50/60 px-3 py-2.5 dark:border-warning-900/40 dark:bg-warning-950/20">
+                        <div><p className="text-sm font-semibold">더보기 관리</p><p className="mt-0.5 text-[11px] text-default-500">관문 버튼을 더보기 체크로 사용</p></div>
+                        <Switch size="sm" aria-label="더보기 관리" isSelected={isTableBonusMode} onValueChange={() => void toggleBonusManagement()}/>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                        <Button size="sm" radius="lg" variant="bordered" color="primary" className="col-span-2 cursor-pointer" isLoading={isAutoRegisteringRaids} isDisabled={checklistForm.isLoading || checklist.length === 0} onPress={() => handleRaidAutoRegistration()}>전체 자동 등록</Button>
+                        <Button size="sm" radius="lg" variant="flat" className="cursor-pointer" onPress={() => setOpenBosses(true)}>콘텐츠 정보</Button>
+                        <Button size="sm" radius="lg" variant="flat" className="cursor-pointer" color={checklistForm.isShowList ? 'primary' : 'default'} onPress={() => checklistForm.setShowList(!checklistForm.isShowList)}>남은 숙제</Button>
+                        <Button size="sm" radius="lg" variant="flat" className="col-span-2 cursor-pointer" color={checklistForm.isShowCubeDetail ? 'secondary' : 'default'} onPress={() => checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail)}>큐브 현황</Button>
+                    </div>
+                    <FilterComponent
+                        server={checklistForm.server}
+                        setServer={checklistForm.setServer}
+                        filterContent={checklistForm.filterContent}
+                        setFilterContent={checklistForm.setFilterContent}
+                        bosses={checklistForm.bosses}
+                        checklist={checklist}
+                        isRemainHomework={checklistForm.isRemainHomework}
+                        setRemainHomework={checklistForm.setRemainHomework}
+                        isShowGoldCharacter={checklistForm.isShowGoldCharacter}
+                        setShowGoldCharacter={checklistForm.setShowGoldCharacter}
+                        filterAccount={checklistForm.filterAccount}
+                        setFilterAccount={checklistForm.setFilterAccount}
+                        isHideCompleteContent={checklistForm.isHideCompleteContent}
+                        setHideCompleteContent={checklistForm.setHideCompleteContent}
+                        isHideDayContent={checklistForm.isHideDayContent}
+                        setHideDayContent={checklistForm.setHideDayContent}/>
+                    <section className="rounded-2xl border border-danger-200/70 bg-danger-50/40 p-4 dark:border-danger-900/50 dark:bg-danger-950/15">
+                        <p className="text-sm font-semibold">주간 초기화가 되지 않았나요?</p>
+                        <p className="mt-1 text-xs leading-5 text-default-500">모든 숙제와 이번 주 부수입 기록을 직접 초기화합니다.</p>
+                        <Button fullWidth radius="lg" color="danger" size="sm" className="mt-3 cursor-pointer font-semibold" isLoading={isLoadingReset} onPress={async () => await handleResetChecklist(checklist, checklistForm.biweekly, dispatch, setLoadingReset)}>초기화</Button>
+                    </section>
+                    <div className="min-h-8 flex-1" aria-hidden="true" />
+                </aside>
+            ) : null}
+            <main className="min-w-0">
+            <div className={clsx("w-full mx-auto", !isTableView && "max-w-[1280px]")}>
                 <ChecklistStatue 
+                    isTableView={isTableView}
+                    isTableViewWide={isTableView && viewportWidth >= 1650}
                     server={checklistForm.server}
                     filterContent={checklistForm.filterContent}
                     filterAccount={checklistForm.filterAccount}
@@ -420,13 +508,13 @@ export default function ChecklistClient() {
                     setAutoChecklistSharing={setAutoChecklistSharing}/>
             </div>
             {!checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
-                <div className="w-full flex justify-center overflow-hidden md960:pt-[110px]">
+                <div className={clsx("w-full flex justify-center overflow-hidden", isTableView ? "pt-5" : "md960:pt-[110px]")}>
                     <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px] mt-8">
                         <LineAd isLoaded={!checklistForm.isLoading}/>
                     </div>
                 </div>
             ) : (
-                <div className="w-full flex justify-center overflow-hidden md960:mt-[220px]">
+                <div className={clsx("w-full flex justify-center overflow-hidden", isTableView ? "mt-5" : "md960:mt-[220px]")}>
                     <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-4">
                         <FixedLineAd isLoaded={!checklistForm.isLoading}/>
                     </div>
@@ -447,7 +535,24 @@ export default function ChecklistClient() {
                             )}>
                                 <CubeDetailComponent checklist={checklist} cubes={checklistForm.cubes}/>
                             </div>
-                            <ChecklistComponent
+                            {isTableView ? (
+                                <ChecklistTableView
+                                    checklist={checklist}
+                                    server={checklistForm.server}
+                                    bosses={checklistForm.bosses}
+                                    dispatch={dispatch}
+                                    filterContent={checklistForm.filterContent}
+                                    isRemainHomework={checklistForm.isRemainHomework}
+                                    isShowGoldCharacter={checklistForm.isShowGoldCharacter}
+                                    filterAccount={checklistForm.filterAccount}
+                                    isHideCompleteContent={checklistForm.isHideCompleteContent}
+                                    isHideDayContent={checklistForm.isHideDayContent}
+                                    isBonusModeEnabled={isTableBonusMode}
+                                    onOpenContentManager={(characterIndex, type) => {
+                                        checklistForm.setModalData({ characterIndex, type });
+                                        checklistForm.onOpen();
+                                    }}/>
+                            ) : <ChecklistComponent
                                 checklist={checklist}
                                 server={checklistForm.server}
                                 bosses={checklistForm.bosses}
@@ -471,7 +576,7 @@ export default function ChecklistClient() {
                                 isAutoChecklistSharing={isAutoChecklistSharing}
                                 setAutoChecklistNickname={setAutoChecklistNickname}
                                 isAutoRegisteringRaids={isAutoRegisteringRaids}
-                                onRaidAutoRegistration={handleRaidAutoRegistration}/>
+                                onRaidAutoRegistration={handleRaidAutoRegistration}/>}
                             <ChecklistModal
                                 isOpen={checklistForm.isOpen}
                                 modalData={checklistForm.modalData}
@@ -486,8 +591,10 @@ export default function ChecklistClient() {
                         </>
                     )}
                 </div>
+            </main>
+            </div>
             <div className="mx-auto w-full max-w-[1280px]">
-                <div className="mx-4 mt-8 flex flex-col gap-4 rounded-2xl border border-danger/20 bg-danger/[0.025] p-4 shadow-sm dark:border-danger/30 dark:bg-danger/[0.06] sm:flex-row sm:items-start sm:p-5">
+                {!isTableView ? <div className="mx-4 mt-8 flex flex-col gap-4 rounded-2xl border border-danger/20 bg-danger/[0.025] p-4 shadow-sm dark:border-danger/30 dark:bg-danger/[0.06] sm:flex-row sm:items-start sm:p-5">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-danger/10 text-lg font-bold text-danger dark:bg-danger/15">
                         !
                     </div>
@@ -513,8 +620,8 @@ export default function ChecklistClient() {
                             </Button>
                         </div>
                     </div>
-                </div>
-                {!checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
+                </div> : null}
+                {!isTableView && !checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
                     <div className="w-full flex justify-center px-4">
                         <div className="w-full max-w-[360px] min-h-[100px] mt-8">
                             <BoxAd isLoaded={!checklistForm.isLoading}/>

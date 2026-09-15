@@ -1,4 +1,4 @@
-import { Button, Card, CardBody, Chip, Switch } from "@heroui/react";
+import { Button, Card, CardBody, Chip, Select, SelectItem, Switch } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { Settings } from "../../api/setting/route";
 import {
@@ -7,6 +7,7 @@ import {
     handleHideCharacterMemo,
     handleHideDayContent,
     handleHideParadisePower,
+    handleChecklistViewStyle,
     loadSettings,
     useAllLogout
 } from "../lib/optionFeat";
@@ -44,6 +45,26 @@ export default function OptionComponent() {
                         <p className="mt-0.5 text-xs text-default-500">화면에 표시되는 콘텐츠를 조절합니다.</p>
                     </div>
                     <div className="divide-y divide-default-100 dark:divide-white/[0.06]">
+                        <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center">
+                            <div className="grow">
+                                <h3 className="text-sm font-semibold">숙제 화면 스타일</h3>
+                                <p className="mt-1 text-xs text-default-500">넓은 화면에서 사용할 숙제 목록 디자인을 선택합니다.</p>
+                            </div>
+                            <Select
+                                aria-label="숙제 화면 스타일"
+                                size="sm"
+                                radius="lg"
+                                selectedKeys={[settings.checklistViewStyle]}
+                                onSelectionChange={keys => {
+                                    const value = Array.from(keys)[0];
+                                    if (value) void handleChecklistViewStyle(settings, setSettings, String(value) as Settings['checklistViewStyle']);
+                                }}
+                                className="w-[180px] shrink-0"
+                                classNames={{ trigger: "h-10" }}>
+                                <SelectItem key="legacy">기존 스타일</SelectItem>
+                                <SelectItem key="table">표 스타일</SelectItem>
+                            </Select>
+                        </div>
                         <div className="flex items-center gap-4 px-4 py-4">
                             <div className="grow"><h3 className="text-sm font-semibold">일일 콘텐츠 숨기기</h3><p className="mt-1 text-xs text-default-500">일일 콘텐츠를 숨겨 캐릭터 목록을 더 넓게 표시합니다.</p></div>
                             <Switch size="sm" aria-label="일일 콘텐츠 숨기기" isSelected={settings.isHideDayContent} onValueChange={async () => await handleHideDayContent(settings, setSettings)}/>
