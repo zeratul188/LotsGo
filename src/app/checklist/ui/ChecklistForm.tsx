@@ -855,7 +855,7 @@ export function ChecklistStatue({
                         </div>
                     </div>
                 </CardBody>
-                <CardFooter className={clsx("border-t border-gray-200/80 bg-gray-50/70 p-2.5 dark:border-white/10 dark:bg-white/[0.025]", isTableViewWide && "w-[300px] shrink-0 border-l border-t-0")}>
+                <CardFooter className={clsx("border-t border-gray-200/80 bg-gray-50/70 p-2.5 dark:border-white/10 dark:bg-white/[0.025]", isTableViewWide && "w-[240px] shrink-0 border-l border-t-0 min-[1800px]:w-[300px]")}>
                     {isTableView ? <div className="grid w-full grid-cols-3 gap-2">
                         <Tooltip content="순서 변경"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="순서 변경" className="h-9 w-full border border-gray-200/80 bg-white text-default-600 dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isLoadingData} onPress={() => onOpenChangePosition(true)}><ListTurnBackIcon size={17}/></Button></Tooltip>
                         <Tooltip content="캐릭터 추가"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="캐릭터 추가" className="h-9 w-full border border-gray-200/80 bg-white text-success dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isLoadingData} onPress={onOpen}><AddIcon size={18}/></Button></Tooltip>
