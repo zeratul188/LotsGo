@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type WheelEvent } from "react";
 import {
     Button,
     Checkbox,
@@ -331,6 +331,12 @@ export default function ChecklistTableView({
     const contentStripWidth = (isHideDayContent ? 0 : dailyColumnWidth) + contentNames.length * weeklyColumnWidth;
     const maxScrollLeft = Math.max(0, contentStripWidth - contentViewportWidth);
     const contentTransform = { width: contentStripWidth, transform: `translateX(-${scrollLeft}px)` };
+    const handleContentWheel = (event: WheelEvent<HTMLDivElement>) => {
+        if (!event.shiftKey || maxScrollLeft <= 0) return;
+        event.preventDefault();
+        const delta = Math.abs(event.deltaY) > Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+        setScrollLeft(current => Math.max(0, Math.min(maxScrollLeft, current + delta)));
+    };
 
     useEffect(() => {
         const element = contentViewportRef.current;
@@ -351,10 +357,10 @@ export default function ChecklistTableView({
 
     return (
         <section className="mt-5 overflow-hidden rounded-2xl border border-default-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]">
-            <div className="checklist-table-scroll h-[calc(100vh-440px)] min-h-[360px] overflow-x-hidden overflow-y-auto overscroll-contain">
+            <div className="checklist-table-scroll h-[calc(100vh-520px)] min-h-[300px] overflow-x-hidden overflow-y-auto overscroll-contain min-[1500px]:h-[calc(100vh-440px)] min-[1500px]:min-h-[360px]">
                 <div className="sticky top-0 z-40 grid grid-cols-[260px_minmax(0,1fr)_184px] border-b border-default-200 bg-default-50/95 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#202020]/95">
                     <div className="h-16 border-r border-default-200 dark:border-white/10"><span className="sr-only">캐릭터 정보</span></div>
-                    <div ref={contentViewportRef} className="min-w-0 overflow-hidden">
+                    <div ref={contentViewportRef} className="min-w-0 overflow-hidden" onWheel={handleContentWheel}>
                         <div className="flex h-16 transition-transform duration-150" style={contentTransform}>
                             {!isHideDayContent ? <div className="flex shrink-0 items-center justify-center border-r border-default-200 bg-success-50/80 text-xs font-semibold text-success-700 dark:border-white/10 dark:bg-success-950/30 dark:text-success-300" style={{ width: dailyColumnWidth }}>일일 콘텐츠</div> : null}
                             {contentNames.map(name => <div key={name} className="flex shrink-0 items-center justify-center border-r border-default-200 px-3 text-center text-sm font-semibold dark:border-white/10" style={{ width: weeklyColumnWidth }}>{getSimpleBossName(bosses, name)}</div>)}
@@ -388,7 +394,7 @@ export default function ChecklistTableView({
                                         </div>
                                     </div>
                                 </button>
-                                <div className="min-w-0 overflow-hidden">
+                                 <div className="min-w-0 overflow-hidden" onWheel={handleContentWheel}>
                                     <div className="flex h-full transition-transform duration-150" style={contentTransform}>
                                         {!isHideDayContent ? (
                                             <div className="shrink-0 border-r border-default-200 dark:border-white/10" style={{ width: dailyColumnWidth }}>

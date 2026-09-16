@@ -104,7 +104,7 @@ export default function ChecklistClient() {
     const onOpenChangeBosses = (isOpen: boolean) => setOpenBosses(isOpen);
     useLoadingTask("레이드를 자동 등록하고 있어요", isAutoRegisteringRaids);
     const isTableView = checklistViewStyle === 'table' && viewportWidth > 720;
-    const showDesktopLookup = isTableView && viewportWidth >= 1200;
+    const showDesktopLookup = isTableView && viewportWidth >= 1500;
     const toggleBonusManagement = async () => {
         const stored = localStorage.getItem('userSettings');
         const current: Settings = { ...defaultSettings, ...(stored ? JSON.parse(stored) : {}) };
@@ -445,7 +445,7 @@ export default function ChecklistClient() {
             </Drawer>
             <div className={clsx(showDesktopLookup && "grid grid-cols-[300px_minmax(0,1fr)] items-start gap-5")}>
             {showDesktopLookup ? (
-                <aside className="sticky top-0 flex h-[calc(100vh-80px)] flex-col space-y-4 overflow-y-auto rounded-2xl border border-default-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#171717]">
+                <aside className="scrollbar-none sticky top-0 flex h-[calc(100vh-80px)] flex-col space-y-4 overflow-y-auto rounded-2xl border border-default-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#171717]">
                     <div className="flex items-center justify-between gap-3 rounded-xl border border-warning-200/70 bg-warning-50/60 px-3 py-2.5 dark:border-warning-900/40 dark:bg-warning-950/20">
                         <div><p className="text-sm font-semibold">더보기 관리</p><p className="mt-0.5 text-[11px] text-default-500">관문 버튼을 더보기 체크로 사용</p></div>
                         <Switch size="sm" aria-label="더보기 관리" isSelected={isTableBonusMode} onValueChange={() => void toggleBonusManagement()}/>
@@ -485,7 +485,7 @@ export default function ChecklistClient() {
             <div className={clsx("w-full mx-auto", !isTableView && "max-w-[1280px]")}>
                 <ChecklistStatue 
                     isTableView={isTableView}
-                    isTableViewWide={isTableView && viewportWidth >= 1650}
+                    isTableViewWide={isTableView && viewportWidth >= 1500}
                     server={checklistForm.server}
                     filterContent={checklistForm.filterContent}
                     filterAccount={checklistForm.filterAccount}
