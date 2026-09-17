@@ -203,6 +203,7 @@ function WeeklyContentCell({
     const character = checklist[characterIndex];
     const summary = getChecklistContentGoldSummary(bosses, content, character.isGold);
     const isComplete = isCheckHomework(content);
+    const isGoldContent = content.isGold;
 
     return (
         <div
@@ -215,6 +216,7 @@ function WeeklyContentCell({
             <div className="flex min-w-0 items-center justify-start gap-2 text-left text-[10px]">
                 <span className="min-w-0 truncate font-semibold text-blue-600 dark:text-blue-400">일반 {summary.gold.toLocaleString()}</span>
                 <span className="min-w-0 truncate font-semibold text-amber-600 dark:text-amber-400">귀속 {summary.boundGold.toLocaleString()}</span>
+                {isGoldContent ? <img src="/icons/gold.png" alt="골드 획득 콘텐츠" className="ml-auto h-3.5 w-3.5 shrink-0" /> : null}
             </div>
             <div className="flex w-full gap-1.5 rounded-lg border border-default-200 bg-white/80 p-1 shadow-sm dark:border-white/10 dark:bg-black/10">
                 {content.items.map((item, itemIndex) => {

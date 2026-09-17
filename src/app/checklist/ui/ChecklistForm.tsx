@@ -856,7 +856,7 @@ export function ChecklistStatue({
                     </div>
                 </CardBody>
                 <CardFooter className={clsx("border-t border-gray-200/80 bg-gray-50/70 p-2.5 dark:border-white/10 dark:bg-white/[0.025]", isTableViewWide && "w-[240px] shrink-0 border-l border-t-0 min-[1800px]:w-[300px]")}>
-                    {isTableView ? <div className="grid w-full grid-cols-3 gap-2">
+                    {isTableView ? <div className={clsx("grid w-full gap-2", isTableViewWide ? "grid-cols-3" : "grid-cols-4")}>
                         <Tooltip content="순서 변경"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="순서 변경" className="h-9 w-full border border-gray-200/80 bg-white text-default-600 dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isLoadingData} onPress={() => onOpenChangePosition(true)}><ListTurnBackIcon size={17}/></Button></Tooltip>
                         <Tooltip content="캐릭터 추가"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="캐릭터 추가" className="h-9 w-full border border-gray-200/80 bg-white text-success dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isLoadingData} onPress={onOpen}><AddIcon size={18}/></Button></Tooltip>
                         <Tooltip content="캐릭터 갱신"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="캐릭터 갱신" className="h-9 w-full border border-gray-200/80 bg-white text-primary dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isDisableUpdate || isLoadingData} isLoading={isLoading} onPress={onClickUpdatedCharacters}><SwitchCharacterIcon size={18}/></Button></Tooltip>
@@ -869,7 +869,8 @@ export function ChecklistStatue({
                             setSelectedNickname={setAutoChecklistNickname}
                             onSharingStateChange={setAutoChecklistSharing}
                             compactLabel
-                            className="col-span-3"/>
+                            statusPlacement="below"
+                            className={isTableViewWide ? "col-span-3" : undefined}/>
                     </div> : <div className="grid w-full grid-cols-3 gap-2 md960:grid-cols-4">
                         <Button
                             fullWidth
@@ -911,10 +912,12 @@ export function ChecklistStatue({
                             isDisabled={isLoadingData}
                             selectedNickname={autoChecklistNickname}
                             setSelectedNickname={setAutoChecklistNickname}
-                            onSharingStateChange={setAutoChecklistSharing}/>
+                            onSharingStateChange={setAutoChecklistSharing}
+                            statusPlacement="inline"/>
                     </div>}
                 </CardFooter>
             </Card>
+            {isTableView ? <div id="checklist-auto-sharing-status" className="mt-2 min-h-0 w-full"/> : null}
             <PositionModal
                 isOpenModalPosition={isOpenModalPosition}
                 onOpenChangePosition={onOpenChangePosition}
