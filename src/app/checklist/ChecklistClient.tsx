@@ -345,7 +345,6 @@ export default function ChecklistClient() {
                                     </span>
                                     <p className="text-lg font-bold text-foreground">숙제 조회 설정</p>
                                     </div>
-                                    <Switch size="sm" aria-label="더보기 관리" isSelected={isTableBonusMode} onValueChange={() => void toggleBonusManagement()}/>
                                 </div>
                                 <p className="pl-11 text-xs font-normal fadedtext">서버와 필터를 선택하고 필요한 현황을 빠르게 확인하세요.</p>
                             </DrawerHeader>
@@ -414,6 +413,17 @@ export default function ChecklistClient() {
                                         </Button>
                                     </div>
                                 </section>
+                                {isTableView ? (
+                                    <section className="rounded-2xl border border-warning-200/70 bg-warning-50/60 p-4 dark:border-warning-900/40 dark:bg-warning-950/20">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div>
+                                                <p className="text-sm font-semibold">더보기 관리</p>
+                                                <p className="mt-1 text-xs leading-5 text-default-500">표의 관문 버튼을 숙제 완료 대신 더보기 사용 여부를 기록하는 버튼으로 전환합니다.</p>
+                                            </div>
+                                            <Switch size="sm" aria-label="더보기 관리" isSelected={isTableBonusMode} onValueChange={() => void toggleBonusManagement()}/>
+                                        </div>
+                                    </section>
+                                ) : null}
                                 <FilterComponent
                                     server={checklistForm.server}
                                     setServer={checklistForm.setServer}
