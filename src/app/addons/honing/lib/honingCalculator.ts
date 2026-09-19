@@ -197,17 +197,22 @@ export function* calculateHoningRangeSteps(input: HoningCalculationInput, startL
     const missingPrices = new Set<OwnedMaterialKey>();
     let averageAttempts = 0;
     let averageCost = 0;
+    let averageBaseGold = 0;
     let pityAttempts = 0;
     let pityCost = 0;
+    let pityBaseGold = 0;
 
     for (let level = startLevel + 1; level <= targetLevel; level += 1) {
         const average = calculateHoning({ ...input, level, owned: averageOwned, initialFailures: 0, initialArtisan: 0 });
         const pity = calculateHoning({ ...input, level, owned: pityOwned, initialFailures: 0, initialArtisan: 0 });
-        if (!average || !pity) return null;
+        const rate = findHoningRate(input.tier, input.part, level);
+        if (!average || !pity || !rate) return null;
         averageAttempts += average.averageAttempts;
         averageCost += average.averageCost;
+        averageBaseGold += rate.gold * average.averageAttempts;
         pityAttempts += pity.pityAttempts.length;
         pityCost += pity.pityCost;
+        pityBaseGold += rate.gold * pity.pityAttempts.length;
         mergeMaterialAmounts(averageMaterials, average.averageMaterials);
         mergeMaterialAmounts(pityMaterials, pity.pityMaterials);
         subtractMaterials(averageOwned, average.boundMaterials);
@@ -215,10 +220,10 @@ export function* calculateHoningRangeSteps(input: HoningCalculationInput, startL
         average.missingPrices.forEach((key) => missingPrices.add(key));
         pity.missingPrices.forEach((key) => missingPrices.add(key));
         stages.push({ level, averageAttempts: average.averageAttempts, averageCost: average.averageCost, pityAttempts: pity.pityAttempts.length, pityCost: pity.pityCost });
-        yield { startLevel, targetLevel, averageAttempts, averageCost, averageMaterials: [...averageMaterials.values()], pityAttempts, pityCost, pityMaterials: [...pityMaterials.values()], stages: [...stages], missingPrices: [...missingPrices] };
+        yield { startLevel, targetLevel, averageAttempts, averageCost, averageBaseGold, averageMaterials: [...averageMaterials.values()], pityAttempts, pityCost, pityBaseGold, pityMaterials: [...pityMaterials.values()], stages: [...stages], missingPrices: [...missingPrices] };
     }
 
-    return { startLevel, targetLevel, averageAttempts, averageCost, averageMaterials: [...averageMaterials.values()], pityAttempts, pityCost, pityMaterials: [...pityMaterials.values()], stages, missingPrices: [...missingPrices] };
+    return { startLevel, targetLevel, averageAttempts, averageCost, averageBaseGold, averageMaterials: [...averageMaterials.values()], pityAttempts, pityCost, pityBaseGold, pityMaterials: [...pityMaterials.values()], stages, missingPrices: [...missingPrices] };
 }
 
 export function calculateHoningRange(input: HoningCalculationInput, startLevel: number, targetLevel: number): HoningRangeCalculation | null {
