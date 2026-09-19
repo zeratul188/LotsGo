@@ -10,7 +10,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { CheckCharacter } from "../store/checklistSlice";
 import { Character, LoginUser } from "../store/loginSlice";
-import { addToast, Button, Drawer, DrawerBody, DrawerContent, DrawerHeader, Switch, Tooltip } from "@heroui/react";
+import { addToast, Button, Drawer, DrawerBody, DrawerContent, DrawerHeader, Select, SelectItem, Switch, Tooltip } from "@heroui/react";
 import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
@@ -122,6 +122,44 @@ export default function ChecklistClient() {
             if (!response.ok) addToast({ title: '설정 저장 오류', description: '더보기 관리 설정을 저장하지 못했습니다.', color: 'danger' });
         }
     };
+
+    const handleChecklistViewStyleChange = async (value: Settings['checklistViewStyle']) => {
+        if (value === checklistViewStyle) return;
+
+        const stored = localStorage.getItem('userSettings');
+        const current: Settings = { ...defaultSettings, ...(stored ? JSON.parse(stored) : {}) };
+        const next = { ...current, checklistViewStyle: value };
+        localStorage.setItem('userSettings', JSON.stringify(next));
+        setChecklistViewStyle(value);
+
+        const userStr = sessionStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) as LoginUser : null;
+        if (user) {
+            const response = await fetch('/api/setting', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: user.id, settings: next })
+            });
+            if (!response.ok) addToast({ title: '설정 저장 오류', description: '숙제 화면 스타일을 저장하지 못했습니다.', color: 'danger' });
+        }
+    };
+
+    const renderChecklistViewStyleSelect = (className?: string) => (
+        <Select
+            aria-label="숙제 화면 스타일"
+            size="sm"
+            radius="lg"
+            selectedKeys={[checklistViewStyle]}
+            onSelectionChange={keys => {
+                const value = Array.from(keys)[0];
+                if (value) void handleChecklistViewStyleChange(String(value) as Settings['checklistViewStyle']);
+            }}
+            className={className}
+            classNames={{ trigger: "h-10" }}>
+            <SelectItem key="legacy">기존 스타일</SelectItem>
+            <SelectItem key="table">표 스타일</SelectItem>
+        </Select>
+    );
 
     useEffect(() => {
         const updateViewportWidth = () => setViewportWidth(window.innerWidth);
@@ -345,7 +383,6 @@ export default function ChecklistClient() {
                                     </span>
                                     <p className="text-lg font-bold text-foreground">숙제 조회 설정</p>
                                     </div>
-                                    <Switch size="sm" aria-label="더보기 관리" isSelected={isTableBonusMode} onValueChange={() => void toggleBonusManagement()}/>
                                 </div>
                                 <p className="pl-11 text-xs font-normal fadedtext">서버와 필터를 선택하고 필요한 현황을 빠르게 확인하세요.</p>
                             </DrawerHeader>
@@ -414,6 +451,26 @@ export default function ChecklistClient() {
                                         </Button>
                                     </div>
                                 </section>
+                                <section className="rounded-2xl border border-gray-200/80 bg-gray-50/70 p-4 dark:border-white/10 dark:bg-white/[0.035]">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div>
+                                            <p className="text-sm font-semibold">숙제 화면 스타일</p>
+                                            <p className="mt-0.5 text-xs fadedtext">숙제 목록을 기존 스타일 또는 표 스타일로 표시합니다.</p>
+                                        </div>
+                                        {renderChecklistViewStyleSelect("w-[140px] shrink-0")}
+                                    </div>
+                                </section>
+                                {isTableView ? (
+                                    <section className="rounded-2xl border border-warning-200/70 bg-warning-50/60 p-4 dark:border-warning-900/40 dark:bg-warning-950/20">
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div>
+                                                <p className="text-sm font-semibold">더보기 관리</p>
+                                                <p className="mt-1 text-xs leading-5 text-default-500">표의 관문 버튼을 숙제 완료 대신 더보기 사용 여부를 기록하는 버튼으로 전환합니다.</p>
+                                            </div>
+                                            <Switch size="sm" aria-label="더보기 관리" isSelected={isTableBonusMode} onValueChange={() => void toggleBonusManagement()}/>
+                                        </div>
+                                    </section>
+                                ) : null}
                                 <FilterComponent
                                     server={checklistForm.server}
                                     setServer={checklistForm.setServer}
@@ -446,6 +503,12 @@ export default function ChecklistClient() {
             <div className={clsx(showDesktopLookup && "grid grid-cols-[300px_minmax(0,1fr)] items-start gap-5")}>
             {showDesktopLookup ? (
                 <aside className="scrollbar-none sticky top-0 flex h-[calc(100vh-80px)] flex-col space-y-4 overflow-y-auto rounded-2xl border border-default-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#171717]">
+                    <div className="rounded-xl border border-default-200/80 bg-default-50/70 p-3 dark:border-white/10 dark:bg-white/[0.035]">
+                        <div className="flex items-center justify-between gap-3">
+                            <div><p className="text-sm font-semibold">숙제 화면 스타일</p><p className="mt-0.5 text-[11px] text-default-500">목록 표시 방식을 선택합니다.</p></div>
+                            {renderChecklistViewStyleSelect("w-[120px] shrink-0")}
+                        </div>
+                    </div>
                     <div className="flex items-center justify-between gap-3 rounded-xl border border-warning-200/70 bg-warning-50/60 px-3 py-2.5 dark:border-warning-900/40 dark:bg-warning-950/20">
                         <div><p className="text-sm font-semibold">더보기 관리</p><p className="mt-0.5 text-[11px] text-default-500">관문 버튼을 더보기 체크로 사용</p></div>
                         <Switch size="sm" aria-label="더보기 관리" isSelected={isTableBonusMode} onValueChange={() => void toggleBonusManagement()}/>

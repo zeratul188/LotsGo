@@ -124,7 +124,7 @@ function OtherGoldFields({
 }) {
     const isOther = editor.icon === "other";
     return (
-        <div className={isInline ? "grid min-w-0 grid-cols-[minmax(240px,1fr)_minmax(180px,0.55fr)] gap-2" : "flex flex-col gap-3"}>
+        <div className={isInline ? "grid min-w-0 grid-cols-2 gap-2" : "flex flex-col gap-3"}>
             <div className="flex min-w-0 items-center gap-2">
                 <OtherGoldIconSelector
                     value={editor.icon}
@@ -152,15 +152,19 @@ function OtherGoldFields({
             <NumberInput
                 fullWidth
                 size="sm"
-                label="골드량"
-                labelPlacement="outside"
+                aria-label="골드량"
                 placeholder="-999999999 ~ 999999999"
                 minValue={-999999999}
                 maxValue={999999999}
+                hideStepper
                 value={editor.gold}
                 isDisabled={isDisabled}
                 onValueChange={(gold) => setEditor({ ...editor, gold })}
-                classNames={isInline ? { base: "min-w-0", inputWrapper: "h-10 min-h-10" } : undefined}/>
+                classNames={isInline ? {
+                    base: "min-w-0",
+                    inputWrapper: "h-10 min-h-10",
+                    input: "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                } : undefined}/>
         </div>
     );
 }
@@ -303,7 +307,7 @@ export default function OtherGoldManager({ character, dispatch, layout = 'defaul
                         variant="flat"
                         size="sm"
                         radius="md"
-                        className="font-medium"
+                        className={layout === 'inline' ? "h-10 min-h-10 px-3 font-medium" : "font-medium"}
                         isLoading={isSaving}
                         isDisabled={!Number.isInteger(editor.gold) || editor.gold === 0}
                         onPress={() => void saveRecord()}>
@@ -313,7 +317,7 @@ export default function OtherGoldManager({ character, dispatch, layout = 'defaul
                         variant="flat"
                         size="sm"
                         radius="md"
-                        className="font-medium"
+                        className={layout === 'inline' ? "h-10 min-h-10 px-3 font-medium" : "font-medium"}
                         onPress={() => {
                             setSelectedRecordId(records[0]?.id ?? null);
                             onOpen();
