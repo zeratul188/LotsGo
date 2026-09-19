@@ -57,6 +57,7 @@ import {
     getBorderByStage, 
     getBossesByHaveContent, 
     getBossesById, 
+    getBossBoundGold,
     getBossGoldByContent, 
     getChecklistContentGoldSummary,
     getCheckedResult, 
@@ -580,6 +581,19 @@ export function ChecklistStatue({
     useLoadingTask("캐릭터 정보를 갱신하고 있어요", isLoading);
 
     const filteredChecklist = checklist.filter((character) => (character.server === server || server === '전체') && filterChecklist(character, filterContent, bosses, checklist, isRemainHomework, isShowGoldCharacter, filterAccount));
+    const totalGold = getAllGolds(bosses, filteredChecklist);
+    const haveGold = getHaveGolds(bosses, filteredChecklist);
+    const availableGold = Math.max(totalGold - haveGold, 0);
+    const availableBoundGold = Math.max(
+        filteredChecklist
+            .filter(character => character.isGold)
+            .reduce((total, character) => total + character.checklist
+                .filter(item => item.isGold)
+                .reduce((sum, item) => sum + getBossBoundGold(bosses, item.name, item.items), 0), 0)
+            - getAllBoundGold(bosses, filteredChecklist),
+        0
+    );
+    const availableSharedGold = Math.max(availableGold - availableBoundGold, 0);
 
     return (
         <>
@@ -615,10 +629,36 @@ export function ChecklistStatue({
                                     maxValue={getAllGolds(bosses, filteredChecklist)}/>
                              </div>
                             <div className="flex w-full items-center gap-2">
-                                <p className="min-w-0 grow text-[10pt] leading-5 fadedtext">
-                                    <img src="/icons/gold.png" alt="goldicon" className="mr-1 inline-block h-[14px] w-[14px]"/>
-                                    <strong className="text-black dark:text-white"><AnimatedNumber value={getAllGolds(bosses, filteredChecklist) - getHaveGolds(bosses, filteredChecklist)}/></strong>를 획득 가능합니다.
-                                </p>
+                                <Popover showArrow placement="bottom-start">
+                                    <PopoverTrigger>
+                                        <button type="button" className="min-w-0 grow cursor-pointer text-left text-[10pt] leading-5 fadedtext">
+                                            <img src="/icons/gold.png" alt="goldicon" className="mr-1 inline-block h-[14px] w-[14px]"/>
+                                            <strong className="text-black dark:text-white"><AnimatedNumber value={availableGold}/></strong>를 획득 가능합니다.
+                                        </button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="border border-warning-200/80 bg-white/95 p-0 shadow-xl backdrop-blur-xl dark:border-warning-900/50 dark:bg-[#171717]/95">
+                                        <div className="w-[240px] p-4">
+                                            <p className="text-sm font-semibold">획득 가능한 골드</p>
+                                            <p className="mt-1 text-xs leading-5 fadedtext">남은 주간 골드를 거래가능 골드와 귀속 골드로 나누어 보여줍니다.</p>
+                                            <div className="mt-3 space-y-2 rounded-xl bg-warning-50/70 p-3 text-sm dark:bg-warning-950/20">
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <span className="text-default-500">거래가능 골드</span>
+                                                    <span className="flex items-center gap-1 font-semibold">
+                                                        <img src="/icons/gold.png" alt="거래가능 골드" className="h-[14px] w-[14px]"/>
+                                                        <strong>{availableSharedGold.toLocaleString()}</strong>
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <span className="text-default-500">귀속 골드</span>
+                                                    <span className="flex items-center gap-1 font-semibold">
+                                                        <img src="/icons/gold.png" alt="귀속 골드" className="h-[14px] w-[14px]"/>
+                                                        <strong>{availableBoundGold.toLocaleString()}</strong>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </PopoverContent>
+                                </Popover>
                                 <Popover showArrow disableAnimation placement="bottom-end">
                                     <PopoverTrigger>
                                         <Button
@@ -1630,7 +1670,7 @@ export function ChecklistComponent({
                                                                                  "flex items-center gap-1",
                                                                                  isCheckHomework(item) ? "fadedtext" : "text-amber-600 dark:text-amber-400"
                                                                              )}>
-                                                                             <span>일반 {goldSummary.gold.toLocaleString()}</span>
+                                                                             <span>거래 가능 {goldSummary.gold.toLocaleString()}</span>
                                                                          </AnimatedChecklistStrike>
                                                                          <AnimatedChecklistStrike
                                                                              isSelected={isCheckHomework(item)}

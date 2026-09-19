@@ -213,7 +213,7 @@ function WeeklyContentCell({
             onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); void handleWeekCheckAll(checklist, characterIndex, checklistIndex, dispatch, isBonusModeEnabled); } }}
             className={clsx("flex h-full min-h-20 cursor-pointer flex-col justify-center gap-2.5 p-2.5 transition-colors", isComplete && "bg-success-50/85 dark:bg-success-950/30")}>
             <div className="flex min-w-0 items-center justify-start gap-2 text-left text-[10px]">
-                <span className="min-w-0 truncate font-semibold text-blue-600 dark:text-blue-400">일반 {summary.gold.toLocaleString()}</span>
+                <span className="min-w-0 truncate font-semibold text-blue-600 dark:text-blue-400">거래 가능 {summary.gold.toLocaleString()}</span>
                 <span className="min-w-0 truncate font-semibold text-amber-600 dark:text-amber-400">귀속 {summary.boundGold.toLocaleString()}</span>
             </div>
             <div className="flex w-full gap-1.5 rounded-lg border border-default-200 bg-white/80 p-1 shadow-sm dark:border-white/10 dark:bg-black/10">
@@ -251,7 +251,7 @@ function WeeklyContentCell({
                             <PopoverContent className="border border-default-200 bg-white p-3 text-xs shadow-xl dark:border-white/10 dark:bg-[#181818]">
                                 <div>
                                     <p className="font-semibold">{item.stage}관문 · {item.difficulty}</p>
-                                    <p className="mt-1 text-default-500">일반 {stageGold.gold.toLocaleString()} · 귀속 {stageGold.boundGold.toLocaleString()}</p>
+                                    <p className="mt-1 text-default-500">거래 가능 {stageGold.gold.toLocaleString()} · 귀속 {stageGold.boundGold.toLocaleString()}</p>
                                     <p className="mt-0.5 text-default-500">더보기 {stageGold.bonus.toLocaleString()}</p>
                                 </div>
                             </PopoverContent>
