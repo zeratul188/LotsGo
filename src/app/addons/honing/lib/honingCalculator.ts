@@ -10,6 +10,7 @@ const DISPLAY_NAMES: Record<OwnedMaterialKey, string> = Object.fromEntries([
 ]) as Record<OwnedMaterialKey, string>;
 
 type Action = { book: 0 | 1; breaths: HoningBreathAmounts };
+type ActiveBreaths = Partial<Record<HoningBreathKey, boolean>>;
 type StateResult = { attempts: number; cost: number; materials: Record<OwnedMaterialKey, number>; boundMaterials: Record<OwnedMaterialKey, number> };
 
 export function stoneRequirements(rate: HoningRate): Array<[OwnedMaterialKey, number]> {
@@ -100,6 +101,56 @@ function makeActionList(mode: HoningMode, rate: HoningRate, owned?: OwnedMateria
     return mode === 'full-breath' ? actions.filter((action) => action.book === (bookKey(rate) && (!onlyOwned || (owned?.[bookKey(rate) as OwnedMaterialKey] ?? 0) >= 1) ? 1 : 0)) : actions;
 }
 
+function initialActiveBreaths(rate: HoningRate): ActiveBreaths {
+    return Object.fromEntries(breathRequirements(rate).filter((item) => item.max > 0).map((item) => [item.key, true])) as ActiveBreaths;
+}
+
+function nextActiveBreaths(rate: HoningRate, action: Action, active: ActiveBreaths, mode: HoningMode): ActiveBreaths {
+    if (mode !== 'optimal') return active;
+    const next = { ...active };
+    for (const item of breathRequirements(rate)) {
+        if (active[item.key] && (action.breaths[item.key] ?? 0) < item.max) next[item.key] = false;
+    }
+    return next;
+}
+
+function makeContinuousOptimalActions(rate: HoningRate, failures: number, artisan: number, active: ActiveBreaths, owned?: OwnedMaterials, onlyOwned = false): Action[] {
+    const requirements = breathRequirements(rate).filter((item) => item.max > 0);
+    const baseActions = makeActionList('optimal', rate, owned, onlyOwned).filter((action) => requirements.every((item) => active[item.key] || (action.breaths[item.key] ?? 0) === 0));
+    const actions = new Map(baseActions.map((action) => [`${action.book}|${requirements.map((item) => action.breaths[item.key] ?? 0).join(',')}`, action]));
+    const bookOptions = [...new Set(baseActions.map((action) => action.book))];
+    const targetChance = (100 - artisan) / 0.465;
+
+    for (const book of bookOptions) {
+        const baseChance = rate.successRate + rate.successRate * 0.1 * Math.min(failures, 10) + rate.research + (book ? rate.successRate : 0);
+        const limits = requirements.map((item) => active[item.key] ? Math.min(item.max, onlyOwned ? Math.floor(owned?.[item.key] ?? 0) : item.max) : 0);
+        const addThresholdAction = (breaths: HoningBreathAmounts) => {
+            const action = { book, breaths } as Action;
+            const finalChance = chance(rate, failures, artisan, action);
+            if (artisan + finalChance * 0.465 < 100 && finalChance < 100) return;
+            const key = `${book}|${requirements.map((item) => breaths[item.key] ?? 0).join(',')}`;
+            actions.set(key, action);
+        };
+
+        if (requirements.length === 1) {
+            const item = requirements[0];
+            if (item.rate <= 0) continue;
+            const amount = Math.ceil((targetChance - baseChance) / item.rate - 1e-9);
+            if (amount >= 0 && amount <= limits[0]) addThresholdAction({ [item.key]: amount });
+        } else if (requirements.length === 2) {
+            const [first, second] = requirements;
+            if (second.rate <= 0) continue;
+            for (let firstAmount = 0; firstAmount <= limits[0]; firstAmount += 1) {
+                const secondAmount = Math.ceil((targetChance - baseChance - firstAmount * first.rate) / second.rate - 1e-9);
+                if (secondAmount < 0 || secondAmount > limits[1]) continue;
+                addThresholdAction({ [first.key]: firstAmount, [second.key]: secondAmount });
+            }
+        }
+    }
+
+    return [...actions.values()];
+}
+
 export function getHoningAttempt(input: HoningCalculationInput, options: HoningSimulationOptions): HoningAttempt | null {
     const rate = findHoningRate(input.tier, input.part, input.level);
     if (!rate) return null;
@@ -119,16 +170,18 @@ export function calculateHoning(input: HoningCalculationInput): HoningCalculatio
     if (!rate) return null;
     const initialOwned = createOwned(input.owned);
     const onlyOwned = input.onlyOwned === true;
+    const initialBreaths = initialActiveBreaths(rate);
     const policy = new Map<string, Action>();
     const memo = new Map<string, StateResult>();
-    const getStateKey = (failures: number, artisan: number, bound: OwnedMaterials) => `${failures}|${Math.round(artisan * 1000)}|${ALL_OWNED_KEYS.map((key) => Math.floor(bound[key] ?? 0)).join(',')}`;
-    const solve = (failures: number, artisan: number, bound: OwnedMaterials): StateResult => {
-        const stateKey = getStateKey(failures, artisan, bound);
+    const getStateKey = (failures: number, artisan: number, bound: OwnedMaterials, activeBreaths: ActiveBreaths) => `${failures}|${Math.round(artisan * 1000)}|${breathRequirements(rate).map((item) => activeBreaths[item.key] ? 1 : 0).join(',')}|${ALL_OWNED_KEYS.map((key) => Math.floor(bound[key] ?? 0)).join(',')}`;
+    const solve = (failures: number, artisan: number, bound: OwnedMaterials, activeBreaths: ActiveBreaths): StateResult => {
+        const stateKey = getStateKey(failures, artisan, bound, activeBreaths);
         const cached = memo.get(stateKey);
         if (cached) return cached;
         let best: StateResult | null = null;
         let bestAction: Action | null = null;
-        const availableActions = artisan >= 100 ? [{ book: 0 as const, breaths: {} }] : makeActionList(input.mode, rate, bound, onlyOwned).filter((action) => {
+        const candidateActions = input.mode === 'optimal' ? makeContinuousOptimalActions(rate, failures, artisan, activeBreaths, bound, onlyOwned) : makeActionList(input.mode, rate, bound, onlyOwned);
+        const availableActions = artisan >= 100 ? [{ book: 0 as const, breaths: {} }] : candidateActions.filter((action) => {
             if (onlyOwned) return actionMaterials(rate, action).every(([key, amount]) => (bound[key] ?? 0) >= amount);
             return actionMaterials(rate, action).filter(([key]) => key !== 'destiny-shard').every(([key]) => priceFor(key, input.prices) > 0);
         });
@@ -141,7 +194,8 @@ export function calculateHoning(input: HoningCalculationInput): HoningCalculatio
             const finalChance = chance(rate, failures, artisan, action);
             const failProbability = 1 - finalChance / 100;
             const nextArtisan = Math.min(100, artisan + finalChance * 0.465);
-            const future = finalChance >= 100 ? { attempts: 0, cost: 0, materials: emptyMaterials(), boundMaterials: emptyMaterials() } : solve(failures + 1, nextArtisan, nextBound);
+            const futureBreaths = nextActiveBreaths(rate, action, activeBreaths, input.mode);
+            const future = finalChance >= 100 ? { attempts: 0, cost: 0, materials: emptyMaterials(), boundMaterials: emptyMaterials() } : solve(failures + 1, nextArtisan, nextBound, futureBreaths);
             const candidate = { attempts: 1 + failProbability * future.attempts, cost: cost + failProbability * future.cost, materials: combineMaterials(consumed, future.materials, failProbability), boundMaterials: combineMaterials(boundConsumed, future.boundMaterials, failProbability) };
             if (!best || candidate.cost < best.cost) { best = candidate; bestAction = action; }
         }
@@ -150,11 +204,11 @@ export function calculateHoning(input: HoningCalculationInput): HoningCalculatio
         if (bestAction) policy.set(stateKey, bestAction);
         return result;
     };
-    const average = solve(input.initialFailures ?? 0, input.initialArtisan ?? 0, initialOwned);
+    const average = solve(input.initialFailures ?? 0, input.initialArtisan ?? 0, initialOwned, initialBreaths);
     const pityAttempts: HoningAttempt[] = [];
-    let failures = input.initialFailures ?? 0; let artisan = input.initialArtisan ?? 0; let bound = { ...initialOwned }; let pityCost = 0; const pityMaterials = emptyMaterials(); const pityBoundMaterials = emptyMaterials();
+    let failures = input.initialFailures ?? 0; let artisan = input.initialArtisan ?? 0; let bound = { ...initialOwned }; let activeBreaths = { ...initialBreaths }; let pityCost = 0; const pityMaterials = emptyMaterials(); const pityBoundMaterials = emptyMaterials();
     for (let attempt = 1; ; attempt += 1) {
-        const stateKey = getStateKey(failures, artisan, bound);
+        const stateKey = getStateKey(failures, artisan, bound, activeBreaths);
         const action = artisan >= 100 ? { book: 0 as const, breaths: {} } : policy.get(stateKey) ?? makeActionList(input.mode, rate, bound, onlyOwned)[0];
         if (!action) break;
         const before = artisan; const finalChance = chance(rate, failures, artisan, action); const consumed: MaterialAmount[] = []; let trialCost = rate.gold;
@@ -162,6 +216,7 @@ export function calculateHoning(input: HoningCalculationInput): HoningCalculatio
         pityCost += trialCost; artisan = finalChance >= 100 ? 100 : Math.min(100, artisan + finalChance * 0.465);
         pityAttempts.push({ attempt, baseChance: rate.successRate + rate.successRate * .1 * Math.min(failures, 10) + rate.research, artisanBefore: before, artisanAfter: artisan, book: action.book, breath: Object.values(action.breaths).reduce((sum, amount) => sum + (amount ?? 0), 0), finalChance, cost: trialCost, materials: consumed });
         if (finalChance >= 100) break;
+        activeBreaths = nextActiveBreaths(rate, action, activeBreaths, input.mode);
         failures += 1;
     }
     const toAmounts = (materials: Record<OwnedMaterialKey, number>): MaterialAmount[] => ALL_OWNED_KEYS.filter((key) => materials[key] > 0).map((key) => ({ key, amount: materials[key], paid: materials[key], icon: iconFor(key, input.prices), name: DISPLAY_NAMES[key] }));
