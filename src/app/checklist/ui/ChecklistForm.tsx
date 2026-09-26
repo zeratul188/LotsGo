@@ -516,6 +516,7 @@ export function ChecklistStatue({
     setAutoChecklistNickname,
     setAutoChecklistSharing
  }: ChecklistStatueProps) {
+    const { isOpen: isGoldDetailOpen, onOpen: onGoldDetailOpen, onOpenChange: onGoldDetailOpenChange } = useDisclosure();
     const [isLoading, setLoading] = useState(false);
     const [inputValue, setInputValue] = useState('');
     const [result, setResult] = useState<SearchCharacter[]>([]);
@@ -660,25 +661,27 @@ export function ChecklistStatue({
                                         </div>
                                     </PopoverContent>
                                 </Popover>
-                                <Popover showArrow disableAnimation placement="bottom-end">
-                                    <PopoverTrigger>
-                                        <Button
+                                <Button
                                             size="sm"
                                             variant="flat"
                                             color="warning"
                                             radius="sm"
-                                            className="h-8 min-w-[84px] shrink-0 font-medium">
+                                            className="h-8 min-w-[84px] shrink-0 font-medium"
+                                            onPress={onGoldDetailOpen}>
                                             자세히
-                                        </Button>
-                                    </PopoverTrigger>
-                                <PopoverContent className="border border-gray-200/80 bg-white/95 p-0 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#171717]/95">
-                                    <div className="w-[calc(100vw-40px)] p-4 min-[701px]:max-w-[760px]">
-                                        <div className="mb-3 flex items-start justify-between gap-3 border-b border-gray-200/80 pb-3 dark:border-white/10">
-                                            <div>
+                                </Button>
+                                <Modal isOpen={isGoldDetailOpen} onOpenChange={onGoldDetailOpenChange} placement="center" size="3xl" scrollBehavior="inside">
+                                    <ModalContent className="border border-gray-200/80 bg-white/95 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#171717]/95">
+                                    <ModalBody className="p-4">
+                                    <div className="w-full">
+                                        <div className="mb-3 border-b border-gray-200/80 pb-3 dark:border-white/10">
+                                            <div className="flex items-center gap-2">
                                                 <p className="font-semibold">주간 골드 상세</p>
+                                                <Chip size="sm" radius="sm" color="warning" variant="flat">{filteredChecklist.length}명</Chip>
+                                            </div>
+                                            <div>
                                                 <p className="mt-1 text-xs fadedtext">캐릭터별 획득 골드와 부수입을 확인하세요.</p>
                                             </div>
-                                            <Chip size="sm" radius="sm" color="warning" variant="flat">{filteredChecklist.length}명</Chip>
                                         </div>
                                         <Tabs
                                             aria-label="주간 골드 상세 탭"
@@ -778,8 +781,9 @@ export function ChecklistStatue({
                                             </Tab>
                                         </Tabs>
                                     </div>
-                                </PopoverContent>
-                                </Popover>
+                                    </ModalBody>
+                                    </ModalContent>
+                                </Modal>
                             </div>
                         </div>
                         <div className="flex w-full flex-col rounded-xl border border-secondary/20 bg-secondary/[0.04] p-3 dark:bg-secondary/[0.06]">

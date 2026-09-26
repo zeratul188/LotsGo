@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState, type WheelEvent } from "react";
 import {
+    Chip,
     Checkbox,
+    Divider,
     Popover,
     PopoverContent,
     PopoverTrigger,
@@ -25,6 +27,7 @@ import {
     getDayName,
     getIndexByNickname,
     getSimpleBossName,
+    getTextColorByDifficulty,
     getTypeDayValue,
     handleDayListCheck,
     handleHallsHourglassCheck,
@@ -256,12 +259,50 @@ function WeeklyContentCell({
                     const showBonusDot = item.isBonus && stageGold.bonus > 0;
                     return (
                         <Tooltip key={`${item.stage}-${itemIndex}`} showArrow placement="top" content={
-                            <div className="min-w-44 space-y-1.5 p-1 text-xs tabular-nums">
-                                <p className="mb-2 font-semibold text-foreground">{item.stage}관문 · {item.difficulty}</p>
-                                <div className="flex justify-between gap-4"><span className="text-default-500">거래 가능 골드</span><span className="font-medium text-foreground">{stageGold.gold.toLocaleString()}</span></div>
-                                <div className="flex justify-between gap-4"><span className="text-default-500">귀속 골드</span><span className="font-medium text-foreground">{stageGold.boundGold.toLocaleString()}</span></div>
-                                <div className="flex justify-between gap-4"><span className="text-default-500">더보기 골드</span><span className="font-medium text-foreground">{stageGold.bonus.toLocaleString()}</span></div>
-                                {item.isBiweekly ? <p className="border-t border-default-200 pt-2 text-amber-700 dark:border-white/10 dark:text-amber-300">2주에 1회 클리어 가능</p> : null}
+                            <div className="w-[280px] max-w-[calc(100vw-48px)] p-2">
+                                <h3 className="mb-3 font-semibold">{content.name}</h3>
+                                <div className="mb-1.5 flex w-full items-center gap-2">
+                                    <Chip radius="sm" size="sm" color={getTextColorByDifficulty(item.difficulty)} variant="flat">
+                                        {item.difficulty}
+                                    </Chip>
+                                    <div className="grow"/>
+                                    <Chip radius="sm" size="sm" variant="flat">{item.stage}관문</Chip>
+                                </div>
+                                <Divider/>
+                                <div className="my-2 w-full rounded-lg bg-gray-100/70 p-3 tabular-nums dark:bg-gray-900">
+                                    <div className="mb-1 flex w-full items-center gap-2">
+                                        <p className="fadedtext">골드</p>
+                                        <div className="flex grow items-center justify-end gap-1">
+                                            <img src="/icons/gold.png" alt="" className="h-4 w-4"/>
+                                            <p>{stageGold.gold.toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                    {stageGold.boundGold > 0 && (
+                                        <div className="mb-1 flex w-full items-center gap-2">
+                                            <p className="fadedtext">귀속 골드</p>
+                                            <div className="flex grow items-center justify-end gap-1">
+                                                <img src="/icons/gold.png" alt="" className="h-4 w-4"/>
+                                                <p>{stageGold.boundGold.toLocaleString()}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {stageGold.bonus > 0 && (
+                                        <div className="flex w-full items-center gap-2">
+                                            <p className="fadedtext">더보기 골드</p>
+                                            <div className="flex grow items-center justify-end gap-1">
+                                                <img src="/icons/gold.png" alt="" className="h-4 w-4"/>
+                                                <p>{stageGold.bonus.toLocaleString()}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {item.isBiweekly && (
+                                        <>
+                                            <Divider className="my-2"/>
+                                            <p className="fadedtext text-sm">해당 관문은 2주에 1번씩 클리어를 하실 수 있습니다.</p>
+                                            {item.isDisable && <p className="text-sm text-red-400 dark:text-red-700">저번 주에 이미 이 관문을 완료했었습니다.<br/>다음 주에 이 관문이 초기화됩니다.</p>}
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         }>
                             <span className="flex min-w-0 flex-1">
