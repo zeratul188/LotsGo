@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState, type WheelEvent } from "react";
 import {
-    Button,
     Checkbox,
     Popover,
     PopoverContent,
@@ -91,10 +90,6 @@ function ParadiseIcon() {
     );
 }
 
-function MoreIcon() {
-    return <span aria-hidden="true" className="text-lg font-bold leading-none">•••</span>;
-}
-
 function OtherTasksPopover({
     label,
     items,
@@ -105,12 +100,21 @@ function OtherTasksPopover({
     onCheck: (index: number) => Promise<void>;
 }) {
     const completedCount = items.filter(item => item.isCheck).length;
+    const isComplete = items.length > 0 && completedCount === items.length;
     return (
         <Popover showArrow placement="bottom">
             <PopoverTrigger>
-                <Button isIconOnly size="sm" variant="light" aria-label={label} className="h-9 w-9 min-w-9 cursor-pointer">
-                    <MoreIcon/>
-                </Button>
+                <button
+                    type="button"
+                    aria-label={`${label} ${completedCount}/${items.length} 완료`}
+                    className={clsx(
+                        "flex h-9 w-9 min-w-9 cursor-pointer items-center justify-center rounded-lg border-2 px-0.5 text-[10px] font-semibold tabular-nums transition-colors",
+                        isComplete
+                            ? "border-success-500 bg-success-200/50 text-success-800 hover:bg-success-200/70 dark:border-emerald-500 dark:bg-emerald-950/70 dark:text-emerald-100 dark:hover:bg-emerald-900/70"
+                            : "border-default-400 bg-default-50 text-default-700 hover:bg-default-100 dark:border-slate-500 dark:bg-slate-800/60 dark:text-slate-100 dark:hover:bg-slate-700/60"
+                    )}>
+                    {completedCount}/{items.length}
+                </button>
             </PopoverTrigger>
             <PopoverContent className="w-[280px] overflow-hidden border border-secondary-200 bg-white p-0 shadow-xl dark:border-secondary-900/60 dark:bg-[#181818]">
                 <div className="w-full min-w-0 overflow-hidden">
@@ -168,7 +172,7 @@ function DailyContentCell({
                             onClick={useOnClickDayCheck(checklist, character.nickname, type, character.day, dispatch)}
                             className={clsx(
                                 "flex h-8 w-full cursor-pointer items-center justify-between rounded-md border px-2 text-left text-[11px] transition-colors",
-                                isChecked ? "border-success-300 bg-success-100 text-success-800 dark:border-success-700 dark:bg-success-900/35 dark:text-success-200" : "border-default-200 hover:bg-default-100 dark:border-white/10 dark:hover:bg-white/[0.06]"
+                                isChecked ? "border-success-300 bg-success-100 text-success-800 dark:border-emerald-500/70 dark:bg-emerald-950/70 dark:text-emerald-100" : "border-default-200 hover:bg-default-100 dark:border-white/10 dark:hover:bg-white/[0.06]"
                             )}>
                             <span className="truncate">{getDayName(type, character.level)}</span>
                             <span className="ml-1 shrink-0 font-semibold">{isChecked ? '완료' : dayValue.restValue}</span>
@@ -218,7 +222,7 @@ function WeeklyContentCell({
             aria-label={`${content.name} ${isBonusModeEnabled ? '더보기' : '관문'} 전체 ${isComplete ? '해제' : '체크'}`}
             onClick={() => void handleWeekCheckAll(checklist, characterIndex, checklistIndex, dispatch, isBonusModeEnabled)}
             onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); void handleWeekCheckAll(checklist, characterIndex, checklistIndex, dispatch, isBonusModeEnabled); } }}
-            className={clsx("flex h-full min-h-20 cursor-pointer flex-col justify-center gap-1.5 p-2.5 transition-colors", isComplete && "bg-success-100/90 dark:bg-success-900/40")}>
+            className={clsx("flex h-full min-h-20 cursor-pointer flex-col justify-center gap-1.5 p-2.5 transition-colors", isComplete && "bg-emerald-100/80 dark:bg-emerald-900/55")}>
             <div className="flex min-w-0 items-center justify-start gap-1.5 text-left text-[10px]">
                 {hasSharedGold || hasBoundGold ? (
                     <>
