@@ -44,6 +44,7 @@ import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 import OtherGoldManager from "./OtherGoldManager";
 import AnimatedNumber from "./AnimatedNumber";
 import { SettingIcon } from "../../icons/SettingIcon";
+import type { ReactNode } from "react";
 
 type ChecklistTableViewProps = {
     checklist: CheckCharacter[];
@@ -58,6 +59,10 @@ type ChecklistTableViewProps = {
     isHideDayContent: boolean;
     isBonusModeEnabled: boolean;
     onOpenContentManager: (characterIndex: number, type: 'day' | 'week') => void;
+    autoChecklistNickname: string;
+    isAutoChecklistSharing: boolean;
+    onSelectAutoChecklistCharacter: (nickname: string) => void;
+    renderCharacterSettings: (characterIndex: number) => ReactNode;
 };
 
 function getStageColor(difficulty: string, disabled: boolean) {
@@ -213,7 +218,7 @@ function WeeklyContentCell({
             aria-label={`${content.name} ${isBonusModeEnabled ? '더보기' : '관문'} 전체 ${isComplete ? '해제' : '체크'}`}
             onClick={() => void handleWeekCheckAll(checklist, characterIndex, checklistIndex, dispatch, isBonusModeEnabled)}
             onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); void handleWeekCheckAll(checklist, characterIndex, checklistIndex, dispatch, isBonusModeEnabled); } }}
-            className={clsx("flex h-full min-h-20 cursor-pointer flex-col justify-center gap-1.5 p-2.5 transition-colors", isComplete && "bg-success-50/85 dark:bg-success-950/30")}>
+            className={clsx("flex h-full min-h-20 cursor-pointer flex-col justify-center gap-1.5 p-2.5 transition-colors", isComplete && "bg-success-100/90 dark:bg-success-900/40")}>
             <div className="flex min-w-0 items-center justify-start gap-1.5 text-left text-[10px]">
                 {hasSharedGold || hasBoundGold ? (
                     <>
@@ -321,7 +326,11 @@ export default function ChecklistTableView({
     isHideCompleteContent,
     isHideDayContent,
     isBonusModeEnabled,
-    onOpenContentManager
+    onOpenContentManager,
+    autoChecklistNickname,
+    isAutoChecklistSharing,
+    onSelectAutoChecklistCharacter,
+    renderCharacterSettings
 }: ChecklistTableViewProps) {
     const [expandedGoldNickname, setExpandedGoldNickname] = useState<string | null>(null);
     const [scrollLeft, setScrollLeft] = useState(0);
@@ -373,7 +382,7 @@ export default function ChecklistTableView({
     return (
         <section className="mt-5 overflow-hidden rounded-2xl border border-default-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]">
             <div className="checklist-table-scroll h-[calc(100vh-520px)] min-h-[300px] overflow-x-hidden overflow-y-auto overscroll-contain min-[1500px]:h-[calc(100vh-440px)] min-[1500px]:min-h-[360px]">
-                <div className="sticky top-0 z-40 grid grid-cols-[260px_minmax(0,1fr)_184px] border-b border-default-200 bg-default-50/95 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#202020]/95">
+                <div className="sticky top-0 z-40 grid grid-cols-[280px_minmax(0,1fr)_184px] border-b border-default-200 bg-default-50/95 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#202020]/95">
                     <div className="h-16 border-r border-default-200 dark:border-white/10"><span className="sr-only">캐릭터 정보</span></div>
                     <div ref={contentViewportRef} className="min-w-0 overflow-hidden" onWheel={handleContentWheel}>
                         <div className="flex h-16 transition-transform duration-150" style={contentTransform}>
@@ -389,13 +398,15 @@ export default function ChecklistTableView({
                 {visibleCharacters.map(character => {
                     const characterIndex = getIndexByNickname(checklist, character.nickname);
                     const isGoldExpanded = expandedGoldNickname === character.nickname;
+                    const isSharingCharacter = isAutoChecklistSharing && autoChecklistNickname === character.nickname;
                     return (
                         <div key={character.nickname} className="border-b border-default-200 last:border-b-0 dark:border-white/10">
-                            <div className="grid grid-cols-[260px_minmax(0,1fr)_184px]">
+                            <div className="grid grid-cols-[280px_minmax(0,1fr)_184px]">
+                                <div className={clsx("flex min-h-20 w-[280px] items-stretch border-r border-default-200 dark:border-white/10", isSharingCharacter ? "bg-primary-50 dark:bg-primary-950/30" : "bg-white dark:bg-[#171717]")}>
                                 <button
                                     type="button"
                                     onClick={() => setExpandedGoldNickname(isGoldExpanded ? null : character.nickname)}
-                                    className={clsx("flex min-h-20 w-[260px] cursor-pointer items-center gap-3 border-r border-default-200 bg-white px-4 py-3 text-left transition-colors hover:bg-default-50 dark:border-white/10 dark:bg-[#171717] dark:hover:bg-white/[0.04]", isGoldExpanded && "bg-warning-50 dark:bg-warning-950/20")}
+                                    className={clsx("flex min-w-0 grow cursor-pointer items-center gap-2 px-3 py-3 text-left transition-colors hover:bg-default-50 dark:hover:bg-white/[0.04]", isSharingCharacter && "bg-primary-50 dark:bg-primary-950/30", isGoldExpanded && !isSharingCharacter && "bg-warning-50 dark:bg-warning-950/20")}
                                     aria-expanded={isGoldExpanded}>
                                     <JobEmblemIcon job={character.job} size={38} className="shrink-0"/>
                                     <div className="min-w-0 grow">
@@ -409,6 +420,13 @@ export default function ChecklistTableView({
                                         </div>
                                     </div>
                                 </button>
+                                <div className="flex shrink-0 flex-col items-center justify-center gap-1 px-0.5">
+                                    {renderCharacterSettings(characterIndex)}
+                                    <button type="button" onClick={() => onSelectAutoChecklistCharacter(character.nickname)} disabled={!isAutoChecklistSharing || autoChecklistNickname === character.nickname} className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-default-500 hover:bg-default-100 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-white/[0.08]" aria-label={`${character.nickname} 자동 체크 전환`} title={isAutoChecklistSharing ? '자동 체크 캐릭터로 전환' : '화면 공유 중에만 전환할 수 있습니다.'}>
+                                        <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h13l-3-3M20 17H7l3 3"/><path d="M17 4l3 3-3 3M7 14l-3 3 3 3"/></svg>
+                                    </button>
+                                </div>
+                                </div>
                                  <div className="min-w-0 overflow-hidden" onWheel={handleContentWheel}>
                                     <div className="flex h-full transition-transform duration-150" style={contentTransform}>
                                         {!isHideDayContent ? (
@@ -459,7 +477,7 @@ export default function ChecklistTableView({
                     );
                 })}
             </div>
-            {maxScrollLeft > 0 ? <div className="grid grid-cols-[260px_minmax(0,1fr)_184px] border-t border-default-200 bg-white/95 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] backdrop-blur dark:border-white/10 dark:bg-[#171717]/95">
+            {maxScrollLeft > 0 ? <div className="grid grid-cols-[280px_minmax(0,1fr)_184px] border-t border-default-200 bg-white/95 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] backdrop-blur dark:border-white/10 dark:bg-[#171717]/95">
                 <div className="border-r border-default-200 dark:border-white/10"/>
                 <div className="px-4 py-2">
                     <Slider

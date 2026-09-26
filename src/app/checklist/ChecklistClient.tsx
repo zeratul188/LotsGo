@@ -1,5 +1,5 @@
 'use client'
-import { ChecklistStatue, useChecklistForm, ChecklistComponent, ChecklistModal, RemainChecklistComponent, FilterComponent } from "./ui/ChecklistForm"
+import { ChecklistStatue, useChecklistForm, ChecklistComponent, ChecklistModal, RemainChecklistComponent, FilterComponent, SettingButton } from "./ui/ChecklistForm"
 import BossInfoModal from "./ui/BossInfoModal"
 import { CubeDetailComponent } from "./ui/CubeComponents"
 import { useSelector } from "react-redux";
@@ -611,6 +611,19 @@ export default function ChecklistClient() {
                                     isHideCompleteContent={checklistForm.isHideCompleteContent}
                                     isHideDayContent={checklistForm.isHideDayContent}
                                     isBonusModeEnabled={isTableBonusMode}
+                                    autoChecklistNickname={autoChecklistNickname}
+                                    isAutoChecklistSharing={isAutoChecklistSharing}
+                                    onSelectAutoChecklistCharacter={setAutoChecklistNickname}
+                                    renderCharacterSettings={(characterIndex) => <SettingButton
+                                        size={15}
+                                        compact
+                                        checklist={checklist}
+                                        characterIndex={characterIndex}
+                                        dispatch={dispatch}
+                                        accounts={checklistForm.accounts}
+                                        setAccounts={checklistForm.setAccounts}
+                                        isAutoRegisteringRaids={isAutoRegisteringRaids}
+                                        onRaidAutoRegistration={handleRaidAutoRegistration}/>}
                                     onOpenContentManager={(characterIndex, type) => {
                                         checklistForm.setModalData({ characterIndex, type });
                                         checklistForm.onOpen();

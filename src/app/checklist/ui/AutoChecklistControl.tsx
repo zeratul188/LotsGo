@@ -15,6 +15,7 @@ import {
     useDisclosure
 } from '@heroui/react';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type Tesseract from 'tesseract.js';
 import JobEmblemIcon from '@/Icons/JobEmblemIcon';
 import SwitchCharacterIcon from '@/Icons/SwitchCharacterIcon';
@@ -33,7 +34,8 @@ type AutoChecklistControlProps = {
     setSelectedNickname: (nickname: string) => void,
     onSharingStateChange: (isSharing: boolean) => void,
     compactLabel?: boolean,
-    className?: string
+    className?: string,
+    statusContainer?: HTMLDivElement | null
 }
 
 type CaptureStatus = 'idle' | 'requesting' | 'loading-ocr' | 'active' | 'stopped' | 'error';
@@ -196,7 +198,8 @@ export default function AutoChecklistControl({
     setSelectedNickname,
     onSharingStateChange,
     compactLabel = false,
-    className
+    className,
+    statusContainer
 }: AutoChecklistControlProps) {
     const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
     const [status, setStatus] = useState<CaptureStatus>('idle');
@@ -963,6 +966,15 @@ export default function AutoChecklistControl({
         onSharingStateChange(isSharing);
     }, [isSharing, onSharingStateChange]);
 
+    const sharingStatus = <div className={`min-w-0 items-center gap-2 rounded-lg border border-primary-200/80 bg-primary-50/80 px-3 py-2 text-sm text-primary-700 dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-sky-200 ${statusContainer === undefined ? 'hidden md960:col-span-4 md960:flex' : 'mt-2 flex'}`}>
+        <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-danger"/>
+        <p className="min-w-0 truncate">
+            {currentBoss
+                ? `${selectedNickname} "${currentBoss.name}" 레이드 중...`
+                : `"${selectedNickname}" 화면 공유 중...`}
+        </p>
+    </div>;
+
     return (
         <>
             <Button
@@ -976,16 +988,7 @@ export default function AutoChecklistControl({
                 onPress={onOpen}>
                 {status === 'active' ? (compactLabel ? '자동 체크 중' : '자동 체크 작동 중') : (compactLabel ? '자동 체크' : '자동 체크 기능 켜기')}
             </Button>
-            {isSharing ? (
-                <div className="hidden min-w-0 items-center gap-2 rounded-lg border border-primary-200/80 bg-primary-50/80 px-3 py-2 text-sm text-primary-700 md960:col-span-4 md960:flex dark:border-slate-700/80 dark:bg-slate-900/80 dark:text-sky-200">
-                    <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-danger"/>
-                    <p className="min-w-0 truncate">
-                        {currentBoss
-                            ? `${selectedNickname} "${currentBoss.name}" 레이드 중...`
-                            : `"${selectedNickname}" 화면 공유 중...`}
-                    </p>
-                </div>
-            ) : null}
+            {isSharing && (statusContainer === undefined ? sharingStatus : statusContainer ? createPortal(sharingStatus, statusContainer) : null)}
             <video ref={videoRef} className="hidden" muted playsInline/>
             <canvas ref={canvasRef} className="hidden"/>
             <canvas ref={progressCanvasRef} className="hidden"/>

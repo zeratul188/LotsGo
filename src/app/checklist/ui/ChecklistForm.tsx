@@ -527,6 +527,7 @@ export function ChecklistStatue({
     const [newMax, setNewMax] = useState(0);
     const [isDisableUpdate, setDisableUpdate] = useState(true);
     const [remainingTime, setRemainingTime] = useState(0);
+    const [sharingStatusContainer, setSharingStatusContainer] = useState<HTMLDivElement | null>(null);
 
     useEffect(() => {
         setNewMax(max);
@@ -909,6 +910,7 @@ export function ChecklistStatue({
                             setSelectedNickname={setAutoChecklistNickname}
                             onSharingStateChange={setAutoChecklistSharing}
                             compactLabel
+                            statusContainer={sharingStatusContainer}
                             className="col-span-3"/>
                     </div> : <div className="grid w-full grid-cols-3 gap-2 md960:grid-cols-4">
                         <Button
@@ -955,6 +957,7 @@ export function ChecklistStatue({
                     </div>}
                 </CardFooter>
             </Card>
+            {isTableView ? <div ref={setSharingStatusContainer} className="w-full"/> : null}
             <PositionModal
                 isOpenModalPosition={isOpenModalPosition}
                 onOpenChangePosition={onOpenChangePosition}
@@ -2297,7 +2300,7 @@ function AutoChecklistCharacterButton({
 }
 
 // 설정 버튼 요소
-type SettingButtonProps = {
+export type SettingButtonProps = {
     size: number,
     checklist: CheckCharacter[],
     characterIndex: number,
@@ -2308,7 +2311,7 @@ type SettingButtonProps = {
     isAutoRegisteringRaids: boolean,
     onRaidAutoRegistration: (nickname?: string) => Promise<void>
 }
-function SettingButton({
+export function SettingButton({
     size,
     checklist,
     characterIndex,
