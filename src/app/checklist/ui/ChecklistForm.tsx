@@ -527,6 +527,7 @@ export function ChecklistStatue({
     const [newMax, setNewMax] = useState(0);
     const [isDisableUpdate, setDisableUpdate] = useState(true);
     const [remainingTime, setRemainingTime] = useState(0);
+    const [sharingStatusContainer, setSharingStatusContainer] = useState<HTMLDivElement | null>(null);
 
     useEffect(() => {
         setNewMax(max);
@@ -909,6 +910,7 @@ export function ChecklistStatue({
                             setSelectedNickname={setAutoChecklistNickname}
                             onSharingStateChange={setAutoChecklistSharing}
                             compactLabel
+                            statusContainer={sharingStatusContainer}
                             className="col-span-3"/>
                     </div> : <div className="grid w-full grid-cols-3 gap-2 md960:grid-cols-4">
                         <Button
@@ -955,6 +957,7 @@ export function ChecklistStatue({
                     </div>}
                 </CardFooter>
             </Card>
+            {isTableView ? <div ref={setSharingStatusContainer} className="w-full"/> : null}
             <PositionModal
                 isOpenModalPosition={isOpenModalPosition}
                 onOpenChangePosition={onOpenChangePosition}
@@ -1664,22 +1667,29 @@ export function ChecklistComponent({
                                                                  const goldSummary = getChecklistContentGoldSummary(bosses, item, character.isGold);
                                                                  return (
                                                                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[9pt]">
-                                                                         <AnimatedChecklistStrike
-                                                                             isSelected={isCheckHomework(item)}
-                                                                             className={clsx(
-                                                                                 "flex items-center gap-1",
-                                                                                 isCheckHomework(item) ? "fadedtext" : "text-amber-600 dark:text-amber-400"
-                                                                             )}>
-                                                                             <span>거래 가능 {goldSummary.gold.toLocaleString()}</span>
-                                                                         </AnimatedChecklistStrike>
-                                                                         <AnimatedChecklistStrike
-                                                                             isSelected={isCheckHomework(item)}
-                                                                             className={clsx(
-                                                                                 "flex items-center gap-1",
-                                                                                 isCheckHomework(item) ? "fadedtext" : "text-blue-600 dark:text-blue-400"
-                                                                             )}>
-                                                                             <span>귀속 {goldSummary.boundGold.toLocaleString()}</span>
-                                                                         </AnimatedChecklistStrike>
+                                                                         {goldSummary.gold > 0 && (
+                                                                             <AnimatedChecklistStrike
+                                                                                 isSelected={isCheckHomework(item)}
+                                                                                 className={clsx(
+                                                                                     "flex items-center gap-1",
+                                                                                     isCheckHomework(item) ? "fadedtext" : "text-amber-600 dark:text-amber-400"
+                                                                                 )}>
+                                                                                 <span>거래 가능 {goldSummary.gold.toLocaleString()}</span>
+                                                                             </AnimatedChecklistStrike>
+                                                                         )}
+                                                                         {goldSummary.boundGold > 0 && (
+                                                                             <AnimatedChecklistStrike
+                                                                                 isSelected={isCheckHomework(item)}
+                                                                                 className={clsx(
+                                                                                     "flex items-center gap-1",
+                                                                                     isCheckHomework(item) ? "fadedtext" : "text-blue-600 dark:text-blue-400"
+                                                                                 )}>
+                                                                                 <span>귀속 {goldSummary.boundGold.toLocaleString()}</span>
+                                                                             </AnimatedChecklistStrike>
+                                                                         )}
+                                                                         {goldSummary.gold === 0 && goldSummary.boundGold === 0 && (
+                                                                             <span className="text-default-400">획득 가능 골드 없음</span>
+                                                                         )}
                                                                      </div>
                                                                  );
                                                              })()}
@@ -2297,7 +2307,7 @@ function AutoChecklistCharacterButton({
 }
 
 // 설정 버튼 요소
-type SettingButtonProps = {
+export type SettingButtonProps = {
     size: number,
     checklist: CheckCharacter[],
     characterIndex: number,
@@ -2308,7 +2318,7 @@ type SettingButtonProps = {
     isAutoRegisteringRaids: boolean,
     onRaidAutoRegistration: (nickname?: string) => Promise<void>
 }
-function SettingButton({
+export function SettingButton({
     size,
     checklist,
     characterIndex,

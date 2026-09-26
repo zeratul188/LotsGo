@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState, type WheelEvent } from "react";
 import {
-    Button,
     Checkbox,
     Popover,
     PopoverContent,
@@ -18,8 +17,6 @@ import type { CheckCharacter, Checklist, OtherList } from "../../store/checklist
 import {
     filterChecklist,
     getAllGoldCharacter,
-    getBackgroundByStage,
-    getBorderByStage,
     getBossesByHaveContent,
     getBossGoldByContent,
     getChecklistContentGoldSummary,
@@ -44,6 +41,7 @@ import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 import OtherGoldManager from "./OtherGoldManager";
 import AnimatedNumber from "./AnimatedNumber";
 import { SettingIcon } from "../../icons/SettingIcon";
+import type { ReactNode } from "react";
 
 type ChecklistTableViewProps = {
     checklist: CheckCharacter[];
@@ -58,15 +56,30 @@ type ChecklistTableViewProps = {
     isHideDayContent: boolean;
     isBonusModeEnabled: boolean;
     onOpenContentManager: (characterIndex: number, type: 'day' | 'week') => void;
+    autoChecklistNickname: string;
+    isAutoChecklistSharing: boolean;
+    onSelectAutoChecklistCharacter: (nickname: string) => void;
+    renderCharacterSettings: (characterIndex: number) => ReactNode;
 };
 
-function getStageColor(difficulty: string, disabled: boolean) {
-    if (disabled) return '#9ca3af';
-    if (difficulty.includes('싱글') || difficulty.includes('매칭')) return '#60a5fa';
-    if (difficulty.includes('노말') || difficulty.includes('1단계')) return '#16a34a';
-    if (difficulty.includes('하드') || difficulty.includes('2단계')) return '#dc2626';
-    if (difficulty.includes('더퍼스트') || difficulty.includes('나이트메어') || difficulty.includes('3단계')) return '#9333ea';
-    return '#4b5563';
+function getStageButtonClass(difficulty: string, disabled: boolean, active: boolean, bonusMode: boolean) {
+    if (disabled) return 'border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-500';
+    if (bonusMode && active) return 'border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-600/70 dark:bg-amber-950/70 dark:text-amber-200 dark:hover:bg-amber-900/70';
+    if (difficulty.includes('싱글') || difficulty.includes('매칭')) return active
+        ? 'border-blue-300 bg-blue-50 text-blue-800 hover:bg-blue-100 dark:border-blue-500/60 dark:bg-blue-950/70 dark:text-blue-200 dark:hover:bg-blue-900/60'
+        : 'border-slate-200 bg-white text-blue-600 hover:border-blue-300 hover:bg-blue-50 dark:border-slate-700 dark:bg-[#202025] dark:text-blue-300 dark:hover:border-blue-500/60 dark:hover:bg-blue-950/50';
+    if (difficulty.includes('노말') || difficulty.includes('1단계')) return active
+        ? 'border-green-300 bg-green-50 text-green-800 hover:bg-green-100 dark:border-green-500/60 dark:bg-green-950/70 dark:text-green-200 dark:hover:bg-green-900/60'
+        : 'border-slate-200 bg-white text-green-700 hover:border-green-300 hover:bg-green-50 dark:border-slate-700 dark:bg-[#202025] dark:text-green-300 dark:hover:border-green-500/60 dark:hover:bg-green-950/50';
+    if (difficulty.includes('하드') || difficulty.includes('2단계')) return active
+        ? 'border-red-300 bg-red-50 text-red-800 hover:bg-red-100 dark:border-red-500/60 dark:bg-red-950/70 dark:text-red-200 dark:hover:bg-red-900/60'
+        : 'border-slate-200 bg-white text-red-600 hover:border-red-300 hover:bg-red-50 dark:border-slate-700 dark:bg-[#202025] dark:text-red-300 dark:hover:border-red-500/60 dark:hover:bg-red-950/50';
+    if (difficulty.includes('더퍼스트') || difficulty.includes('나이트메어') || difficulty.includes('3단계')) return active
+        ? 'border-purple-300 bg-purple-50 text-purple-800 hover:bg-purple-100 dark:border-purple-500/60 dark:bg-purple-950/70 dark:text-purple-200 dark:hover:bg-purple-900/60'
+        : 'border-slate-200 bg-white text-purple-600 hover:border-purple-300 hover:bg-purple-50 dark:border-slate-700 dark:bg-[#202025] dark:text-purple-300 dark:hover:border-purple-500/60 dark:hover:bg-purple-950/50';
+    return active
+        ? 'border-gray-400 bg-gray-100 text-gray-800 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
+        : 'border-gray-300 bg-gray-50 text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300';
 }
 
 function HourglassIcon() {
@@ -86,10 +99,6 @@ function ParadiseIcon() {
     );
 }
 
-function MoreIcon() {
-    return <span aria-hidden="true" className="text-lg font-bold leading-none">•••</span>;
-}
-
 function OtherTasksPopover({
     label,
     items,
@@ -100,12 +109,21 @@ function OtherTasksPopover({
     onCheck: (index: number) => Promise<void>;
 }) {
     const completedCount = items.filter(item => item.isCheck).length;
+    const isComplete = items.length > 0 && completedCount === items.length;
     return (
         <Popover showArrow placement="bottom">
             <PopoverTrigger>
-                <Button isIconOnly size="sm" variant="light" aria-label={label} className="h-9 w-9 min-w-9 cursor-pointer">
-                    <MoreIcon/>
-                </Button>
+                <button
+                    type="button"
+                    aria-label={`${label} ${completedCount}/${items.length} 완료`}
+                    className={clsx(
+                        "flex h-9 w-9 min-w-9 cursor-pointer items-center justify-center rounded-lg border-2 px-0.5 text-[10px] font-semibold tabular-nums transition-colors",
+                        isComplete
+                            ? "border-success-500 bg-success-200/50 text-success-800 hover:bg-success-200/70 dark:border-emerald-500 dark:bg-emerald-950/70 dark:text-emerald-100 dark:hover:bg-emerald-900/70"
+                            : "border-default-400 bg-default-50 text-default-700 hover:bg-default-100 dark:border-slate-500 dark:bg-slate-800/60 dark:text-slate-100 dark:hover:bg-slate-700/60"
+                    )}>
+                    {completedCount}/{items.length}
+                </button>
             </PopoverTrigger>
             <PopoverContent className="w-[280px] overflow-hidden border border-secondary-200 bg-white p-0 shadow-xl dark:border-secondary-900/60 dark:bg-[#181818]">
                 <div className="w-full min-w-0 overflow-hidden">
@@ -163,7 +181,7 @@ function DailyContentCell({
                             onClick={useOnClickDayCheck(checklist, character.nickname, type, character.day, dispatch)}
                             className={clsx(
                                 "flex h-8 w-full cursor-pointer items-center justify-between rounded-md border px-2 text-left text-[11px] transition-colors",
-                                isChecked ? "border-success-300 bg-success-100 text-success-800 dark:border-success-700 dark:bg-success-900/35 dark:text-success-200" : "border-default-200 hover:bg-default-100 dark:border-white/10 dark:hover:bg-white/[0.06]"
+                                isChecked ? "border-success-300 bg-success-100 text-success-800 dark:border-emerald-500/70 dark:bg-emerald-950/70 dark:text-emerald-100" : "border-default-200 hover:bg-default-100 dark:border-white/10 dark:hover:bg-white/[0.06]"
                             )}>
                             <span className="truncate">{getDayName(type, character.level)}</span>
                             <span className="ml-1 shrink-0 font-semibold">{isChecked ? '완료' : dayValue.restValue}</span>
@@ -213,7 +231,7 @@ function WeeklyContentCell({
             aria-label={`${content.name} ${isBonusModeEnabled ? '더보기' : '관문'} 전체 ${isComplete ? '해제' : '체크'}`}
             onClick={() => void handleWeekCheckAll(checklist, characterIndex, checklistIndex, dispatch, isBonusModeEnabled)}
             onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); void handleWeekCheckAll(checklist, characterIndex, checklistIndex, dispatch, isBonusModeEnabled); } }}
-            className={clsx("flex h-full min-h-20 cursor-pointer flex-col justify-center gap-1.5 p-2.5 transition-colors", isComplete && "bg-success-50/85 dark:bg-success-950/30")}>
+            className={clsx("flex h-full min-h-20 cursor-pointer flex-col justify-center gap-1.5 p-2.5 transition-colors", isComplete && "bg-emerald-100/80 dark:bg-emerald-900/55")}>
             <div className="flex min-w-0 items-center justify-start gap-1.5 text-left text-[10px]">
                 {hasSharedGold || hasBoundGold ? (
                     <>
@@ -231,46 +249,42 @@ function WeeklyContentCell({
                     </>
                 ) : <span className="text-default-400">획득 가능한 골드 없음</span>}
             </div>
-            <div className="flex w-full gap-1.5 rounded-lg border border-default-200 bg-white/80 p-1 shadow-sm dark:border-white/10 dark:bg-black/10">
+            <div className="flex w-full gap-1.5">
                 {content.items.map((item, itemIndex) => {
                     const stageGold = getBossGoldByContent(bosses, content.name, item.stage, item.difficulty);
                     const isActive = isBonusModeEnabled ? item.isBonus : item.isCheck;
                     const showBonusDot = item.isBonus && stageGold.bonus > 0;
                     return (
-                        <Popover key={`${item.stage}-${itemIndex}`} showArrow placement="bottom">
-                            <PopoverTrigger>
+                        <Tooltip key={`${item.stage}-${itemIndex}`} showArrow placement="top" content={
+                            <div className="min-w-44 space-y-1.5 p-1 text-xs tabular-nums">
+                                <p className="mb-2 font-semibold text-foreground">{item.stage}관문 · {item.difficulty}</p>
+                                <div className="flex justify-between gap-4"><span className="text-default-500">거래 가능 골드</span><span className="font-medium text-foreground">{stageGold.gold.toLocaleString()}</span></div>
+                                <div className="flex justify-between gap-4"><span className="text-default-500">귀속 골드</span><span className="font-medium text-foreground">{stageGold.boundGold.toLocaleString()}</span></div>
+                                <div className="flex justify-between gap-4"><span className="text-default-500">더보기 골드</span><span className="font-medium text-foreground">{stageGold.bonus.toLocaleString()}</span></div>
+                                {item.isBiweekly ? <p className="border-t border-default-200 pt-2 text-amber-700 dark:border-white/10 dark:text-amber-300">2주에 1회 클리어 가능</p> : null}
+                            </div>
+                        }>
+                            <span className="flex min-w-0 flex-1">
                                 <button
                                     type="button"
                                     disabled={item.isDisable}
                                     onClick={(event) => { event.stopPropagation(); return void (isBonusModeEnabled
                                         ? handleWeekBonusCheckStage(checklist, characterIndex, checklistIndex, dispatch, item.stage)
                                         : handleWeekCheckStage(checklist, characterIndex, checklistIndex, dispatch, item.stage, item.isDisable)); }}
-                                    style={isActive ? {
-                                        backgroundColor: isBonusModeEnabled ? '#fcd34d' : getStageColor(item.difficulty, item.isDisable),
-                                        color: isBonusModeEnabled ? '#451a03' : '#ffffff',
-                                        opacity: 0.82
-                                    } : undefined}
                                     className={clsx(
-                                        "relative flex h-7 min-w-0 flex-1 cursor-pointer items-center justify-center rounded-md border text-[10px] font-semibold shadow-sm transition-all hover:z-10 hover:-translate-y-px hover:shadow disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0",
-                                        getBorderByStage(item.difficulty, item.isDisable),
-                                        isActive ? `${isBonusModeEnabled ? "!border-amber-600 !bg-amber-300/75 !text-amber-950" : getBackgroundByStage(item.difficulty, item.isDisable)} bg-opacity-80 text-white` : "bg-white hover:bg-default-100 dark:bg-[#181818] dark:hover:bg-white/[0.06]"
+                                        "relative flex h-8 w-full min-w-0 cursor-pointer items-center justify-center gap-1 rounded-md border text-xs font-semibold tabular-nums shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed dark:shadow-none",
+                                        getStageButtonClass(item.difficulty, item.isDisable, isActive, isBonusModeEnabled)
                                     )}
+                                    aria-pressed={isActive}
                                     aria-label={`${content.name} ${item.stage} ${isBonusModeEnabled ? (item.isBonus ? '더보기 해제' : '더보기') : (item.isCheck ? '완료 해제' : '완료')}`}>
+                                    <span aria-hidden="true" className="flex h-3 w-3 shrink-0 items-center justify-center">
+                                        {isActive ? <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8 3 3 7-7"/></svg> : <span className="h-1.5 w-1.5 rounded-full border border-current opacity-50"/>}
+                                    </span>
                                     <span>{item.stage}</span>
-                                    {showBonusDot ? <span className={clsx(
-                                        "absolute right-1 top-1 h-2 w-2 rounded-full",
-                                        item.isBonus ? "bg-yellow-400 dark:bg-yellow-300" : "bg-yellow-600 dark:bg-yellow-300"
-                                    )}/> : null}
+                                    {showBonusDot ? <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-amber-300 ring-1 ring-amber-600/60 dark:bg-amber-300 dark:ring-amber-100/30"/> : null}
                                 </button>
-                            </PopoverTrigger>
-                            <PopoverContent className="border border-default-200 bg-white p-3 text-xs shadow-xl dark:border-white/10 dark:bg-[#181818]">
-                                <div>
-                                    <p className="font-semibold">{item.stage}관문 · {item.difficulty}</p>
-                                    <p className="mt-1 text-default-500">거래 가능 {stageGold.gold.toLocaleString()} · 귀속 {stageGold.boundGold.toLocaleString()}</p>
-                                    <p className="mt-0.5 text-default-500">더보기 {stageGold.bonus.toLocaleString()}</p>
-                                </div>
-                            </PopoverContent>
-                        </Popover>
+                            </span>
+                        </Tooltip>
                     );
                 })}
             </div>
@@ -321,7 +335,11 @@ export default function ChecklistTableView({
     isHideCompleteContent,
     isHideDayContent,
     isBonusModeEnabled,
-    onOpenContentManager
+    onOpenContentManager,
+    autoChecklistNickname,
+    isAutoChecklistSharing,
+    onSelectAutoChecklistCharacter,
+    renderCharacterSettings
 }: ChecklistTableViewProps) {
     const [expandedGoldNickname, setExpandedGoldNickname] = useState<string | null>(null);
     const [scrollLeft, setScrollLeft] = useState(0);
@@ -373,7 +391,7 @@ export default function ChecklistTableView({
     return (
         <section className="mt-5 overflow-hidden rounded-2xl border border-default-200 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]">
             <div className="checklist-table-scroll h-[calc(100vh-520px)] min-h-[300px] overflow-x-hidden overflow-y-auto overscroll-contain min-[1500px]:h-[calc(100vh-440px)] min-[1500px]:min-h-[360px]">
-                <div className="sticky top-0 z-40 grid grid-cols-[260px_minmax(0,1fr)_184px] border-b border-default-200 bg-default-50/95 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#202020]/95">
+                <div className="sticky top-0 z-40 grid grid-cols-[280px_minmax(0,1fr)_184px] border-b border-default-200 bg-default-50/95 shadow-sm backdrop-blur dark:border-white/10 dark:bg-[#202020]/95">
                     <div className="h-16 border-r border-default-200 dark:border-white/10"><span className="sr-only">캐릭터 정보</span></div>
                     <div ref={contentViewportRef} className="min-w-0 overflow-hidden" onWheel={handleContentWheel}>
                         <div className="flex h-16 transition-transform duration-150" style={contentTransform}>
@@ -389,13 +407,15 @@ export default function ChecklistTableView({
                 {visibleCharacters.map(character => {
                     const characterIndex = getIndexByNickname(checklist, character.nickname);
                     const isGoldExpanded = expandedGoldNickname === character.nickname;
+                    const isSharingCharacter = isAutoChecklistSharing && autoChecklistNickname === character.nickname;
                     return (
                         <div key={character.nickname} className="border-b border-default-200 last:border-b-0 dark:border-white/10">
-                            <div className="grid grid-cols-[260px_minmax(0,1fr)_184px]">
+                            <div className="grid grid-cols-[280px_minmax(0,1fr)_184px]">
+                                <div className={clsx("flex min-h-20 w-[280px] items-stretch border-r border-default-200 dark:border-white/10", isSharingCharacter ? "bg-primary-50 dark:bg-primary-950/30" : "bg-white dark:bg-[#171717]")}>
                                 <button
                                     type="button"
                                     onClick={() => setExpandedGoldNickname(isGoldExpanded ? null : character.nickname)}
-                                    className={clsx("flex min-h-20 w-[260px] cursor-pointer items-center gap-3 border-r border-default-200 bg-white px-4 py-3 text-left transition-colors hover:bg-default-50 dark:border-white/10 dark:bg-[#171717] dark:hover:bg-white/[0.04]", isGoldExpanded && "bg-warning-50 dark:bg-warning-950/20")}
+                                    className={clsx("flex min-w-0 grow cursor-pointer items-center gap-2 px-3 py-3 text-left transition-colors hover:bg-default-50 dark:hover:bg-white/[0.04]", isSharingCharacter && "bg-primary-50 dark:bg-primary-950/30", isGoldExpanded && !isSharingCharacter && "bg-warning-50 dark:bg-warning-950/20")}
                                     aria-expanded={isGoldExpanded}>
                                     <JobEmblemIcon job={character.job} size={38} className="shrink-0"/>
                                     <div className="min-w-0 grow">
@@ -409,6 +429,13 @@ export default function ChecklistTableView({
                                         </div>
                                     </div>
                                 </button>
+                                <div className="flex shrink-0 flex-col items-center justify-center gap-1 px-0.5">
+                                    {renderCharacterSettings(characterIndex)}
+                                    <button type="button" onClick={() => onSelectAutoChecklistCharacter(character.nickname)} disabled={!isAutoChecklistSharing || autoChecklistNickname === character.nickname} className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-default-500 hover:bg-default-100 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-white/[0.08]" aria-label={`${character.nickname} 자동 체크 전환`} title={isAutoChecklistSharing ? '자동 체크 캐릭터로 전환' : '화면 공유 중에만 전환할 수 있습니다.'}>
+                                        <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h13l-3-3M20 17H7l3 3"/><path d="M17 4l3 3-3 3M7 14l-3 3 3 3"/></svg>
+                                    </button>
+                                </div>
+                                </div>
                                  <div className="min-w-0 overflow-hidden" onWheel={handleContentWheel}>
                                     <div className="flex h-full transition-transform duration-150" style={contentTransform}>
                                         {!isHideDayContent ? (
@@ -459,7 +486,7 @@ export default function ChecklistTableView({
                     );
                 })}
             </div>
-            {maxScrollLeft > 0 ? <div className="grid grid-cols-[260px_minmax(0,1fr)_184px] border-t border-default-200 bg-white/95 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] backdrop-blur dark:border-white/10 dark:bg-[#171717]/95">
+            {maxScrollLeft > 0 ? <div className="grid grid-cols-[280px_minmax(0,1fr)_184px] border-t border-default-200 bg-white/95 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] backdrop-blur dark:border-white/10 dark:bg-[#171717]/95">
                 <div className="border-r border-default-200 dark:border-white/10"/>
                 <div className="px-4 py-2">
                     <Slider
