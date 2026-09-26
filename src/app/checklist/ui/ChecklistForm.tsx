@@ -1667,22 +1667,29 @@ export function ChecklistComponent({
                                                                  const goldSummary = getChecklistContentGoldSummary(bosses, item, character.isGold);
                                                                  return (
                                                                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[9pt]">
-                                                                         <AnimatedChecklistStrike
-                                                                             isSelected={isCheckHomework(item)}
-                                                                             className={clsx(
-                                                                                 "flex items-center gap-1",
-                                                                                 isCheckHomework(item) ? "fadedtext" : "text-amber-600 dark:text-amber-400"
-                                                                             )}>
-                                                                             <span>거래 가능 {goldSummary.gold.toLocaleString()}</span>
-                                                                         </AnimatedChecklistStrike>
-                                                                         <AnimatedChecklistStrike
-                                                                             isSelected={isCheckHomework(item)}
-                                                                             className={clsx(
-                                                                                 "flex items-center gap-1",
-                                                                                 isCheckHomework(item) ? "fadedtext" : "text-blue-600 dark:text-blue-400"
-                                                                             )}>
-                                                                             <span>귀속 {goldSummary.boundGold.toLocaleString()}</span>
-                                                                         </AnimatedChecklistStrike>
+                                                                         {goldSummary.gold > 0 && (
+                                                                             <AnimatedChecklistStrike
+                                                                                 isSelected={isCheckHomework(item)}
+                                                                                 className={clsx(
+                                                                                     "flex items-center gap-1",
+                                                                                     isCheckHomework(item) ? "fadedtext" : "text-amber-600 dark:text-amber-400"
+                                                                                 )}>
+                                                                                 <span>거래 가능 {goldSummary.gold.toLocaleString()}</span>
+                                                                             </AnimatedChecklistStrike>
+                                                                         )}
+                                                                         {goldSummary.boundGold > 0 && (
+                                                                             <AnimatedChecklistStrike
+                                                                                 isSelected={isCheckHomework(item)}
+                                                                                 className={clsx(
+                                                                                     "flex items-center gap-1",
+                                                                                     isCheckHomework(item) ? "fadedtext" : "text-blue-600 dark:text-blue-400"
+                                                                                 )}>
+                                                                                 <span>귀속 {goldSummary.boundGold.toLocaleString()}</span>
+                                                                             </AnimatedChecklistStrike>
+                                                                         )}
+                                                                         {goldSummary.gold === 0 && goldSummary.boundGold === 0 && (
+                                                                             <span className="text-default-400">획득 가능 골드 없음</span>
+                                                                         )}
                                                                      </div>
                                                                  );
                                                              })()}
