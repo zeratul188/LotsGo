@@ -36,7 +36,8 @@ export type FixedWeeklyContentStatus = {
 export type IncompleteRaidStatus = {
     name: string,
     remainingStageCount: number,
-    isGold: boolean
+    isGold: boolean,
+    stages: Array<{ stage: number, difficulty: string }>
 }
 
 const fixedWeeklyContentSettings: Array<{
@@ -184,7 +185,8 @@ export function getIncompleteRaidStatuses(character: CheckCharacter, bosses: Bos
     const incompleteRaids = new Map<string, IncompleteRaidStatus>();
 
     character.checklist.forEach((checkItem) => {
-        const remainingStageCount = checkItem.items.filter(item => !item.isDisable && !item.isCheck).length;
+        const items = Array.isArray(checkItem.items) ? checkItem.items : [];
+        const remainingStageCount = items.filter(item => !item.isDisable && !item.isCheck).length;
         if (remainingStageCount === 0) return;
 
         const boss = bosses.find(item => item.name === checkItem.name);
@@ -198,7 +200,11 @@ export function getIncompleteRaidStatuses(character: CheckCharacter, bosses: Bos
         incompleteRaids.set(name, {
             name,
             remainingStageCount: (existingRaid?.remainingStageCount || 0) + remainingStageCount,
-            isGold: Boolean(existingRaid?.isGold || (character.isGold && checkItem.isGold))
+            isGold: Boolean(existingRaid?.isGold || (character.isGold && checkItem.isGold)),
+            stages: [
+                ...(existingRaid?.stages || []),
+                ...items.map(item => ({ stage: item.stage, difficulty: item.difficulty || '' }))
+            ]
         });
     });
 
