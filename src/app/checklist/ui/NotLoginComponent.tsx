@@ -11,8 +11,10 @@ import {
     Divider, 
     Dropdown, DropdownItem, DropdownMenu, DropdownTrigger, 
     Link, 
+    Modal, ModalBody, ModalContent,
     NumberInput, 
-    Popover, PopoverContent, PopoverTrigger, 
+    Popover, PopoverContent, PopoverTrigger,
+    useDisclosure,
     Progress, 
     Tab, 
     Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, 
@@ -38,6 +40,7 @@ type ChecklistStatueProps = {
     bosses: Boss[]
 }
 function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
+    const { isOpen: isGoldDetailOpen, onOpen: onGoldDetailOpen, onOpenChange: onGoldDetailOpenChange } = useDisclosure();
     const life = 7561, max = 12000;
     return (
         <>
@@ -86,25 +89,27 @@ function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
                                     이번 주에 <img src="/icons/gold.png" alt="goldicon" className="mx-0.5 inline-block h-[14px] w-[14px]"/>
                                     <strong className="text-black dark:text-white">{(getAllGolds(bosses, checklist) - getHaveGolds(bosses, checklist)).toLocaleString()}</strong>를 더 획득할 수 있습니다.
                                 </p>
-                                <Popover showArrow disableAnimation placement="bottom-end">
-                                    <PopoverTrigger>
-                                        <Button
+                                <Button
                                             size="sm"
                                             variant="flat"
                                             color="warning"
                                             radius="sm"
-                                            className="h-8 min-w-[84px] shrink-0 font-medium">
+                                            className="h-8 min-w-[84px] shrink-0 font-medium"
+                                            onPress={onGoldDetailOpen}>
                                             자세히
-                                        </Button>
-                                    </PopoverTrigger>
-                                <PopoverContent className="border border-gray-200/80 bg-white/95 p-0 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#171717]/95">
-                                    <div className="w-[calc(100vw-40px)] p-4 min-[501px]:max-w-[520px]">
-                                        <div className="mb-3 flex items-start justify-between gap-3 border-b border-gray-200/80 pb-3 dark:border-white/10">
-                                            <div>
+                                </Button>
+                                <Modal isOpen={isGoldDetailOpen} onOpenChange={onGoldDetailOpenChange} placement="center" size="2xl" scrollBehavior="inside">
+                                    <ModalContent className="border border-gray-200/80 bg-white/95 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#171717]/95">
+                                    <ModalBody className="p-4">
+                                    <div className="w-full">
+                                        <div className="mb-3 border-b border-gray-200/80 pb-3 dark:border-white/10">
+                                            <div className="flex items-center gap-2">
                                                 <p className="font-semibold">주간 골드 상세</p>
+                                                <Chip size="sm" radius="sm" color="warning" variant="flat">{checklist.length}명</Chip>
+                                            </div>
+                                            <div>
                                                 <p className="mt-1 text-xs fadedtext">캐릭터별 획득 골드와 부수입을 확인하세요.</p>
                                             </div>
-                                            <Chip size="sm" radius="sm" color="warning" variant="flat">{checklist.length}명</Chip>
                                         </div>
                                         <div className="w-full overflow-x-auto rounded-xl border border-gray-200/80 dark:border-white/10 scrollbar-hide">
                                             <div className="max-h-[360px] w-[440px] overflow-y-auto min-[501px]:w-full">
@@ -177,8 +182,9 @@ function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
                                             </div>
                                         ) : <></>}
                                     </div>
-                                </PopoverContent>
-                                </Popover>
+                                    </ModalBody>
+                                    </ModalContent>
+                                </Modal>
                             </div>
                         </div>
                         <div className="flex w-full flex-col rounded-xl border border-secondary/20 bg-secondary/[0.04] p-3 dark:bg-secondary/[0.06]">

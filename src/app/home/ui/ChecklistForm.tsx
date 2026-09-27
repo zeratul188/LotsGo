@@ -18,6 +18,7 @@ import {
     getAllCountChecklistByStage,
     getAllGolds,
     getBosses,
+    getBackgroundByStage,
     getCompleteChecklistByStage,
     getHaveGolds
 } from "../../checklist/lib/checklistFeat";
@@ -509,6 +510,16 @@ export default function ChecklistComponent() {
                                                         <span className="flex min-w-0 items-center gap-1">
                                                             {raid.isGold ? <img src="/icons/gold.png" alt="골드 획득 가능" className="h-3 w-3 shrink-0"/> : null}
                                                             <span className="truncate">{raid.name}</span>
+                                                            <span className="ml-1 flex shrink-0 items-center gap-1" aria-label={`${raid.stages.length}개 관문`}>
+                                                                {raid.stages.map((stage, index) => (
+                                                                    <span
+                                                                        key={`${stage.stage}-${index}`}
+                                                                        role="img"
+                                                                        aria-label={`${stage.stage}관문 ${stage.difficulty}`}
+                                                                        title={`${stage.stage}관문 · ${stage.difficulty}`}
+                                                                        className={clsx("h-2 w-2 rounded-full", getBackgroundByStage(stage.difficulty, false))}/>
+                                                                ))}
+                                                            </span>
                                                         </span>
                                                     </Chip>
                                                 ))}
