@@ -319,7 +319,7 @@ function WeeklyContentCell({
                                     aria-pressed={isActive}
                                     aria-label={`${content.name} ${item.stage} ${isBonusModeEnabled ? (item.isBonus ? '더보기 해제' : '더보기') : (item.isCheck ? '완료 해제' : '완료')}`}>
                                     <span aria-hidden="true" className="flex h-3 w-3 shrink-0 items-center justify-center">
-                                        {isActive ? <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8 3 3 7-7"/></svg> : <span className="h-1.5 w-1.5 rounded-full border border-current opacity-50"/>}
+                                        {isActive ? <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8 3 3 7-7"/></svg> : <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60"/>}
                                     </span>
                                     <span>{item.stage}</span>
                                     {showBonusDot ? <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-amber-300 ring-1 ring-amber-600/60 dark:bg-amber-300 dark:ring-amber-100/30"/> : null}
