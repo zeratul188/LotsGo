@@ -6,6 +6,8 @@ const titleIconSrc: Record<string, string> = {
     "홍염의 군주": "/title-icons/flame-lord.png",
     "에스더의 결속자": "/title-icons/esther-bond.png",
     "혹한의 군주": "/title-icons/frost-lord.png",
+    "뇌전의 군주": "/title-icons/thunder-lord.png",
+    "파멸의 군주": "/title-icons/destruction-lord.png",
     "심연의 군주": "/title-icons/abyss-lord.png",
     "이클립스": "/title-icons/eclipse.png",
     "삼라만상": "/title-icons/all-creation.png",
