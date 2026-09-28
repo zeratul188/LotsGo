@@ -21,3 +21,25 @@ export type OtherGoldRecord = {
   createdAt: string | null;
   gold: number;
 };
+
+export type AnalysisGold = {
+  shared: number;
+  bound: number;
+  other: number;
+  total: number;
+};
+
+export type GoldAnalysisSelection =
+  | { type: "character" | "account" | "content"; key: string }
+  | null;
+
+export type GoldAnalysisDifficulty = "single" | "normal" | "hard" | "nightmare";
+
+export type ContentGoldAnalysis = {
+  key: string;
+  name: string;
+  maxLevel: number;
+  difficulties: Record<GoldAnalysisDifficulty, AnalysisGold>;
+  supported: GoldAnalysisDifficulty[];
+  gold: AnalysisGold;
+};
