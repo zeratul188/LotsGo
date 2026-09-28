@@ -147,6 +147,7 @@ import CheckIcon from "@/Icons/CheckIcon";
 import CharacterIcon from "@/Icons/CharacterIcon";
 import BusIcon from "@/Icons/BusIcon";
 import JobEmblemIcon from "@/Icons/JobEmblemIcon";
+import GoldAnalysis from "./GoldAnalysis";
 import RaidIcon from "@/Icons/RaidIcon";
 import JobAvatar from "@/Icons/JobAvatar";
 import { EditIcon } from "@/Icons/EditIcon";
@@ -517,6 +518,7 @@ export function ChecklistStatue({
     setAutoChecklistSharing
  }: ChecklistStatueProps) {
     const { isOpen: isGoldDetailOpen, onOpen: onGoldDetailOpen, onOpenChange: onGoldDetailOpenChange } = useDisclosure();
+    const [goldDetailTab, setGoldDetailTab] = useState("gold-detail");
     const [isLoading, setLoading] = useState(false);
     const [inputValue, setInputValue] = useState('');
     const [result, setResult] = useState<SearchCharacter[]>([]);
@@ -670,14 +672,14 @@ export function ChecklistStatue({
                                             onPress={onGoldDetailOpen}>
                                             자세히
                                 </Button>
-                                <Modal isOpen={isGoldDetailOpen} onOpenChange={onGoldDetailOpenChange} placement="center" size="3xl" scrollBehavior="inside">
+                                <Modal isOpen={isGoldDetailOpen} onOpenChange={onGoldDetailOpenChange} isDismissable={false} placement="center" size={goldDetailTab === "gold-analysis" ? "5xl" : "3xl"} scrollBehavior="inside" classNames={{ base: goldDetailTab === "gold-analysis" ? "max-w-[min(1024px,calc(100vw-24px))]" : "max-w-[min(768px,calc(100vw-24px))]" }}>
                                     <ModalContent className="border border-gray-200/80 bg-white/95 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#171717]/95">
                                     <ModalBody className="p-4">
                                     <div className="w-full">
                                         <div className="mb-3 border-b border-gray-200/80 pb-3 dark:border-white/10">
                                             <div className="flex items-center gap-2">
                                                 <p className="font-semibold">주간 골드 상세</p>
-                                                <Chip size="sm" radius="sm" color="warning" variant="flat">{filteredChecklist.length}명</Chip>
+                                                <Chip size="sm" radius="sm" color="warning" variant="flat">{goldDetailTab === "gold-analysis" ? checklist.length : filteredChecklist.length}명</Chip>
                                             </div>
                                             <div>
                                                 <p className="mt-1 text-xs fadedtext">캐릭터별 획득 골드와 부수입을 확인하세요.</p>
@@ -685,6 +687,8 @@ export function ChecklistStatue({
                                         </div>
                                         <Tabs
                                             aria-label="주간 골드 상세 탭"
+                                            selectedKey={goldDetailTab}
+                                            onSelectionChange={key => setGoldDetailTab(String(key))}
                                             variant="underlined"
                                             color="warning"
                                             classNames={{
@@ -778,6 +782,9 @@ export function ChecklistStatue({
                                             </Tab>
                                             <Tab key="other-gold-records" title="부수입 내역">
                                                 <OtherGoldOverviewTable checklist={checklist}/>
+                                            </Tab>
+                                            <Tab key="gold-analysis" title="골드 분석">
+                                                <GoldAnalysis checklist={checklist} bosses={bosses}/>
                                             </Tab>
                                         </Tabs>
                                     </div>

@@ -33,6 +33,7 @@ import { handleControlCube, handleSetOtherGold, handleWeekContent, handleWeekSta
 import AddIcon from "../../icons/AddIcon";
 import React from "react";
 import JobAvatar from "@/Icons/JobAvatar";
+import GoldAnalysis from "./GoldAnalysis";
 
 // 숙제 현황
 type ChecklistStatueProps = {
@@ -41,6 +42,7 @@ type ChecklistStatueProps = {
 }
 function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
     const { isOpen: isGoldDetailOpen, onOpen: onGoldDetailOpen, onOpenChange: onGoldDetailOpenChange } = useDisclosure();
+    const [goldDetailTab, setGoldDetailTab] = useState("gold-detail");
     const life = 7561, max = 12000;
     return (
         <>
@@ -98,7 +100,7 @@ function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
                                             onPress={onGoldDetailOpen}>
                                             자세히
                                 </Button>
-                                <Modal isOpen={isGoldDetailOpen} onOpenChange={onGoldDetailOpenChange} placement="center" size="2xl" scrollBehavior="inside">
+                                <Modal isOpen={isGoldDetailOpen} onOpenChange={onGoldDetailOpenChange} isDismissable={false} placement="center" size={goldDetailTab === "gold-analysis" ? "5xl" : "2xl"} scrollBehavior="inside" classNames={{ base: goldDetailTab === "gold-analysis" ? "max-w-[min(1024px,calc(100vw-24px))]" : "max-w-[min(672px,calc(100vw-24px))]" }}>
                                     <ModalContent className="border border-gray-200/80 bg-white/95 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-[#171717]/95">
                                     <ModalBody className="p-4">
                                     <div className="w-full">
@@ -111,6 +113,8 @@ function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
                                                 <p className="mt-1 text-xs fadedtext">캐릭터별 획득 골드와 부수입을 확인하세요.</p>
                                             </div>
                                         </div>
+                                        <Tabs aria-label="주간 골드 상세 탭" selectedKey={goldDetailTab} onSelectionChange={key => setGoldDetailTab(String(key))} color="warning" variant="underlined">
+                                        <Tab key="gold-detail" title="골드 상세">
                                         <div className="w-full overflow-x-auto rounded-xl border border-gray-200/80 dark:border-white/10 scrollbar-hide">
                                             <div className="max-h-[360px] w-[440px] overflow-y-auto min-[501px]:w-full">
                                                 <Table removeWrapper>
@@ -181,6 +185,9 @@ function ChecklistStatue({ checklist, bosses }: ChecklistStatueProps) {
                                                 <div className="absolute top-0 left-0 h-full bg-green-500" style={{ width: `${getHaveGolds(bosses, checklist) !== 0 ? Math.round(getAllContentGold(bosses, checklist) / getHaveGolds(bosses, checklist) * 1000) / 10 : 0}%` }}></div>
                                             </div>
                                         ) : <></>}
+                                        </Tab>
+                                        <Tab key="gold-analysis" title="골드 분석"><GoldAnalysis checklist={checklist} bosses={bosses}/></Tab>
+                                        </Tabs>
                                     </div>
                                     </ModalBody>
                                     </ModalContent>
