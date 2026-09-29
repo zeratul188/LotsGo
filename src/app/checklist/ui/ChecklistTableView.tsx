@@ -67,21 +67,21 @@ type ChecklistTableViewProps = {
 
 function getStageButtonClass(difficulty: string, disabled: boolean, active: boolean, bonusMode: boolean) {
     if (disabled) return 'border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-500';
-    if (bonusMode && active) return 'border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-600/70 dark:bg-amber-950/70 dark:text-amber-200 dark:hover:bg-amber-900/70';
+    if (bonusMode && active) return 'border-amber-400 bg-amber-200 text-amber-900 hover:bg-amber-300/80 dark:border-amber-400/70 dark:bg-amber-900/80 dark:text-amber-100 dark:hover:bg-amber-800/80';
     if (difficulty.includes('싱글') || difficulty.includes('매칭')) return active
-        ? 'border-blue-300 bg-blue-50 text-blue-800 hover:bg-blue-100 dark:border-blue-500/60 dark:bg-blue-950/70 dark:text-blue-200 dark:hover:bg-blue-900/60'
+        ? 'border-blue-400 bg-blue-200 text-blue-900 hover:bg-blue-300/80 dark:border-blue-400/70 dark:bg-blue-900/80 dark:text-blue-100 dark:hover:bg-blue-800/80'
         : 'border-slate-200 bg-white text-blue-600 hover:border-blue-300 hover:bg-blue-50 dark:border-slate-700 dark:bg-[#202025] dark:text-blue-300 dark:hover:border-blue-500/60 dark:hover:bg-blue-950/50';
     if (difficulty.includes('노말') || difficulty.includes('1단계')) return active
-        ? 'border-green-300 bg-green-50 text-green-800 hover:bg-green-100 dark:border-green-500/60 dark:bg-green-950/70 dark:text-green-200 dark:hover:bg-green-900/60'
+        ? 'border-green-400 bg-green-200 text-green-900 hover:bg-green-300/80 dark:border-green-400/70 dark:bg-green-900/80 dark:text-green-100 dark:hover:bg-green-800/80'
         : 'border-slate-200 bg-white text-green-700 hover:border-green-300 hover:bg-green-50 dark:border-slate-700 dark:bg-[#202025] dark:text-green-300 dark:hover:border-green-500/60 dark:hover:bg-green-950/50';
     if (difficulty.includes('하드') || difficulty.includes('2단계')) return active
-        ? 'border-red-300 bg-red-50 text-red-800 hover:bg-red-100 dark:border-red-500/60 dark:bg-red-950/70 dark:text-red-200 dark:hover:bg-red-900/60'
+        ? 'border-red-400 bg-red-200 text-red-900 hover:bg-red-300/80 dark:border-red-400/70 dark:bg-red-900/80 dark:text-red-100 dark:hover:bg-red-800/80'
         : 'border-slate-200 bg-white text-red-600 hover:border-red-300 hover:bg-red-50 dark:border-slate-700 dark:bg-[#202025] dark:text-red-300 dark:hover:border-red-500/60 dark:hover:bg-red-950/50';
     if (difficulty.includes('더퍼스트') || difficulty.includes('나이트메어') || difficulty.includes('3단계')) return active
-        ? 'border-purple-300 bg-purple-50 text-purple-800 hover:bg-purple-100 dark:border-purple-500/60 dark:bg-purple-950/70 dark:text-purple-200 dark:hover:bg-purple-900/60'
+        ? 'border-purple-400 bg-purple-200 text-purple-900 hover:bg-purple-300/80 dark:border-purple-400/70 dark:bg-purple-900/80 dark:text-purple-100 dark:hover:bg-purple-800/80'
         : 'border-slate-200 bg-white text-purple-600 hover:border-purple-300 hover:bg-purple-50 dark:border-slate-700 dark:bg-[#202025] dark:text-purple-300 dark:hover:border-purple-500/60 dark:hover:bg-purple-950/50';
     return active
-        ? 'border-gray-400 bg-gray-100 text-gray-800 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-100'
+        ? 'border-gray-400 bg-gray-200 text-gray-900 hover:bg-gray-300/80 dark:border-gray-400/70 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600'
         : 'border-gray-300 bg-gray-50 text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300';
 }
 
