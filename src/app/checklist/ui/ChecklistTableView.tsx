@@ -258,7 +258,7 @@ function WeeklyContentCell({
                     const isActive = isBonusModeEnabled ? item.isBonus : item.isCheck;
                     const showBonusDot = item.isBonus && stageGold.bonus > 0;
                     return (
-                        <Tooltip key={`${item.stage}-${itemIndex}`} showArrow placement="top" content={
+                        <Tooltip key={`${item.stage}-${itemIndex}`} showArrow placement="top" delay={2000} content={
                             <div className="w-[280px] max-w-[calc(100vw-48px)] p-2">
                                 <h3 className="mb-3 font-semibold">{content.name}</h3>
                                 <div className="mb-1.5 flex w-full items-center gap-2">
