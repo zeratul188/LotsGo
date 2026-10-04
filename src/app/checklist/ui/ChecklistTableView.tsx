@@ -41,6 +41,7 @@ import {
 } from "../lib/checklistFeat";
 import { getOtherGoldTotal } from "../lib/otherGold";
 import JobEmblemIcon from "@/Icons/JobEmblemIcon";
+import ParadiseIcon from "@/Icons/ParadiseIcon";
 import OtherGoldManager from "./OtherGoldManager";
 import AnimatedNumber from "./AnimatedNumber";
 import { SettingIcon } from "../../icons/SettingIcon";
@@ -89,15 +90,6 @@ function HourglassIcon() {
     return (
         <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M6 3h12M6 21h12M8 3c0 4 1.5 6 4 9-2.5 3-4 5-4 9M16 3c0 4-1.5 6-4 9 2.5 3 4 5 4 9"/>
-        </svg>
-    );
-}
-
-function ParadiseIcon() {
-    return (
-        <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="4"/>
-            <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
         </svg>
     );
 }
