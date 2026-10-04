@@ -200,6 +200,49 @@ function DailyContentCell({
     );
 }
 
+function DelayedStageTooltip({ children, content }: { children: ReactNode; content: ReactNode }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const close = () => {
+        if (openTimer.current !== null) {
+            clearTimeout(openTimer.current);
+            openTimer.current = null;
+        }
+        setIsOpen(false);
+    };
+
+    useEffect(() => () => {
+        if (openTimer.current !== null) clearTimeout(openTimer.current);
+    }, []);
+
+    return (
+        <Tooltip showArrow placement="top" trigger="focus" isOpen={isOpen} content={content}>
+            <span
+                className="flex min-w-0 flex-1"
+                onMouseEnter={() => {
+                    if (openTimer.current !== null) clearTimeout(openTimer.current);
+                    openTimer.current = setTimeout(() => {
+                        openTimer.current = null;
+                        setIsOpen(true);
+                    }, 1500);
+                }}
+                onMouseLeave={close}
+                onFocusCapture={event => {
+                    if (event.target instanceof HTMLElement && event.target.matches(':focus-visible')) {
+                        if (openTimer.current !== null) clearTimeout(openTimer.current);
+                        openTimer.current = null;
+                        setIsOpen(true);
+                    }
+                }}
+                onBlurCapture={close}
+                onKeyDownCapture={event => { if (event.key === 'Escape') close(); }}>
+                {children}
+            </span>
+        </Tooltip>
+    );
+}
+
 function WeeklyContentCell({
     content,
     bosses,
@@ -258,7 +301,7 @@ function WeeklyContentCell({
                     const isActive = isBonusModeEnabled ? item.isBonus : item.isCheck;
                     const showBonusDot = item.isBonus && stageGold.bonus > 0;
                     return (
-                        <Tooltip key={`${item.stage}-${itemIndex}`} showArrow placement="top" delay={2000} content={
+                        <DelayedStageTooltip key={`${item.stage}-${itemIndex}`} content={
                             <div className="w-[280px] max-w-[calc(100vw-48px)] p-2">
                                 <h3 className="mb-3 font-semibold">{content.name}</h3>
                                 <div className="mb-1.5 flex w-full items-center gap-2">
@@ -305,27 +348,25 @@ function WeeklyContentCell({
                                 </div>
                             </div>
                         }>
-                            <span className="flex min-w-0 flex-1">
-                                <button
-                                    type="button"
-                                    disabled={item.isDisable}
-                                    onClick={(event) => { event.stopPropagation(); return void (isBonusModeEnabled
-                                        ? handleWeekBonusCheckStage(checklist, characterIndex, checklistIndex, dispatch, item.stage)
-                                        : handleWeekCheckStage(checklist, characterIndex, checklistIndex, dispatch, item.stage, item.isDisable)); }}
-                                    className={clsx(
-                                        "relative flex h-8 w-full min-w-0 cursor-pointer items-center justify-center gap-1 rounded-md border text-xs font-semibold tabular-nums shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed dark:shadow-none",
-                                        getStageButtonClass(item.difficulty, item.isDisable, isActive, isBonusModeEnabled)
-                                    )}
-                                    aria-pressed={isActive}
-                                    aria-label={`${content.name} ${item.stage} ${isBonusModeEnabled ? (item.isBonus ? '더보기 해제' : '더보기') : (item.isCheck ? '완료 해제' : '완료')}`}>
-                                    <span aria-hidden="true" className="flex h-3 w-3 shrink-0 items-center justify-center">
-                                        {isActive ? <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8 3 3 7-7"/></svg> : <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60"/>}
-                                    </span>
-                                    <span>{item.stage}</span>
-                                    {showBonusDot ? <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-amber-300 ring-1 ring-amber-600/60 dark:bg-amber-300 dark:ring-amber-100/30"/> : null}
-                                </button>
-                            </span>
-                        </Tooltip>
+                            <button
+                                type="button"
+                                disabled={item.isDisable}
+                                onClick={(event) => { event.stopPropagation(); return void (isBonusModeEnabled
+                                    ? handleWeekBonusCheckStage(checklist, characterIndex, checklistIndex, dispatch, item.stage)
+                                    : handleWeekCheckStage(checklist, characterIndex, checklistIndex, dispatch, item.stage, item.isDisable)); }}
+                                className={clsx(
+                                    "relative flex h-8 w-full min-w-0 cursor-pointer items-center justify-center gap-1 rounded-md border text-xs font-semibold tabular-nums shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed dark:shadow-none",
+                                    getStageButtonClass(item.difficulty, item.isDisable, isActive, isBonusModeEnabled)
+                                )}
+                                aria-pressed={isActive}
+                                aria-label={`${content.name} ${item.stage} ${isBonusModeEnabled ? (item.isBonus ? '더보기 해제' : '더보기') : (item.isCheck ? '완료 해제' : '완료')}`}>
+                                <span aria-hidden="true" className="flex h-3 w-3 shrink-0 items-center justify-center">
+                                    {isActive ? <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8 3 3 7-7"/></svg> : <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60"/>}
+                                </span>
+                                <span>{item.stage}</span>
+                                {showBonusDot ? <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-amber-300 ring-1 ring-amber-600/60 dark:bg-amber-300 dark:ring-amber-100/30"/> : null}
+                            </button>
+                        </DelayedStageTooltip>
                     );
                 })}
             </div>

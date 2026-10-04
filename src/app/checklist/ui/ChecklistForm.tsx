@@ -1,5 +1,6 @@
 'use client'
 import React, { useEffect, useState } from "react";
+import { ChecklistMenuIcon, ChecklistMenuRow, ChecklistMenuSection, menuActionClass, menuSelectClassNames, menuSwitchClass } from "./ChecklistMenu";
 import dynamic from "next/dynamic";
 import { Boss } from "../../api/checklist/boss/route";
 import { CheckCharacter, Checklist, ChecklistItem, FixedContentType, OtherList } from "../../store/checklistSlice";
@@ -606,38 +607,38 @@ export function ChecklistStatue({
                 radius="lg"
                 shadow="none"
                 className={clsx(
-                    "overflow-hidden border border-gray-200/80 bg-white/95 shadow-[0_10px_35px_rgba(15,23,42,0.08)] dark:border-white/10 dark:bg-[#171717]/95 dark:shadow-none",
+                    "overflow-hidden border border-default-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717] dark:shadow-none",
                     isTableViewWide && "flex flex-row items-stretch",
                     !isTableView && "md960:fixed md960:left-1/2 md960:top-[80px] md960:z-50 md960:w-[calc(100vw-40px)] md960:-translate-x-1/2 lg1280:w-[1240px]"
                 )}>
-                <CardBody className={clsx("p-3", isTableViewWide && "min-w-0 grow")}>
-                    <div className="grid w-full grid-cols-1 gap-2 md960:grid-cols-[1.2fr_1fr_1fr]">
-                        <div className="flex w-full flex-col gap-2 rounded-xl border border-warning/20 bg-warning/[0.045] p-3 dark:bg-warning/[0.06]">
+                <CardBody className={clsx("p-0", isTableViewWide && "min-w-0 grow")}>
+                    <div className="grid w-full grid-cols-1 divide-y divide-default-200/70 md960:grid-cols-[1.15fr_1fr_1fr] md960:divide-x md960:divide-y-0 dark:divide-white/10">
+                        <div className="flex min-w-0 flex-col gap-1 px-3 py-2.5">
                              <div className="w-full min-w-0 grow">
                                 <Progress 
-                                    aria-label="all-gold"
+                                    aria-label="주간 골드 획득률"
                                     size="sm"
                                     color="warning"
                                     label={(
-                                        <div className="flex items-center">
-                                            <img 
-                                                src="/icons/gold.png" 
-                                                alt="goldicon"
-                                                className="w-[19px] h-[19px]"/>
-                                            <span className="ml-1 text-md">주간 골드량 : <AnimatedNumber value={getHaveGolds(bosses, filteredChecklist)}/> / <AnimatedNumber value={getAllGolds(bosses, filteredChecklist)}/></span>
-                                        </div>
+                                        <span className="flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs tabular-nums">
+                                            <img src="/icons/gold.png" alt="" className="h-3.5 w-3.5"/>
+                                            <span>주간 골드량</span>
+                                            <strong className="font-semibold text-foreground"><AnimatedNumber value={haveGold}/></strong>
+                                            <span>/ <AnimatedNumber value={totalGold}/></span>
+                                        </span>
                                     )}
+                                    classNames={{ label: "text-[11px] text-default-500", value: "text-[11px] font-medium tabular-nums", track: "h-1 bg-default-100", indicator: "h-1" }}
                                     showValueLabel={true}
                                     radius="sm"
-                                    value={getHaveGolds(bosses, filteredChecklist)}
-                                    maxValue={getAllGolds(bosses, filteredChecklist)}/>
+                                    value={haveGold}
+                                    maxValue={totalGold || 1}/>
                              </div>
                             <div className="flex w-full items-center gap-2">
                                 <Popover showArrow placement="bottom-start">
                                     <PopoverTrigger>
-                                        <button type="button" className="min-w-0 grow cursor-pointer text-left text-[10pt] leading-5 fadedtext">
+                                        <button type="button" className="min-w-0 grow cursor-pointer rounded text-left text-xs leading-5 text-default-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
                                             <img src="/icons/gold.png" alt="goldicon" className="mr-1 inline-block h-[14px] w-[14px]"/>
-                                            <strong className="text-black dark:text-white"><AnimatedNumber value={availableGold}/></strong>를 획득 가능합니다.
+                                            <strong className="font-semibold text-foreground"><AnimatedNumber value={availableGold}/></strong> 골드 획득 가능
                                         </button>
                                     </PopoverTrigger>
                                     <PopoverContent className="border border-warning-200/80 bg-white/95 p-0 shadow-xl backdrop-blur-xl dark:border-warning-900/50 dark:bg-[#171717]/95">
@@ -665,10 +666,10 @@ export function ChecklistStatue({
                                 </Popover>
                                 <Button
                                             size="sm"
-                                            variant="flat"
+                                            variant="light"
                                             color="warning"
                                             radius="sm"
-                                            className="h-8 min-w-[84px] shrink-0 font-medium"
+                                            className="h-8 min-w-12 shrink-0 px-2 text-xs font-medium"
                                             onPress={onGoldDetailOpen}>
                                             자세히
                                 </Button>
@@ -793,49 +794,61 @@ export function ChecklistStatue({
                                 </Modal>
                             </div>
                         </div>
-                        <div className="flex w-full flex-col rounded-xl border border-secondary/20 bg-secondary/[0.04] p-3 dark:bg-secondary/[0.06]">
+                        <div className="flex min-w-0 flex-col gap-1 px-3 py-2.5">
                             <Progress 
-                                aria-label="all-gold"
+                                aria-label="숙제 관문 완료율"
                                 size="sm"
                                 color="secondary"
-                                label={
-                                    <div className="flex gap-1 items-center">
-                                        <p>📃 숙제 진행 상황 : {getCompleteChecklist(checklist)} / {getAllCountChecklist(checklist)}</p>
-                                        <p className="fadedtext text-[9pt]">({getCompleteChecklistByStage(checklist)}/{getAllCountChecklistByStage(checklist)})</p>
-                                    </div>
-                                }
+                                label={(
+                                    <span className="flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs tabular-nums">
+                                        <ChecklistMenuIcon name="remaining"/>
+                                        <span>숙제 진행 상황</span>
+                                        <strong className="font-semibold text-foreground">{getCompleteChecklist(checklist)}</strong>
+                                        <span>/ {getAllCountChecklist(checklist)}</span>
+                                        <span className="text-[11px]">({getCompleteChecklistByStage(checklist)}/{getAllCountChecklistByStage(checklist)})</span>
+                                    </span>
+                                )}
+                                classNames={{ label: "text-[11px] text-default-500", value: "text-[11px] font-medium tabular-nums", track: "h-1 bg-default-100", indicator: "h-1" }}
                                 showValueLabel={true}
                                 radius="sm"
                                 value={getCompleteChecklistByStage(checklist)}
-                                maxValue={getAllCountChecklistByStage(checklist)}
+                                maxValue={getAllCountChecklistByStage(checklist) || 1}
                                 className="w-full"/>
-                            <div className="flex items-center fadedtext text-[10pt] mt-1">
+                            <div className="flex min-h-8 flex-wrap items-center text-xs text-default-500">
                                 <p>골드 받는 숙제는 </p>
                                 <p className="font-bold text-black dark:text-white ml-1 mr-0.5"> {(getAllCountChecklistByGold(checklist) - getCompleteChecklistByGold(checklist)).toLocaleString()}</p>
                                 <p>개 남았습니다.</p>
                             </div>
                         </div>
-                        <div className="flex w-full flex-shrink-0 flex-col items-stretch gap-2 rounded-xl border border-success/20 bg-success/[0.04] p-3 md960:flex-row md960:items-start dark:bg-success/[0.06]">
-                            <div className="w-full min-w-0 grow sm:w-fit">
+                        <div className="flex min-w-0 flex-col gap-1 px-3 py-2.5">
+                            <div className="w-full min-w-0">
                                 <Tooltip showArrow content="생명의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.">
                                     <Progress 
-                                        aria-label="all-gold"
+                                        aria-label="생명의 기운 충전량"
                                         size="sm"
                                         color="success"
-                                        label={`🍃 생명의 기운 : ${Math.floor(life).toLocaleString()} / ${max.toLocaleString()}`}
+                                        label={(
+                                            <span className="flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs tabular-nums">
+                                                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5"><path d="M20 4C9 2 3 8 5 15c2 6 14 6 15-11Z"/><path d="m4 21 11-12"/></svg>
+                                                <span>생명의 기운</span>
+                                                <strong className="font-semibold text-foreground">{Math.floor(life).toLocaleString()}</strong>
+                                                <span>/ {max.toLocaleString()}</span>
+                                            </span>
+                                        )}
+                                        classNames={{ label: "text-[11px] text-default-500", track: "h-1 bg-default-100", indicator: "h-1" }}
                                         radius="sm"
                                         value={life}
-                                        maxValue={max}
+                                        maxValue={max || 1}
                                         className="w-full"/>
                                 </Tooltip>
-                                <div className="flex items-center fadedtext text-[10pt] mt-1">
-                                    <p>10분마다 생명의 기운 {isBlessing && '접속 시'}</p>
+                            </div>
+                            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                                <div className="flex flex-wrap items-center text-[11px] text-default-500">
+                                    <p>10분마다 {isBlessing && '접속 시'}</p>
                                     <p className="font-bold text-green-700 dark:text-green-300 ml-1 mr-0.5"> {isBlessing ? '33' : '30'}</p>
                                     <p>증가</p>
                                 </div>
-                            </div>
-                            <p className="block md960:hidden fadedtext text-[9pt] w-full text-left">생명의 기운이 인게임보다 약간의 오차가 발생할 수 있습니다.</p>
-                            <div className="flex w-full min-w-fit shrink-0 flex-row items-center gap-2 md960:w-auto md960:flex-col md960:gap-1">
+                            <div className="flex min-h-8 items-center gap-2">
                                 <Tooltip showArrow content={<div className="w-[240px]">
                                     <h3 className="text-lg font-bold">베아트리스의 축복</h3>
                                     <Divider className="mb-1 mt-0.5"/>
@@ -860,7 +873,7 @@ export function ChecklistStatue({
                                                 color="primary"
                                                 variant="flat"
                                                 radius="sm"
-                                                className="w-[100px] font-medium md960:w-auto">
+                                                className="h-8 min-w-12 px-2 text-xs font-medium">
                                                 수정
                                             </Button>
                                         </PopoverTrigger>
@@ -904,14 +917,16 @@ export function ChecklistStatue({
                                     </Popover>
                                 </div>
                             </div>
+                            </div>
+                            <p className="text-[11px] leading-relaxed text-default-400 md960:hidden">생명의 기운은 인게임 수치와 약간의 차이가 있을 수 있습니다.</p>
                         </div>
                     </div>
                 </CardBody>
-                <CardFooter className={clsx("border-t border-gray-200/80 bg-gray-50/70 p-2.5 dark:border-white/10 dark:bg-white/[0.025]", isTableViewWide && "w-[240px] shrink-0 border-l border-t-0 min-[1800px]:w-[300px]")}>
-                    {isTableView ? <div className="grid w-full grid-cols-3 gap-2">
-                        <Tooltip content="순서 변경"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="순서 변경" className="h-9 w-full border border-gray-200/80 bg-white text-default-600 dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isLoadingData} onPress={() => onOpenChangePosition(true)}><ListTurnBackIcon size={17}/></Button></Tooltip>
-                        <Tooltip content="캐릭터 추가"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="캐릭터 추가" className="h-9 w-full border border-gray-200/80 bg-white text-success dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isLoadingData} onPress={onOpen}><AddIcon size={18}/></Button></Tooltip>
-                        <Tooltip content="캐릭터 갱신"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="캐릭터 갱신" className="h-9 w-full border border-gray-200/80 bg-white text-primary dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isDisableUpdate || isLoadingData} isLoading={isLoading} onPress={onClickUpdatedCharacters}><SwitchCharacterIcon size={18}/></Button></Tooltip>
+                <CardFooter className={clsx("border-t border-default-200/80 bg-default-50/50 p-3 dark:border-white/10 dark:bg-white/[0.02]", isTableView && "md960:p-2", isTableViewWide && "w-[200px] shrink-0 border-l border-t-0 min-[1800px]:w-[240px]")}>
+                    {isTableView ? <div className="grid w-full grid-cols-3 gap-2 md960:gap-1">
+                        <Tooltip content="순서 변경"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="순서 변경" className="h-9 w-full border border-gray-200/80 bg-white text-default-600 md960:h-8 dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isLoadingData} onPress={() => onOpenChangePosition(true)}><ListTurnBackIcon size={17}/></Button></Tooltip>
+                        <Tooltip content="캐릭터 추가"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="캐릭터 추가" className="h-9 w-full border border-gray-200/80 bg-white text-success md960:h-8 dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isLoadingData} onPress={onOpen}><AddIcon size={18}/></Button></Tooltip>
+                        <Tooltip content="캐릭터 갱신"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="캐릭터 갱신" className="h-9 w-full border border-gray-200/80 bg-white text-primary md960:h-8 dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isDisableUpdate || isLoadingData} isLoading={isLoading} onPress={onClickUpdatedCharacters}><SwitchCharacterIcon size={18}/></Button></Tooltip>
                         <AutoChecklistControl
                             checklist={checklist}
                             bosses={bosses}
@@ -922,7 +937,7 @@ export function ChecklistStatue({
                             onSharingStateChange={setAutoChecklistSharing}
                             compactLabel
                             statusContainer={sharingStatusContainer}
-                            className="col-span-3"/>
+                            className="col-span-3 md960:!h-8"/>
                     </div> : <div className="grid w-full grid-cols-3 gap-2 md960:grid-cols-4">
                         <Button
                             fullWidth
@@ -1138,7 +1153,8 @@ type SelectServerProps = {
     checklist: CheckCharacter[],
     server: string,
     setServer: SetStateFn<string>,
-    compact?: boolean
+    compact?: boolean,
+    menu?: boolean
 }
 function LegacySelectServer({ checklist, server, setServer }: SelectServerProps) {
     return (
@@ -1162,17 +1178,17 @@ function LegacySelectServer({ checklist, server, setServer }: SelectServerProps)
 }
 
 // 커스텀 라디오 요소
-export function SelectServer({ checklist, server, setServer, compact = false }: SelectServerProps) {
+export function SelectServer({ checklist, server, setServer, compact = false, menu = false }: SelectServerProps) {
     return (
         <Select
             aria-label="서버 선택"
             label={compact ? undefined : "서버 선택"}
             placeholder="서버를 선택하세요"
             selectedKeys={new Set([server])}
-            radius="md"
-            variant="bordered"
+            radius={menu ? "sm" : "md"}
+            variant={menu ? "flat" : "bordered"}
             size={compact ? "sm" : "md"}
-            startContent={compact ? (
+            startContent={compact && !menu ? (
                 <span className="shrink-0 border-r border-gray-200/80 pr-2 text-[10px] font-semibold text-gray-500 dark:border-white/10 dark:text-gray-400">서버</span>
             ) : undefined}
             disallowEmptySelection
@@ -1182,8 +1198,8 @@ export function SelectServer({ checklist, server, setServer, compact = false }: 
                     setServer(String(selectedServer));
                 }
             }}
-            className="w-full"
-            classNames={compact ? {
+            className={menu ? "w-[124px] shrink-0" : "w-full"}
+            classNames={menu ? menuSelectClassNames : compact ? {
                 trigger: "h-10 min-h-10 cursor-pointer rounded-lg border-gray-200/80 bg-white px-3 shadow-sm transition-colors data-[hover=true]:border-gray-300 data-[hover=true]:bg-gray-50/80 dark:border-white/10 dark:bg-[#171717] dark:data-[hover=true]:border-white/20 dark:data-[hover=true]:bg-white/[0.06]",
                 value: "text-xs font-semibold text-gray-700 dark:text-gray-200",
                 selectorIcon: "text-gray-400 dark:text-gray-500",
@@ -4179,90 +4195,56 @@ export function FilterComponent({
 }: FilterComponentProps) {
 
     return (
-        <section className="rounded-2xl border border-gray-200/80 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.025]">
-            <div className="mb-4">
-                <h3 className="font-semibold">검색 필터</h3>
-                <p className="mt-1 text-xs fadedtext">계정, 서버, 콘텐츠를 조합해 필요한 캐릭터만 확인하세요.</p>
-            </div>
-            <div className="flex flex-col gap-3">
-                <Select
-                    aria-label="계정 검색"
-                    placeholder="계정을 선택하세요."
-                    selectedKeys={filterAccount}
-                    radius="md"
-                    variant="bordered"
-                    size="sm"
-                    startContent={(
-                        <span className="shrink-0 border-r border-gray-200/80 pr-2 text-[10px] font-semibold text-gray-500 dark:border-white/10 dark:text-gray-400">계정</span>
-                    )}
-                    onSelectionChange={setFilterAccount}
-                    className="w-full"
-                    classNames={{
-                        trigger: "h-10 min-h-10 cursor-pointer rounded-lg border-gray-200/80 bg-white px-3 shadow-sm transition-colors data-[hover=true]:border-gray-300 data-[hover=true]:bg-gray-50/80 dark:border-white/10 dark:bg-[#171717] dark:data-[hover=true]:border-white/20 dark:data-[hover=true]:bg-white/[0.06]",
-                        value: "text-xs font-semibold text-gray-700 dark:text-gray-200",
-                        selectorIcon: "text-gray-400 dark:text-gray-500",
-                        popoverContent: "rounded-xl border border-gray-200/80 shadow-xl dark:border-white/10"
-                    }}>
-                    {getAccounts(checklist).map((account, index) => (
-                        <SelectItem key={index}>{account}</SelectItem>
-                    ))}
-                </Select>
-                <SelectServer
-                    checklist={checklist}
-                    server={server}
-                    setServer={setServer}
-                    compact/>
-                <Select
-                    aria-label="콘텐츠로 검색"
-                    placeholder="콘텐츠를 선택하세요."
-                    selectedKeys={filterContent}
-                    radius="md"
-                    variant="bordered"
-                    size="sm"
-                    startContent={(
-                        <span className="shrink-0 border-r border-gray-200/80 pr-2 text-[10px] font-semibold text-gray-500 dark:border-white/10 dark:text-gray-400">콘텐츠</span>
-                    )}
-                    onSelectionChange={setFilterContent}
-                    className="w-full"
-                    classNames={{
-                        trigger: "h-10 min-h-10 cursor-pointer rounded-lg border-gray-200/80 bg-white px-3 shadow-sm transition-colors data-[hover=true]:border-gray-300 data-[hover=true]:bg-gray-50/80 dark:border-white/10 dark:bg-[#171717] dark:data-[hover=true]:border-white/20 dark:data-[hover=true]:bg-white/[0.06]",
-                        value: "text-xs font-semibold text-gray-700 dark:text-gray-200",
-                        selectorIcon: "text-gray-400 dark:text-gray-500",
-                        popoverContent: "rounded-xl border border-gray-200/80 shadow-xl dark:border-white/10"
-                    }}>
-                    {getBossesByHaveContent(checklist, bosses).map((boss, index) => (
-                        <SelectItem key={index}>{boss}</SelectItem>
-                    ))}
-                </Select>
-                <div className="flex items-center justify-between gap-4 rounded-xl border border-gray-200/80 bg-gray-50/70 px-3.5 py-3 dark:border-white/10 dark:bg-white/[0.04]">
-                    <div className="min-w-0">
-                        <p className="text-sm font-medium">일일 콘텐츠</p>
-                        <p className="mt-0.5 text-xs fadedtext">
-                            {isHideDayContent ? '캐릭터 목록에서 숨김' : '캐릭터 목록에 함께 표시'}
-                        </p>
-                    </div>
-                    <Tooltip showArrow placement="left" content="설정값을 유지하려면 프로필 설정에서 설정하세요.">
-                        <Switch
-                            aria-label="일일 콘텐츠 숨기기"
-                            color="primary"
-                            size="sm"
-                            isSelected={isHideDayContent}
-                            onValueChange={setHideDayContent}
-                            className="shrink-0"/>
-                    </Tooltip>
-                </div>
-            </div>
-            <Divider className="my-5"/>
-            <div className="mb-3">
-                <p className="font-semibold">추가 필터</p>
-                <p className="mt-1 text-xs fadedtext">캐릭터와 콘텐츠 표시 조건을 설정합니다.</p>
-            </div>
-            <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between gap-4 rounded-xl bg-gray-100/70 px-3 py-3 dark:bg-white/[0.05]">
-                    <p className="cursor-pointer text-sm" onClick={() => {
-                        localStorage.setItem('isRemainHomework', String(!isRemainHomework));
-                        setRemainHomework(!isRemainHomework);
-                    }}>주간 숙제를 완료한 캐릭터 숨기기</p>
+        <>
+            <ChecklistMenuSection title="검색 필터">
+                <ChecklistMenuRow icon="account" label="계정">
+                    <Select
+                        aria-label="계정 검색"
+                        placeholder="계정 선택"
+                        selectedKeys={filterAccount}
+                        radius="sm"
+                        variant="flat"
+                        size="sm"
+                        onSelectionChange={setFilterAccount}
+                        className="w-[124px] shrink-0"
+                        classNames={menuSelectClassNames}>
+                        {getAccounts(checklist).map((account, index) => (
+                            <SelectItem key={index}>{account}</SelectItem>
+                        ))}
+                    </Select>
+                </ChecklistMenuRow>
+                <ChecklistMenuRow icon="server" label="서버">
+                    <SelectServer checklist={checklist} server={server} setServer={setServer} compact menu/>
+                </ChecklistMenuRow>
+                <ChecklistMenuRow icon="content" label="콘텐츠">
+                    <Select
+                        aria-label="콘텐츠로 검색"
+                        placeholder="콘텐츠 선택"
+                        selectedKeys={filterContent}
+                        radius="sm"
+                        variant="flat"
+                        size="sm"
+                        onSelectionChange={setFilterContent}
+                        className="w-[124px] shrink-0"
+                        classNames={menuSelectClassNames}
+                        popoverProps={{ classNames: { content: "min-w-[220px]" } }}>
+                        {getBossesByHaveContent(checklist, bosses).map((boss, index) => (
+                            <SelectItem key={index}>{getSimpleBossName(bosses, boss)}</SelectItem>
+                        ))}
+                    </Select>
+                </ChecklistMenuRow>
+                <ChecklistMenuRow icon="daily" label="일일 콘텐츠 숨기기">
+                    <Switch
+                        aria-label="일일 콘텐츠 숨기기"
+                        color="primary"
+                        size="sm"
+                        isSelected={isHideDayContent}
+                        onValueChange={setHideDayContent}
+                        className={menuSwitchClass}/>
+                </ChecklistMenuRow>
+            </ChecklistMenuSection>
+            <ChecklistMenuSection title="추가 필터">
+                <ChecklistMenuRow icon="filter" label="완료 캐릭터 숨기기">
                     <Switch
                         aria-label="주간 숙제를 완료한 캐릭터 숨기기"
                         size="sm"
@@ -4270,13 +4252,10 @@ export function FilterComponent({
                         onValueChange={(isSelected) => {
                             localStorage.setItem('isRemainHomework', String(isSelected));
                             setRemainHomework(isSelected);
-                        }}/>
-                </div>
-                <div className="flex items-center justify-between gap-4 rounded-xl bg-gray-100/70 px-3 py-3 dark:bg-white/[0.05]">
-                    <p className="cursor-pointer text-sm" onClick={() => {
-                        localStorage.setItem('isShowGoldCharacter', String(!isShowGoldCharacter));
-                        setShowGoldCharacter(!isShowGoldCharacter);
-                    }}>골드 지정 캐릭터만 표시하기</p>
+                        }}
+                        className={menuSwitchClass}/>
+                </ChecklistMenuRow>
+                <ChecklistMenuRow icon="gold" label="골드 캐릭터만 보기">
                     <Switch
                         aria-label="골드 지정 캐릭터만 표시하기"
                         size="sm"
@@ -4284,13 +4263,10 @@ export function FilterComponent({
                         onValueChange={(isSelected) => {
                             localStorage.setItem('isShowGoldCharacter', String(isSelected));
                             setShowGoldCharacter(isSelected);
-                        }}/>
-                </div>
-                <div className="flex items-center justify-between gap-4 rounded-xl bg-gray-100/70 px-3 py-3 dark:bg-white/[0.05]">
-                    <p className="cursor-pointer text-sm" onClick={() => {
-                        localStorage.setItem('isHideCompleteContent', String(!isHideCompleteContent));
-                        setHideCompleteContent(!isHideCompleteContent);
-                    }}>숙제 완료한 콘텐츠 숨기기</p>
+                        }}
+                        className={menuSwitchClass}/>
+                </ChecklistMenuRow>
+                <ChecklistMenuRow icon="complete" label="완료 콘텐츠 숨기기">
                     <Switch
                         aria-label="숙제 완료한 콘텐츠 숨기기"
                         size="sm"
@@ -4298,33 +4274,31 @@ export function FilterComponent({
                         onValueChange={(isSelected) => {
                             localStorage.setItem('isHideCompleteContent', String(isSelected));
                             setHideCompleteContent(isSelected);
-                        }}/>
-                </div>
-            </div>
-            <p className="mt-3 text-xs fadedtext">추가 필터 설정은 현재 브라우저에 저장됩니다.</p>
-            <Button
-                fullWidth
-                radius="lg"
-                color="danger"
-                variant="bordered"
-                startContent={<span className="text-base leading-none">×</span>}
-                className="mt-5 h-10 border-danger-200/90 bg-white text-xs font-semibold text-danger-600 shadow-sm transition-colors hover:border-danger-300 hover:bg-danger-50/70 dark:border-white/10 dark:bg-[#171717] dark:text-danger-300 dark:hover:border-white/20 dark:hover:bg-white/[0.06] dark:hover:text-danger-200"
-                onPress={() => {
-                    setFilterAccount(new Set([]));
-                    setFilterContent(new Set([]));
-                    localStorage.removeItem('isRemainHomework');
-                    setRemainHomework(false);
-                    localStorage.removeItem('isShowGoldCharacter');
-                    setShowGoldCharacter(false);
-                    addToast({
-                        title: "필터 해제",
-                        description: `모든 필터를 제거하였습니다.`,
-                        color: "success"
-                    });
-                }}>
-                필터 해제
-            </Button>
-        </section>
+                        }}
+                        className={menuSwitchClass}/>
+                </ChecklistMenuRow>
+                <Button
+                    variant="light"
+                    size="sm"
+                    className={menuActionClass}
+                    startContent={<ChecklistMenuIcon name="clear"/>}
+                    onPress={() => {
+                        setFilterAccount(new Set([]));
+                        setFilterContent(new Set([]));
+                        localStorage.removeItem('isRemainHomework');
+                        setRemainHomework(false);
+                        localStorage.removeItem('isShowGoldCharacter');
+                        setShowGoldCharacter(false);
+                        addToast({
+                            title: "필터 해제",
+                            description: "모든 필터를 제거하였습니다.",
+                            color: "success"
+                        });
+                    }}>
+                    필터 해제
+                </Button>
+            </ChecklistMenuSection>
+        </>
     )
 }
 
