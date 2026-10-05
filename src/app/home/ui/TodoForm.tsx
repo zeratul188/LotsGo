@@ -128,20 +128,17 @@ export function TodoComponent() {
     }
 
     return (
-        <section className="w-full mb-6 overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-[#171717] dark:shadow-none">
-            <div className="flex items-center gap-4 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-white/10">
+        <section className="w-full mb-6 overflow-hidden rounded-2xl border border-default-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717] dark:shadow-none">
+            <div className="flex items-center gap-4 border-b border-default-200/80 px-4 py-3 sm:px-5 dark:border-white/10">
                 <div className="min-w-0 grow">
-                    <div className="flex items-center gap-2">
-                        <span className="h-5 w-1 rounded-full bg-primary"/>
-                        <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">이번 주 일정</h2>
-                    </div>
-                    <p className="mt-1 pl-3 text-xs fadedtext sm:text-sm">개인·길드·파티 일정을 한눈에 확인해 보세요.</p>
+                    <h2 className="text-lg font-semibold tracking-tight sm:text-xl">이번 주 일정</h2>
+                    <p className="mt-0.5 text-xs text-default-500">개인·길드·파티 일정을 한눈에 확인해 보세요.</p>
                 </div>
                 <Button
                     radius="sm"
                     size="sm"
                     variant="bordered"
-                    className="min-w-[88px] shrink-0 border-gray-300 bg-white font-medium shadow-sm dark:border-white/20 dark:bg-white/5"
+                    className="min-w-[88px] shrink-0 border-default-200 bg-white font-medium shadow-none dark:border-white/20 dark:bg-white/5"
                     onPress={() => router.push('/calendar')}>
                     전체 일정
                 </Button>

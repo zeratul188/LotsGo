@@ -443,40 +443,41 @@ export default function ChecklistComponent() {
                         </>
                     ) : (
                         <>
-                            <div className="mx-3 mb-3 rounded-xl border border-gray-200/80 bg-gray-50/70 p-3 dark:border-white/10 dark:bg-white/[0.025] sm:mx-4">
-                                <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-start">
-                                    <Select
-                                        aria-label="남은 레이드 필터"
-                                        label="레이드 필터"
-                                        size="sm"
-                                        radius="lg"
-                                        variant="bordered"
-                                        items={raidSelectOptions}
-                                        selectedKeys={new Set([selectedRaid])}
-                                        onChange={(event) => {
-                                            setSelectedRaid(event.target.value || 'all');
-                                            setRemainingPage(1);
-                                        }}
-                                        className="w-full sm:w-[280px] sm:shrink-0"
-                                        classNames={{
-                                            trigger: "border-gray-200 bg-white shadow-none dark:border-white/10 dark:bg-white/[0.035]",
-                                            label: "fadedtext"
-                                        }}>
-                                        {(item) => (
-                                            <SelectItem key={item.key}>{item.name}</SelectItem>
-                                        )}
-                                    </Select>
-                                    <div className="hidden flex-1 sm:block" />
-                                    <div className="flex flex-col items-end gap-1 text-xs sm:shrink-0">
-                                    <div className="flex flex-wrap items-center justify-end gap-2">
-                                        <Chip size="sm" radius="sm" color="danger" variant="flat">미완료 {remainingRaidCount}건</Chip>
-                                        <span className="fadedtext">대상 캐릭터 {filteredIncompleteEntries.length}명</span>
+                            <div className="mx-3 mb-3 border-y border-default-200/80 py-2 dark:border-white/10 sm:mx-4">
+                                <div className="flex w-full flex-col gap-2 lg1200:flex-row lg1200:items-center lg1200:gap-4">
+                                    <div className="flex min-w-0 flex-1 items-center gap-2.5">
+                                        <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0 text-default-500" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+                                        <span className="shrink-0 text-sm font-medium">레이드 필터</span>
+                                        <Select
+                                            aria-label="남은 레이드 필터"
+                                            size="sm"
+                                            radius="md"
+                                            variant="bordered"
+                                            items={raidSelectOptions}
+                                            selectedKeys={new Set([selectedRaid])}
+                                            onChange={(event) => {
+                                                setSelectedRaid(event.target.value || 'all');
+                                                setRemainingPage(1);
+                                            }}
+                                            className="min-w-0 flex-1 sm:max-w-[220px]"
+                                            classNames={{
+                                                trigger: "h-8 min-h-8 border-default-200 bg-white shadow-none dark:border-white/10 dark:bg-white/[0.035]",
+                                                value: "text-xs font-medium"
+                                            }}>
+                                            {(item) => (
+                                                <SelectItem key={item.key}>{item.name}</SelectItem>
+                                            )}
+                                        </Select>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-default-200/80 pt-2 text-xs dark:border-white/10 lg1200:border-l lg1200:border-t-0 lg1200:py-1 lg1200:pl-4">
+                                        <span className="inline-flex items-center gap-1.5 text-default-600 dark:text-default-300"><span className="h-1.5 w-1.5 rounded-full bg-danger"/>미완료 <strong className="font-semibold tabular-nums text-danger">{remainingRaidCount}건</strong></span>
+                                        <span className="inline-flex items-center gap-1.5 text-default-600 dark:text-default-300"><svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 text-default-500" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 20v-2a5.5 5.5 0 0 1 11 0v2M17 5a3 3 0 0 1 0 6M17 14a5 5 0 0 1 3.5 5v1"/></svg>대상 캐릭터 <strong className="font-semibold tabular-nums text-foreground">{filteredIncompleteEntries.length}명</strong></span>
                                     </div>
                                     <Checkbox
                                         size="sm"
-                                        color="warning"
-                                        className="self-end pb-0"
-                                        classNames={{ label: "whitespace-nowrap text-right" }}
+                                        color="primary"
+                                        className="w-full border-t border-default-200/80 pt-2 dark:border-white/10 lg1200:w-auto lg1200:shrink-0 lg1200:border-l lg1200:border-t-0 lg1200:py-1 lg1200:pl-4"
+                                        classNames={{ label: "text-xs text-default-600 dark:text-default-300" }}
                                         isSelected={goldOnly}
                                         onValueChange={(isSelected) => {
                                             setGoldOnly(isSelected);
@@ -485,7 +486,6 @@ export default function ChecklistComponent() {
                                         }}>
                                         골드 지정 캐릭터 또는 레이드만 보기
                                     </Checkbox>
-                                    </div>
                                 </div>
                             </div>
 
