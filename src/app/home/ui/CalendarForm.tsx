@@ -33,23 +33,20 @@ function EventComponent({ events }: EventComponentProps) {
         return `${date.year()}년 ${date.month()+1}월 ${date.date()}일`;
     };
     return (
-        <section className="col-span-1 sm:col-span-2 overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-[#171717] dark:shadow-none">
-            <div className="flex items-center gap-3 border-b border-gray-200/80 px-4 py-4 dark:border-white/10">
+        <section className="col-span-1 sm:col-span-2 overflow-hidden rounded-2xl border border-default-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717] dark:shadow-none">
+            <div className="flex items-center gap-3 border-b border-default-200/80 px-4 py-3 dark:border-white/10">
                 <div className="min-w-0 grow">
-                    <div className="flex items-center gap-2">
-                        <span className="h-5 w-1 rounded-full bg-primary"/>
-                        <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">로스트아크 이벤트</h2>
-                        <Chip size="sm" radius="sm" variant="flat" color="primary" className="shrink-0">
-                            총 {events.length}개
-                        </Chip>
+                    <div className="flex items-baseline gap-2">
+                        <h2 className="text-lg font-semibold tracking-tight sm:text-xl">로스트아크 이벤트</h2>
+                        <span className="shrink-0 text-xs font-medium text-default-500">총 {events.length}개</span>
                     </div>
-                    <p className="mt-1 pl-3 text-xs fadedtext">현재 진행 중인 이벤트를 확인해 보세요.</p>
+                    <p className="mt-0.5 text-xs text-default-500">현재 진행 중인 이벤트를 확인해 보세요.</p>
                 </div>
                 <Button
                     size="sm"
                     radius="sm"
                     variant="bordered"
-                    className="shrink-0 border-gray-300 bg-white font-medium shadow-sm dark:border-white/20 dark:bg-white/5"
+                    className="shrink-0 border-default-200 bg-white font-medium shadow-none dark:border-white/20 dark:bg-white/5"
                     onPress={() => {
                         const url = "https://lostark.game.onstove.com/News/Event/Now";
                         window.open(url, '_blank');
@@ -122,20 +119,17 @@ function NoticeComponent({ notices }: NoticeComponentProps) {
         return 'secondary';
     };
     return (
-        <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-[#171717] dark:shadow-none">
-            <div className="flex items-center gap-3 border-b border-gray-200/80 px-4 py-4 dark:border-white/10">
+        <section className="overflow-hidden rounded-2xl border border-default-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717] dark:shadow-none">
+            <div className="flex items-center gap-3 border-b border-default-200/80 px-4 py-3 dark:border-white/10">
                 <div className="min-w-0 grow">
-                    <div className="flex items-center gap-2">
-                        <span className="h-5 w-1 rounded-full bg-primary"/>
-                        <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">로스트아크 공지사항</h2>
-                    </div>
-                    <p className="mt-1 pl-3 text-xs fadedtext">중요한 소식과 점검 일정을 확인해 보세요.</p>
+                    <h2 className="text-lg font-semibold tracking-tight sm:text-xl">로스트아크 공지사항</h2>
+                    <p className="mt-0.5 text-xs text-default-500">중요한 소식과 점검 일정을 확인해 보세요.</p>
                 </div>
                 <Button
                     size="sm"
                     radius="sm"
                     variant="bordered"
-                    className="shrink-0 border-gray-300 bg-white font-medium shadow-sm dark:border-white/20 dark:bg-white/5"
+                    className="shrink-0 border-default-200 bg-white font-medium shadow-none dark:border-white/20 dark:bg-white/5"
                     onPress={() => {
                         const url = "https://lostark.game.onstove.com/News/Notice/List";
                         window.open(url, '_blank');
@@ -210,14 +204,11 @@ function IslandComponent({ islands, islandTime, islandDatas }: IslandComponentPr
     }, [islandTime]);
 
     return (
-        <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-[#171717] dark:shadow-none">
-            <div className="flex flex-col gap-4 border-b border-gray-200/80 px-4 py-4 sm:flex-row sm:items-center sm:px-5 dark:border-white/10">
+        <section className="overflow-hidden rounded-2xl border border-default-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717] dark:shadow-none">
+            <div className="flex flex-col gap-3 border-b border-default-200/80 px-4 py-3 sm:flex-row sm:items-center sm:px-5 dark:border-white/10">
                 <div className="min-w-0 grow">
-                    <div className="flex items-center gap-2">
-                        <span className="h-5 w-1 rounded-full bg-primary"/>
-                        <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">오늘의 모험섬</h2>
-                    </div>
-                    <p className="mt-1 pl-3 text-xs fadedtext sm:text-sm">오늘 등장하는 섬과 주요 보상을 확인해 보세요.</p>
+                    <h2 className="text-lg font-semibold tracking-tight sm:text-xl">오늘의 모험섬</h2>
+                    <p className="mt-0.5 text-xs text-default-500">오늘 등장하는 섬과 주요 보상을 확인해 보세요.</p>
                 </div>
                 <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:min-w-[280px]">
                     <div className="rounded-lg bg-gray-50 px-3 py-2 dark:bg-white/[0.05]">

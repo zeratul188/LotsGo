@@ -314,7 +314,7 @@ export default function CharacterClient() {
                     </div>
                 )}
                 <InfomationComponent/>
-                <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 mx-auto mt-4">
+                <div className="mx-auto mt-4 grid w-full grid-cols-1 items-start gap-3 sm:grid-cols-2">
                     <HistoryComponent 
                         setSearched={characterForm.setSearched} 
                         setLoading={characterForm.setLoading}

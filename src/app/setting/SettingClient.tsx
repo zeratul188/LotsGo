@@ -2,7 +2,7 @@
 import { useMobileQuery } from "@/utiils/utils"
 import { addToast, Tab, Tabs } from "@heroui/react";
 import { ExpeditionsComponent } from "./ui/ExpeditionForm";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { checkLogin } from "../checklist/lib/checklistFeat";
 import ChangePasswordComponent from "./ui/ChangePasswordForm";
@@ -15,8 +15,9 @@ import DiscordGuildComponent from "./ui/DiscordGuildForm";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { LoadingComponent } from "../UtilsCompnents";
+import { SettingMenuIcon, SettingMenuIconName } from "./ui/SettingMenuIcon";
 
-const tabs = [
+const tabs: { key: SettingMenuIconName; title: string; description: string; component: ReactNode }[] = [
     {
         key: 'expeditions',
         title: '내 원정대',
@@ -106,35 +107,34 @@ export default function SettingClient() {
     }
 
     return (
-        <div className="min-h-[calc(100vh-65px)] p-5 w-full max-w-[1280px] mx-auto relative">
+        <div className="min-h-[calc(100vh-65px)] w-full max-w-[1280px] mx-auto relative p-3 sm:p-5">
             <Tabs
-                fullWidth={isMobile} 
                 color="primary"
-                radius="lg"
+                radius="sm"
                 variant="light"
-                aria-label="settings tabs" 
+                aria-label="계정 및 설정 메뉴"
                 placement={isMobile ? 'top' : 'start'}
                 selectedKey={selectedTab}
                 onSelectionChange={(key) => setSelectedTab(String(key))}
-                className="flex"
+                className="flex min-w-0"
                 classNames={{
-                    base: "w-full sm:w-auto sm:items-start",
-                    tabList: "w-full gap-1 rounded-2xl border border-default-200 bg-white p-2 shadow-sm dark:border-white/10 dark:bg-[#171717] sm:w-[220px]",
-                    tab: "h-auto min-h-14 justify-start px-4 py-3",
-                    cursor: "bg-primary/10 shadow-none dark:bg-primary/20",
-                    tabContent: "w-full text-left group-data-[selected=true]:text-primary",
-                    panel: "w-full min-w-0 px-0 pt-4 sm:pl-5 sm:pt-0"
+                    base: "w-full min-w-0 md:w-[220px] md:shrink-0 md:items-start",
+                    tabList: "!grid w-full grid-cols-2 gap-1 rounded-xl border border-default-200 bg-default-50/50 p-2 shadow-none dark:border-white/10 dark:bg-[#171717] md:!flex md:w-[220px] md:flex-col",
+                    tab: "h-9 min-h-9 justify-start rounded-lg px-2.5 text-default-600 dark:text-default-300",
+                    cursor: "bg-primary-50 shadow-none dark:bg-primary-500/15",
+                    tabContent: "w-full text-left group-data-[selected=true]:font-semibold group-data-[selected=true]:text-primary-700 dark:group-data-[selected=true]:text-primary-300",
+                    panel: "w-full min-w-0 px-0 pt-3 md:w-0 md:flex-1 md:pl-4 md:pt-0"
                 }}>
                 {tabs.filter(tab => tab.key !== 'change-password' || authProvider !== 'google').map((tab) => (
                     <Tab
                         key={tab.key}
                         title={
-                            <div className="min-w-0 py-0.5 text-left">
-                                <p className="truncate text-sm font-bold">{tab.title}</p>
-                                <p className="mt-0.5 hidden truncate text-xs text-default-400 sm:block">{tab.description}</p>
-                            </div>
+                            <span className="flex min-w-0 items-center gap-2.5 text-left">
+                                <SettingMenuIcon name={tab.key}/>
+                                <span className="truncate text-xs font-medium">{tab.title}<span className="sr-only"> — {tab.description}</span></span>
+                            </span>
                         }
-                        className="min-w-[200px] flex-1">
+                        className={`relative !w-full min-w-0 whitespace-nowrap ${tab.key === 'discord' || tab.key === 'history' ? "md:mt-3 md:before:absolute md:before:-top-2 md:before:left-0 md:before:right-0 md:before:h-px md:before:bg-default-200 dark:md:before:bg-white/10" : ""}`}>
                         <div className="w-full rounded-2xl border border-default-200/80 bg-content1 p-3 dark:border-white/10 dark:bg-[#18181b] md:pl-4">
                             {tab.key === selectedTab ? tab.component : null}
                         </div>

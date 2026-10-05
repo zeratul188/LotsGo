@@ -24,12 +24,11 @@ import { Cube } from "../api/checklist/cube/route";
 import FixedLineAd from "../ad/FixedLineAd";
 import { Settings } from "../api/setting/route";
 import { normalizeChecklist } from "./lib/normalizeChecklist";
-import HomeworkIcon from "@/Icons/HomeworkIcon";
 import ChecklistLoadingSkeleton from "./ui/ChecklistLoadingSkeleton";
-import RaidIcon from "@/Icons/RaidIcon";
 import { registerRaidsAutomatically } from "./lib/raidAutoRegistration";
 import { useLoadingTask } from "../components/loading/LoadingProgress";
 import ChecklistTableView from "./ui/ChecklistTableView";
+import { ChecklistMenuIcon, ChecklistMenuRow, ChecklistMenuSection, menuActionClass, menuSelectClassNames, menuSwitchClass } from "./ui/ChecklistMenu";
 
 
 export const defaultSettings: Settings = {
@@ -46,25 +45,6 @@ export const defaultSettings: Settings = {
 const BoxAd = dynamic(() => import('../ad/BoxAd'), { ssr: false });
 const LineAd = dynamic(() => import('../ad/LineAd'), { ssr: false });
 
-function ContentInfoIcon() {
-    return (
-        <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="9"/>
-            <path d="M12 11v5"/>
-            <path d="M12 8h.01"/>
-        </svg>
-    )
-}
-
-function CubeIcon() {
-    return (
-        <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/>
-            <path d="m4.4 7.7 7.6 4.4 7.6-4.4M12 21v-8.9"/>
-        </svg>
-    )
-}
-
 function LookupSettingsIcon() {
     return (
         <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -80,6 +60,7 @@ function LookupSettingsIcon() {
 
 export default function ChecklistClient() {
     const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
+    const showChecklistAds = useSelector((state: RootState) => !state.login.isLogined || !state.login.user.isSupporter);
 
     const initialChecklist: CheckCharacter[] = normalizeChecklist(iChecklist);
     const initialBosses: Boss[] = iBosses;
@@ -97,6 +78,7 @@ export default function ChecklistClient() {
     const [checklistViewStyle, setChecklistViewStyle] = useState<Settings['checklistViewStyle']>('legacy');
     const [isTableBonusMode, setTableBonusMode] = useState(false);
     const [viewportWidth, setViewportWidth] = useState(0);
+    const [statusSidebarContainer, setStatusSidebarContainer] = useState<HTMLDivElement | null>(null);
     const lastFetchRef = useRef(Date.now());
     
     const [isOpenBosses, setOpenBosses] = useState(false);
@@ -104,7 +86,7 @@ export default function ChecklistClient() {
     const onOpenChangeBosses = (isOpen: boolean) => setOpenBosses(isOpen);
     useLoadingTask("레이드를 자동 등록하고 있어요", isAutoRegisteringRaids);
     const isTableView = checklistViewStyle === 'table' && viewportWidth > 720;
-    const showDesktopLookup = isTableView && viewportWidth >= 1500;
+    const showDesktopLookup = isTableView ? viewportWidth >= 1500 : viewportWidth >= 960;
     const toggleBonusManagement = async () => {
         const stored = localStorage.getItem('userSettings');
         const current: Settings = { ...defaultSettings, ...(stored ? JSON.parse(stored) : {}) };
@@ -148,15 +130,16 @@ export default function ChecklistClient() {
         <Select
             aria-label="숙제 화면 스타일"
             size="sm"
-            radius="lg"
+            radius="sm"
+            variant="flat"
             selectedKeys={[checklistViewStyle]}
             onSelectionChange={keys => {
                 const value = Array.from(keys)[0];
                 if (value) void handleChecklistViewStyleChange(String(value) as Settings['checklistViewStyle']);
             }}
             className={className}
-            classNames={{ trigger: "h-10" }}>
-            <SelectItem key="legacy">기존 스타일</SelectItem>
+            classNames={menuSelectClassNames}>
+            <SelectItem key="legacy">카드 스타일</SelectItem>
             <SelectItem key="table">표 스타일</SelectItem>
         </Select>
     );
@@ -187,6 +170,50 @@ export default function ChecklistClient() {
             setAutoRegisteringRaids(false);
         }
     };
+
+    const renderLookupMenu = (onClose?: () => void) => (
+        <>
+            <ChecklistMenuSection title="화면 설정">
+                <ChecklistMenuRow icon="view" label="화면 스타일">
+                    {renderChecklistViewStyleSelect("w-[124px] shrink-0")}
+                </ChecklistMenuRow>
+                {isTableView ? (
+                    <ChecklistMenuRow icon="bonus" label="더보기 관리">
+                        <Switch size="sm" className={menuSwitchClass} aria-label="더보기 관리" isSelected={isTableBonusMode} onValueChange={() => void toggleBonusManagement()}/>
+                    </ChecklistMenuRow>
+                ) : null}
+            </ChecklistMenuSection>
+            <ChecklistMenuSection title="바로가기">
+                <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="raid"/>} isLoading={isAutoRegisteringRaids} isDisabled={checklistForm.isLoading || checklist.length === 0} onPress={() => handleRaidAutoRegistration()}>전체 자동 등록</Button>
+                <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="info"/>} onPress={() => { onClose?.(); setOpenBosses(true); }}>콘텐츠 정보</Button>
+                <Button variant="light" size="sm" className={clsx(menuActionClass, checklistForm.isShowList && "bg-primary-50 text-primary-700 dark:bg-primary-500/15 dark:text-primary-300")} startContent={<ChecklistMenuIcon name="remaining"/>} aria-pressed={checklistForm.isShowList} onPress={() => { checklistForm.setShowList(!checklistForm.isShowList); onClose?.(); }}>남은 숙제</Button>
+                <Button variant="light" size="sm" className={clsx(menuActionClass, checklistForm.isShowCubeDetail && "bg-primary-50 text-primary-700 dark:bg-primary-500/15 dark:text-primary-300")} startContent={<ChecklistMenuIcon name="cube"/>} aria-pressed={checklistForm.isShowCubeDetail} onPress={() => { checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail); onClose?.(); }}>큐브 현황</Button>
+            </ChecklistMenuSection>
+            <FilterComponent
+                server={checklistForm.server}
+                setServer={checklistForm.setServer}
+                filterContent={checklistForm.filterContent}
+                setFilterContent={checklistForm.setFilterContent}
+                bosses={checklistForm.bosses}
+                checklist={checklist}
+                isRemainHomework={checklistForm.isRemainHomework}
+                setRemainHomework={checklistForm.setRemainHomework}
+                isShowGoldCharacter={checklistForm.isShowGoldCharacter}
+                setShowGoldCharacter={checklistForm.setShowGoldCharacter}
+                filterAccount={checklistForm.filterAccount}
+                setFilterAccount={checklistForm.setFilterAccount}
+                isHideCompleteContent={checklistForm.isHideCompleteContent}
+                setHideCompleteContent={checklistForm.setHideCompleteContent}
+                isHideDayContent={checklistForm.isHideDayContent}
+                setHideDayContent={checklistForm.setHideDayContent}/>
+            {showDesktopLookup ? (
+                <ChecklistMenuSection title="관리">
+                    <Button variant="light" size="sm" className={clsx(menuActionClass, "text-danger")} startContent={<ChecklistMenuIcon name="reset"/>} isLoading={isLoadingReset} onPress={async () => await handleResetChecklist(checklist, checklistForm.biweekly, dispatch, setLoadingReset)}>주간 숙제 초기화</Button>
+                    <p className="px-2 pb-1 text-[10px] leading-4 text-default-400">숙제와 이번 주 부수입 기록을 초기화합니다.</p>
+                </ChecklistMenuSection>
+            ) : null}
+        </>
+    );
 
     useEffect(() => {
         if (!isCheckedToken || !expedition || expedition.length === 0 || !checkLogin()) return;
@@ -386,169 +413,27 @@ export default function ChecklistClient() {
                                 </div>
                                 <p className="pl-11 text-xs font-normal fadedtext">서버와 필터를 선택하고 필요한 현황을 빠르게 확인하세요.</p>
                             </DrawerHeader>
-                            <DrawerBody className="gap-5 px-4 py-5 sm:px-5">
-                                <section className="rounded-2xl border border-gray-200/80 bg-gray-50/70 p-4 dark:border-white/10 dark:bg-white/[0.035]">
-                                    <div className="mb-3">
-                                        <p className="text-sm font-semibold">정보 및 현황</p>
-                                        <p className="mt-0.5 text-xs fadedtext">필요한 상세 정보와 관리 기능을 실행합니다.</p>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <Button
-                                            aria-label="전체 캐릭터 레이드 자동 등록"
-                                            size="sm"
-                                            radius="lg"
-                                            variant="bordered"
-                                            color="primary"
-                                            isLoading={isAutoRegisteringRaids}
-                                            isDisabled={checklistForm.isLoading || checklist.length === 0}
-                                            className="col-span-2 h-10 justify-start border-primary-200 bg-white px-3 text-xs font-semibold text-primary-700 shadow-sm dark:border-primary-400/30 dark:bg-[#171717] dark:text-primary-300"
-                                            startContent={!isAutoRegisteringRaids ? <RaidIcon size={15}/> : null}
-                                            onPress={() => handleRaidAutoRegistration()}>
-                                            전체 자동 등록
-                                        </Button>
-                                        <Button
-                                            aria-label="콘텐츠 정보 열기"
-                                            size="sm"
-                                            radius="lg"
-                                            variant="flat"
-                                            className="h-10 justify-start gap-2 bg-white text-xs font-semibold text-gray-700 shadow-sm dark:bg-white/[0.06] dark:text-gray-200"
-                                            startContent={<ContentInfoIcon/>}
-                                            onPress={() => {
-                                                onClose();
-                                                setOpenBosses(true);
-                                            }}>
-                                            콘텐츠 정보
-                                        </Button>
-                                        <Button
-                                            aria-label={`남은 숙제 현황 ${checklistForm.isShowList ? '닫기' : '보기'}`}
-                                            aria-pressed={checklistForm.isShowList}
-                                            size="sm"
-                                            radius="lg"
-                                            variant="flat"
-                                            color={checklistForm.isShowList ? "primary" : "default"}
-                                            className="h-10 justify-start gap-2 text-xs font-semibold shadow-sm"
-                                            startContent={<HomeworkIcon size={15}/>}
-                                            onPress={() => {
-                                                checklistForm.setShowList(!checklistForm.isShowList);
-                                                onClose();
-                                            }}>
-                                            남은 숙제
-                                        </Button>
-                                        <Button
-                                            aria-label={`큐브 현황 ${checklistForm.isShowCubeDetail ? '닫기' : '보기'}`}
-                                            aria-pressed={checklistForm.isShowCubeDetail}
-                                            size="sm"
-                                            radius="lg"
-                                            variant="flat"
-                                            color={checklistForm.isShowCubeDetail ? "secondary" : "default"}
-                                            className="col-span-2 h-10 justify-start gap-2 text-xs font-semibold shadow-sm"
-                                            startContent={<CubeIcon/>}
-                                            onPress={() => {
-                                                checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail);
-                                                onClose();
-                                            }}>
-                                            큐브 현황
-                                        </Button>
-                                    </div>
-                                </section>
-                                <section className="rounded-2xl border border-gray-200/80 bg-gray-50/70 p-4 dark:border-white/10 dark:bg-white/[0.035]">
-                                    <div className="flex items-center justify-between gap-3">
-                                        <div>
-                                            <p className="text-sm font-semibold">숙제 화면 스타일</p>
-                                            <p className="mt-0.5 text-xs fadedtext">숙제 목록을 기존 스타일 또는 표 스타일로 표시합니다.</p>
-                                        </div>
-                                        {renderChecklistViewStyleSelect("w-[140px] shrink-0")}
-                                    </div>
-                                </section>
-                                {isTableView ? (
-                                    <section className="rounded-2xl border border-warning-200/70 bg-warning-50/60 p-4 dark:border-warning-900/40 dark:bg-warning-950/20">
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div>
-                                                <p className="text-sm font-semibold">더보기 관리</p>
-                                                <p className="mt-1 text-xs leading-5 text-default-500">표의 관문 버튼을 숙제 완료 대신 더보기 사용 여부를 기록하는 버튼으로 전환합니다.</p>
-                                            </div>
-                                            <Switch size="sm" aria-label="더보기 관리" isSelected={isTableBonusMode} onValueChange={() => void toggleBonusManagement()}/>
-                                        </div>
-                                    </section>
-                                ) : null}
-                                <FilterComponent
-                                    server={checklistForm.server}
-                                    setServer={checklistForm.setServer}
-                                    filterContent={checklistForm.filterContent}
-                                    setFilterContent={checklistForm.setFilterContent}
-                                    bosses={checklistForm.bosses}
-                                    checklist={checklist}
-                                    isRemainHomework={checklistForm.isRemainHomework}
-                                    setRemainHomework={checklistForm.setRemainHomework}
-                                    isShowGoldCharacter={checklistForm.isShowGoldCharacter}
-                                    setShowGoldCharacter={checklistForm.setShowGoldCharacter}
-                                    filterAccount={checklistForm.filterAccount}
-                                    setFilterAccount={checklistForm.setFilterAccount}
-                                    isHideCompleteContent={checklistForm.isHideCompleteContent}
-                                    setHideCompleteContent={checklistForm.setHideCompleteContent}
-                                    isHideDayContent={checklistForm.isHideDayContent}
-                                    setHideDayContent={checklistForm.setHideDayContent}/>
-                                {isTableView ? (
-                                    <section className="rounded-2xl border border-danger-200/70 bg-danger-50/40 p-4 dark:border-danger-900/50 dark:bg-danger-950/15">
-                                        <p className="text-sm font-semibold">주간 초기화가 되지 않았나요?</p>
-                                        <p className="mt-1 text-xs leading-5 text-default-500">모든 숙제와 이번 주 부수입 기록을 직접 초기화합니다.</p>
-                                        <Button fullWidth radius="lg" color="danger" size="sm" className="mt-3 cursor-pointer font-semibold" isLoading={isLoadingReset} onPress={async () => await handleResetChecklist(checklist, checklistForm.biweekly, dispatch, setLoadingReset)}>초기화</Button>
-                                    </section>
-                                ) : null}
+                            <DrawerBody className="gap-0 px-3 py-2 sm:px-4">
+                                {renderLookupMenu(onClose)}
                             </DrawerBody>
                         </>
                     )}
                 </DrawerContent>
             </Drawer>
-            <div className={clsx(showDesktopLookup && "grid grid-cols-[300px_minmax(0,1fr)] items-start gap-5")}>
+            <div className={clsx(showDesktopLookup && "grid grid-cols-[270px_minmax(0,1fr)] items-start gap-4")}>
             {showDesktopLookup ? (
-                <aside className="scrollbar-none sticky top-0 flex h-[calc(100vh-80px)] flex-col space-y-4 overflow-y-auto rounded-2xl border border-default-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-[#171717]">
-                    <div className="rounded-xl border border-default-200/80 bg-default-50/70 p-3 dark:border-white/10 dark:bg-white/[0.035]">
-                        <div className="flex items-center justify-between gap-3">
-                            <div><p className="text-sm font-semibold">숙제 화면 스타일</p><p className="mt-0.5 text-[11px] text-default-500">목록 표시 방식을 선택합니다.</p></div>
-                            {renderChecklistViewStyleSelect("w-[120px] shrink-0")}
-                        </div>
-                    </div>
-                    <div className="flex items-center justify-between gap-3 rounded-xl border border-warning-200/70 bg-warning-50/60 px-3 py-2.5 dark:border-warning-900/40 dark:bg-warning-950/20">
-                        <div><p className="text-sm font-semibold">더보기 관리</p><p className="mt-0.5 text-[11px] text-default-500">관문 버튼을 더보기 체크로 사용</p></div>
-                        <Switch size="sm" aria-label="더보기 관리" isSelected={isTableBonusMode} onValueChange={() => void toggleBonusManagement()}/>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                        <Button size="sm" radius="lg" variant="bordered" color="primary" className="col-span-2 cursor-pointer" isLoading={isAutoRegisteringRaids} isDisabled={checklistForm.isLoading || checklist.length === 0} onPress={() => handleRaidAutoRegistration()}>전체 자동 등록</Button>
-                        <Button size="sm" radius="lg" variant="flat" className="cursor-pointer" onPress={() => setOpenBosses(true)}>콘텐츠 정보</Button>
-                        <Button size="sm" radius="lg" variant="flat" className="cursor-pointer" color={checklistForm.isShowList ? 'primary' : 'default'} onPress={() => checklistForm.setShowList(!checklistForm.isShowList)}>남은 숙제</Button>
-                        <Button size="sm" radius="lg" variant="flat" className="col-span-2 cursor-pointer" color={checklistForm.isShowCubeDetail ? 'secondary' : 'default'} onPress={() => checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail)}>큐브 현황</Button>
-                    </div>
-                    <FilterComponent
-                        server={checklistForm.server}
-                        setServer={checklistForm.setServer}
-                        filterContent={checklistForm.filterContent}
-                        setFilterContent={checklistForm.setFilterContent}
-                        bosses={checklistForm.bosses}
-                        checklist={checklist}
-                        isRemainHomework={checklistForm.isRemainHomework}
-                        setRemainHomework={checklistForm.setRemainHomework}
-                        isShowGoldCharacter={checklistForm.isShowGoldCharacter}
-                        setShowGoldCharacter={checklistForm.setShowGoldCharacter}
-                        filterAccount={checklistForm.filterAccount}
-                        setFilterAccount={checklistForm.setFilterAccount}
-                        isHideCompleteContent={checklistForm.isHideCompleteContent}
-                        setHideCompleteContent={checklistForm.setHideCompleteContent}
-                        isHideDayContent={checklistForm.isHideDayContent}
-                        setHideDayContent={checklistForm.setHideDayContent}/>
-                    <section className="rounded-2xl border border-danger-200/70 bg-danger-50/40 p-4 dark:border-danger-900/50 dark:bg-danger-950/15">
-                        <p className="text-sm font-semibold">주간 초기화가 되지 않았나요?</p>
-                        <p className="mt-1 text-xs leading-5 text-default-500">모든 숙제와 이번 주 부수입 기록을 직접 초기화합니다.</p>
-                        <Button fullWidth radius="lg" color="danger" size="sm" className="mt-3 cursor-pointer font-semibold" isLoading={isLoadingReset} onPress={async () => await handleResetChecklist(checklist, checklistForm.biweekly, dispatch, setLoadingReset)}>초기화</Button>
-                    </section>
-                    <div className="min-h-8 flex-1" aria-hidden="true" />
+                <aside aria-label="숙제 조회 설정" className="scrollbar-none sticky top-0 h-[calc(100vh-80px)] overflow-y-auto rounded-xl border border-default-200 bg-default-50/50 px-2 py-2 dark:border-white/10 dark:bg-[#171717]">
+                    <div ref={setStatusSidebarContainer}/>
+                    {renderLookupMenu()}
                 </aside>
             ) : null}
             <main className="min-w-0">
-            <div className={clsx("w-full mx-auto", !isTableView && "max-w-[1280px]")}>
+            <div className={clsx("w-full mx-auto", !isTableView && !showDesktopLookup && "max-w-[1280px]")}>
                 <ChecklistStatue 
                     isTableView={isTableView}
                     isTableViewWide={isTableView && viewportWidth >= 1500}
+                    isSidebarVisible={showDesktopLookup}
+                    sidebarContainer={statusSidebarContainer}
                     server={checklistForm.server}
                     filterContent={checklistForm.filterContent}
                     filterAccount={checklistForm.filterAccount}
@@ -570,14 +455,14 @@ export default function ChecklistClient() {
                     setAutoChecklistNickname={setAutoChecklistNickname}
                     setAutoChecklistSharing={setAutoChecklistSharing}/>
             </div>
-            {!checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
-                <div className={clsx("w-full flex justify-center overflow-hidden", isTableView ? "pt-5" : "md960:pt-[110px]")}>
+            {showChecklistAds && !checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
+                <div className={clsx("w-full flex justify-center overflow-hidden", isTableView || showDesktopLookup ? "pt-5" : "md960:pt-[110px]")}>
                     <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px] mt-8">
                         <LineAd isLoaded={!checklistForm.isLoading}/>
                     </div>
                 </div>
             ) : (
-                <div className={clsx("w-full flex justify-center overflow-hidden", isTableView ? "mt-5" : "md960:mt-[220px]")}>
+                <div className={clsx("w-full flex justify-center overflow-hidden", isTableView || showDesktopLookup ? "mt-5" : "md960:mt-[220px]")}>
                     <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-4">
                         <FixedLineAd isLoaded={!checklistForm.isLoading}/>
                     </div>
@@ -670,7 +555,7 @@ export default function ChecklistClient() {
             </main>
             </div>
             <div className="mx-auto w-full max-w-[1280px]">
-                {!isTableView ? <div className="mx-4 mt-8 flex flex-col gap-4 rounded-2xl border border-danger/20 bg-danger/[0.025] p-4 shadow-sm dark:border-danger/30 dark:bg-danger/[0.06] sm:flex-row sm:items-start sm:p-5">
+                {!isTableView && !showDesktopLookup ? <div className="mx-4 mt-8 flex flex-col gap-4 rounded-2xl border border-danger/20 bg-danger/[0.025] p-4 shadow-sm dark:border-danger/30 dark:bg-danger/[0.06] sm:flex-row sm:items-start sm:p-5">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-danger/10 text-lg font-bold text-danger dark:bg-danger/15">
                         !
                     </div>
@@ -697,7 +582,7 @@ export default function ChecklistClient() {
                         </div>
                     </div>
                 </div> : null}
-                {!isTableView && !checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
+                {showChecklistAds && !isTableView && !checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
                     <div className="w-full flex justify-center px-4">
                         <div className="w-full max-w-[360px] min-h-[100px] mt-8">
                             <BoxAd isLoaded={!checklistForm.isLoading}/>
@@ -713,10 +598,10 @@ export default function ChecklistClient() {
                     </div>
                 ) : <></>}
             </div>
-            <Script
+            {showChecklistAds && <Script
                 async
                 src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
-                crossOrigin="anonymous"/>
+                crossOrigin="anonymous"/>}
         </div>
     )
 }

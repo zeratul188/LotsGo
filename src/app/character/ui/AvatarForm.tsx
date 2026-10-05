@@ -128,7 +128,7 @@ export function AvatarComponent({ info }: { info: CharacterInfo }) {
                             </div>
                         </div>
 
-                        <div className="h-auto w-full border-t border-default-200/80 bg-default-50/50 md960:h-[760px] md960:w-[420px] md960:border-l md960:border-t-0 dark:border-white/10 dark:bg-black/10">
+                        <div className="h-auto w-full border-t border-default-200/80 bg-content1 md960:h-[760px] md960:w-[420px] md960:border-l md960:border-t-0 dark:border-white/10 dark:bg-[#171717]">
                             <div className="border-b border-default-200/70 px-4 py-3 dark:border-white/10">
                                 <div className="flex items-center justify-between gap-2">
                                     <p className="text-sm font-semibold">부위별 장착 정보</p>
@@ -136,59 +136,58 @@ export function AvatarComponent({ info }: { info: CharacterInfo }) {
                                 </div>
                             </div>
 
-                            <div className="space-y-3 p-3 md960:h-[calc(100%-49px)] md960:overflow-y-auto md960:scrollbar-hide">
+                            <div className="divide-y divide-default-200/80 md960:h-[calc(100%-49px)] md960:overflow-y-auto md960:scrollbar-hide dark:divide-white/10">
                                 {avatarGroups.length > 0 ? avatarGroups.map((group) => (
                                     <section
                                         key={group.type}
-                                        className="overflow-hidden rounded-2xl border border-default-200/80 bg-content1 shadow-sm dark:border-white/10 dark:bg-white/[0.035]"
                                     >
-                                        <div className="flex items-center justify-between border-b border-default-200/70 bg-default-100/70 px-3.5 py-2 dark:border-white/10 dark:bg-white/[0.04]">
+                                        <div className="flex items-center justify-between bg-default-50/60 px-4 py-2.5 dark:bg-white/[0.03]">
                                             <p className="text-xs font-semibold">{group.label}</p>
-                                            <span className="rounded-full bg-default-200/70 px-2 py-0.5 text-[10px] font-medium tabular-nums text-default-600 dark:bg-white/10 dark:text-default-300">
-                                                {group.avatars.length}
-                                            </span>
+                                            <span className="text-[11px] font-medium tabular-nums text-default-500">{group.avatars.length}개</span>
                                         </div>
 
-                                        <div className="divide-y divide-default-200/60 dark:divide-white/10">
+                                        <div className="divide-y divide-default-100 dark:divide-white/[0.06]">
                                             {group.avatars.map((avatar, index) => (
                                                 <div
                                                     key={`${avatar.type}-${avatar.name}-${index}`}
-                                                    className="flex flex-wrap items-start gap-3 px-3.5 py-3 transition-colors hover:bg-default-100/70 dark:hover:bg-white/[0.05]"
+                                                    className="px-4 py-3"
                                                 >
-                                                    <div className={`h-12 w-12 shrink-0 rounded-xl p-[2px] ${getBackgroundByGrade(avatar.grade)}`}>
-                                                        <img
-                                                            src={avatar.icon}
-                                                            alt={avatar.name}
-                                                            className="h-full w-full rounded-[10px] object-cover"
-                                                        />
-                                                    </div>
-                                                    <div className="min-w-0 grow">
-                                                        <div className="flex items-center gap-2">
-                                                            <p className={`min-w-0 truncate text-sm font-semibold ${getColorTextByGrade(avatar.grade)}`}>
-                                                                {avatar.name}
-                                                            </p>
-                                                            {avatar.isInner ? (
-                                                                <Chip
-                                                                    size="sm"
-                                                                    radius="full"
-                                                                    variant="flat"
-                                                                    color="secondary"
-                                                                    className="h-5 shrink-0 px-1 text-[10px] font-semibold"
-                                                                >
-                                                                    덧입기
-                                                                </Chip>
-                                                            ) : null}
+                                                    <div className="flex min-w-0 items-center gap-3">
+                                                        <div className={`h-10 w-10 shrink-0 rounded-lg p-[2px] ${getBackgroundByGrade(avatar.grade)}`}>
+                                                            <img
+                                                                src={avatar.icon}
+                                                                alt={avatar.name}
+                                                                className="h-full w-full rounded-[6px] object-cover"
+                                                            />
                                                         </div>
-                                                        <p className="mt-1 text-xs text-default-500">{avatar.grade} · {group.label}</p>
+                                                        <div className="min-w-0 grow">
+                                                            <div className="flex min-w-0 items-center gap-2">
+                                                                <p className={`min-w-0 truncate text-sm font-semibold ${getColorTextByGrade(avatar.grade)}`}>
+                                                                    {avatar.name}
+                                                                </p>
+                                                                {avatar.isInner ? (
+                                                                    <Chip
+                                                                        size="sm"
+                                                                        radius="full"
+                                                                        variant="flat"
+                                                                        color="secondary"
+                                                                        className="h-5 shrink-0 px-1 text-[10px] font-semibold"
+                                                                    >
+                                                                        덧입기
+                                                                    </Chip>
+                                                                ) : null}
+                                                            </div>
+                                                            <p className="mt-0.5 text-xs text-default-500">{avatar.grade} · {group.label}</p>
+                                                        </div>
                                                     </div>
                                                     {avatar.dyes && avatar.dyes.length > 0 ? (
-                                                        <div className="basis-full min-w-0 rounded-xl border border-default-200/70 bg-default-50/80 p-2 dark:border-white/10 dark:bg-black/10">
-                                                            <p className="mb-1.5 text-[10px] font-semibold text-default-500">염색 정보</p>
-                                                            <div className="space-y-1.5">
+                                                        <div className="mt-3 min-w-0 border-t border-default-100 pt-2 dark:border-white/[0.06]">
+                                                            <p className="mb-1 text-[10px] font-medium text-default-500">염색 정보</p>
+                                                            <div className="divide-y divide-default-100 dark:divide-white/[0.06]">
                                                                 {avatar.dyes.map((dye, dyeIndex) => (
                                                                     <div
                                                                         key={`${dye.part}-${dyeIndex}`}
-                                                                        className="flex min-w-0 flex-nowrap items-center gap-x-2 overflow-x-auto rounded-lg bg-content1/80 px-2 py-1.5 scrollbar-hide dark:bg-white/[0.04]"
+                                                                        className="flex min-w-0 flex-nowrap items-center gap-x-2 overflow-x-auto py-1 scrollbar-hide"
                                                                     >
                                                                         <span className="min-w-10 shrink-0 text-[10px] font-semibold text-default-600 dark:text-default-300">
                                                                             {dye.part}
@@ -210,7 +209,7 @@ export function AvatarComponent({ info }: { info: CharacterInfo }) {
                                         </div>
                                     </section>
                                 )) : (
-                                    <div className="flex min-h-48 items-center justify-center rounded-2xl border border-dashed border-default-300 text-sm text-default-400 dark:border-white/15">
+                                    <div className="m-4 flex min-h-48 items-center justify-center rounded-lg border border-dashed border-default-300 text-sm text-default-400 dark:border-white/15">
                                         장착 중인 아바타가 없습니다.
                                     </div>
                                 )}

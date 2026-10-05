@@ -24,6 +24,7 @@ import { checkWeek, type CheckCharacter, type Checklist } from '../../store/chec
 import type { AppDispatch } from '../../store/store';
 import { getBosses, handleAutoRaidCheck } from '../lib/checklistFeat';
 import { findBossByRecognitionText, findRaidCompletion } from '../lib/autoChecklistRecognition';
+import { ChecklistMenuIcon, menuActionClass } from './ChecklistMenu';
 
 type AutoChecklistControlProps = {
     checklist: CheckCharacter[],
@@ -34,6 +35,7 @@ type AutoChecklistControlProps = {
     setSelectedNickname: (nickname: string) => void,
     onSharingStateChange: (isSharing: boolean) => void,
     compactLabel?: boolean,
+    menuMode?: boolean,
     className?: string,
     statusContainer?: HTMLDivElement | null
 }
@@ -198,6 +200,7 @@ export default function AutoChecklistControl({
     setSelectedNickname,
     onSharingStateChange,
     compactLabel = false,
+    menuMode = false,
     className,
     statusContainer
 }: AutoChecklistControlProps) {
@@ -980,13 +983,14 @@ export default function AutoChecklistControl({
             <Button
                 fullWidth
                 radius="sm"
-                color={status === 'active' ? 'success' : 'primary'}
-                variant="flat"
+                color={menuMode ? 'default' : status === 'active' ? 'success' : 'primary'}
+                variant={menuMode ? 'light' : 'flat'}
                 size="sm"
-                className={`hidden h-9 border border-primary/30 px-2 text-xs font-medium md960:flex sm:text-sm ${className ?? ''}`}
+                className={menuMode ? menuActionClass : `hidden h-9 border border-primary/30 px-2 text-xs font-medium md960:flex sm:text-sm ${className ?? ''}`}
+                startContent={menuMode ? <ChecklistMenuIcon name="auto"/> : undefined}
                 isDisabled={isDisabled}
                 onPress={onOpen}>
-                {status === 'active' ? (compactLabel ? '자동 체크 중' : '자동 체크 작동 중') : (compactLabel ? '자동 체크' : '자동 체크 기능 켜기')}
+                {menuMode ? (status === 'active' ? '자동 체크 중' : '자동 체크') : status === 'active' ? (compactLabel ? '자동 체크 중' : '자동 체크 작동 중') : (compactLabel ? '자동 체크' : '자동 체크 기능 켜기')}
             </Button>
             {isSharing && (statusContainer === undefined ? sharingStatus : statusContainer ? createPortal(sharingStatus, statusContainer) : null)}
             <video ref={videoRef} className="hidden" muted playsInline/>

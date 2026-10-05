@@ -1,6 +1,6 @@
 'use client'
 
-import { Card, CardBody, Chip, Tooltip } from "@heroui/react";
+import { Card, CardBody, Tooltip } from "@heroui/react";
 import clsx from "clsx";
 import { useMobileQuery } from "@/utiils/utils";
 import VegaIcon from "@/Icons/VegaIcon";
@@ -12,6 +12,34 @@ import { getColorTextByGrade } from "@/utiils/utils";
 
 const upperClass = ['도화가', '기상술사', '환수사'];
 
+function ProfileMetadata({ info, mobile = false }: { info: CharacterInfo; mobile?: boolean }) {
+    const details = [
+        { label: '서버', value: info.profile.server },
+        { label: '직업', value: info.profile.className },
+        ...(info.profile.arkpassiveTitle ? [{ label: '전투 스타일', value: info.profile.arkpassiveTitle }] : []),
+    ];
+
+    return (
+        <div className={clsx(
+            "flex min-h-6 max-w-full flex-wrap items-center gap-y-1",
+            mobile && "w-fit rounded-md bg-black/55 px-2 py-1 ring-1 ring-white/10 backdrop-blur-sm"
+        )}>
+            {details.map(({ label, value }) => (
+                <div
+                    key={label}
+                    className={clsx(
+                        "flex items-center gap-2 whitespace-nowrap border-l px-3 first:border-l-0 first:pl-0",
+                        mobile ? "border-white/25" : "border-default-300/70 dark:border-white/15"
+                    )}
+                >
+                    <span className={clsx("text-[11px]", mobile ? "text-white/60" : "text-default-500")}>{label}</span>
+                    <span className={clsx("text-sm font-semibold tracking-tight", mobile ? "text-white" : "text-foreground")}>{value}</span>
+                </div>
+            ))}
+        </div>
+    );
+}
+
 export function ProfileComponent({ info, isBadge }: { info: CharacterInfo, isBadge: boolean }) {
     const isMobile = useMobileQuery();
     const title = info.profile.title ? getParsedText(info.profile.title) : '';
@@ -21,11 +49,7 @@ export function ProfileComponent({ info, isBadge }: { info: CharacterInfo, isBad
         <div className="w-full h-[max-content] sm:h-[300px] border-b-1 border-[#dddddd] dark:border-[#333333] bg-[#F6F6F6] dark:bg-[#111111]">
             <div className="w-full h-full max-w-[1280px] mx-auto flex flex-col-reverse sm:flex-row relative">
                 <div className="p-5 h-full hidden sm:flex flex-col">
-                    <div className="flex gap-2">
-                        <Chip color="secondary" variant="solid" radius="sm">{info.profile.server}</Chip>
-                        <Chip color="warning" variant="solid" radius="sm">{info.profile.className}</Chip>
-                        <Chip color="primary" variant="solid" radius="sm" className={clsx(info.profile.arkpassiveTitle ? 'flex' : 'hidden')}>{info.profile.arkpassiveTitle}</Chip>
-                    </div>
+                    <ProfileMetadata info={info}/>
                     <p className="mt-2 flex items-center gap-1">
                         <TitleIcon title={title} className="mr-1 h-[1em] w-[1em] scale-[1.75]"/>
                         <span>
@@ -80,17 +104,7 @@ export function ProfileComponent({ info, isBadge }: { info: CharacterInfo, isBad
                     </div>
                 </div>
                 <div className="flex sm:hidden p-5 flex-col z-1 h-[300px] bg-gradient-to-r from-[#15181d] via-[#15181d]/25 to-transparent">
-                    <div className="flex gap-2">
-                        <Chip color="secondary" variant="solid" radius="sm">{info.profile.server}</Chip>
-                        <Chip color="warning" variant="solid" radius="sm">{info.profile.className}</Chip>
-                    </div>
-                    <Chip
-                        color="primary"
-                        variant="solid"
-                        radius="sm"
-                        className={clsx('mt-2', info.profile.arkpassiveTitle ? 'flex' : 'hidden')}>
-                        {info.profile.arkpassiveTitle}
-                    </Chip>
+                    <ProfileMetadata info={info} mobile/>
                     <p className="text-[#dddddd] text-sm mt-4 flex items-center gap-1">
                         <TitleIcon title={title} className="mr-1 h-[1em] w-[1em] scale-[1.75]"/>
                         <span>

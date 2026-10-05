@@ -2,6 +2,7 @@ import { Button, Chip, Progress } from "@heroui/react";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import JobAvatar from "@/Icons/JobAvatar";
+import ParadiseIcon from "@/Icons/ParadiseIcon";
 import { FixedWeeklyContentStatus as FixedWeeklyContentStatusData } from "../lib/checklistFeat";
 
 type FixedWeeklyContentStatusProps = {
@@ -12,7 +13,7 @@ export default function FixedWeeklyContentStatus({ status }: FixedWeeklyContentS
     const pageSize = 6;
     const [page, setPage] = useState(1);
     const isComplete = status.total > 0 && status.completed === status.total;
-    const color = status.type === 'hallsHourglass' ? 'warning' : 'secondary';
+    const color = status.type === 'hallsHourglass' ? 'primary' : 'warning';
     const completionLabel = status.type === 'hallsHourglass' ? '할의 모래시계를' : '낙원을';
     const progressValue = status.total > 0 ? status.completed / status.total * 100 : 0;
     const totalPages = Math.ceil(status.incompleteCharacters.length / pageSize);
@@ -23,19 +24,31 @@ export default function FixedWeeklyContentStatus({ status }: FixedWeeklyContentS
     }, [totalPages]);
 
     return (
-        <div className="min-w-0 rounded-xl border border-gray-200/80 bg-gray-50/60 p-4 dark:border-white/10 dark:bg-white/[0.025]">
+        <div className="min-w-0 rounded-xl border border-default-200/80 bg-default-50/40 p-4 dark:border-white/10 dark:bg-white/[0.025]">
             <div className="flex items-start justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-2">
+                <div className="flex min-w-0 items-center gap-2.5">
                     <span className={clsx(
-                        "h-5 w-1 shrink-0 rounded-full",
-                        status.type === 'hallsHourglass' ? "bg-warning" : "bg-secondary"
-                    )}/>
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                        status.type === 'hallsHourglass' ? "bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400" : "bg-yellow-100 text-yellow-600 dark:bg-yellow-500/10 dark:text-yellow-400"
+                    )}>
+                        {status.type === 'hallsHourglass' ? (
+                            <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3h12M6 21h12M8 3v4a4 4 0 0 0 1.2 2.8L12 12l-2.8 2.2A4 4 0 0 0 8 17v4M16 3v4a4 4 0 0 1-1.2 2.8L12 12l2.8 2.2A4 4 0 0 1 16 17v4"/></svg>
+                        ) : (
+                            <ParadiseIcon className="h-4 w-4"/>
+                        )}
+                    </span>
                     <div className="min-w-0">
                         <p className="truncate font-semibold">{status.title}</p>
                         <p className="mt-0.5 text-xs fadedtext">아직 완료하지 않은 캐릭터</p>
                     </div>
                 </div>
-                <Chip size="sm" radius="sm" variant="flat" color={color} className="shrink-0">
+                <Chip
+                    size="sm"
+                    radius="sm"
+                    variant="flat"
+                    color={color}
+                    className="shrink-0"
+                    classNames={status.type === 'paradise' ? { base: "bg-yellow-100 dark:bg-yellow-500/15", content: "text-yellow-700 dark:text-yellow-300" } : undefined}>
                     {status.completed} / {status.total} 완료
                 </Chip>
             </div>
@@ -47,6 +60,7 @@ export default function FixedWeeklyContentStatus({ status }: FixedWeeklyContentS
                 maxValue={100}
                 radius="sm"
                 size="sm"
+                classNames={status.type === 'paradise' ? { track: "bg-yellow-100 dark:bg-yellow-500/10", indicator: "bg-yellow-400 dark:bg-yellow-400" } : undefined}
                 value={progressValue}/>
 
             {status.total === 0 ? (

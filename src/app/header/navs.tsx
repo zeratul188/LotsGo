@@ -501,24 +501,21 @@ function ProfileButton() {
                     aria-label="프로필 메뉴"
                     variant="flat"
                     onAction={onActionProfile}
-                    className="min-w-[240px] p-2"
+                    className="min-w-[252px] p-1.5"
                     topContent={
-                        <div className={clsx(
-                            "mx-0 mb-1 rounded-xl border border-primary-100/80 bg-primary-50/60 p-3 dark:border-primary-900/40 dark:bg-primary-500/[0.08]",
-                            isSupporter && "border-amber-300/70 bg-amber-50/70 dark:border-amber-500/30 dark:bg-amber-500/[0.08]"
-                        )}>
-                            <div className="flex items-center justify-between gap-3">
-                                <p className="text-xs font-medium text-primary">내 계정</p>
+                        <div className="mb-1 border-b border-default-200/80 px-2.5 pb-3 pt-2 dark:border-white/10">
+                            <div className="mb-1 flex items-center justify-between gap-2">
+                                <p className="text-[10px] font-semibold text-default-500">내 계정</p>
                                 {isSupporter ? (
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300">
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-warning-50 px-1.5 py-0.5 text-[10px] font-semibold text-warning-700 dark:bg-warning-500/10 dark:text-warning-300">
                                         <VegaIcon className="h-3 w-3"/>
                                         후원자
                                     </span>
                                 ) : null}
                             </div>
-                            <p className="mt-1 truncate text-sm font-semibold">{id}</p>
+                            <p className="truncate text-sm font-semibold text-foreground">{id}</p>
                             {mainCharacter ? (
-                                <p className="mt-1 truncate text-xs fadedtext">{mainCharacter.nickname} · {mainCharacter.job}</p>
+                                <p className="mt-0.5 truncate text-[11px] text-default-500">{mainCharacter.nickname} · {mainCharacter.job}</p>
                             ) : null}
                         </div>
                     }>
@@ -528,29 +525,29 @@ function ProfileButton() {
                             showDivider
                             isReadOnly
                             textValue={`연결된 Discord 계정 ${discordStatus.user.globalName || discordStatus.user.username}`}
-                            className="discord-account-card mb-2 min-h-[76px] cursor-default rounded-xl px-3 py-2.5 data-[hover=true]:bg-[#5865F2]/10 data-[focus=true]:bg-[#5865F2]/10 data-[selected=true]:bg-[#5865F2]/10">
+                            className="mb-1 min-h-0 cursor-default rounded-lg px-2.5 py-2 data-[hover=true]:bg-default-50 data-[focus=true]:bg-default-50 dark:data-[hover=true]:bg-white/[0.04] dark:data-[focus=true]:bg-white/[0.04]">
                             <div className="w-full">
-                                <div className="mb-1.5 flex items-center justify-between gap-2">
-                                    <p className="discord-account-label flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide">
-                                        <DiscordIcon className="h-3.5 w-3.5"/>
-                                        Discord 연결 계정
+                                <div className="mb-2 flex items-center justify-between gap-2">
+                                    <p className="flex items-center gap-1.5 text-[10px] font-semibold text-default-500">
+                                        <DiscordIcon className="h-3.5 w-3.5 text-[#5865F2]"/>
+                                        Discord 연결
                                     </p>
-                                    <span className="discord-account-status inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-current"/>
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-success-700 dark:text-success-400">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-success"/>
                                         연결됨
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2.5">
+                                <div className="flex items-center gap-2">
                                     <Avatar
                                         showFallback
                                         name={discordStatus.user.globalName || discordStatus.user.username}
                                         src={discordStatus.user.avatar
                                             ? `https://cdn.discordapp.com/avatars/${discordStatus.user.id}/${discordStatus.user.avatar}.png?size=64`
                                             : undefined}
-                                        className="discord-account-avatar h-9 w-9 shrink-0 bg-[#5865F2] text-white"/>
+                                        className="h-7 w-7 shrink-0 bg-[#5865F2] text-white"/>
                                     <div className="min-w-0 grow text-left">
                                         <p className="truncate text-xs font-semibold">{discordStatus.user.globalName || discordStatus.user.username}</p>
-                                        <p className="mt-0.5 truncate text-[11px] text-default-500">@{discordStatus.user.username}</p>
+                                        <p className="truncate text-[11px] text-default-500">@{discordStatus.user.username}</p>
                                     </div>
                                     <Tooltip showArrow content="정보 갱신">
                                         <Button
@@ -561,8 +558,8 @@ function ProfileButton() {
                                             aria-label="Discord 정보 갱신"
                                             radius="full"
                                             variant="light"
-                                            className="discord-account-refresh h-7 w-7 min-w-7 shrink-0 cursor-pointer p-0 disabled:cursor-not-allowed">
-                                            <RefreshIcon className="h-3.5 w-3.5"/>
+                                            className="h-7 w-7 min-w-7 shrink-0 cursor-pointer p-0 text-default-500 hover:text-primary disabled:cursor-not-allowed">
+                                            <RefreshIcon className="h-4 w-4"/>
                                         </Button>
                                     </Tooltip>
                                 </div>
@@ -573,22 +570,22 @@ function ProfileButton() {
                             key="discord"
                             showDivider
                             startContent={<DiscordIcon className="h-5 w-5 text-[#5865F2]"/>}
-                            className="mb-1 min-h-10 px-3 font-medium">
+                            className="mb-1 min-h-9 rounded-lg px-2.5 text-xs font-medium">
                             Discord 연동
                         </DropdownItem>
                     )}
                     <DropdownItem
                         key="setting"
-                        startContent={<SettingIcon/>}
-                        className="min-h-10 px-3 font-medium">
+                        startContent={<SettingIcon size={16}/>}
+                        className="min-h-9 rounded-lg px-2.5 text-xs font-medium">
                         설정
                     </DropdownItem>
                     {isAdministrator ? (
                         <DropdownItem
                             key="administrator"
                             color="secondary"
-                            startContent={<AdminIcon/>}
-                            className="min-h-10 px-3 font-medium">
+                            startContent={<AdminIcon size={16}/>}
+                            className="min-h-9 rounded-lg px-2.5 text-xs font-medium">
                             관리자 페이지
                         </DropdownItem>
                     ) : null}
@@ -596,8 +593,8 @@ function ProfileButton() {
                         key="logout"
                         color="danger"
                         textValue="로그아웃"
-                        startContent={<LogoutIcon className="h-5 w-5"/>}
-                        className="mt-1 min-h-10 border-t border-gray-200/80 px-3 font-medium text-danger dark:border-white/10">
+                        startContent={<LogoutIcon className="h-4 w-4"/>}
+                        className="mt-1 min-h-9 rounded-lg border-t border-default-200/80 px-2.5 text-xs font-medium text-danger dark:border-white/10">
                         로그아웃
                     </DropdownItem>
                 </DropdownMenu>
