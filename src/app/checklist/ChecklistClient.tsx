@@ -60,6 +60,7 @@ function LookupSettingsIcon() {
 
 export default function ChecklistClient() {
     const isCheckedToken = useSelector((state: RootState) => state.login.isCheckedToken);
+    const showChecklistAds = useSelector((state: RootState) => !state.login.isLogined || !state.login.user.isSupporter);
 
     const initialChecklist: CheckCharacter[] = normalizeChecklist(iChecklist);
     const initialBosses: Boss[] = iBosses;
@@ -77,6 +78,7 @@ export default function ChecklistClient() {
     const [checklistViewStyle, setChecklistViewStyle] = useState<Settings['checklistViewStyle']>('legacy');
     const [isTableBonusMode, setTableBonusMode] = useState(false);
     const [viewportWidth, setViewportWidth] = useState(0);
+    const [statusSidebarContainer, setStatusSidebarContainer] = useState<HTMLDivElement | null>(null);
     const lastFetchRef = useRef(Date.now());
     
     const [isOpenBosses, setOpenBosses] = useState(false);
@@ -84,7 +86,7 @@ export default function ChecklistClient() {
     const onOpenChangeBosses = (isOpen: boolean) => setOpenBosses(isOpen);
     useLoadingTask("레이드를 자동 등록하고 있어요", isAutoRegisteringRaids);
     const isTableView = checklistViewStyle === 'table' && viewportWidth > 720;
-    const showDesktopLookup = isTableView && viewportWidth >= 1500;
+    const showDesktopLookup = isTableView ? viewportWidth >= 1500 : viewportWidth >= 960;
     const toggleBonusManagement = async () => {
         const stored = localStorage.getItem('userSettings');
         const current: Settings = { ...defaultSettings, ...(stored ? JSON.parse(stored) : {}) };
@@ -204,7 +206,7 @@ export default function ChecklistClient() {
                 setHideCompleteContent={checklistForm.setHideCompleteContent}
                 isHideDayContent={checklistForm.isHideDayContent}
                 setHideDayContent={checklistForm.setHideDayContent}/>
-            {isTableView ? (
+            {showDesktopLookup ? (
                 <ChecklistMenuSection title="관리">
                     <Button variant="light" size="sm" className={clsx(menuActionClass, "text-danger")} startContent={<ChecklistMenuIcon name="reset"/>} isLoading={isLoadingReset} onPress={async () => await handleResetChecklist(checklist, checklistForm.biweekly, dispatch, setLoadingReset)}>주간 숙제 초기화</Button>
                     <p className="px-2 pb-1 text-[10px] leading-4 text-default-400">숙제와 이번 주 부수입 기록을 초기화합니다.</p>
@@ -421,14 +423,17 @@ export default function ChecklistClient() {
             <div className={clsx(showDesktopLookup && "grid grid-cols-[270px_minmax(0,1fr)] items-start gap-4")}>
             {showDesktopLookup ? (
                 <aside aria-label="숙제 조회 설정" className="scrollbar-none sticky top-0 h-[calc(100vh-80px)] overflow-y-auto rounded-xl border border-default-200 bg-default-50/50 px-2 py-2 dark:border-white/10 dark:bg-[#171717]">
+                    <div ref={setStatusSidebarContainer}/>
                     {renderLookupMenu()}
                 </aside>
             ) : null}
             <main className="min-w-0">
-            <div className={clsx("w-full mx-auto", !isTableView && "max-w-[1280px]")}>
+            <div className={clsx("w-full mx-auto", !isTableView && !showDesktopLookup && "max-w-[1280px]")}>
                 <ChecklistStatue 
                     isTableView={isTableView}
                     isTableViewWide={isTableView && viewportWidth >= 1500}
+                    isSidebarVisible={showDesktopLookup}
+                    sidebarContainer={statusSidebarContainer}
                     server={checklistForm.server}
                     filterContent={checklistForm.filterContent}
                     filterAccount={checklistForm.filterAccount}
@@ -450,14 +455,14 @@ export default function ChecklistClient() {
                     setAutoChecklistNickname={setAutoChecklistNickname}
                     setAutoChecklistSharing={setAutoChecklistSharing}/>
             </div>
-            {!checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
-                <div className={clsx("w-full flex justify-center overflow-hidden", isTableView ? "pt-5" : "md960:pt-[110px]")}>
+            {showChecklistAds && !checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
+                <div className={clsx("w-full flex justify-center overflow-hidden", isTableView || showDesktopLookup ? "pt-5" : "md960:pt-[110px]")}>
                     <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px] mt-8">
                         <LineAd isLoaded={!checklistForm.isLoading}/>
                     </div>
                 </div>
             ) : (
-                <div className={clsx("w-full flex justify-center overflow-hidden", isTableView ? "mt-5" : "md960:mt-[220px]")}>
+                <div className={clsx("w-full flex justify-center overflow-hidden", isTableView || showDesktopLookup ? "mt-5" : "md960:mt-[220px]")}>
                     <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-4">
                         <FixedLineAd isLoaded={!checklistForm.isLoading}/>
                     </div>
@@ -550,7 +555,7 @@ export default function ChecklistClient() {
             </main>
             </div>
             <div className="mx-auto w-full max-w-[1280px]">
-                {!isTableView ? <div className="mx-4 mt-8 flex flex-col gap-4 rounded-2xl border border-danger/20 bg-danger/[0.025] p-4 shadow-sm dark:border-danger/30 dark:bg-danger/[0.06] sm:flex-row sm:items-start sm:p-5">
+                {!isTableView && !showDesktopLookup ? <div className="mx-4 mt-8 flex flex-col gap-4 rounded-2xl border border-danger/20 bg-danger/[0.025] p-4 shadow-sm dark:border-danger/30 dark:bg-danger/[0.06] sm:flex-row sm:items-start sm:p-5">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-danger/10 text-lg font-bold text-danger dark:bg-danger/15">
                         !
                     </div>
@@ -577,7 +582,7 @@ export default function ChecklistClient() {
                         </div>
                     </div>
                 </div> : null}
-                {!isTableView && !checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
+                {showChecklistAds && !isTableView && !checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
                     <div className="w-full flex justify-center px-4">
                         <div className="w-full max-w-[360px] min-h-[100px] mt-8">
                             <BoxAd isLoaded={!checklistForm.isLoading}/>
@@ -593,10 +598,10 @@ export default function ChecklistClient() {
                     </div>
                 ) : <></>}
             </div>
-            <Script
+            {showChecklistAds && <Script
                 async
                 src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1236449818258742"
-                crossOrigin="anonymous"/>
+                crossOrigin="anonymous"/>}
         </div>
     )
 }

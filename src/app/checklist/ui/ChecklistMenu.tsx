@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-export type ChecklistMenuIconName = 'view' | 'bonus' | 'raid' | 'info' | 'remaining' | 'cube' | 'account' | 'server' | 'content' | 'daily' | 'filter' | 'gold' | 'complete' | 'clear' | 'reset';
+export type ChecklistMenuIconName = 'view' | 'bonus' | 'raid' | 'info' | 'remaining' | 'cube' | 'account' | 'server' | 'content' | 'daily' | 'filter' | 'gold' | 'complete' | 'clear' | 'reset' | 'life' | 'order' | 'add' | 'refresh' | 'auto';
 
 export const menuActionClass = "h-9 min-h-9 w-full justify-start gap-2 rounded-lg px-2 text-xs font-medium text-default-700 data-[hover=true]:bg-default-100 dark:text-default-200 dark:data-[hover=true]:bg-white/[0.07]";
 export const menuSwitchClass = "-ml-2 shrink-0 origin-right scale-[0.8]";
@@ -27,7 +27,12 @@ export function ChecklistMenuIcon({ name }: { name: ChecklistMenuIconName }) {
         gold: <><circle cx="12" cy="12" r="9"/><path d="M15 9c-1-1-5-1-5 1s5 1 5 3-4 2-6 1M12 6v12"/></>,
         complete: <><path d="M4 7h16M4 12h11M4 17h9"/><path d="m16 16 2 2 3-4"/></>,
         clear: <><path d="M4 7h16M7 12h10M10 17h4"/><path d="m18 17 4 4m0-4-4 4"/></>,
-        reset: <><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/><path d="M12 7v5l3 2"/></>
+        reset: <><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/><path d="M12 7v5l3 2"/></>,
+        life: <><path d="M20 4C9 2 3 8 5 15c2 6 14 6 15-11Z"/><path d="m4 21 11-12"/></>,
+        order: <><path d="M8 4v16m0-16L5 7m3-3 3 3M16 20V4m0 16-3-3m3 3 3-3"/></>,
+        add: <><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></>,
+        refresh: <><path d="M20 11a8 8 0 0 0-14-5L4 8m0-5v5h5M4 13a8 8 0 0 0 14 5l2-2m0 5v-5h-5"/></>,
+        auto: <><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 2v3m8-3v3M8 12l2 2 5-5"/></>
     };
 
     return <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;
