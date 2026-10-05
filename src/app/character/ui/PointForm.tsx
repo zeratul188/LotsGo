@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { getColorByProgress, getCompleteMaxPoint, getCompletePoint, getProgressData } from "../lib/pointFeat";
-import { Card, CardBody, CardFooter, CardHeader, Checkbox, Divider, Popover, PopoverContent, PopoverTrigger, Progress, Switch, Tooltip } from "@heroui/react";
+import { Card, CardBody, CardHeader, Checkbox, Divider, Popover, PopoverContent, PopoverTrigger, Progress, Switch, Tooltip } from "@heroui/react";
 import CheckIcon from "@/Icons/CheckIcon";
 import clsx from "clsx";
 import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils";
@@ -63,43 +63,42 @@ export function PointComponent({ info }: { info: CharacterInfo }) {
 
     return (
         <div className="w-full">
-            <Card fullWidth radius="lg" className="mb-8 border border-default-200/80 bg-content1/95 shadow-sm dark:border-white/10 dark:bg-[#18181b]">
-                <CardHeader className="px-5 py-4">
+            <Card fullWidth radius="lg" className="mb-4 border border-default-200/80 bg-content1/95 shadow-sm dark:border-white/10 dark:bg-[#18181b]">
+                <CardHeader className="px-4 py-3 sm:px-5">
                     <div>
                         <p className="text-lg font-semibold">수집형 포인트</p>
                         <p className="text-xs text-default-500">전체 수집 진행도와 현재 적용 중인 보상을 확인하세요.</p>
                     </div>
                 </CardHeader>
-                <Divider/>
-                <CardBody className="p-4 sm:p-5">
-                    <div className="grid w-full grid-cols-1 gap-4 md960:grid-cols-[280px_minmax(0,1fr)_220px] md960:items-stretch">
-                        <div className="flex w-full flex-col justify-between rounded-2xl border border-default-200/70 bg-default-50/80 p-4 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-                            <div className="mb-3 flex items-end justify-between gap-2">
-                                <div>
-                                    <p className="text-xs font-medium text-default-500">전체 진행도</p>
-                                    <p className="mt-1 text-3xl font-bold tabular-nums">{progressPercent}<span className="ml-0.5 text-base font-semibold text-default-400">%</span></p>
-                                </div>
-                                <p className="text-xs tabular-nums text-default-500">{progressValue} / {progressMax}</p>
+                <Divider />
+                <CardBody className="grid p-0 md960:grid-cols-[220px_minmax(0,1fr)_200px]">
+                    <section className="min-w-0 border-b border-default-200/70 px-4 py-4 dark:border-white/10 md960:border-b-0 md960:border-r">
+                        <div className="mb-2 flex items-end justify-between gap-2">
+                            <div>
+                                <p className="text-xs font-medium text-default-500">전체 진행도</p>
+                                <p className="mt-1 text-3xl font-bold tabular-nums">{progressPercent}<span className="ml-0.5 text-base font-semibold text-default-400">%</span></p>
                             </div>
-                            <Progress
-                                radius="sm"
-                                value={progressValue}
-                                maxValue={progressMax}
-                                color={getColorByProgress(progressValue, progressMax)}
-                            />
-                            <Switch
-                                isSelected={isSelected}
-                                onValueChange={setSelected}
-                                size="sm"
-                                className="mt-4 min-w-full rounded-xl border border-default-200/70 bg-content1/70 px-3 py-2 dark:border-white/10 dark:bg-white/[0.03]"
-                            >
-                                미달성 항목만 보기
+                            <p className="text-xs tabular-nums text-default-500">{progressValue} / {progressMax}</p>
+                        </div>
+                        <Progress
+                            radius="sm"
+                            value={progressValue}
+                            maxValue={progressMax}
+                            color={getColorByProgress(progressValue, progressMax)}
+                            classNames={{ track: "h-1.5" }}
+                        />
+                        <div className="mt-4 border-t border-default-200/70 pt-3 dark:border-white/10">
+                            <Switch isSelected={isSelected} onValueChange={setSelected} size="sm">
+                                <span className="text-xs">미달성 항목만 보기</span>
                             </Switch>
                         </div>
-                        <div className="grid w-full grid-cols-2 gap-2 rounded-2xl border border-default-200/70 bg-default-50/80 p-3 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
+                    </section>
+                    <section className="min-w-0 border-b border-default-200/70 px-4 py-3 dark:border-white/10 md960:border-b-0 md960:border-r">
+                        <h3 className="mb-1 text-xs font-semibold text-default-500">성향</h3>
+                        <div className="grid grid-cols-1 gap-x-4 min-[460px]:grid-cols-2">
                             {hobbys.map((hobby, index) => (
-                                <div key={index} className="rounded-xl border border-default-200/60 bg-content1/80 px-3 py-2.5 dark:border-white/10 dark:bg-white/[0.03]">
-                                    <div className="mb-1.5 flex w-full gap-1 text-xs">
+                                <div key={index} className="border-b border-default-200/70 py-2.5 dark:border-white/10">
+                                    <div className="mb-1 flex w-full gap-1 text-xs">
                                         <p className="grow font-medium">{hobby.type}</p>
                                         <p className="font-semibold tabular-nums">{hobby.point}<span className="font-normal text-default-400">/{hobby.maxPoint}</span></p>
                                     </div>
@@ -108,74 +107,43 @@ export function PointComponent({ info }: { info: CharacterInfo }) {
                                         color="warning"
                                         value={hobby.point}
                                         maxValue={hobby.maxPoint}
+                                        classNames={{ track: "h-1" }}
                                     />
                                 </div>
                             ))}
                         </div>
-                        <div className="w-full rounded-2xl border border-default-200/70 bg-default-50/80 p-3 shadow-sm dark:border-white/10 dark:bg-white/[0.04]">
-                            <p className="mb-2 text-xs font-semibold text-default-500">수집 보상 장비</p>
-                            <Popover showArrow disableAnimation>
-                                <PopoverTrigger>
-                                    <div className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-default-200/60 bg-content1/80 p-2 transition-colors hover:bg-default-100 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.07]">
-                                        <div className={`h-9 w-9 shrink-0 rounded-lg p-[1px] ${getBackgroundByGrade(collectEquipments.length > 0 ? collectEquipments[0].grade : "")}`}>
-                                            {collectEquipments.length > 0 ? (
-                                                <img
-                                                    src={collectEquipments[0].icon}
-                                                    alt="수집품 장비 1"
-                                                    className="h-full w-full rounded-md object-cover"
-                                                />
-                                            ) : null}
+                    </section>
+                    <section className="min-w-0 px-4 py-3">
+                        <h3 className="mb-1 text-xs font-semibold text-default-500">수집 보상 장비</h3>
+                        {Array.from({ length: 2 }, (_, index) => {
+                            const equipment = collectEquipments[index];
+
+                            return (
+                                <Popover key={index} showArrow disableAnimation>
+                                    <PopoverTrigger>
+                                        <button type="button" className="flex w-full min-w-0 items-center gap-2 border-b border-default-200/70 py-2 text-left transition-colors hover:bg-default-50 dark:border-white/10 dark:hover:bg-white/[0.04]">
+                                            <div className={`h-8 w-8 shrink-0 rounded-md p-[1px] ${getBackgroundByGrade(equipment?.grade ?? "")}`}>
+                                                {equipment ? <img src={equipment.icon} alt={`수집품 장비 ${index + 1}`} className="h-full w-full rounded-[5px] object-cover" /> : null}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className={`truncate text-xs font-semibold ${getColorTextByGrade(equipment?.grade ?? "")}`}>
+                                                    {equipment ? `${equipment.grade} ${equipment.type}` : "-"}
+                                                </p>
+                                                <p className="text-[11px] text-default-500">{getTextAttack(equipment?.grade ?? "")}</p>
+                                            </div>
+                                        </button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="border border-default-200 bg-content1/95 shadow-xl dark:border-white/10 dark:bg-[#18181b]/95">
+                                        <div className="max-w-[280px] p-4">
+                                            <ul className="list-disc space-y-1 pl-4 text-xs leading-5 text-default-600 dark:text-default-300">
+                                                {equipment?.descriptions.map((line, idx) => <li key={idx}>{line}</li>)}
+                                            </ul>
                                         </div>
-                                        <div>
-                                            <p className={`w-full truncate text-sm font-semibold ${getColorTextByGrade(collectEquipments.length > 0 ? collectEquipments[0].grade : "")}`}>
-                                                {collectEquipments.length > 0 ? `${collectEquipments[0].grade} ${collectEquipments[0].type}` : "-"}
-                                            </p>
-                                            <p className="text-xs text-default-500">{getTextAttack(collectEquipments.length > 0 ? collectEquipments[0].grade : "")}</p>
-                                        </div>
-                                    </div>
-                                </PopoverTrigger>
-                                <PopoverContent className="border border-default-200 bg-content1/95 shadow-xl dark:border-white/10 dark:bg-[#18181b]/95">
-                                    <div className="max-w-[280px] p-4">
-                                        <ul className="list-disc space-y-1 pl-4 text-xs leading-5 text-default-600 dark:text-default-300">
-                                            {collectEquipments.length > 0 ? collectEquipments[0].descriptions.map((line, idx) => (
-                                                <li key={idx}>{line}</li>
-                                            )) : null}
-                                        </ul>
-                                    </div>
-                                </PopoverContent>
-                            </Popover>
-                            <Popover showArrow disableAnimation>
-                                <PopoverTrigger>
-                                    <div className="mt-1 flex w-full cursor-pointer items-center gap-3 rounded-xl border border-default-200/60 bg-content1/80 p-2 transition-colors hover:bg-default-100 dark:border-white/10 dark:bg-white/[0.03] dark:hover:bg-white/[0.07]">
-                                        <div className={`h-9 w-9 shrink-0 rounded-lg p-[1px] ${getBackgroundByGrade(collectEquipments.length > 1 ? collectEquipments[1].grade : "-")}`}>
-                                            {collectEquipments.length > 1 ? (
-                                                <img
-                                                    src={collectEquipments[1].icon}
-                                                    alt="수집품 장비 2"
-                                                    className="h-full w-full rounded-md object-cover"
-                                                />
-                                            ) : null}
-                                        </div>
-                                        <div>
-                                            <p className={`w-full truncate text-sm font-semibold ${getColorTextByGrade(collectEquipments.length > 1 ? collectEquipments[1].grade : "")}`}>
-                                                {collectEquipments.length > 1 ? `${collectEquipments[1].grade} ${collectEquipments[1].type}` : "-"}
-                                            </p>
-                                            <p className="text-xs text-default-500">{getTextAttack(collectEquipments.length > 1 ? collectEquipments[1].grade : "-")}</p>
-                                        </div>
-                                    </div>
-                                </PopoverTrigger>
-                                <PopoverContent className="border border-default-200 bg-content1/95 shadow-xl dark:border-white/10 dark:bg-[#18181b]/95">
-                                    <div className="max-w-[280px] p-4">
-                                        <ul className="list-disc space-y-1 pl-4 text-xs leading-5 text-default-600 dark:text-default-300">
-                                            {collectEquipments.length > 1 ? collectEquipments[1].descriptions.map((line, idx) => (
-                                                <li key={idx}>{line}</li>
-                                            )) : null}
-                                        </ul>
-                                    </div>
-                                </PopoverContent>
-                            </Popover>
-                        </div>
-                    </div>
+                                    </PopoverContent>
+                                </Popover>
+                            );
+                        })}
+                    </section>
                 </CardBody>
             </Card>
             <DetailComponent
@@ -202,15 +170,15 @@ export function DetailComponent({ collects, isSelected, selectedCollectType, onS
     const selectedCollect = visibleCollects.find((collect) => collect.type === selectedCollectType) ?? visibleCollects[0] ?? null;
 
     return (
-        <div className="w-full">
-            <Card fullWidth radius="lg" className="mb-4 border border-default-200/80 bg-content1/95 shadow-sm dark:border-white/10 dark:bg-[#18181b]">
-                <CardHeader className="flex-col items-start gap-1 px-4 pb-3 pt-4 sm:px-5">
-                    <p className="text-base font-semibold">수집 종류</p>
-                    <p className="text-xs text-default-500">종류를 선택하면 해당 수집품의 보상 현황을 확인할 수 있습니다.</p>
-                </CardHeader>
-                <CardBody className="px-3 pb-4 pt-0 sm:px-4">
+        <Card fullWidth radius="lg" className="overflow-hidden border border-default-200/80 bg-content1/95 shadow-sm dark:border-white/10 dark:bg-[#18181b]">
+            <CardBody className="grid p-0 md960:grid-cols-[240px_minmax(0,1fr)]">
+                <section className="min-w-0 border-b border-default-200/80 bg-default-50/30 dark:border-white/10 dark:bg-white/[0.015] md960:border-b-0 md960:border-r">
+                    <div className="border-b border-default-200/70 px-4 py-3 dark:border-white/10">
+                        <h3 className="text-sm font-semibold">수집 종류</h3>
+                        <p className="mt-0.5 text-xs text-default-500">종류별 수집 현황</p>
+                    </div>
                     {visibleCollects.length > 0 ? (
-                        <div role="tablist" aria-label="수집형 포인트 종류" className="grid grid-cols-2 gap-2 sm:grid-cols-3 md960:grid-cols-4">
+                        <div role="tablist" aria-label="수집형 포인트 종류" className="grid grid-cols-2 gap-1 p-2 sm:grid-cols-3 md960:grid-cols-1">
                             {visibleCollects.map((collect) => {
                                 const completePoint = getCompletePoint(collect);
                                 const maxPoint = getCompleteMaxPoint(collect);
@@ -224,24 +192,19 @@ export function DetailComponent({ collects, isSelected, selectedCollectType, onS
                                         aria-selected={isActive}
                                         onClick={() => onSelectCollect(collect.type)}
                                         className={clsx(
-                                            "min-w-0 cursor-pointer rounded-xl border p-3 text-left shadow-sm transition-all",
+                                            "min-w-0 cursor-pointer rounded-lg px-2.5 py-2 text-left transition-colors",
                                             isActive
-                                                ? "border-primary bg-primary-50/80 ring-1 ring-primary/20 dark:bg-primary-500/10"
-                                                : "border-default-200/80 bg-default-50/70 hover:border-primary/40 hover:bg-default-100 dark:border-white/10 dark:bg-white/[0.025] dark:hover:bg-white/[0.06]"
+                                                ? "bg-primary-50 text-primary dark:bg-primary-500/10"
+                                                : "hover:bg-default-100 dark:hover:bg-white/[0.06]"
                                         )}
                                     >
-                                        <div className="mb-2 flex min-w-0 items-center gap-2.5">
-                                            <div className={clsx(
-                                                "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg p-1.5",
-                                                isActive ? "bg-primary/10" : "bg-default-100 dark:bg-white/[0.08]"
-                                            )}>
+                                        <div className="flex min-w-0 items-center gap-2">
+                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-default-100 p-1.5 dark:bg-white/[0.08]">
                                                 <img src={collect.icon} alt="" className="h-full w-full object-contain" />
                                             </div>
                                             <div className="min-w-0 grow">
-                                                <p className={clsx("truncate text-sm font-semibold", isActive && "text-primary")}>{collect.type}</p>
-                                                <p className="mt-0.5 text-xs font-medium tabular-nums text-default-500">
-                                                    {completePoint}<span className="font-normal text-default-400"> / {maxPoint}</span>
-                                                </p>
+                                                <p className="truncate text-xs font-semibold">{collect.type}</p>
+                                                <p className="text-[11px] tabular-nums text-default-500">{completePoint} / {maxPoint}</p>
                                             </div>
                                         </div>
                                         <Progress
@@ -250,21 +213,26 @@ export function DetailComponent({ collects, isSelected, selectedCollectType, onS
                                             color={getColorByProgress(completePoint, maxPoint)}
                                             value={completePoint}
                                             maxValue={maxPoint}
+                                            className="mt-1.5"
+                                            classNames={{ track: "h-1" }}
                                         />
                                     </button>
                                 );
                             })}
                         </div>
                     ) : (
-                        <div className="rounded-xl border border-success-200/70 bg-success-50/70 px-4 py-8 text-center dark:border-success-500/20 dark:bg-success-500/10">
-                            <p className="text-sm font-semibold text-success-700 dark:text-success-300">모든 수집 종류를 완료했습니다.</p>
-                            <p className="mt-1 text-xs text-default-500">전체 항목을 보려면 미달성 항목만 보기를 해제하세요.</p>
-                        </div>
+                        <p className="px-4 py-6 text-xs text-default-500">모든 수집 종류를 완료했습니다.</p>
                     )}
-                </CardBody>
-            </Card>
-            {selectedCollect ? <CollectDetailCard collect={selectedCollect} isSelected={isSelected} /> : null}
-        </div>
+                </section>
+                {selectedCollect ? (
+                    <CollectDetailCard collect={selectedCollect} isSelected={isSelected} />
+                ) : (
+                    <div className="flex min-h-40 items-center justify-center px-4 text-center text-xs text-default-500">
+                        전체 항목을 보려면 미달성 항목만 보기를 해제하세요.
+                    </div>
+                )}
+            </CardBody>
+        </Card>
     );
 }
 
@@ -281,18 +249,15 @@ function CollectDetailCard({ collect, isSelected }: CollectDetailCardProps) {
     const canShowMethod = methodSummaries.length > 0;
 
     return (
-        <Card
-            radius="lg"
-            className="overflow-hidden border border-default-200/80 bg-content1/95 shadow-sm dark:border-white/10 dark:bg-[#18181b]"
-        >
-            <CardHeader className="px-4 pb-4 pt-4 sm:px-5">
+        <section role="tabpanel" aria-label={`${collect.type} 수집 현황`} className="@container flex min-w-0 flex-col">
+            <div className="border-b border-default-200/70 px-4 py-3 dark:border-white/10 sm:px-5">
                 <div className="w-full">
                     <div className="flex w-full items-center gap-3">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-default-100 p-2 dark:bg-white/[0.08]">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-default-100 p-1.5 dark:bg-white/[0.08]">
                             <img src={collect.icon} alt={collect.type} className="h-full w-full object-contain" />
                         </div>
                         <div className="min-w-0 grow">
-                            <p className="truncate text-base font-semibold">{collect.type}</p>
+                            <p className="truncate text-sm font-semibold">{collect.type}</p>
                             <p className="mt-0.5 text-xs text-default-500">보상 획득 현황</p>
                         </div>
                         <div className="shrink-0 text-right">
@@ -305,23 +270,20 @@ function CollectDetailCard({ collect, isSelected }: CollectDetailCardProps) {
                         color={getColorByProgress(completePoint, maxPoint)}
                         value={completePoint}
                         maxValue={maxPoint}
-                        className="mt-3"
+                        className="mt-2.5"
+                        classNames={{ track: "h-1" }}
                     />
                 </div>
-            </CardHeader>
-            <Divider />
-            <CardBody className="p-3 sm:p-4">
-                <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 md960:grid-cols-3">
+            </div>
+            <div className="grow px-4 py-2 sm:px-5">
+                <div className="grid w-full grid-cols-1 gap-x-4 @min-[440px]:grid-cols-2 @min-[760px]:grid-cols-3">
                     {!isShowMethod ? collect.items.map((item, idx) => {
                         const method = getCollectMethod(collect.type, item.name);
                         return (
                             <div
                                 key={idx}
                                 className={clsx(
-                                    "flex min-h-14 w-full items-center gap-2 rounded-xl border bg-default-50/70 px-3 py-2.5 transition-colors hover:bg-default-100 dark:bg-white/[0.025] dark:hover:bg-white/[0.06]",
-                                    item.point >= item.maxPoint
-                                        ? "border-success-300/70 hover:border-success-400 dark:border-success-500/40 dark:hover:border-success-400"
-                                        : "border-default-200/70 hover:border-primary/30 dark:border-white/10",
+                                    "flex min-h-11 w-full items-center gap-2 border-b border-default-200/70 py-2 dark:border-white/10",
                                     isSelected && item.point >= item.maxPoint ? "hidden" : ""
                                 )}
                             >
@@ -355,17 +317,14 @@ function CollectDetailCard({ collect, isSelected }: CollectDetailCardProps) {
                                         {item.point} / {item.maxPoint}
                                     </p>
                                 )}
-                                {item.point >= item.maxPoint ? <div className="w-4 h-4"><CheckIcon /></div> : null}
+                                {item.point >= item.maxPoint ? <div className="h-4 w-4 shrink-0 text-success"><CheckIcon /></div> : null}
                             </div>
                         );
                     }) : methodSummaries.map((summary, idx) => (
                         <div
                             key={idx}
                             className={clsx(
-                                "flex min-h-14 w-full items-center gap-2 rounded-xl border bg-default-50/70 px-3 py-2.5 transition-colors hover:bg-default-100 dark:bg-white/[0.025] dark:hover:bg-white/[0.06]",
-                                summary.completed >= summary.total
-                                    ? "border-success-300/70 hover:border-success-400 dark:border-success-500/40 dark:hover:border-success-400"
-                                    : "border-default-200/70 hover:border-primary/30 dark:border-white/10",
+                                "flex min-h-11 w-full items-center gap-2 border-b border-default-200/70 py-2 dark:border-white/10",
                                 isSelected && summary.completed >= summary.total ? "hidden" : ""
                             )}
                         >
@@ -390,9 +349,8 @@ function CollectDetailCard({ collect, isSelected }: CollectDetailCardProps) {
                         </div>
                     ))}
                 </div>
-            </CardBody>
-            <Divider />
-            <CardFooter className="border-t border-default-200/70 bg-default-50/50 px-4 py-3 dark:border-white/10 dark:bg-white/[0.02] sm:px-5">
+            </div>
+            <div className="border-t border-default-200/70 bg-default-50/30 px-4 py-3 dark:border-white/10 dark:bg-white/[0.02] sm:px-5">
                 <div className="w-full flex gap-1 items-center">
                     {completePoint === maxPoint ? (
                         <p className="text-xs text-green-600 dark:text-green-400">모든 수집품을 획득하였습니다.</p>
@@ -411,7 +369,7 @@ function CollectDetailCard({ collect, isSelected }: CollectDetailCardProps) {
                         </Checkbox>
                     ) : null}
                 </div>
-            </CardFooter>
-        </Card>
+            </div>
+        </section>
     );
 }
