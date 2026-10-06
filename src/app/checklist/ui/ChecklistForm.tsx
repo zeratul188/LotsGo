@@ -614,12 +614,41 @@ export function ChecklistStatue({
                             <div>
                                 <div className="flex items-center justify-between gap-2">
                                     <span className="flex items-center gap-1.5 text-default-500"><img src="/icons/gold.png" alt="" className="h-3.5 w-3.5"/>주간 골드량</span>
-                                    <strong className="tabular-nums text-foreground">{haveGold.toLocaleString()} <span className="font-normal text-default-400">/ {totalGold.toLocaleString()}</span></strong>
+                                    <strong className="tabular-nums text-foreground"><AnimatedNumber value={haveGold}/> <span className="font-normal text-default-400">/ <AnimatedNumber value={totalGold}/></span></strong>
                                 </div>
                                 <Progress aria-label="주간 골드 획득률" size="sm" color="warning" value={haveGold} maxValue={totalGold || 1} className="mt-1.5" classNames={{ track: "h-1 bg-default-200/80", indicator: "h-1" }}/>
-                                <button type="button" onClick={onGoldDetailOpen} className="mt-1.5 flex w-full items-center justify-between text-[11px] text-default-500 hover:text-primary">
-                                    <span>획득 가능 {availableGold.toLocaleString()} 골드</span><span>자세히 ›</span>
-                                </button>
+                                <div className="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-default-500">
+                                    <Popover showArrow placement="right-start">
+                                        <PopoverTrigger>
+                                            <button type="button" className="min-w-0 cursor-pointer text-left hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+                                                획득 가능 <AnimatedNumber value={availableGold}/> 골드
+                                            </button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="border border-warning-200/80 bg-white/95 p-0 shadow-xl backdrop-blur-xl dark:border-warning-900/50 dark:bg-[#171717]/95">
+                                            <div className="w-[240px] p-4">
+                                                <p className="text-sm font-semibold">획득 가능한 골드</p>
+                                                <p className="mt-1 text-xs leading-5 fadedtext">남은 주간 골드를 거래가능 골드와 귀속 골드로 나누어 보여줍니다.</p>
+                                                <div className="mt-3 space-y-2 rounded-xl bg-warning-50/70 p-3 text-sm dark:bg-warning-950/20">
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <span className="text-default-500">거래가능 골드</span>
+                                                        <span className="flex items-center gap-1 font-semibold">
+                                                            <img src="/icons/gold.png" alt="거래가능 골드" className="h-[14px] w-[14px]"/>
+                                                            <strong>{availableSharedGold.toLocaleString()}</strong>
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between gap-3">
+                                                        <span className="text-default-500">귀속 골드</span>
+                                                        <span className="flex items-center gap-1 font-semibold">
+                                                            <img src="/icons/gold.png" alt="귀속 골드" className="h-[14px] w-[14px]"/>
+                                                            <strong>{availableBoundGold.toLocaleString()}</strong>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </PopoverContent>
+                                    </Popover>
+                                    <button type="button" onClick={onGoldDetailOpen} className="shrink-0 cursor-pointer hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">자세히 ›</button>
+                                </div>
                             </div>
                             <div className="border-t border-default-200/70 pt-3 dark:border-white/10">
                                 <div className="flex items-center justify-between gap-2">
@@ -649,7 +678,18 @@ export function ChecklistStatue({
                                         </PopoverContent>
                                     </Popover>
                                 </div>
-                                <Checkbox size="sm" color="primary" isSelected={isBlessing} onValueChange={onChangeBlessing} className="mt-1 text-[11px]">베아트리스의 축복</Checkbox>
+                                <Checkbox
+                                    size="sm"
+                                    color="primary"
+                                    isSelected={isBlessing}
+                                    onValueChange={onChangeBlessing}
+                                    className="mt-1"
+                                    classNames={{
+                                        base: "gap-1.5",
+                                        wrapper: "h-3.5 w-3.5 min-w-3.5 after:h-3.5 after:w-3.5",
+                                        icon: "h-2.5 w-2.5",
+                                        label: "text-[12px] leading-4 dark:text-white"
+                                    }}>베아트리스의 축복</Checkbox>
                             </div>
                         </div>
                     </ChecklistMenuSection>
@@ -2193,15 +2233,28 @@ function SelectAccountModal({
 type CharacterMemoProps = {
     checklist: CheckCharacter[],
     nickname: string,
-    dispatch: AppDispatch
+    dispatch: AppDispatch,
+    editorOpen?: boolean,
+    onEditorOpenChange?: (open: boolean) => void,
+    hideTrigger?: boolean
 }
 
-function CharacterMemo({ checklist, nickname, dispatch }: CharacterMemoProps) {
+export function CharacterMemo({ checklist, nickname, dispatch, editorOpen, onEditorOpenChange, hideTrigger = false }: CharacterMemoProps) {
     const character = checklist.find(item => item.nickname === nickname);
     const [draft, setDraft] = useState(character?.memo ?? '');
     const [isSaving, setSaving] = useState(false);
     const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
     const memo = character?.memo ?? '';
+    const isEditorOpen = editorOpen ?? isOpen;
+
+    useEffect(() => {
+        if (editorOpen) setDraft(memo);
+    }, [editorOpen, memo]);
+
+    const closeEditor = () => {
+        if (onEditorOpenChange) onEditorOpenChange(false);
+        else onClose();
+    };
 
     const openEditor = () => {
         setDraft(memo);
@@ -2212,12 +2265,12 @@ function CharacterMemo({ checklist, nickname, dispatch }: CharacterMemoProps) {
         setSaving(true);
         const saved = await handleUpdateMemo(checklist, nickname, draft, dispatch);
         setSaving(false);
-        if (saved) onClose();
+        if (saved) closeEditor();
     };
 
     return (
         <>
-            <button
+            {!hideTrigger ? <button
                 type="button"
                 className="group flex min-h-6 min-w-0 w-full max-w-[520px] cursor-pointer items-start justify-start px-1 text-left hover:text-foreground hover:underline"
                 aria-label={memo ? `${nickname} 메모 수정` : `${nickname} 메모 추가`}
@@ -2228,15 +2281,15 @@ function CharacterMemo({ checklist, nickname, dispatch }: CharacterMemoProps) {
                     "max-h-[4.5rem] overflow-hidden whitespace-pre-wrap break-words leading-6",
                     memo ? "line-clamp-3 text-sm text-foreground" : "text-xs fadedtext"
                 )}>{memo || "ex) 97돌 없음, 1750레벨 올리기"}</span>
-            </button>
+            </button> : null}
             <Modal
-                isOpen={isOpen}
-                onOpenChange={onOpenChange}
+                isOpen={isEditorOpen}
+                onOpenChange={onEditorOpenChange ?? onOpenChange}
                 placement="center"
                 size="sm"
             >
                 <ModalContent>
-                    {(onClose) => (
+                    {() => (
                         <>
                             <ModalHeader className="flex flex-col gap-1">
                                 {nickname} 메모
@@ -2254,7 +2307,7 @@ function CharacterMemo({ checklist, nickname, dispatch }: CharacterMemoProps) {
                                 />
                             </ModalBody>
                             <ModalFooter>
-                                <Button variant="light" onPress={onClose}>
+                                <Button variant="light" onPress={closeEditor}>
                                     취소
                                 </Button>
                                 <Button color="primary" isLoading={isSaving} onPress={saveMemo}>
@@ -2271,12 +2324,22 @@ function CharacterMemo({ checklist, nickname, dispatch }: CharacterMemoProps) {
 
 type CharacterParadisePowerProps = CharacterMemoProps
 
-function CharacterParadisePower({ checklist, nickname, dispatch }: CharacterParadisePowerProps) {
+export function CharacterParadisePower({ checklist, nickname, dispatch, editorOpen, onEditorOpenChange, hideTrigger = false }: CharacterParadisePowerProps) {
     const character = checklist.find(item => item.nickname === nickname);
     const currentPower = character?.paradisePower ?? 0;
     const [draft, setDraft] = useState(currentPower);
     const [isSaving, setSaving] = useState(false);
     const { isOpen, onOpen, onClose, onOpenChange } = useDisclosure();
+    const isEditorOpen = editorOpen ?? isOpen;
+
+    useEffect(() => {
+        if (editorOpen) setDraft(currentPower);
+    }, [editorOpen, currentPower]);
+
+    const closeEditor = () => {
+        if (onEditorOpenChange) onEditorOpenChange(false);
+        else onClose();
+    };
 
     const openEditor = () => {
         setDraft(currentPower);
@@ -2291,12 +2354,12 @@ function CharacterParadisePower({ checklist, nickname, dispatch }: CharacterPara
         setSaving(true);
         const saved = await handleUpdateParadisePower(checklist, nickname, draft, dispatch);
         setSaving(false);
-        if (saved) onClose();
+        if (saved) closeEditor();
     };
 
     return (
         <>
-            <button
+            {!hideTrigger ? <button
                 type="button"
                 className="flex min-h-7 w-full cursor-pointer items-center gap-2 rounded-md px-1 text-left text-sm hover:bg-gray-100/70 dark:hover:bg-white/[0.04]"
                 aria-label={`${nickname} 낙원력 수정`}
@@ -2308,10 +2371,10 @@ function CharacterParadisePower({ checklist, nickname, dispatch }: CharacterPara
                     {currentPower > 0 ? currentPower.toLocaleString() : '미설정'}
                 </span>
                 <span className="ml-auto text-xs fadedtext">수정</span>
-            </button>
-            <Modal isOpen={isOpen} onOpenChange={onOpenChange} placement="center" size="sm">
+            </button> : null}
+            <Modal isOpen={isEditorOpen} onOpenChange={onEditorOpenChange ?? onOpenChange} placement="center" size="sm">
                 <ModalContent>
-                    {(onClose) => (
+                    {() => (
                         <>
                             <ModalHeader>{nickname} 낙원력</ModalHeader>
                             <ModalBody>
@@ -2327,7 +2390,7 @@ function CharacterParadisePower({ checklist, nickname, dispatch }: CharacterPara
                                 />
                             </ModalBody>
                             <ModalFooter>
-                                <Button variant="light" onPress={onClose}>취소</Button>
+                                <Button variant="light" onPress={closeEditor}>취소</Button>
                                 <Button color="primary" isLoading={isSaving} onPress={savePower}>저장</Button>
                             </ModalFooter>
                         </>

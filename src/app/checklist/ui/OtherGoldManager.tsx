@@ -45,6 +45,10 @@ type OtherGoldManagerProps = {
     character: CheckCharacter;
     dispatch: AppDispatch;
     layout?: 'default' | 'inline';
+    onRequestHistory?: () => void;
+    historyOnly?: boolean;
+    historyOpen?: boolean;
+    onHistoryOpenChange?: (open: boolean) => void;
 };
 
 type OtherGoldEditor = {
@@ -169,7 +173,7 @@ function OtherGoldFields({
     );
 }
 
-export default function OtherGoldManager({ character, dispatch, layout = 'default' }: OtherGoldManagerProps) {
+export default function OtherGoldManager({ character, dispatch, layout = 'default', onRequestHistory, historyOnly = false, historyOpen, onHistoryOpenChange }: OtherGoldManagerProps) {
     const [editor, setEditor] = useState<OtherGoldEditor>(emptyEditor);
     const [editEditor, setEditEditor] = useState<OtherGoldEditor>(emptyEditor);
     const [editingRecord, setEditingRecord] = useState<OtherGoldRecord | null>(null);
@@ -299,7 +303,7 @@ export default function OtherGoldManager({ character, dispatch, layout = 'defaul
 
     return (
         <>
-            <div className={layout === 'inline' ? "grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-end gap-2" : "w-full"}>
+            {!historyOnly ? <div className={layout === 'inline' ? "grid w-full grid-cols-[minmax(0,1fr)_auto_auto] items-end gap-2" : "w-full"}>
                 <OtherGoldFields editor={editor} setEditor={setEditor} isDisabled={isSaving} isInline={layout === 'inline'}/>
                 <div className={layout === 'inline' ? "contents" : "mt-3 grid grid-cols-2 gap-2"}>
                     <Button
@@ -320,16 +324,17 @@ export default function OtherGoldManager({ character, dispatch, layout = 'defaul
                         className={layout === 'inline' ? "h-10 min-h-10 px-3 font-medium" : "font-medium"}
                         onPress={() => {
                             setSelectedRecordId(records[0]?.id ?? null);
-                            onOpen();
+                            if (onRequestHistory) onRequestHistory();
+                            else onOpen();
                         }}>
                         내역 보기
                     </Button>
                 </div>
-            </div>
+            </div> : null}
 
             <Modal
-                isOpen={isOpen}
-                onOpenChange={onOpenChange}
+                isOpen={historyOpen ?? isOpen}
+                onOpenChange={onHistoryOpenChange ?? onOpenChange}
                 size="4xl"
                 scrollBehavior="inside"
                 classNames={{
