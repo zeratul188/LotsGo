@@ -1,8 +1,34 @@
 import { AvgSkillPowers, getAllDestory } from "../lib/skillFeat"
-import { Card, CardBody, CardHeader, Chip, Divider, Popover, PopoverContent, PopoverTrigger, Progress } from "@heroui/react"
+import { Card, CardBody, CardHeader, Chip, Divider, Popover, PopoverContent, PopoverTrigger, Progress, Tooltip } from "@heroui/react"
 import { getBackgroundByGrade, getColorTextByGrade } from "@/utiils/utils"
 import clsx from "clsx"
 import { CharacterInfo, Gem, Skill } from "../model/types"
+
+function StaggerIcon() {
+    return <span aria-hidden="true" className="inline-block h-3.5 w-3.5 shrink-0 bg-current" style={{
+        maskImage: "url('/icons/skill-stagger.png')",
+        WebkitMaskImage: "url('/icons/skill-stagger.png')",
+        maskPosition: 'center',
+        WebkitMaskPosition: 'center',
+        maskRepeat: 'no-repeat',
+        WebkitMaskRepeat: 'no-repeat',
+        maskSize: 'contain',
+        WebkitMaskSize: 'contain',
+    }}/>
+}
+
+function DestructionIcon() {
+    return <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5 shrink-0" aria-hidden="true">
+        <path d="M11.5 2.4 3 6.6v5.3c0 4.3 2.5 7.4 7.7 9.6l2.2-2.1-2.3-3.2 2.5-3-2.2-1.7 1.6-3.4-1-5.7ZM15.4 4.2 21 6.7V12c0 4.3-2.5 7.4-7.7 9.5l-2-2.2 3.2-3.1-.5-2.3 3.3-2.1-1.8-2.8 1.4-2.8Z"/>
+        <path d="m18.4 2.3 1.4.8-1.7 2.1-1.1-.7 1.4-2.2Zm2.5 2.8 1.2 1.1-1.6 1.3-.8-1 1.2-1.4Z"/>
+    </svg>
+}
+
+function CounterIcon() {
+    return <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5 shrink-0" aria-hidden="true">
+        <path d="M3 22C9 18 12 14.2 12 9H8l7-7 7 7h-4c0 8-5.8 13-15 13Z"/>
+    </svg>
+}
 
 // 스킬 컴포넌트
 export function SkillComponent({ info }: { info: CharacterInfo }) {
@@ -129,11 +155,16 @@ function SkillListComponent({ skills, skillPoint, maxPoint }: SkillListComponent
                                         <div className="min-w-0">
                                             <div className="flex flex-wrap items-center gap-2">
                                                 <p className="max-w-full truncate text-base font-bold">{skill.name}</p>
-                                                <span className="rounded-md bg-default-200 px-1.5 py-0.5 text-xs font-semibold tabular-nums text-default-700 dark:bg-white/15 dark:!text-white">Lv.{skill.level}</span>
+                                                <span className={clsx(
+                                                    "text-xs tabular-nums",
+                                                    skill.level >= 10 ? "font-bold text-orange-600 dark:text-orange-400" :
+                                                        skill.level >= 7 ? "font-semibold text-blue-600 dark:text-blue-400" :
+                                                            "text-default-500"
+                                                )}>Lv.{skill.level}</span>
                                                 <span className="text-xs text-default-500">{skill.type}</span>
-                                                {skill.isCounter ? <Chip variant="flat" radius="sm" size="sm" color="success" className="h-5 min-h-5 px-1.5 text-[11px] font-medium leading-none">카운터</Chip> : <></>}
-                                                {skill.power !== '' ? <Chip variant="flat" radius="sm" size="sm" color="primary" className="h-5 min-h-5 px-1.5 text-[11px] font-medium leading-none">무력 {skill.power}</Chip> : <></>}
-                                                {skill.destroy > 0 ? <Chip variant="flat" radius="sm" size="sm" color="secondary" className="h-5 min-h-5 px-1.5 text-[11px] font-medium leading-none">파괴 {skill.destroy}</Chip> : <></>}
+                                                {skill.isCounter ? <Tooltip showArrow content="카운터"><Chip variant="flat" radius="sm" size="sm" color="success" aria-label="카운터" className="h-5 min-h-5 px-1.5" classNames={{content: "flex h-full items-center justify-center !px-0 leading-none"}}><CounterIcon/></Chip></Tooltip> : null}
+                                                {skill.power !== '' ? <Tooltip showArrow content="무력"><Chip variant="flat" radius="sm" size="sm" color="primary" aria-label={`무력 ${skill.power}`} className="h-5 min-h-5 px-1.5 text-[11px] font-medium" classNames={{content: "flex h-full items-center justify-center gap-0.5 !px-0 leading-none"}}><StaggerIcon/>{skill.power}</Chip></Tooltip> : null}
+                                                {skill.destroy > 0 ? <Tooltip showArrow content="파괴"><Chip variant="flat" radius="sm" size="sm" color="secondary" aria-label={`파괴 ${skill.destroy}`} className="h-5 min-h-5 pl-1.5 pr-2 text-[11px] font-medium" classNames={{content: "flex h-full items-center justify-center gap-0.5 !px-0 leading-none"}}><DestructionIcon/>{skill.destroy}</Chip></Tooltip> : null}
                                             </div>
                                             {skill.tripods.length > 0 ? (
                                                 <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-2 text-[11px] text-default-500">

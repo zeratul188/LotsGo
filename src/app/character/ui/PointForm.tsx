@@ -51,6 +51,32 @@ function getCollectMethodSummaries(collect: Collect): CollectMethodSummary[] {
     return Array.from(methodMap.values());
 }
 
+const hobbyIconStyle: Record<string, string> = {
+    지성: 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400',
+    담력: 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400',
+    매력: 'bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400',
+    친절: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400',
+};
+
+function HobbyIcon({ type }: { type: string }) {
+    let path;
+    switch (type) {
+        case '지성':
+            path = <><path d="M12 5C9.7 3.7 6.8 3.5 3.5 5v13c3.3-1.5 6.2-1.3 8.5.3 2.3-1.6 5.2-1.8 8.5-.3V5C17.2 3.5 14.3 3.7 12 5Z"/><path d="M12 5v13.3"/></>;
+            break;
+        case '담력':
+            path = <><path d="M12 2.5 4.5 6v5c0 4.2 2.8 7.5 7.5 10 4.7-2.5 7.5-5.8 7.5-10V6L12 2.5Z"/><path d="m13 6.5-3.5 6H13l-2 5 4.5-7H12l1-4Z"/></>;
+            break;
+        case '매력':
+            path = <><path d="m12 2 1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9L12 2Z"/><path d="m19 16 .6 1.4L21 18l-1.4.6L19 20l-.6-1.4L17 18l1.4-.6L19 16Z"/></>;
+            break;
+        default:
+            path = <path d="M12 20s-8.5-5.3-8.5-10.8a4.7 4.7 0 0 1 8.5-2.7 4.7 4.7 0 0 1 8.5 2.7C20.5 14.7 12 20 12 20Z"/>;
+    }
+
+    return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5" aria-hidden="true">{path}</svg>;
+}
+
 export function PointComponent({ info }: { info: CharacterInfo }) {
     const collects = info.collection.collects;
     const hobbys = info.collection.hobbys;
@@ -72,12 +98,21 @@ export function PointComponent({ info }: { info: CharacterInfo }) {
                 </CardHeader>
                 <Divider />
                 <CardBody className="grid p-0 md960:grid-cols-[220px_minmax(0,1fr)_200px]">
-                    <section className="min-w-0 border-b border-default-200/70 px-4 py-4 dark:border-white/10 md960:border-b-0 md960:border-r">
-                        <div className="mb-2 flex items-end justify-between gap-2">
-                            <div>
-                                <p className="text-xs font-medium text-default-500">전체 진행도</p>
-                                <p className="mt-1 text-3xl font-bold tabular-nums">{progressPercent}<span className="ml-0.5 text-base font-semibold text-default-400">%</span></p>
-                            </div>
+                    <section className="min-w-0 border-b border-default-200/70 px-4 py-3 dark:border-white/10 md960:border-b-0 md960:border-r">
+                        <div className="mb-1 flex items-center justify-between gap-2">
+                            <p className="text-xs font-medium text-default-500">전체 진행도</p>
+                            <Tooltip showArrow content="미달성 항목만 보기">
+                                <Switch
+                                    aria-label="미달성 항목만 보기"
+                                    isSelected={isSelected}
+                                    onValueChange={setSelected}
+                                    size="sm"
+                                    classNames={{wrapper: "scale-[0.8] origin-right"}}
+                                />
+                            </Tooltip>
+                        </div>
+                        <div className="mb-1.5 flex items-end justify-between gap-2">
+                            <p className="text-3xl font-bold tabular-nums">{progressPercent}<span className="ml-0.5 text-base font-semibold text-default-400">%</span></p>
                             <p className="text-xs tabular-nums text-default-500">{progressValue} / {progressMax}</p>
                         </div>
                         <Progress
@@ -87,42 +122,39 @@ export function PointComponent({ info }: { info: CharacterInfo }) {
                             color={getColorByProgress(progressValue, progressMax)}
                             classNames={{ track: "h-1.5" }}
                         />
-                        <div className="mt-4 border-t border-default-200/70 pt-3 dark:border-white/10">
-                            <Switch isSelected={isSelected} onValueChange={setSelected} size="sm">
-                                <span className="text-xs">미달성 항목만 보기</span>
-                            </Switch>
-                        </div>
                     </section>
-                    <section className="min-w-0 border-b border-default-200/70 px-4 py-3 dark:border-white/10 md960:border-b-0 md960:border-r">
-                        <h3 className="mb-1 text-xs font-semibold text-default-500">성향</h3>
-                        <div className="grid grid-cols-1 gap-x-4 min-[460px]:grid-cols-2">
-                            {hobbys.map((hobby, index) => (
-                                <div key={index} className="border-b border-default-200/70 py-2.5 dark:border-white/10">
-                                    <div className="mb-1 flex w-full gap-1 text-xs">
-                                        <p className="grow font-medium">{hobby.type}</p>
-                                        <p className="font-semibold tabular-nums">{hobby.point}<span className="font-normal text-default-400">/{hobby.maxPoint}</span></p>
-                                    </div>
+                    <section className="min-w-0 border-b border-default-200/70 px-3 py-2 dark:border-white/10 md960:border-b-0 md960:border-r">
+                        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                            {hobbys.map((hobby) => (
+                                <div key={hobby.type} className="flex min-w-0 flex-col items-center rounded-lg border border-default-200/80 bg-content1 px-2 py-2 dark:border-white/10 dark:bg-white/[0.025]">
+                                    <p className="text-[11px] text-default-500">- {hobby.type} -</p>
+                                    <span className={clsx("mt-1 flex h-7 w-7 items-center justify-center rounded-md", hobbyIconStyle[hobby.type] ?? 'bg-default-100 text-default-600 dark:bg-white/10 dark:text-default-300')}>
+                                        <HobbyIcon type={hobby.type}/>
+                                    </span>
+                                    <p className="mt-1 text-xs font-semibold tabular-nums">{hobby.point}<span className="font-normal text-default-400">/{hobby.maxPoint}</span></p>
                                     <Progress
+                                        aria-label={`${hobby.type} 진행도`}
                                         size="sm"
                                         color="warning"
                                         value={hobby.point}
                                         maxValue={hobby.maxPoint}
+                                        className="mt-1 w-full"
                                         classNames={{ track: "h-1" }}
                                     />
                                 </div>
                             ))}
                         </div>
                     </section>
-                    <section className="min-w-0 px-4 py-3">
-                        <h3 className="mb-1 text-xs font-semibold text-default-500">수집 보상 장비</h3>
+                    <section className="flex min-w-0 flex-col justify-center px-3 py-2">
+                        <h3 className="mb-0.5 text-[11px] font-semibold text-default-500">수집 보상 장비</h3>
                         {Array.from({ length: 2 }, (_, index) => {
                             const equipment = collectEquipments[index];
 
                             return (
                                 <Popover key={index} showArrow disableAnimation>
                                     <PopoverTrigger>
-                                        <button type="button" className="flex w-full min-w-0 items-center gap-2 border-b border-default-200/70 py-2 text-left transition-colors hover:bg-default-50 dark:border-white/10 dark:hover:bg-white/[0.04]">
-                                            <div className={`h-8 w-8 shrink-0 rounded-md p-[1px] ${getBackgroundByGrade(equipment?.grade ?? "")}`}>
+                                        <button type="button" className={clsx("flex w-full min-w-0 items-center gap-2 py-1 text-left transition-colors hover:bg-default-50 dark:hover:bg-white/[0.04]", index === 0 && "border-b border-default-200/70 dark:border-white/10")}>
+                                            <div className={`h-7 w-7 shrink-0 rounded-md p-[1px] ${getBackgroundByGrade(equipment?.grade ?? "")}`}>
                                                 {equipment ? <img src={equipment.icon} alt={`수집품 장비 ${index + 1}`} className="h-full w-full rounded-[5px] object-cover" /> : null}
                                             </div>
                                             <div className="min-w-0">
