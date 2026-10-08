@@ -490,11 +490,11 @@ export default function ChecklistComponent() {
                             </div>
 
                             {pageIncompleteEntries.length > 0 ? (
-                                <div className="space-y-2 px-3 sm:px-4">
+                                <div className="divide-y divide-default-200/80 px-3 dark:divide-white/10 sm:px-4">
                                     {pageIncompleteEntries.map(({ character, raids }) => (
                                         <div
                                             key={character.nickname}
-                                            className="flex w-full flex-col gap-3 rounded-xl border border-gray-200/80 bg-white px-3 py-3 shadow-[0_2px_10px_rgba(15,23,42,0.03)] sm:flex-row sm:items-center sm:px-4 dark:border-white/10 dark:bg-white/[0.025] dark:shadow-none">
+                                            className="flex w-full flex-col gap-3 px-1 py-3 sm:flex-row sm:items-center sm:px-2">
                                             <div className="flex min-w-0 items-center gap-2.5 sm:w-[240px] sm:shrink-0">
                                                 <JobAvatar size="sm" job={character.job}/>
                                                 <div className="min-w-0 grow">
@@ -506,14 +506,6 @@ export default function ChecklistComponent() {
                                                     </div>
                                                     <p className="truncate text-[11px] fadedtext">Lv.{character.level.toLocaleString()} · {character.job}</p>
                                                 </div>
-                                                <Chip
-                                                    size="sm"
-                                                    radius="sm"
-                                                    color="danger"
-                                                    variant="flat"
-                                                    className="shrink-0 sm:hidden">
-                                                    {raids.length}개
-                                                </Chip>
                                             </div>
                                             <div className="flex min-w-0 grow flex-wrap gap-1.5">
                                                 {raids.map(raid => (
@@ -544,14 +536,6 @@ export default function ChecklistComponent() {
                                                     </Chip>
                                                 ))}
                                             </div>
-                                            <Chip
-                                                size="sm"
-                                                radius="sm"
-                                                color="danger"
-                                                variant="flat"
-                                                className="hidden shrink-0 sm:flex">
-                                                미완료 {raids.length}개
-                                            </Chip>
                                         </div>
                                     ))}
                                 </div>

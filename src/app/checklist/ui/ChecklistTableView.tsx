@@ -44,6 +44,7 @@ import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 import ParadiseIcon from "@/Icons/ParadiseIcon";
 import OtherGoldManager from "./OtherGoldManager";
 import AnimatedNumber from "./AnimatedNumber";
+import { CharacterMemo, CharacterParadisePower } from "./ChecklistForm";
 import { SettingIcon } from "../../icons/SettingIcon";
 import type { ReactNode } from "react";
 
@@ -59,6 +60,8 @@ type ChecklistTableViewProps = {
     isHideCompleteContent: boolean;
     isHideDayContent: boolean;
     isBonusModeEnabled: boolean;
+    isHideParadisePower: boolean;
+    isHideCharacterMemo: boolean;
     onOpenContentManager: (characterIndex: number, type: 'day' | 'week') => void;
     autoChecklistNickname: string;
     isAutoChecklistSharing: boolean;
@@ -286,7 +289,7 @@ function WeeklyContentCell({
     isBonusModeEnabled: boolean;
 }) {
     if (!content || checklistIndex < 0) {
-        return <div className="flex h-full min-h-20 items-center justify-center px-2 text-center text-[11px] text-default-400">콘텐츠 없음</div>;
+        return <div className="flex h-full min-h-20 items-center justify-center bg-default-100/70 px-2 text-center text-[11px] text-default-400 dark:bg-white/[0.06]">콘텐츠 없음</div>;
     }
 
     const character = checklist[characterIndex];
@@ -442,13 +445,19 @@ export default function ChecklistTableView({
     isHideCompleteContent,
     isHideDayContent,
     isBonusModeEnabled,
+    isHideParadisePower,
+    isHideCharacterMemo,
     onOpenContentManager,
     autoChecklistNickname,
     isAutoChecklistSharing,
     onSelectAutoChecklistCharacter,
     renderCharacterSettings
 }: ChecklistTableViewProps) {
-    const [expandedGoldNickname, setExpandedGoldNickname] = useState<string | null>(null);
+    const [openInfoNickname, setOpenInfoNickname] = useState<string | null>(null);
+    const [editorTarget, setEditorTarget] = useState<{ nickname: string; type: 'memo' | 'paradise' } | null>(null);
+    const [editorOpen, setEditorOpen] = useState(false);
+    const [historyNickname, setHistoryNickname] = useState<string | null>(null);
+    const [historyOpen, setHistoryOpen] = useState(false);
     const [scrollLeft, setScrollLeft] = useState(0);
     const [contentViewportWidth, setContentViewportWidth] = useState(0);
     const contentViewportRef = useRef<HTMLDivElement>(null);
@@ -483,6 +492,13 @@ export default function ChecklistTableView({
         (character.server === server || server === '전체') &&
         filterChecklist(character, filterContent, bosses, checklist, isRemainHomework, isShowGoldCharacter, filterAccount)
     ), [bosses, checklist, filterAccount, filterContent, isRemainHomework, isShowGoldCharacter, server]);
+    const historyCharacter = checklist.find(character => character.nickname === historyNickname);
+
+    const openEditor = (nickname: string, type: 'memo' | 'paradise') => {
+        setOpenInfoNickname(null);
+        setEditorTarget({ nickname, type });
+        setEditorOpen(true);
+    };
 
     const contentNames = useMemo(() => getBossesByHaveContent(visibleCharacters, bosses).filter(name => {
         if (!isHideCompleteContent) return true;
@@ -539,29 +555,86 @@ export default function ChecklistTableView({
                 </div>
                 {visibleCharacters.map(character => {
                     const characterIndex = getIndexByNickname(checklist, character.nickname);
-                    const isGoldExpanded = expandedGoldNickname === character.nickname;
                     const isSharingCharacter = isAutoChecklistSharing && autoChecklistNickname === character.nickname;
                     return (
                         <div key={character.nickname} className="border-b border-default-200 dark:border-white/10">
                             <div className="grid grid-cols-[280px_minmax(0,1fr)_184px]">
                                 <div className={clsx("flex min-h-20 w-[280px] items-stretch border-r border-default-200 dark:border-white/10", isSharingCharacter ? "bg-primary-50 dark:bg-primary-950/30" : "bg-white dark:bg-[#171717]")}>
-                                <button
-                                    type="button"
-                                    onClick={() => setExpandedGoldNickname(isGoldExpanded ? null : character.nickname)}
-                                    className={clsx("flex min-w-0 grow cursor-pointer items-center gap-2 px-3 py-3 text-left transition-colors hover:bg-default-50 dark:hover:bg-white/[0.04]", isSharingCharacter && "bg-primary-50 dark:bg-primary-950/30", isGoldExpanded && !isSharingCharacter && "bg-warning-50 dark:bg-warning-950/20")}
-                                    aria-expanded={isGoldExpanded}>
-                                    <JobEmblemIcon job={character.job} size={38} className="shrink-0"/>
-                                    <div className="min-w-0 grow">
-                                        <p className="truncate text-sm font-semibold">{character.nickname}</p>
-                                        <p className="mt-0.5 truncate text-[11px] text-default-500">Lv.{character.level} · {character.job}</p>
-                                        <div className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-warning-700 dark:text-warning-400">
-                                            <img src="/icons/gold.png" alt="" className="h-3.5 w-3.5"/>
-                                            <AnimatedNumber value={getCompleteGoldCharacter(bosses, character) + getOtherGoldTotal(character)}/>
-                                            <span>/</span>
-                                            <AnimatedNumber value={getAllGoldCharacter(bosses, character) + getOtherGoldTotal(character)}/>
+                                <Popover placement="right-start" offset={8} isOpen={openInfoNickname === character.nickname} onOpenChange={open => setOpenInfoNickname(open ? character.nickname : null)}>
+                                    <PopoverTrigger>
+                                        <button
+                                            type="button"
+                                            aria-label={`${character.nickname} 캐릭터 정보`}
+                                            className={clsx("flex min-w-0 grow cursor-pointer items-center gap-2 px-3 py-3 text-left transition-colors hover:bg-default-50 aria-expanded:bg-warning-50 dark:hover:bg-white/[0.04] dark:aria-expanded:bg-warning-950/20", isSharingCharacter && "bg-primary-50 dark:bg-primary-950/30")}>
+                                            <JobEmblemIcon job={character.job} size={38} className="shrink-0"/>
+                                            <div className="min-w-0 grow">
+                                                <p className="truncate text-sm font-semibold">{character.nickname}</p>
+                                                <p className="mt-0.5 truncate text-[11px] text-default-500">Lv.{character.level} · {character.job}</p>
+                                                <div className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-warning-700 dark:text-warning-400">
+                                                    <img src="/icons/gold.png" alt="" className="h-3.5 w-3.5"/>
+                                                    <AnimatedNumber value={getCompleteGoldCharacter(bosses, character) + getOtherGoldTotal(character)}/>
+                                                    <span>/</span>
+                                                    <AnimatedNumber value={getAllGoldCharacter(bosses, character) + getOtherGoldTotal(character)}/>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-[420px] max-w-[calc(100vw-24px)] overflow-hidden rounded-xl border border-default-200 bg-white p-0 shadow-xl dark:border-white/10 dark:bg-[#1b1b1b]">
+                                        <div className="max-h-[calc(100vh-80px)] w-full overflow-y-auto">
+                                            <div className="flex items-center gap-2.5 border-b border-default-200 px-4 py-3 dark:border-white/10">
+                                                <JobEmblemIcon job={character.job} size={32} className="shrink-0"/>
+                                                <div className="min-w-0">
+                                                    <p className="truncate text-sm font-semibold text-foreground">{character.nickname}</p>
+                                                    <p className="text-[11px] text-default-500">Lv.{character.level} · {character.job}</p>
+                                                </div>
+                                            </div>
+                                            <div className="px-4">
+                                                {[
+                                                    ['획득 콘텐츠 골드', getCompleteGoldCharacter(bosses, character)],
+                                                    ['획득 귀속 골드', getCompleteBoundGoldCharacter(bosses, character)],
+                                                    ['부수입', getOtherGoldTotal(character)]
+                                                ].map(([label, value]) => (
+                                                    <div key={label} className="flex items-center justify-between gap-3 border-b border-default-200 py-2.5 last:border-b-0 dark:border-white/10">
+                                                        <span className="text-xs text-default-600 dark:text-default-300">{label}</span>
+                                                        <span className="flex items-center gap-1.5 text-sm font-semibold tabular-nums text-warning-700 dark:text-warning-400">
+                                                            <img src="/icons/gold.png" alt="" className="h-4 w-4 shrink-0"/>
+                                                            {Number(value).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            {(!isHideCharacterMemo || !isHideParadisePower) ? (
+                                                <div className="space-y-2 border-t border-default-200 px-4 py-3 dark:border-white/10">
+                                                    {!isHideCharacterMemo ? (
+                                                        <div className="min-w-0">
+                                                            <p className="mb-1 text-xs font-semibold text-foreground">메모</p>
+                                                            <button type="button" onClick={() => openEditor(character.nickname, 'memo')} className="flex w-full min-w-0 cursor-pointer items-start gap-2 rounded-md px-1 text-left text-sm text-foreground hover:bg-default-100 dark:hover:bg-white/[0.04]" aria-label={`${character.nickname} 메모 수정`}>
+                                                                <span aria-hidden="true" className="shrink-0">📝</span>
+                                                                <span className="line-clamp-3 min-w-0 whitespace-pre-wrap break-words">{character.memo || 'ex) 97돌 없음, 1750레벨 올리기'}</span>
+                                                            </button>
+                                                        </div>
+                                                    ) : null}
+                                                    {!isHideParadisePower ? (
+                                                        <button type="button" onClick={() => openEditor(character.nickname, 'paradise')} className="flex w-full items-center gap-2 rounded-md px-1 py-1 text-left text-sm hover:bg-default-100 dark:hover:bg-white/[0.04]" aria-label={`${character.nickname} 낙원력 수정`}>
+                                                            <span aria-hidden="true">⚔️</span>
+                                                            <span className="font-medium">낙원력</span>
+                                                            <span className={character.paradisePower ? 'font-semibold text-foreground' : 'text-default-500'}>{character.paradisePower ? character.paradisePower.toLocaleString() : '미설정'}</span>
+                                                            <span className="ml-auto text-xs text-default-500">수정</span>
+                                                        </button>
+                                                    ) : null}
+                                                </div>
+                                            ) : null}
+                                            <div className="border-t border-default-200 px-4 py-3 dark:border-white/10">
+                                                <p className="mb-2 text-xs font-semibold text-foreground">부수입 설정</p>
+                                                <OtherGoldManager character={character} dispatch={dispatch} onRequestHistory={() => {
+                                                    setOpenInfoNickname(null);
+                                                    setHistoryNickname(character.nickname);
+                                                    setHistoryOpen(true);
+                                                }}/>
+                                            </div>
                                         </div>
-                                    </div>
-                                </button>
+                                    </PopoverContent>
+                                </Popover>
                                 <div className="flex shrink-0 flex-col items-center justify-center gap-1 px-0.5">
                                     {renderCharacterSettings(characterIndex)}
                                     <button type="button" onClick={() => onSelectAutoChecklistCharacter(character.nickname)} disabled={!isAutoChecklistSharing || autoChecklistNickname === character.nickname} className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-default-500 hover:bg-default-100 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-white/[0.08]" aria-label={`${character.nickname} 자동 체크 전환`} title={isAutoChecklistSharing ? '자동 체크 캐릭터로 전환' : '화면 공유 중에만 전환할 수 있습니다.'}>
@@ -592,33 +665,19 @@ export default function ChecklistTableView({
                                     <button type="button" onClick={() => onOpenContentManager(characterIndex, 'week')} className="flex min-h-20 cursor-pointer items-center justify-center text-secondary-600 transition-colors hover:bg-secondary-50 dark:text-secondary-300 dark:hover:bg-secondary-950/25" aria-label={`${character.nickname} 주간 콘텐츠 관리`}><SettingIcon size={19}/></button>
                                 </div>
                             </div>
-                            {isGoldExpanded ? (
-                                <div className="w-full border-t border-warning-200 bg-gradient-to-r from-warning-50/80 to-white p-4 dark:border-warning-900/50 dark:from-warning-950/20 dark:to-[#171717]">
-                                    <div className="grid grid-cols-3 gap-3">
-                                        {[
-                                            ['획득 콘텐츠 골드', getCompleteGoldCharacter(bosses, character)],
-                                            ['획득 귀속 골드', getCompleteBoundGoldCharacter(bosses, character)],
-                                            ['부수입', getOtherGoldTotal(character)]
-                                        ].map(([label, value]) => (
-                                            <div key={label} className="rounded-xl border border-warning-100 bg-white/80 px-3 py-2.5 dark:border-warning-900/30 dark:bg-white/[0.03]">
-                                                <p className="text-[11px] text-default-500">{label}</p>
-                                                <div className="mt-1 flex items-center gap-1.5 font-semibold text-warning-700 dark:text-warning-400">
-                                                    <img src="/icons/gold.png" alt="" className="h-4 w-4 shrink-0"/>
-                                                    <span>{Number(value).toLocaleString()}</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="mt-3 border-t border-warning-100 pt-3 dark:border-warning-900/30">
-                                        <p className="mb-2 text-xs font-semibold text-default-600 dark:text-default-300">부수입 설정</p>
-                                        <OtherGoldManager character={character} dispatch={dispatch} layout="inline"/>
-                                    </div>
-                                </div>
-                            ) : null}
                         </div>
                     );
                 })}
             </div>
+            {editorTarget?.type === 'memo' ? (
+                <CharacterMemo checklist={checklist} nickname={editorTarget.nickname} dispatch={dispatch} hideTrigger editorOpen={editorOpen} onEditorOpenChange={setEditorOpen}/>
+            ) : null}
+            {editorTarget?.type === 'paradise' ? (
+                <CharacterParadisePower checklist={checklist} nickname={editorTarget.nickname} dispatch={dispatch} hideTrigger editorOpen={editorOpen} onEditorOpenChange={setEditorOpen}/>
+            ) : null}
+            {historyCharacter ? (
+                <OtherGoldManager character={historyCharacter} dispatch={dispatch} historyOnly historyOpen={historyOpen} onHistoryOpenChange={setHistoryOpen}/>
+            ) : null}
             {maxScrollLeft > 0 ? <div className="grid grid-cols-[280px_minmax(0,1fr)_184px] border-t border-default-200 bg-white/95 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] backdrop-blur dark:border-white/10 dark:bg-[#171717]/95">
                 <div className="border-r border-default-200 dark:border-white/10"/>
                 <div className="px-4 py-2">

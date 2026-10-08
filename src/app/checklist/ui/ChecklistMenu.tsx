@@ -2,12 +2,12 @@ import type { ReactNode } from "react";
 
 export type ChecklistMenuIconName = 'view' | 'bonus' | 'raid' | 'info' | 'remaining' | 'cube' | 'account' | 'server' | 'content' | 'daily' | 'filter' | 'gold' | 'complete' | 'clear' | 'reset' | 'life' | 'order' | 'add' | 'refresh' | 'auto';
 
-export const menuActionClass = "h-9 min-h-9 w-full justify-start gap-2 rounded-lg px-2 text-xs font-medium text-default-700 data-[hover=true]:bg-default-100 dark:text-default-200 dark:data-[hover=true]:bg-white/[0.07]";
+export const menuActionClass = "h-9 min-h-9 w-full justify-start gap-2 rounded-lg px-2 text-xs font-medium text-default-700 data-[hover=true]:bg-default-100 dark:text-white dark:data-[hover=true]:bg-white/[0.07]";
 export const menuSwitchClass = "-ml-2 shrink-0 origin-right scale-[0.8]";
 export const menuSelectClassNames = {
-    trigger: "h-8 min-h-8 rounded-md border border-default-200 bg-white px-2 shadow-none data-[hover=true]:bg-default-100 dark:border-white/10 dark:bg-white/[0.04] dark:data-[hover=true]:bg-white/[0.08]",
-    value: "text-xs text-default-700 dark:text-default-200",
-    selectorIcon: "text-default-400",
+    trigger: "h-8 min-h-8 rounded-md border border-default-200 bg-white px-2 shadow-none data-[hover=true]:bg-default-100 dark:border-white/20 dark:bg-white/[0.04] dark:text-white dark:data-[hover=true]:bg-white/[0.08]",
+    value: "text-xs text-default-700 dark:text-white dark:data-[placeholder=true]:text-white/80",
+    selectorIcon: "text-default-500 dark:text-white",
     popoverContent: "rounded-lg border border-default-200 dark:border-white/10"
 };
 
@@ -41,7 +41,7 @@ export function ChecklistMenuIcon({ name }: { name: ChecklistMenuIconName }) {
 export function ChecklistMenuSection({ title, children }: { title: string; children: ReactNode }) {
     return (
         <section className="border-b border-default-200/80 py-3 first:pt-0 last:border-b-0 dark:border-white/10">
-            <h3 className="px-2 pb-1 text-[10px] font-semibold text-default-500">{title}</h3>
+            <h3 className="px-2 pb-1 text-[10px] font-semibold text-default-500 dark:text-white/80">{title}</h3>
             <div className="space-y-0.5">{children}</div>
         </section>
     );
@@ -49,9 +49,9 @@ export function ChecklistMenuSection({ title, children }: { title: string; child
 
 export function ChecklistMenuRow({ icon, label, children }: { icon: ChecklistMenuIconName; label: string; children: ReactNode }) {
     return (
-        <div className="flex min-h-10 items-center gap-2 rounded-lg px-2 text-default-600 transition-colors hover:bg-default-100 dark:text-default-300 dark:hover:bg-white/[0.07]">
+        <div className="flex min-h-10 items-center gap-2 rounded-lg px-2 text-default-700 transition-colors hover:bg-default-100 dark:text-white dark:hover:bg-white/[0.07]">
             <ChecklistMenuIcon name={icon}/>
-            <span className="min-w-0 flex-1 text-xs font-medium leading-tight text-foreground">{label}</span>
+            <span className="min-w-0 flex-1 text-xs font-medium leading-tight text-foreground dark:text-white">{label}</span>
             {children}
         </div>
     );

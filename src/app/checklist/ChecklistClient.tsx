@@ -186,8 +186,8 @@ export default function ChecklistClient() {
             <ChecklistMenuSection title="바로가기">
                 <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="raid"/>} isLoading={isAutoRegisteringRaids} isDisabled={checklistForm.isLoading || checklist.length === 0} onPress={() => handleRaidAutoRegistration()}>전체 자동 등록</Button>
                 <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="info"/>} onPress={() => { onClose?.(); setOpenBosses(true); }}>콘텐츠 정보</Button>
-                <Button variant="light" size="sm" className={clsx(menuActionClass, checklistForm.isShowList && "bg-primary-50 text-primary-700 dark:bg-primary-500/15 dark:text-primary-300")} startContent={<ChecklistMenuIcon name="remaining"/>} aria-pressed={checklistForm.isShowList} onPress={() => { checklistForm.setShowList(!checklistForm.isShowList); onClose?.(); }}>남은 숙제</Button>
-                <Button variant="light" size="sm" className={clsx(menuActionClass, checklistForm.isShowCubeDetail && "bg-primary-50 text-primary-700 dark:bg-primary-500/15 dark:text-primary-300")} startContent={<ChecklistMenuIcon name="cube"/>} aria-pressed={checklistForm.isShowCubeDetail} onPress={() => { checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail); onClose?.(); }}>큐브 현황</Button>
+                <Button variant="light" size="sm" className={clsx(menuActionClass, checklistForm.isShowList && "bg-primary-50 text-primary-700 dark:bg-primary-500/15 dark:text-white")} startContent={<ChecklistMenuIcon name="remaining"/>} aria-pressed={checklistForm.isShowList} onPress={() => { checklistForm.setShowList(!checklistForm.isShowList); onClose?.(); }}>남은 숙제</Button>
+                <Button variant="light" size="sm" className={clsx(menuActionClass, checklistForm.isShowCubeDetail && "bg-primary-50 text-primary-700 dark:bg-primary-500/15 dark:text-white")} startContent={<ChecklistMenuIcon name="cube"/>} aria-pressed={checklistForm.isShowCubeDetail} onPress={() => { checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail); onClose?.(); }}>큐브 현황</Button>
             </ChecklistMenuSection>
             <FilterComponent
                 server={checklistForm.server}
@@ -208,7 +208,7 @@ export default function ChecklistClient() {
                 setHideDayContent={checklistForm.setHideDayContent}/>
             {showDesktopLookup ? (
                 <ChecklistMenuSection title="관리">
-                    <Button variant="light" size="sm" className={clsx(menuActionClass, "text-danger")} startContent={<ChecklistMenuIcon name="reset"/>} isLoading={isLoadingReset} onPress={async () => await handleResetChecklist(checklist, checklistForm.biweekly, dispatch, setLoadingReset)}>주간 숙제 초기화</Button>
+                    <Button variant="light" size="sm" className={clsx(menuActionClass, "!text-danger dark:!text-red-400")} startContent={<ChecklistMenuIcon name="reset"/>} isLoading={isLoadingReset} onPress={async () => await handleResetChecklist(checklist, checklistForm.biweekly, dispatch, setLoadingReset)}>주간 숙제 초기화</Button>
                     <p className="px-2 pb-1 text-[10px] leading-4 text-default-400">숙제와 이번 주 부수입 기록을 초기화합니다.</p>
                 </ChecklistMenuSection>
             ) : null}
@@ -496,6 +496,8 @@ export default function ChecklistClient() {
                                     isHideCompleteContent={checklistForm.isHideCompleteContent}
                                     isHideDayContent={checklistForm.isHideDayContent}
                                     isBonusModeEnabled={isTableBonusMode}
+                                    isHideParadisePower={checklistForm.isHideParadisePower}
+                                    isHideCharacterMemo={checklistForm.isHideCharacterMemo}
                                     autoChecklistNickname={autoChecklistNickname}
                                     isAutoChecklistSharing={isAutoChecklistSharing}
                                     onSelectAutoChecklistCharacter={setAutoChecklistNickname}
