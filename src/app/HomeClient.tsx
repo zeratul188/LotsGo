@@ -46,8 +46,8 @@ export default function HomeClient({ gate, boss, islands, islandTime, islandData
             ) : (
                 <HomeAuthenticatedContentSkeleton/>
             )}
-            <DiscordBotInvite/>
             {isCheckedToken && isLogined ? <TodoComponent/> : null}
+            <DiscordBotInvite/>
             <CalendarComponent
                 gate={gate}
                 boss={boss}
