@@ -19,7 +19,7 @@ function ExpeditionCharacterTable({ server, characters, columnIndex }: {
     return (
         <table className={clsx(
             "w-full table-fixed text-left",
-            columnIndex !== undefined && columnIndex > 0 && "border-t border-default-200/80 xl:border-l xl:border-t-0 dark:border-white/10"
+            columnIndex !== undefined && columnIndex > 0 && "border-l border-default-200/80 dark:border-white/10"
         )}>
             <caption className="sr-only">{server} 원정대 캐릭터 목록{columnIndex !== undefined ? ` ${columnIndex + 1}` : ''}</caption>
             <colgroup>
@@ -66,8 +66,8 @@ function ExpeditionCharacterTable({ server, characters, columnIndex }: {
                             character.combatPower <= 0 ? 'text-default-400' : character.type === 'supportor' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
                         )}>
                             <span className="inline-flex items-center justify-end gap-1">
-                                {character.type === 'supportor' ? <SupportorIcon size={14}/> : <AttackIcon size={12}/>}
-                                <span>{character.combatPower > 0 ? character.combatPower.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '정보 없음'}</span>
+                                {character.combatPower > 0 ? character.type === 'supportor' ? <SupportorIcon size={14}/> : <AttackIcon size={12}/> : null}
+                                <span>{character.combatPower > 0 ? character.combatPower.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '-'}</span>
                             </span>
                         </td>
                     </tr>
@@ -162,20 +162,15 @@ export function ExpeditionsComponent({ expeditions }: ExpeditionComponentProps) 
                             </div>
                         </div>
                     </div>
-                    <div className="hidden md960:block">
-                        <div className="xl:hidden">
-                            <ExpeditionCharacterTable server={server} characters={serverCharacters}/>
-                        </div>
-                        <div className="hidden xl:grid xl:grid-cols-2">
-                            {characterColumns.map((characters, columnIndex) => (
-                                <ExpeditionCharacterTable
-                                    key={`${server}-character-column-${columnIndex}`}
-                                    server={server}
-                                    characters={characters}
-                                    columnIndex={columnIndex}
-                                />
-                            ))}
-                        </div>
+                    <div className="hidden md960:grid md960:grid-cols-2">
+                        {characterColumns.map((characters, columnIndex) => (
+                            <ExpeditionCharacterTable
+                                key={`${server}-character-column-${columnIndex}`}
+                                server={server}
+                                characters={characters}
+                                columnIndex={columnIndex}
+                            />
+                        ))}
                     </div>
                     <div className="grid w-full grid-cols-1 gap-3 p-4 sm:grid-cols-2 sm:p-5 md960:hidden">
                         {serverCharacters.map((character) => (
@@ -205,14 +200,14 @@ export function ExpeditionsComponent({ expeditions }: ExpeditionComponentProps) 
                                         </div>
                                         <div className="ml-auto shrink-0 text-right">
                                             <div className="flex items-center justify-end gap-1 text-[11px] text-default-400">
-                                            {character.type === 'supportor' ? <SupportorIcon size={14}/> : <AttackIcon size={12}/>}
+                                            {character.combatPower > 0 ? character.type === 'supportor' ? <SupportorIcon size={14}/> : <AttackIcon size={12}/> : null}
                                                 <span>전투력</span>
                                             </div>
                                             <p className={clsx(
                                                 "mt-0.5 text-sm font-bold tabular-nums",
                                                 character.combatPower <= 0 ? 'text-default-400' : character.type === 'supportor' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
                                             )}>
-                                                {character.combatPower > 0 ? character.combatPower.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '정보 없음'}
+                                                {character.combatPower > 0 ? character.combatPower.toLocaleString(undefined, { maximumFractionDigits: 2 }) : '-'}
                                             </p>
                                         </div>
                                         <span className="shrink-0 text-xs text-default-400 transition-transform group-hover:translate-x-0.5">›</span>
