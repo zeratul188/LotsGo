@@ -87,7 +87,7 @@ export default function ChecklistClient() {
     const onOpenChangeBosses = (isOpen: boolean) => setOpenBosses(isOpen);
     useLoadingTask("레이드를 자동 등록하고 있어요", isAutoRegisteringRaids);
     const isTableView = checklistViewStyle === 'table' && viewportWidth > 720;
-    const showDesktopLookup = isTableView ? viewportWidth >= 1500 : viewportWidth >= 960;
+    const showDesktopLookup = viewportWidth >= 1500;
     const showCompactLookup = viewportWidth > 768 && !showDesktopLookup;
     const showLookupSidebar = showDesktopLookup || showCompactLookup;
     const isLookupCollapsed = showCompactLookup && !isLookupExpanded;
