@@ -1,9 +1,39 @@
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { createPortal } from "react-dom";
+import { Button, Popover, PopoverContent, Tooltip } from "@heroui/react";
 
 export type ChecklistMenuIconName = 'view' | 'bonus' | 'raid' | 'info' | 'remaining' | 'cube' | 'account' | 'server' | 'content' | 'daily' | 'filter' | 'gold' | 'complete' | 'clear' | 'reset' | 'life' | 'order' | 'add' | 'refresh' | 'auto';
 
 export const menuActionClass = "h-9 min-h-9 w-full justify-start gap-2 rounded-lg px-2 text-xs font-medium text-default-700 data-[hover=true]:bg-default-100 dark:text-white dark:data-[hover=true]:bg-white/[0.07]";
 export const menuSwitchClass = "-ml-2 shrink-0 origin-right scale-[0.8]";
+const compactButtonClass = "h-9 min-h-9 w-9 min-w-9 rounded-lg border border-transparent p-0 text-default-700 data-[hover=true]:bg-default-100 dark:text-white dark:data-[hover=true]:bg-white/[0.08]";
+const compactSelectedClass = "border-primary/50 bg-primary/15 text-primary-700 dark:border-blue-400/60 dark:bg-blue-400/20 dark:!text-[#bfdbfe]";
+
+export function CompactPopoverTooltip({ anchorRef, label, isOpen }: { anchorRef: RefObject<HTMLElement>; label: string; isOpen: boolean }) {
+    const [position, setPosition] = useState<{ left: number; top: number } | null>(null);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const updatePosition = () => {
+            const rect = anchorRef.current?.getBoundingClientRect();
+            if (rect) setPosition({ left: rect.right + 10, top: rect.top + rect.height / 2 });
+        };
+        updatePosition();
+        window.addEventListener("scroll", updatePosition, true);
+        window.addEventListener("resize", updatePosition);
+        return () => {
+            window.removeEventListener("scroll", updatePosition, true);
+            window.removeEventListener("resize", updatePosition);
+        };
+    }, [anchorRef, isOpen]);
+
+    return isOpen && position ? createPortal(
+        <div role="tooltip" className="pointer-events-none fixed z-[100000] rounded-medium bg-content1 px-2.5 py-1 text-small font-normal text-foreground shadow-small" style={{ left: position.left, top: position.top, transform: "translateY(-50%)" }}>
+            <span aria-hidden="true" className="absolute -left-1 top-1/2 -z-10 h-2.5 w-2.5 -translate-y-1/2 rotate-45 rounded-sm bg-content1"/>
+            {label}
+        </div>, document.body
+    ) : null;
+}
 export const menuSelectClassNames = {
     trigger: "h-8 min-h-8 rounded-md border border-default-200 bg-white px-2 shadow-none data-[hover=true]:bg-default-100 dark:border-white/20 dark:bg-white/[0.04] dark:text-white dark:data-[hover=true]:bg-white/[0.08]",
     value: "text-xs text-default-700 dark:text-white dark:data-[placeholder=true]:text-white/80",
@@ -38,11 +68,83 @@ export function ChecklistMenuIcon({ name }: { name: ChecklistMenuIconName }) {
     return <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;
 }
 
-export function ChecklistMenuSection({ title, children }: { title: string; children: ReactNode }) {
+export function CompactMenuButton({ icon, label, isSelected, isDanger = false, isDisabled = false, onPress }: {
+    icon: ChecklistMenuIconName;
+    label: string;
+    isSelected?: boolean;
+    isDanger?: boolean;
+    isDisabled?: boolean;
+    onPress: () => void;
+}) {
     return (
-        <section className="border-b border-default-200/80 py-3 first:pt-0 last:border-b-0 dark:border-white/10">
-            <h3 className="px-2 pb-1 text-[10px] font-semibold text-default-500 dark:text-white/80">{title}</h3>
-            <div className="space-y-0.5">{children}</div>
+        <Tooltip showArrow placement="right" content={label}>
+            <Button
+                isIconOnly
+                variant="light"
+                aria-label={label}
+                aria-pressed={isSelected}
+                isDisabled={isDisabled}
+                className={`${compactButtonClass} ${isSelected ? compactSelectedClass : ""} ${isDanger ? "!text-danger dark:!text-red-400" : ""}`}
+                onPress={onPress}>
+                <ChecklistMenuIcon name={icon}/>
+            </Button>
+        </Tooltip>
+    );
+}
+
+export function CompactMenuSelect({ icon, label, isSelected = false, children }: {
+    icon: ChecklistMenuIconName;
+    label: string;
+    isSelected?: boolean;
+    children: ReactNode;
+}) {
+    const [isPopoverOpen, setPopoverOpen] = useState(false);
+    const [isTooltipOpen, setTooltipOpen] = useState(false);
+    const anchorRef = useRef<HTMLSpanElement>(null!);
+
+    return (
+        <>
+            <span ref={anchorRef} className="inline-flex">
+                <Button
+                    isIconOnly
+                    variant="light"
+                    aria-label={label}
+                    aria-haspopup="dialog"
+                    aria-expanded={isPopoverOpen}
+                    onPress={() => {
+                        setTooltipOpen(false);
+                        setPopoverOpen(!isPopoverOpen);
+                    }}
+                    onMouseEnter={() => setTooltipOpen(true)}
+                    onMouseLeave={() => setTooltipOpen(false)}
+                    onFocus={() => setTooltipOpen(true)}
+                    onBlur={() => setTooltipOpen(false)}
+                    className={`${compactButtonClass} ${isSelected ? compactSelectedClass : ""}`}>
+                    <ChecklistMenuIcon name={icon}/>
+                </Button>
+            </span>
+            <CompactPopoverTooltip anchorRef={anchorRef} label={label} isOpen={isTooltipOpen && !isPopoverOpen}/>
+            <Popover showArrow placement="right-start" offset={12} triggerRef={anchorRef} isOpen={isPopoverOpen} onOpenChange={(open) => {
+                setPopoverOpen(open);
+                if (open) setTooltipOpen(false);
+            }}>
+                <span className="hidden" aria-hidden="true"/>
+                <PopoverContent className="border border-default-200 bg-white p-3 shadow-xl dark:border-white/10 dark:bg-[#171717] dark:text-white">
+                    <div className="w-[220px] space-y-2">
+                        <p className="text-xs font-semibold text-foreground dark:text-white">{label}</p>
+                        {children}
+                    </div>
+                </PopoverContent>
+            </Popover>
+        </>
+    );
+}
+
+export function ChecklistMenuSection({ title, children, compact = false }: { title: string; children: ReactNode; compact?: boolean }) {
+    return (
+        <section aria-label={compact ? title : undefined} className="border-b border-default-200/80 py-3 first:pt-0 last:border-b-0 dark:border-white/10">
+            {!compact ? <h3 className="px-2 pb-1 text-[10px] font-semibold text-default-500 dark:text-white/80">{title}</h3> : null}
+            <div className={compact ? "flex flex-col items-center gap-1" : "space-y-0.5"}>{children}</div>
         </section>
     );
 }

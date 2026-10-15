@@ -308,13 +308,13 @@ export default function DiscordGuildComponent() {
         return (
             <div className="flex min-h-[420px] items-center justify-center p-2 sm:p-6">
                 <Card radius="lg" shadow="none" className="w-full max-w-xl border border-default-200/80 dark:border-white/10">
-                    <CardBody className="items-center gap-5 p-6 text-center sm:p-9">
+                    <CardBody className="items-center gap-5 overflow-x-hidden p-6 text-center sm:p-9">
                         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#5865F2]/10 text-[#5865F2] dark:bg-[#5865F2]/20 dark:text-[#8b9bff]">
                             <DiscordIcon className="h-10 w-10"/>
                         </div>
-                        <div>
+                        <div className="w-full min-w-0">
                             <h1 className="text-xl font-bold">Discord 서버 관리 권한 연결</h1>
-                            <p className="mt-2 text-sm leading-6 text-default-500">
+                            <p className="mt-2 break-words text-sm leading-6 text-default-500" style={{ whiteSpace: "normal" }}>
                                 서버 소유자이거나 관리자 권한이 있는 서버만 불러옵니다. 로츠고는 승인 없이 서버 설정을 변경하지 않습니다.
                             </p>
                         </div>

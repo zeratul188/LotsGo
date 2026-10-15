@@ -398,9 +398,9 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                         <span className="rounded-full bg-default-100 px-2.5 py-1 text-xs font-semibold text-default-500 dark:bg-white/[0.06]">{info.equipment.equipments.length}부위</span>
                     </div>
                     <div className="p-2 sm:p-3">
-                        <div className="grid grid-cols-3 gap-2 md:grid-cols-4 lg:grid-cols-7">
+                        <div className="grid grid-cols-4 gap-1.5 sm:gap-2 lg:grid-cols-7">
                             {equipmentSlots.map(({type, equip}) => {
-                                if (!equip) return <div key={type} className="flex min-h-40 flex-col items-center rounded-lg border border-dashed border-default-200 bg-default-50/40 p-2 dark:border-white/10 dark:bg-white/[0.02]">
+                                if (!equip) return <div key={type} className="flex min-h-40 flex-col items-center rounded-lg border border-dashed border-default-200 bg-default-50/40 p-1 sm:p-2 dark:border-white/10 dark:bg-white/[0.02]">
                                     <p className="text-[11px] text-default-500">- {type} -</p>
                                     <span className="flex flex-1 items-center text-sm text-default-400">-</span>
                                 </div>;
@@ -414,10 +414,10 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                                 return (
                                     <Popover key={type} showArrow disableAnimation>
                                         <PopoverTrigger>
-                                            <div className="group flex min-h-40 cursor-pointer flex-col items-center rounded-lg border border-default-200/80 bg-content1 p-2 text-center transition-colors hover:bg-default-50 dark:border-white/10 dark:bg-white/[0.025] dark:hover:bg-white/[0.06]">
+                                            <div className="group flex min-h-40 cursor-pointer flex-col items-center rounded-lg border border-default-200/80 bg-content1 p-1 text-center transition-colors hover:bg-default-50 sm:p-2 dark:border-white/10 dark:bg-white/[0.025] dark:hover:bg-white/[0.06]">
                                                 <p className="text-[11px] text-default-500">- {type} -</p>
-                                                <div className="mt-2 w-16 shrink-0 overflow-hidden rounded-lg shadow-sm">
-                                                    <div className={`h-16 w-16 p-1 ${getBackgroundByGrade(equip.grade)}`}>
+                                                <div className="mt-2 w-12 shrink-0 overflow-hidden rounded-lg shadow-sm min-[380px]:w-16">
+                                                    <div className={`h-12 w-12 p-1 min-[380px]:h-16 min-[380px]:w-16 ${getBackgroundByGrade(equip.grade)}`}>
                                                         <img src={equip.icon} alt={`${type} 아이콘`} className="h-full w-full object-contain"/>
                                                     </div>
                                                     {equip.quality >= 0 && <div role="progressbar" aria-label={`${type} 품질`} aria-valuenow={equip.quality} aria-valuemin={0} aria-valuemax={100} className="relative h-2.5 bg-default-200 dark:bg-zinc-800">
@@ -651,7 +651,6 @@ export function EquipmentComponent({ info }: { info: CharacterInfo }) {
                                                     <p className={`${getColorTextByGrade(arm.grade)} grow truncate font-medium`}>{arm.grade} {arm.type}</p>
                                                 </div>
                                                 <div className="flex flex-wrap items-center gap-2">
-                                                    {arm.point > 0 ? <Chip size="sm" radius="sm" variant="flat" color="success">+{arm.point}</Chip> : <></>}
                                                     <span
                                                         aria-label={`팔찌 전투력 증가율 ${braceletCombatPowerPercent >= 0 ? '+' : ''}${braceletCombatPowerPercent.toFixed(2)}%`}
                                                         className="inline-flex h-6 items-center gap-1 rounded-full border border-emerald-200/90 bg-gradient-to-r from-emerald-50 to-cyan-50 px-2 text-[11px] font-bold tabular-nums text-emerald-600 shadow-sm dark:border-emerald-400/25 dark:from-emerald-500/15 dark:to-cyan-500/10 dark:text-emerald-300">

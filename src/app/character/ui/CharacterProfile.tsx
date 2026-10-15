@@ -20,20 +20,18 @@ function ProfileMetadata({ info, mobile = false }: { info: CharacterInfo; mobile
     ];
 
     return (
-        <div className={clsx(
-            "flex min-h-6 max-w-full flex-wrap items-center gap-y-1",
-            mobile && "w-[148px] flex-col items-stretch gap-0 rounded-md bg-black/55 px-2 py-1 ring-1 ring-white/10 backdrop-blur-sm"
-        )}>
+        <div className={mobile
+            ? "flex min-h-6 w-max max-w-[calc(100vw-24px)] flex-col items-stretch rounded-md bg-black/55 px-2 py-1 ring-1 ring-white/10 backdrop-blur-sm"
+            : "flex min-h-6 max-w-full flex-wrap items-center gap-y-1"}>
             {details.map(({ label, value }) => (
                 <div
                     key={label}
-                    className={clsx(
-                        "flex items-center gap-2 whitespace-nowrap border-l px-3 first:border-l-0 first:pl-0",
-                        mobile ? "grid w-full grid-cols-[58px_minmax(0,1fr)] gap-2 border-l-0 border-t border-white/20 px-0 py-0.5 first:border-t-0" : "border-default-300/70 dark:border-white/15"
-                    )}
+                    className={mobile
+                        ? "grid w-full grid-cols-[58px_minmax(0,max-content)] gap-2 border-t border-white/20 py-0.5 first:border-t-0"
+                        : "flex items-center gap-2 whitespace-nowrap border-l border-default-300/70 px-3 first:border-l-0 first:pl-0 dark:border-white/15"}
                 >
                     <span className={clsx("text-[11px]", mobile ? "text-white/60" : "text-default-500")}>{label}</span>
-                    <span className={clsx("text-sm font-semibold tracking-tight", mobile ? "truncate text-right text-xs text-white" : "text-foreground")}>{value}</span>
+                    <span className={clsx("text-sm font-semibold tracking-tight", mobile ? "break-words text-left text-xs text-white" : "text-foreground")}>{value}</span>
                 </div>
             ))}
         </div>

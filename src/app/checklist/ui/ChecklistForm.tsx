@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ChecklistMenuIcon, ChecklistMenuRow, ChecklistMenuSection, menuActionClass, menuSelectClassNames, menuSwitchClass } from "./ChecklistMenu";
+import { ChecklistMenuIcon, ChecklistMenuRow, ChecklistMenuSection, CompactMenuButton, CompactMenuSelect, CompactPopoverTooltip, menuActionClass, menuSelectClassNames, menuSwitchClass } from "./ChecklistMenu";
 import dynamic from "next/dynamic";
 import { Boss } from "../../api/checklist/boss/route";
 import { CheckCharacter, Checklist, ChecklistItem, FixedContentType, OtherList } from "../../store/checklistSlice";
@@ -41,6 +41,7 @@ import {
     DayValue, 
     filterChecklist, 
     getAccounts, 
+    getAssignedOnceStagesForAccount,
     getAllBoundGold, 
     getAllContentGold, 
     getAllContentOtherGold, 
@@ -475,6 +476,8 @@ type ChecklistStatueProps = {
     isTableView?: boolean,
     isTableViewWide?: boolean,
     isSidebarVisible?: boolean,
+    isCompactSidebar?: boolean,
+    isSidebarExpanded?: boolean,
     sidebarContainer?: HTMLDivElement | null,
     server: string,
     filterContent: Selection,
@@ -501,6 +504,8 @@ export function ChecklistStatue({
     isTableView = false,
     isTableViewWide = false,
     isSidebarVisible = false,
+    isCompactSidebar = false,
+    isSidebarExpanded = true,
     sidebarContainer,
     server,
     filterContent,
@@ -534,6 +539,10 @@ export function ChecklistStatue({
     const [isGold, setGold] = useState(false);
     const [newLife, setNewLife] = useState(0);
     const [newMax, setNewMax] = useState(0);
+    const [isCompactLifeEditorOpen, setCompactLifeEditorOpen] = useState(false);
+    const [isStatusPopoverOpen, setStatusPopoverOpen] = useState(false);
+    const [isStatusTooltipOpen, setStatusTooltipOpen] = useState(false);
+    const statusAnchorRef = React.useRef<HTMLSpanElement>(null!);
     const [isDisableUpdate, setDisableUpdate] = useState(true);
     const [remainingTime, setRemainingTime] = useState(0);
     const [sharingStatusContainer, setSharingStatusContainer] = useState<HTMLDivElement | null>(null);
@@ -604,11 +613,61 @@ export function ChecklistStatue({
         0
     );
     const availableSharedGold = Math.max(availableGold - availableBoundGold, 0);
+    const isCollapsedSidebar = isCompactSidebar && !isSidebarExpanded;
 
     return (
         <>
             {isSidebarVisible && sidebarContainer ? createPortal(
                 <>
+                    {isCollapsedSidebar ? (
+                        <>
+                            <span ref={statusAnchorRef} className="mx-auto my-2 flex w-9">
+                                <Button isIconOnly variant="light" aria-label="이번 주 현황" aria-haspopup="dialog" aria-expanded={isStatusPopoverOpen} onPress={() => {
+                                    setStatusTooltipOpen(false);
+                                    setStatusPopoverOpen(!isStatusPopoverOpen);
+                                }} onMouseEnter={() => setStatusTooltipOpen(true)} onMouseLeave={() => setStatusTooltipOpen(false)} onFocus={() => setStatusTooltipOpen(true)} onBlur={() => setStatusTooltipOpen(false)} className="h-9 min-h-9 w-9 min-w-9 border border-transparent p-0 text-default-700 dark:text-white">
+                                    <ChecklistMenuIcon name="gold"/>
+                                </Button>
+                            </span>
+                            <CompactPopoverTooltip anchorRef={statusAnchorRef} label="이번 주 현황" isOpen={isStatusTooltipOpen && !isStatusPopoverOpen}/>
+                            <Popover showArrow placement="right-start" offset={12} triggerRef={statusAnchorRef} isOpen={isStatusPopoverOpen} onOpenChange={(open) => {
+                                setStatusPopoverOpen(open);
+                                if (open) setStatusTooltipOpen(false);
+                            }}>
+                            <span className="hidden" aria-hidden="true"/>
+                            <PopoverContent className="border border-default-200 bg-white p-4 shadow-xl dark:border-white/10 dark:bg-[#171717] dark:text-white">
+                                <div className="w-[240px] space-y-3 text-xs">
+                                    <p className="font-semibold text-foreground dark:text-white">이번 주 현황</p>
+                                    <div>
+                                        <div className="flex justify-between gap-2"><span>주간 골드량</span><strong>{haveGold.toLocaleString()} / {totalGold.toLocaleString()}</strong></div>
+                                        <Progress aria-label="주간 골드 획득률" size="sm" color="warning" value={haveGold} maxValue={totalGold || 1} className="mt-1"/>
+                                        <div className="mt-1 flex justify-between gap-2 text-default-500 dark:text-white/70"><span>획득 가능 {availableGold.toLocaleString()} 골드</span><button type="button" className="text-primary dark:text-primary-200" onClick={onGoldDetailOpen}>자세히 ›</button></div>
+                                    </div>
+                                    <div className="border-t border-default-200/80 pt-2 dark:border-white/10">
+                                        <div className="flex justify-between gap-2"><span>숙제 진행 상황</span><strong>{getCompleteChecklist(checklist)} / {getAllCountChecklist(checklist)}</strong></div>
+                                        <Progress aria-label="숙제 관문 완료율" size="sm" color="secondary" value={getCompleteChecklistByStage(checklist)} maxValue={getAllCountChecklistByStage(checklist) || 1} className="mt-1"/>
+                                    </div>
+                                    <div className="border-t border-default-200/80 pt-2 dark:border-white/10">
+                                        <div className="flex justify-between gap-2"><span>생명의 기운</span><strong>{Math.floor(life).toLocaleString()} / {max.toLocaleString()}</strong></div>
+                                        <Progress aria-label="생명의 기운 충전량" size="sm" color="success" value={life} maxValue={max || 1} className="mt-1"/>
+                                        <div className="mt-1 flex items-center justify-between text-default-500 dark:text-white/70">
+                                            <span>10분마다 {isBlessing ? 33 : 30} 증가</span>
+                                            <button type="button" className="text-primary dark:text-primary-200" onClick={() => setCompactLifeEditorOpen(!isCompactLifeEditorOpen)}>{isCompactLifeEditorOpen ? "닫기" : "수정"}</button>
+                                        </div>
+                                        {isCompactLifeEditorOpen && (
+                                            <div className="mt-2 space-y-2">
+                                                <NumberInput aria-label="생명의 기운" label="생명의 기운" size="sm" variant="bordered" maxValue={newMax} value={newLife} onValueChange={setNewLife}/>
+                                                <NumberInput aria-label="최대치" label="최대치" size="sm" variant="bordered" maxValue={99999} value={newMax} onValueChange={setNewMax}/>
+                                                <Button fullWidth size="sm" color="primary" isDisabled={isLoadingData} onPress={onClickLife}>저장</Button>
+                                            </div>
+                                        )}
+                                        <Checkbox size="sm" color="primary" isSelected={isBlessing} onValueChange={onChangeBlessing} className="mt-2" classNames={{label: "text-xs dark:text-white"}}>베아트리스의 축복</Checkbox>
+                                    </div>
+                                </div>
+                            </PopoverContent>
+                            </Popover>
+                        </>
+                    ) : (
                     <ChecklistMenuSection title="이번 주 현황">
                         <div className="space-y-3 px-2 py-1 text-xs">
                             <div>
@@ -693,13 +752,24 @@ export function ChecklistStatue({
                             </div>
                         </div>
                     </ChecklistMenuSection>
-                    <ChecklistMenuSection title="캐릭터 관리">
-                        <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="order"/>} isDisabled={isLoadingData} onPress={() => onOpenChangePosition(true)}>순서 변경</Button>
-                        <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="add"/>} isDisabled={isLoadingData} onPress={onOpen}>캐릭터 추가</Button>
-                        <Tooltip content="캐릭터 정보만 수정되며, 체크리스트는 영향을 주지 않습니다.">
-                            <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="refresh"/>} isDisabled={isDisableUpdate || isLoadingData} isLoading={isLoading} onPress={onClickUpdatedCharacters}>캐릭터 갱신</Button>
-                        </Tooltip>
-                        <AutoChecklistControl checklist={checklist} bosses={bosses} dispatch={dispatch} isDisabled={isLoadingData} selectedNickname={autoChecklistNickname} setSelectedNickname={setAutoChecklistNickname} onSharingStateChange={setAutoChecklistSharing} statusContainer={isTableView ? sharingStatusContainer : undefined} menuMode/>
+                    )}
+                    <ChecklistMenuSection title="캐릭터 관리" compact={isCollapsedSidebar}>
+                        {isCollapsedSidebar ? (
+                            <>
+                                <CompactMenuButton icon="order" label="순서 변경" isDisabled={isLoadingData} onPress={() => onOpenChangePosition(true)}/>
+                                <CompactMenuButton icon="add" label="캐릭터 추가" isDisabled={isLoadingData} onPress={onOpen}/>
+                                <CompactMenuButton icon="refresh" label="캐릭터 갱신" isDisabled={isDisableUpdate || isLoadingData || isLoading} onPress={onClickUpdatedCharacters}/>
+                            </>
+                        ) : (
+                            <>
+                                <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="order"/>} isDisabled={isLoadingData} onPress={() => onOpenChangePosition(true)}>순서 변경</Button>
+                                <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="add"/>} isDisabled={isLoadingData} onPress={onOpen}>캐릭터 추가</Button>
+                                <Tooltip content="캐릭터 정보만 수정되며, 체크리스트는 영향을 주지 않습니다.">
+                                    <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="refresh"/>} isDisabled={isDisableUpdate || isLoadingData} isLoading={isLoading} onPress={onClickUpdatedCharacters}>캐릭터 갱신</Button>
+                                </Tooltip>
+                            </>
+                        )}
+                        <AutoChecklistControl checklist={checklist} bosses={bosses} dispatch={dispatch} isDisabled={isLoadingData} selectedNickname={autoChecklistNickname} setSelectedNickname={setAutoChecklistNickname} onSharingStateChange={setAutoChecklistSharing} statusContainer={isTableView ? sharingStatusContainer : undefined} menuMode compactMenu={isCollapsedSidebar}/>
                     </ChecklistMenuSection>
                 </>, sidebarContainer) : null}
             <Card 
@@ -1022,7 +1092,7 @@ export function ChecklistStatue({
                         </div>
                     </div>
                 </CardBody>
-                <CardFooter className={clsx("border-t border-default-200/80 bg-default-50/50 p-3 dark:border-white/10 dark:bg-white/[0.02]", isTableView && "md960:p-2", isTableViewWide && "w-[200px] shrink-0 border-l border-t-0 min-[1800px]:w-[240px]")}>
+                {!isCompactSidebar ? <CardFooter className={clsx("border-t border-default-200/80 bg-default-50/50 p-3 dark:border-white/10 dark:bg-white/[0.02]", isTableView && "md960:p-2", isTableViewWide && "w-[200px] shrink-0 border-l border-t-0 min-[1800px]:w-[240px]")}>
                     {isTableView ? <div className="grid w-full grid-cols-3 gap-2 md960:gap-1">
                         <Tooltip content="순서 변경"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="순서 변경" className="h-9 w-full border border-gray-200/80 bg-white text-default-600 md960:h-8 dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isLoadingData} onPress={() => onOpenChangePosition(true)}><ListTurnBackIcon size={17}/></Button></Tooltip>
                         <Tooltip content="캐릭터 추가"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="캐릭터 추가" className="h-9 w-full border border-gray-200/80 bg-white text-success md960:h-8 dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isLoadingData} onPress={onOpen}><AddIcon size={18}/></Button></Tooltip>
@@ -1081,7 +1151,7 @@ export function ChecklistStatue({
                             setSelectedNickname={setAutoChecklistNickname}
                             onSharingStateChange={setAutoChecklistSharing}/> : null}
                     </div>}
-                </CardFooter>
+                </CardFooter> : null}
             </Card>
             {isTableView ? <div ref={setSharingStatusContainer} className="w-full"/> : null}
             <PositionModal
@@ -1332,6 +1402,7 @@ function CustomRadio(props: RadioProps) {
 
 // 체크리스트 컴포넌트
 type ChecklistProps = {
+    fluidCards?: boolean,
     checklist: CheckCharacter[],
     server: string,
     bosses: Boss[],
@@ -1358,6 +1429,7 @@ type ChecklistProps = {
     onRaidAutoRegistration: (nickname?: string) => Promise<void>
 }
 export function ChecklistComponent({ 
+    fluidCards = false,
     checklist, 
     server, 
     bosses, 
@@ -1389,14 +1461,14 @@ export function ChecklistComponent({
     const cardWidth = isHideDayContent ? 330 : 560;
 
     return (
-        <div className="mx-auto mt-5 grid w-full justify-center gap-4" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, ${cardWidth}px), ${cardWidth}px))` }}>
+        <div className="mx-auto mt-5 grid w-full justify-center gap-4" style={{ gridTemplateColumns: fluidCards ? `repeat(auto-fit, minmax(min(100%, ${cardWidth}px), 1fr))` : `repeat(auto-fit, minmax(min(100%, ${cardWidth}px), ${cardWidth}px))` }}>
             {checklist
                 .filter((character) => (character.server === server || server === '전체') && filterChecklist(character, filterContent, bosses, checklist, isRemainHomework, isShowGoldCharacter, filterAccount)).length > 0 ? checklist
                 .filter((character) => (character.server === server || server === '전체') && filterChecklist(character, filterContent, bosses, checklist, isRemainHomework, isShowGoldCharacter, filterAccount))
                 .map((character, index) => (
                     <Card key={index} fullWidth radius="lg" shadow="none" className={clsx(
                         "w-full overflow-hidden border border-gray-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]",
-                        isHideDayContent ? isMobile ? "" : "min-[331px]:w-[330px]" : "min-[561px]:w-[560px]"
+                        fluidCards ? "" : isHideDayContent ? isMobile ? "" : "min-[331px]:w-[330px]" : "min-[561px]:w-[560px]"
                     )}>
                         <CardHeader className="flex-col items-stretch p-4 pb-3">
                             <div className={clsx(
@@ -3563,26 +3635,40 @@ type WeekContentComponentProps = {
 type WeekStageEditorProps = {
     bosses: Boss[],
     contentKey: string,
+    characterLevel: number,
+    assignedOnceStages: ReadonlySet<number>,
     stages: ControlStage[],
     setStages: SetStateFn<ControlStage[]>
 }
-function WeekStageEditor({ bosses, contentKey, stages, setStages }: WeekStageEditorProps) {
+function isWeekStageAboveCharacterLevel(boss: Boss | undefined, stage: number, difficulty: string, characterLevel: number) {
+    if (difficulty === EMPTY_STAGE_DIFFICULTY) return false;
+    const requiredLevel = boss?.difficulty.find((item) => item.stage === stage && item.difficulty === difficulty)?.level;
+    return requiredLevel !== undefined && requiredLevel > characterLevel;
+}
+
+function WeekStageEditor({ bosses, contentKey, characterLevel, assignedOnceStages, stages, setStages }: WeekStageEditorProps) {
     if (!contentKey) return <></>;
+    const boss = getBossesById(bosses, contentKey);
 
     return (
         <>
-            {getWeekStages(bosses, contentKey).map((level, idx) => (
+            {getWeekStages(bosses, contentKey).map((stage, idx) => (
                 <div key={idx} className="mt-3 rounded-xl border border-gray-200/80 bg-gray-50/60 p-3 dark:border-gray-800 dark:bg-gray-900/50">
-                    <h3 className="mb-2 text-sm font-semibold">{level}관문 난이도</h3>
+                    <h3 className="mb-2 text-sm font-semibold">{stage}관문 난이도</h3>
                     <Tabs
                         fullWidth
                         radius="md"
                         size="sm"
                         color="primary"
                         variant="light"
+                        classNames={{
+                            tab: "min-h-10 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:bg-default-100 data-[disabled=true]:opacity-100 dark:data-[disabled=true]:bg-white/[0.06]"
+                        }}
                         selectedKey={stages.length > idx ? stages[idx].difficulty : EMPTY_STAGE_DIFFICULTY}
                         onSelectionChange={(key) => {
                             const diff = key.toString();
+                            if (diff !== EMPTY_STAGE_DIFFICULTY && assignedOnceStages.has(stage)) return;
+                            if (isWeekStageAboveCharacterLevel(boss, stage, diff, characterLevel)) return;
                             if (stages.length > idx) {
                                 const cloneStages = structuredClone(stages);
                                 if (idx > 0 && cloneStages[idx - 1].difficulty === EMPTY_STAGE_DIFFICULTY) {
@@ -3597,9 +3683,22 @@ function WeekStageEditor({ bosses, contentKey, stages, setStages }: WeekStageEdi
                                 setStages(cloneStages);
                             }
                         }}>
-                        {getDifficultyByStage(bosses, contentKey, level).map((diff) => (
-                            <Tab key={diff} title={diff}/>
-                        ))}
+                        {getDifficultyByStage(bosses, contentKey, stage).map((diff) => {
+                            const requiredLevel = boss?.difficulty.find((item) => item.stage === stage && item.difficulty === diff)?.level;
+                            const isAlreadyAssigned = diff !== EMPTY_STAGE_DIFFICULTY && assignedOnceStages.has(stage);
+                            const isLevelLocked = isWeekStageAboveCharacterLevel(boss, stage, diff, characterLevel);
+                            return (
+                                <Tab
+                                    key={diff}
+                                    isDisabled={isAlreadyAssigned || isLevelLocked}
+                                    title={isAlreadyAssigned || isLevelLocked ? (
+                                        <span className="flex flex-col items-center text-default-600 dark:text-default-300">
+                                            <span>{diff} · 선택 불가</span>
+                                            <span className="text-[10px] text-default-500 dark:text-default-400">{isAlreadyAssigned ? '원정대에 이미 있음' : `입장 Lv.${requiredLevel?.toLocaleString()} 필요`}</span>
+                                        </span>
+                                    ) : diff}/>
+                            );
+                        })}
                     </Tabs>
                 </div>
             ))}
@@ -3629,6 +3728,16 @@ function WeekContentComponent({
     const [editingIndex, setEditingIndex] = useState(-1);
     const [editStages, setEditStages] = useState<ControlStage[]>([]);
     const isOrderLocked = isOrderDirty || isSavingOrder;
+    const characterLevel = checklist[index]?.level ?? 0;
+    const availableWeekContents = getWeekContents(bosses, checklist, index);
+    const selectedContentKey = Array.from(content)[0]?.toString() ?? '';
+    const isSelectedContentAvailable = availableWeekContents.some((item) => item.key === selectedContentKey);
+    const selectedBoss = getBossesById(bosses, selectedContentKey);
+    const assignedOnceStages = getAssignedOnceStagesForAccount(checklist, index, selectedBoss);
+
+    useEffect(() => {
+        if (selectedContentKey && !isSelectedContentAvailable) setContent(new Set());
+    }, [selectedContentKey, isSelectedContentAvailable, setContent]);
 
     useEffect(() => {
         onOrderDirtyChange(isOrderDirty);
@@ -3679,7 +3788,7 @@ function WeekContentComponent({
                 setStages(createDefaultWeekStages(bosses, Array.from(content)[0].toString()));
             }
         }
-    }, [content]);
+    }, [content, characterLevel]);
 
     const closeEditModal = () => {
         setEditOpen(false);
@@ -3818,6 +3927,7 @@ function WeekContentComponent({
                     {() => {
                         const editingChecklist = editingIndex > -1 ? checklist[index].checklist[editingIndex] : null;
                         const editingBoss = editingChecklist ? bosses.find((boss) => boss.name === editingChecklist.name) : null;
+                        const editingAssignedOnceStages = getAssignedOnceStagesForAccount(checklist, index, editingBoss ?? undefined);
 
                         return (
                             <>
@@ -3834,6 +3944,8 @@ function WeekContentComponent({
                                             <WeekStageEditor
                                                 bosses={bosses}
                                                 contentKey={editingBoss.id}
+                                                characterLevel={characterLevel}
+                                                assignedOnceStages={editingAssignedOnceStages}
                                                 stages={editStages}
                                                 setStages={setEditStages}/>
                                         </div>
@@ -3852,7 +3964,7 @@ function WeekContentComponent({
                                         color="primary"
                                         isLoading={isLoadingEdit}
                                         radius="md"
-                                        isDisabled={editStages.length === 0 || editStages[0]?.difficulty === EMPTY_STAGE_DIFFICULTY}
+                                        isDisabled={editStages.length === 0 || editStages[0]?.difficulty === EMPTY_STAGE_DIFFICULTY || editStages.some((stage) => (stage.difficulty !== EMPTY_STAGE_DIFFICULTY && editingAssignedOnceStages.has(stage.stage)) || isWeekStageAboveCharacterLevel(editingBoss ?? undefined, stage.stage, stage.difficulty, characterLevel))}
                                         onPress={async () => {
                                             if (editingIndex < 0) {
                                                 return;
@@ -3913,13 +4025,15 @@ function WeekContentComponent({
                     onSelectionChange={setContent}
                     isDisabled={isOrderLocked}
                     className="mt-4">
-                    {getWeekContents(bosses, checklist, index).map((item) => (
+                    {availableWeekContents.map((item) => (
                         <SelectItem key={item.key}>{item.name}</SelectItem>
                     ))}
                 </Select>
                 <WeekStageEditor
                     bosses={bosses}
-                    contentKey={Array.from(content)[0]?.toString() ?? ''}
+                    contentKey={isSelectedContentAvailable ? selectedContentKey : ''}
+                    characterLevel={characterLevel}
+                    assignedOnceStages={assignedOnceStages}
                     stages={stages}
                     setStages={setStages}/>
                 <div className={clsx(
@@ -3938,7 +4052,7 @@ function WeekContentComponent({
                     radius="md"
                     color="primary"
                     isLoading={isLoadingAdd}
-                    isDisabled={isOrderLocked || (stages.length > 0 ? stages[0].difficulty === EMPTY_STAGE_DIFFICULTY : true)}
+                    isDisabled={isOrderLocked || !isSelectedContentAvailable || stages.length === 0 || stages[0].difficulty === EMPTY_STAGE_DIFFICULTY || stages.some((stage) => (stage.difficulty !== EMPTY_STAGE_DIFFICULTY && assignedOnceStages.has(stage.stage)) || isWeekStageAboveCharacterLevel(selectedBoss, stage.stage, stage.difficulty, characterLevel))}
                     onPress={async () => {
                         if (Array.from(content)[0]) {
                             setLoadingAdd(true);
@@ -4279,6 +4393,7 @@ export function NotLoginedComponent() {
 
 // 캐릭터 필터 컴포넌트
 type FilterComponentProps = {
+    compactMenu?: boolean,
     server: string,
     setServer: SetStateFn<string>,
     filterContent: Selection,
@@ -4297,6 +4412,7 @@ type FilterComponentProps = {
     setHideDayContent: SetStateFn<boolean>
 }
 export function FilterComponent({ 
+    compactMenu = false,
     server,
     setServer,
     filterContent, 
@@ -4314,6 +4430,52 @@ export function FilterComponent({
     isHideDayContent,
     setHideDayContent
 }: FilterComponentProps) {
+
+    if (compactMenu) {
+        return (
+            <>
+                <div className="flex flex-col items-center gap-1 border-b border-default-200/80 py-2 dark:border-white/10" aria-label="검색 필터">
+                    <CompactMenuSelect icon="account" label="계정 검색" isSelected={filterAccount === 'all' || filterAccount.size > 0}>
+                        <Select aria-label="계정 검색" placeholder="계정 선택" selectedKeys={filterAccount} radius="sm" variant="flat" size="sm" onSelectionChange={setFilterAccount} className="w-full" classNames={menuSelectClassNames}>
+                            {getAccounts(checklist).map((account, index) => <SelectItem key={index}>{account}</SelectItem>)}
+                        </Select>
+                    </CompactMenuSelect>
+                    <CompactMenuSelect icon="server" label="서버 선택" isSelected={server !== '전체'}>
+                        <SelectServer checklist={checklist} server={server} setServer={setServer} compact menu/>
+                    </CompactMenuSelect>
+                    <CompactMenuSelect icon="content" label="콘텐츠 검색" isSelected={filterContent === 'all' || filterContent.size > 0}>
+                        <Select aria-label="콘텐츠로 검색" placeholder="콘텐츠 선택" selectedKeys={filterContent} radius="sm" variant="flat" size="sm" onSelectionChange={setFilterContent} className="w-full" classNames={menuSelectClassNames}>
+                            {getBossesByHaveContent(checklist, bosses).map((boss, index) => <SelectItem key={index}>{getSimpleBossName(bosses, boss)}</SelectItem>)}
+                        </Select>
+                    </CompactMenuSelect>
+                    <CompactMenuButton icon="daily" label="일일 콘텐츠 숨기기" isSelected={isHideDayContent} onPress={() => setHideDayContent(!isHideDayContent)}/>
+                </div>
+                <div className="flex flex-col items-center gap-1 border-b border-default-200/80 py-2 dark:border-white/10" aria-label="추가 필터">
+                    <CompactMenuButton icon="filter" label="완료 캐릭터 숨기기" isSelected={isRemainHomework} onPress={() => {
+                        localStorage.setItem('isRemainHomework', String(!isRemainHomework));
+                        setRemainHomework(!isRemainHomework);
+                    }}/>
+                    <CompactMenuButton icon="gold" label="골드 캐릭터만 보기" isSelected={isShowGoldCharacter} onPress={() => {
+                        localStorage.setItem('isShowGoldCharacter', String(!isShowGoldCharacter));
+                        setShowGoldCharacter(!isShowGoldCharacter);
+                    }}/>
+                    <CompactMenuButton icon="complete" label="완료 콘텐츠 숨기기" isSelected={isHideCompleteContent} onPress={() => {
+                        localStorage.setItem('isHideCompleteContent', String(!isHideCompleteContent));
+                        setHideCompleteContent(!isHideCompleteContent);
+                    }}/>
+                    <CompactMenuButton icon="clear" label="필터 해제" onPress={() => {
+                        setFilterAccount(new Set([]));
+                        setFilterContent(new Set([]));
+                        localStorage.removeItem('isRemainHomework');
+                        setRemainHomework(false);
+                        localStorage.removeItem('isShowGoldCharacter');
+                        setShowGoldCharacter(false);
+                        addToast({ title: "필터 해제", description: "모든 필터를 제거하였습니다.", color: "success" });
+                    }}/>
+                </div>
+            </>
+        );
+    }
 
     return (
         <>
@@ -4426,35 +4588,27 @@ export function FilterComponent({
 // 남은 숙제 현황 컴포넌트
 type RemainChecklistComponentProps = {
     checklist: CheckCharacter[],
-    bosses: Boss[]
+    bosses: Boss[],
+    inModal?: boolean
 }
-export function RemainChecklistComponent({ checklist, bosses }: RemainChecklistComponentProps) {
+export function RemainChecklistComponent({ checklist, bosses, inModal = false }: RemainChecklistComponentProps) {
     const [datas, setDatas] = useState<ChecklistData[]>([]);
     const [results, setResults] = useState<ChecklistData[]>([]);
     const [selectedKey, setSelectedKey] = useState('');
-    const isMobile = useMobileQuery();
+    const sortedBosses = React.useMemo(() => [...bosses].sort((a, b) => {
+        const lowestLevel = (boss: Boss) => Math.min(...boss.difficulty.map((difficulty) => difficulty.level));
+        return lowestLevel(b) - lowestLevel(a);
+    }), [bosses]);
 
     useEffect(() => {
         loadDatas(checklist, bosses, setDatas);
     }, [checklist]);
 
     useEffect(() => {
-        const sortedBosses = bosses.sort((a, b) => {
-            const bDiff = bosses.find(boss => boss.name === b.name);
-            const aDiff = bosses.find(boss => boss.name === a.name);
-            let bValue = 0, aValue = 0;
-            if (bDiff){
-                bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
-            }
-            if (aDiff) {
-                aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
-            }
-            return bValue - aValue;
-        });
         if (sortedBosses.length > 0) {
-            setSelectedKey(bosses[0].id);
+            setSelectedKey((currentKey) => sortedBosses.some((boss) => boss.id === currentKey) ? currentKey : sortedBosses[0].id);
         }
-    }, [bosses]);
+    }, [sortedBosses]);
 
     useEffect(() => {
         const findBoss = bosses.find(boss => boss.id === selectedKey);
@@ -4466,121 +4620,131 @@ export function RemainChecklistComponent({ checklist, bosses }: RemainChecklistC
     }, [selectedKey, datas]);
 
     return (
-        <section className="mt-4 w-full overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950/60">
-            <div className="flex flex-col gap-1 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-gray-800">
+        <section className={clsx("w-full overflow-hidden", inModal ? "bg-transparent" : "mt-4 rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950/60")}>
+            <div className={clsx("flex flex-col gap-1 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-gray-800", inModal && "pr-12 sm:pr-12")}>
                 <div className="flex items-center justify-between gap-3">
                     <h2 className="text-lg font-semibold">남은 숙제 현황</h2>
                     <Chip size="sm" variant="flat" color={results.length > 0 ? "warning" : "success"}>{results.length}개</Chip>
                 </div>
                 <p className="text-sm fadedtext">콘텐츠를 선택해 아직 완료하지 않은 캐릭터를 확인하세요.</p>
             </div>
-            <div className="grid w-full gap-3 p-4 sm:h-[420px] sm:grid-cols-[minmax(170px,0.8fr)_minmax(0,3fr)] sm:p-5">
-                <div className="h-[200px] overflow-y-auto rounded-xl border border-gray-200/80 bg-gray-50/60 p-2 scrollbar-hide dark:border-gray-800 dark:bg-gray-900/50 sm:h-full">
-                    <Tabs 
-                        fullWidth 
-                        isVertical={true}
-                        selectedKey={selectedKey} 
-                        color="primary"
-                        variant="light"
-                        classNames={{
-                            tabList: "gap-1",
-                            cursor: "rounded-lg",
-                            tab: "justify-start px-3",
-                        }}
-                        onSelectionChange={(key) => setSelectedKey(String(key))}>
-                        {bosses.sort((a, b) => {
-                            const bDiff = bosses.find(boss => boss.name === b.name);
-                            const aDiff = bosses.find(boss => boss.name === a.name);
-                            let bValue = 0, aValue = 0;
-                            if (bDiff){
-                                bValue = Math.min(...bDiff.difficulty.map(diff => diff.level));
-                            }
-                            if (aDiff) {
-                                aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
-                            }
-                            return bValue - aValue;
-                        }).map((boss) => (
-                            <Tab key={boss.id} title={boss.name}/>
-                        ))}
-                    </Tabs>
+            <div className="grid w-full min-w-0 gap-3 p-4 sm:h-[440px] sm:grid-cols-[minmax(180px,0.85fr)_minmax(0,3fr)] sm:p-5">
+                <div className="flex h-[180px] min-w-0 flex-col overflow-hidden rounded-xl border border-default-200/80 bg-default-50/60 dark:border-white/10 dark:bg-white/[0.025] sm:h-full">
+                    <div className="flex items-center justify-between border-b border-default-200/80 px-3 py-2.5 dark:border-white/10">
+                        <p className="text-xs font-semibold text-default-600 dark:text-default-300">레이드 콘텐츠</p>
+                        <span className="text-[11px] tabular-nums text-default-400">{sortedBosses.length}개</span>
+                    </div>
+                    <div className="min-h-0 overflow-y-auto p-2 scrollbar-hide">
+                        <Tabs
+                            aria-label="레이드 콘텐츠 선택"
+                            fullWidth
+                            isVertical
+                            selectedKey={selectedKey}
+                            color="primary"
+                            variant="light"
+                            classNames={{
+                                base: "w-full",
+                                tabList: "w-full gap-1 bg-transparent p-0",
+                                cursor: "rounded-lg border border-primary/25 bg-primary/10 shadow-none dark:border-primary/40 dark:bg-primary/20",
+                                tab: "h-10 w-full justify-start rounded-lg px-2.5 text-left data-[hover=true]:bg-default-100 dark:data-[hover=true]:bg-white/[0.06]",
+                                tabContent: "w-full text-default-600 group-data-[selected=true]:font-semibold group-data-[selected=true]:text-primary dark:text-default-300 dark:group-data-[selected=true]:text-primary-200",
+                            }}
+                            onSelectionChange={(key) => setSelectedKey(String(key))}>
+                            {sortedBosses.map((boss) => (
+                                <Tab key={boss.id} title={
+                                    <span className="flex w-full min-w-0 items-center justify-between gap-2">
+                                        <span className="truncate text-xs" title={boss.name}>{getSimpleBossName(bosses, boss.name)}</span>
+                                        <span className="shrink-0 rounded-full bg-default-100 px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-default-500 dark:bg-white/10 dark:text-default-300">
+                                            {datas.filter((data) => data.contentName === boss.name).length}
+                                        </span>
+                                    </span>
+                                }/>
+                            ))}
+                        </Tabs>
+                    </div>
                 </div>
-                <div className="w-full max-h-[420px] overflow-y-auto scrollbar-hide">
-                    <div className="mb-3 rounded-xl border border-gray-200/80 bg-gray-50/60 p-3 dark:border-gray-800 dark:bg-gray-900/50">
-                            <div className="grid w-full grid-cols-[1fr_1px_1fr_1px_1fr] gap-2">
-                                <div className="w-full flex items-center">
-                                    <p className="grow fadedtext text-[10pt]">남은 숙제</p>
-                                    <p className="text-md font-bold">{results.length}</p>
-                                </div>
-                                <Divider orientation="vertical"/>
-                                <div className="w-full flex items-center">
-                                    <p className="grow fadedtext text-[10pt]">골드 획득</p>
-                                    <p className="text-md font-bold">{results.filter(data => data.isGold && data.isGoldCharacter).length}</p>
-                                </div>
-                                <Divider orientation="vertical"/>
-                                <div className="w-full flex items-center">
-                                    <p className="grow fadedtext text-[10pt]">골드X 숙제</p>
-                                    <p className="text-md font-bold">{results.filter(data => !data.isGold || !data.isGoldCharacter).length}</p>
-                                </div>
+                <div className="min-w-0 max-h-[440px] overflow-y-auto scrollbar-hide">
+                    <div className="mb-3 grid grid-cols-3 overflow-hidden rounded-xl border border-default-200/80 bg-default-50/60 dark:border-white/10 dark:bg-white/[0.025]">
+                        {[
+                            { label: "남은 숙제", value: results.length },
+                            { label: "골드 획득", value: results.filter((data) => data.isGold && data.isGoldCharacter).length },
+                            { label: "골드X 숙제", value: results.filter((data) => !data.isGold || !data.isGoldCharacter).length },
+                        ].map(({ label, value }) => (
+                            <div key={label} className="flex min-w-0 flex-col gap-0.5 border-l border-default-200/80 px-2 py-2.5 first:border-l-0 dark:border-white/10 sm:px-3">
+                                <span className="truncate text-[11px] text-default-500">{label}</span>
+                                <strong className="text-base font-semibold tabular-nums text-foreground">{value}</strong>
                             </div>
-                    </div>
-                    <div className="grid w-full auto-rows-max content-start gap-2 sm:grid-cols-2">
-                        {results.map((data, index) => (
-                            <Card
-                                key={index}
-                                radius="lg"
-                                shadow="none"
-                                className="relative h-max overflow-hidden border border-gray-200/80 bg-white/90 shadow-[0_2px_8px_rgba(15,23,42,0.04)] dark:border-white/10 dark:bg-white/[0.025] dark:shadow-none">
-                                <span className={clsx(
-                                    "absolute inset-y-0 left-0 w-1",
-                                    data.isGold && data.isGoldCharacter ? "bg-warning" : "bg-default-300 dark:bg-default-600"
-                                )}/>
-                                <CardBody className="p-3 pl-4">
-                                    <div className="flex w-full items-center gap-3">
-                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-default-100 ring-1 ring-black/5 dark:bg-white/[0.06] dark:ring-white/10">
-                                            <JobAvatar size="md" job={data.job}/>
-                                        </div>
-                                        <div className="min-w-0 grow">
-                                            <p className="truncate text-sm font-semibold text-foreground">{data.nickname}</p>
-                                            <p className="mt-0.5 truncate text-[11px] text-default-400">{data.job} · Lv.{data.level.toLocaleString()}</p>
-                                        </div>
-                                        <div className="flex shrink-0 flex-col items-end gap-1.5">
-                                            {data.isGold && data.isGoldCharacter ? (
-                                                <span className="inline-flex items-center gap-1 rounded-full bg-warning-50 px-2 py-0.5 text-[10px] font-semibold text-warning-700 dark:bg-warning-500/10 dark:text-warning-400">
-                                                    <img src="/icons/gold.png" alt="" className="h-3 w-3"/>
-                                                    골드 획득 가능
-                                                </span>
-                                            ) : null}
-                                            <div className="flex items-center gap-1">
-                                                <span className="mr-0.5 text-[10px] text-default-400">남은 관문</span>
-                                                {data.difficultys.map((diff, idx) => (
-                                                    <Tooltip
-                                                        key={idx}
-                                                        showArrow
-                                                        content={diff.difficulty}>
-                                                        <div className={clsx(
-                                                            "flex h-5 w-5 items-center justify-center rounded-full border text-[10px] font-semibold shadow-sm",
-                                                            getBackground50ByStage(diff.difficulty, false),
-                                                            getBorderByStage(diff.difficulty, false)
-                                                        )}>
-                                                            {diff.stage}
-                                                        </div>
-                                                    </Tooltip>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </CardBody>
-                            </Card>
                         ))}
                     </div>
-                    {results.length === 0 ? (
-                        <div className="flex min-h-[240px] w-full items-center justify-center rounded-xl border border-dashed border-gray-300 fadedtext dark:border-gray-700">
+                    {results.length > 0 ? (
+                        <div className="overflow-x-auto rounded-xl border border-default-200/80 bg-white dark:border-white/10 dark:bg-[#171717]">
+                            <table className="w-full min-w-[540px] table-fixed text-left">
+                                <caption className="sr-only">{sortedBosses.find((boss) => boss.id === selectedKey)?.name ?? "선택한 콘텐츠"} 남은 숙제 캐릭터 목록</caption>
+                                <colgroup>
+                                    <col className="w-[39%]"/>
+                                    <col className="w-[17%]"/>
+                                    <col className="w-[18%]"/>
+                                    <col className="w-[26%]"/>
+                                </colgroup>
+                                <thead className="border-b border-default-200/80 bg-default-50/80 text-[11px] font-medium text-default-500 dark:border-white/10 dark:bg-white/[0.035]">
+                                    <tr>
+                                        <th scope="col" className="px-3 py-2.5 font-medium">캐릭터</th>
+                                        <th scope="col" className="px-2 py-2.5 text-right font-medium">아이템 레벨</th>
+                                        <th scope="col" className="px-2 py-2.5 text-center font-medium">골드</th>
+                                        <th scope="col" className="px-3 py-2.5 font-medium">남은 관문</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-default-200/70 dark:divide-white/[0.06]">
+                                    {results.map((data) => (
+                                        <tr key={`${data.nickname}-${data.contentName}`} className="hover:bg-default-50/80 dark:hover:bg-white/[0.035]">
+                                            <td className={clsx("border-l-[3px] px-2.5 py-2", data.isGold && data.isGoldCharacter ? "border-warning" : "border-default-300 dark:border-default-600")}>
+                                                <div className="flex min-w-0 items-center gap-2">
+                                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-default-100 dark:bg-white/[0.06]">
+                                                        <JobAvatar size="sm" job={data.job}/>
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="truncate text-xs font-semibold text-foreground" title={data.nickname}>{data.nickname}</p>
+                                                        <p className="truncate text-[11px] text-default-500">{data.job}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-2 py-2 text-right text-xs font-medium tabular-nums text-foreground">{data.level.toLocaleString()}</td>
+                                            <td className="px-2 py-2 text-center">
+                                                {data.isGold && data.isGoldCharacter ? (
+                                                    <span className="inline-flex items-center gap-1 rounded-full bg-warning-50 px-2 py-0.5 text-[10px] font-semibold text-warning-700 dark:bg-warning-500/10 dark:text-warning-400">
+                                                        <img src="/icons/gold.png" alt="" className="h-3 w-3"/>
+                                                        획득 가능
+                                                    </span>
+                                                ) : <span className="text-[11px] text-default-400">없음</span>}
+                                            </td>
+                                            <td className="px-3 py-2">
+                                                <div className="flex flex-wrap items-center gap-1">
+                                                    {data.difficultys.map((diff, index) => (
+                                                        <Tooltip key={`${diff.stage}-${index}`} showArrow content={diff.difficulty}>
+                                                            <span aria-label={`${diff.difficulty} ${diff.stage}관문`} className={clsx(
+                                                                "flex h-6 min-w-6 items-center justify-center rounded-md border px-1 text-[10px] font-semibold tabular-nums",
+                                                                getBackground50ByStage(diff.difficulty, false),
+                                                                getBorderByStage(diff.difficulty, false)
+                                                            )}>
+                                                                {diff.stage}
+                                                            </span>
+                                                        </Tooltip>
+                                                    ))}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <div className="flex min-h-[200px] w-full items-center justify-center rounded-xl border border-dashed border-default-300 text-default-500 dark:border-white/15">
                             <div className="flex flex-col items-center gap-2 px-4 text-center sm:flex-row">
                                 <CheckIcon size={24}/>
-                                <p className="text-sm sm:text-base">남은 숙제가 없거나 데이터가 존재하지 않습니다.</p>
+                                <p className="text-sm">남은 숙제가 없거나 데이터가 존재하지 않습니다.</p>
                             </div>
                         </div>
-                    ) : <></>}
+                    )}
                 </div>
             </div>
         </section>

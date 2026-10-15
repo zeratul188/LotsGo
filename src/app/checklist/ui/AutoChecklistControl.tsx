@@ -35,6 +35,7 @@ type AutoChecklistControlProps = {
     setSelectedNickname: (nickname: string) => void,
     onSharingStateChange: (isSharing: boolean) => void,
     compactLabel?: boolean,
+    compactMenu?: boolean,
     menuMode?: boolean,
     className?: string,
     statusContainer?: HTMLDivElement | null
@@ -200,6 +201,7 @@ export default function AutoChecklistControl({
     setSelectedNickname,
     onSharingStateChange,
     compactLabel = false,
+    compactMenu = false,
     menuMode = false,
     className,
     statusContainer
@@ -981,16 +983,21 @@ export default function AutoChecklistControl({
     return (
         <>
             <Button
-                fullWidth
+                isIconOnly={compactMenu}
+                fullWidth={!compactMenu}
                 radius="sm"
                 color={menuMode ? 'default' : status === 'active' ? 'success' : 'primary'}
                 variant={menuMode ? 'light' : 'flat'}
                 size="sm"
-                className={menuMode ? menuActionClass : `hidden h-9 border border-primary/30 px-2 text-xs font-medium md960:flex sm:text-sm ${className ?? ''}`}
+                className={compactMenu
+                    ? `h-9 min-h-9 w-9 min-w-9 border border-transparent p-0 text-default-700 dark:text-white ${status === 'active' ? 'border-primary/50 bg-primary/15 text-primary-700 dark:border-blue-400/60 dark:bg-blue-400/20 dark:!text-[#bfdbfe]' : ''}`
+                    : menuMode ? menuActionClass : `hidden h-9 border border-primary/30 px-2 text-xs font-medium md960:flex sm:text-sm ${className ?? ''}`}
                 startContent={menuMode ? <ChecklistMenuIcon name="auto"/> : undefined}
+                aria-label={compactMenu ? (status === 'active' ? '자동 체크 중' : '자동 체크') : undefined}
+                title={compactMenu ? (status === 'active' ? '자동 체크 중' : '자동 체크') : undefined}
                 isDisabled={isDisabled}
                 onPress={onOpen}>
-                {menuMode ? (status === 'active' ? '자동 체크 중' : '자동 체크') : status === 'active' ? (compactLabel ? '자동 체크 중' : '자동 체크 작동 중') : (compactLabel ? '자동 체크' : '자동 체크 기능 켜기')}
+                {compactMenu ? null : menuMode ? (status === 'active' ? '자동 체크 중' : '자동 체크') : status === 'active' ? (compactLabel ? '자동 체크 중' : '자동 체크 작동 중') : (compactLabel ? '자동 체크' : '자동 체크 기능 켜기')}
             </Button>
             {isSharing && (statusContainer === undefined ? sharingStatus : statusContainer ? createPortal(sharingStatus, statusContainer) : null)}
             <video ref={videoRef} className="hidden" muted playsInline/>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react";
+import clsx from "clsx";
 import {
     Button,
     Chip,
@@ -124,13 +125,14 @@ export function CubeStatueComponent({ character, cubes }: CubeStatueComponentPro
 
 type CubeDetailComponentProps = {
     checklist: CheckCharacter[],
-    cubes: Cube[]
+    cubes: Cube[],
+    inModal?: boolean
 }
 
-export function CubeDetailComponent({ checklist, cubes }: CubeDetailComponentProps) {
+export function CubeDetailComponent({ checklist, cubes, inModal = false }: CubeDetailComponentProps) {
     return (
-        <section className="mt-4 w-full overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950/60">
-            <div className="flex flex-col gap-1 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-gray-800">
+        <section className={clsx("w-full overflow-hidden", inModal ? "bg-transparent" : "mt-4 rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950/60")}>
+            <div className={clsx("flex flex-col gap-1 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-gray-800", inModal && "pr-12 sm:pr-12")}>
                 <div className="flex items-center justify-between gap-3">
                     <h2 className="text-lg font-semibold">큐브 전체 현황</h2>
                     <Chip size="sm" variant="flat" color="primary">{checklist.length}명</Chip>

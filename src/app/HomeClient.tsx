@@ -13,6 +13,7 @@ import Script from "next/script";
 import { useSelector } from "react-redux";
 import { RootState } from "./store/store";
 import { HomeAuthenticatedContentSkeleton } from "./home/ui/HomeDataSkeleton";
+import DiscordBotInvite from "./home/ui/DiscordBotInvite";
 
 const BoxAd = dynamic(() => import('./ad/BoxAd'), { ssr: false });
 const TwoLineAd = dynamic(() => import('./ad/TwoLineAd'), { ssr: false });
@@ -40,14 +41,13 @@ export default function HomeClient({ gate, boss, islands, islandTime, islandData
             <UpdateComponent data={majorUpdates}/>
             {isCheckedToken ? (
                 isLogined ? (
-                    <>
-                        <ChecklistComponent/>
-                        <TodoComponent/>
-                    </>
+                    <ChecklistComponent/>
                 ) : <NotLoginComponent/>
             ) : (
                 <HomeAuthenticatedContentSkeleton/>
             )}
+            {isCheckedToken && isLogined ? <TodoComponent/> : null}
+            <DiscordBotInvite/>
             <CalendarComponent
                 gate={gate}
                 boss={boss}

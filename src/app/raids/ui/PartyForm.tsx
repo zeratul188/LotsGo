@@ -43,6 +43,7 @@ import JobEmblemIcon from "@/Icons/JobEmblemIcon";
 import JobAvatar from "@/Icons/JobAvatar";
 import dynamic from "next/dynamic";
 import { CalendarComponent } from "./CalendarForm";
+import { MemberGoldTable, MemberHomeworkTable } from "./MemberProgressTables";
 const FixedLineAd = dynamic(() => import("@/app/ad/FixedLineAd"), { ssr: false });
 
 const PAGE_SIZE = 10;
@@ -130,6 +131,8 @@ function MemberComponent({ index, member, bosses, party }: MemberComponentProps)
     const completedHomework = totalHomework - remainingHomework;
     const totalGold = getAllGoldByMember(bosses, member.checklist);
     const earnedGold = getHaveGoldByMember(bosses, member.checklist);
+    const characters = member.checklist.filter(item => item.contents.length > 0);
+    const pageCharacters = characters.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
     const itemClasses = {
         base: "py-0 w-full",
@@ -208,8 +211,9 @@ function MemberComponent({ index, member, bosses, party }: MemberComponentProps)
                 </CardBody>
                 <CardFooter className="border-t border-gray-200/80 p-0 dark:border-white/10">
                     <div className="w-full space-y-2 px-3 py-3 sm:px-4">
-                        {member.checklist.filter(item => item.contents.length > 0).slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((item, idx) => (
-                            <React.Fragment key={idx}>
+                        <div className="space-y-2 min-[769px]:hidden">
+                        {pageCharacters.map((item) => (
+                            <React.Fragment key={`${item.server}-${item.nickname}`}>
                                 <div className="flex w-full flex-col items-center gap-3 rounded-xl border border-gray-200/80 bg-gray-50/50 px-3 py-3 dark:border-white/10 dark:bg-white/[0.025] sm:flex-row sm:gap-5">
                                     <div className="flex min-w-full items-center gap-3 sm:min-w-[240px]">
                                         <JobAvatar size="sm" job={item.job}/>
@@ -278,13 +282,19 @@ function MemberComponent({ index, member, bosses, party }: MemberComponentProps)
                                 </div>
                             </React.Fragment>
                         ))}
+                        </div>
+                        <div className="hidden min-[769px]:block">
+                            {tabKey === 'homework'
+                                ? <MemberHomeworkTable characters={pageCharacters} bosses={bosses}/>
+                                : <MemberGoldTable characters={pageCharacters} bosses={bosses}/>}
+                        </div>
                         <div className="flex w-full flex-col items-end justify-center gap-3 pt-2 sm:flex-row sm:justify-start">
                             <Pagination
                                 showControls
                                 color="primary"
                                 page={page}
                                 onChange={setPage}
-                                total={Math.ceil(member.checklist.filter(item => item.contents.length > 0).length / PAGE_SIZE)}/>
+                                total={Math.ceil(characters.length / PAGE_SIZE)}/>
                             <Tabs 
                                 fullWidth={isMobile}
                                 radius="lg"
