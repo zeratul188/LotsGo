@@ -73,11 +73,10 @@ export default function BossInfoModal({ isOpenBosses, onOpenBosses, bosses }: Bo
                 {(onClose) => (
                     <>
                         <ModalHeader className="flex flex-col gap-1 border-b border-gray-200/80 px-6 py-5 dark:border-gray-800">
-                            <div className="flex items-center gap-2">
-                                <span className="h-5 w-1 rounded-full bg-secondary"/>
+                            <div className="flex items-center">
                                 <p className="text-xl font-semibold">콘텐츠 정보</p>
                             </div>
-                            <p className="pl-3 text-sm font-normal fadedtext">레이드별 관문 보상과 획득 골드를 확인하세요.</p>
+                            <p className="text-sm font-normal fadedtext">레이드별 관문 보상과 획득 골드를 확인하세요.</p>
                         </ModalHeader>
                         <ModalBody className="gap-4 px-6 py-5">
                             <div className="w-full">
