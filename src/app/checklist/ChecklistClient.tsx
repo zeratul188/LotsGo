@@ -10,7 +10,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch, RootState } from "../store/store";
 import { CheckCharacter } from "../store/checklistSlice";
 import { Character, LoginUser } from "../store/loginSlice";
-import { addToast, Button, Drawer, DrawerBody, DrawerContent, DrawerHeader, Select, SelectItem, Switch, Tooltip } from "@heroui/react";
+import { addToast, Button, Drawer, DrawerBody, DrawerContent, DrawerHeader, Modal, ModalBody, ModalContent, ModalHeader, Select, SelectItem, Switch, Tooltip } from "@heroui/react";
 import { useMobileQuery } from "@/utiils/utils";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
@@ -28,7 +28,7 @@ import ChecklistLoadingSkeleton from "./ui/ChecklistLoadingSkeleton";
 import { registerRaidsAutomatically } from "./lib/raidAutoRegistration";
 import { useLoadingTask } from "../components/loading/LoadingProgress";
 import ChecklistTableView from "./ui/ChecklistTableView";
-import { ChecklistMenuIcon, ChecklistMenuRow, ChecklistMenuSection, menuActionClass, menuSelectClassNames, menuSwitchClass } from "./ui/ChecklistMenu";
+import { ChecklistMenuIcon, ChecklistMenuRow, ChecklistMenuSection, CompactMenuButton, CompactMenuSelect, menuActionClass, menuSelectClassNames, menuSwitchClass } from "./ui/ChecklistMenu";
 
 
 export const defaultSettings: Settings = {
@@ -83,10 +83,22 @@ export default function ChecklistClient() {
     
     const [isOpenBosses, setOpenBosses] = useState(false);
     const [isOpenLookupDrawer, setOpenLookupDrawer] = useState(false);
+    const [isLookupExpanded, setLookupExpanded] = useState(false);
     const onOpenChangeBosses = (isOpen: boolean) => setOpenBosses(isOpen);
     useLoadingTask("레이드를 자동 등록하고 있어요", isAutoRegisteringRaids);
     const isTableView = checklistViewStyle === 'table' && viewportWidth > 720;
     const showDesktopLookup = isTableView ? viewportWidth >= 1500 : viewportWidth >= 960;
+    const showCompactLookup = viewportWidth > 768 && !showDesktopLookup;
+    const showLookupSidebar = showDesktopLookup || showCompactLookup;
+    const isLookupCollapsed = showCompactLookup && !isLookupExpanded;
+    const openRemainChecklist = () => {
+        checklistForm.setShowCubeDetail(false);
+        checklistForm.setShowList(true);
+    };
+    const openCubeDetail = () => {
+        checklistForm.setShowList(false);
+        checklistForm.setShowCubeDetail(true);
+    };
     const toggleBonusManagement = async () => {
         const stored = localStorage.getItem('userSettings');
         const current: Settings = { ...defaultSettings, ...(stored ? JSON.parse(stored) : {}) };
@@ -171,7 +183,43 @@ export default function ChecklistClient() {
         }
     };
 
-    const renderLookupMenu = (onClose?: () => void) => (
+    const renderLookupMenu = (onClose?: () => void) => isLookupCollapsed ? (
+        <>
+            <div className="flex flex-col items-center gap-1 border-b border-default-200/80 py-2 dark:border-white/10" aria-label="화면 설정">
+                <CompactMenuSelect icon="view" label="화면 스타일">
+                    {renderChecklistViewStyleSelect("w-full")}
+                </CompactMenuSelect>
+                {isTableView ? <CompactMenuButton icon="bonus" label="더보기 관리" isSelected={isTableBonusMode} onPress={() => void toggleBonusManagement()}/> : null}
+            </div>
+            <div className="flex flex-col items-center gap-1 border-b border-default-200/80 py-2 dark:border-white/10" aria-label="바로가기">
+                <CompactMenuButton icon="raid" label="전체 자동 등록" isDisabled={isAutoRegisteringRaids || checklistForm.isLoading || checklist.length === 0} onPress={() => void handleRaidAutoRegistration()}/>
+                <CompactMenuButton icon="info" label="콘텐츠 정보" onPress={() => setOpenBosses(true)}/>
+                <CompactMenuButton icon="remaining" label="남은 숙제" isSelected={checklistForm.isShowList} onPress={openRemainChecklist}/>
+                <CompactMenuButton icon="cube" label="큐브 현황" isSelected={checklistForm.isShowCubeDetail} onPress={openCubeDetail}/>
+            </div>
+            <FilterComponent
+                compactMenu
+                server={checklistForm.server}
+                setServer={checklistForm.setServer}
+                filterContent={checklistForm.filterContent}
+                setFilterContent={checklistForm.setFilterContent}
+                bosses={checklistForm.bosses}
+                checklist={checklist}
+                isRemainHomework={checklistForm.isRemainHomework}
+                setRemainHomework={checklistForm.setRemainHomework}
+                isShowGoldCharacter={checklistForm.isShowGoldCharacter}
+                setShowGoldCharacter={checklistForm.setShowGoldCharacter}
+                filterAccount={checklistForm.filterAccount}
+                setFilterAccount={checklistForm.setFilterAccount}
+                isHideCompleteContent={checklistForm.isHideCompleteContent}
+                setHideCompleteContent={checklistForm.setHideCompleteContent}
+                isHideDayContent={checklistForm.isHideDayContent}
+                setHideDayContent={checklistForm.setHideDayContent}/>
+            <div className="flex justify-center py-2">
+                <CompactMenuButton icon="reset" label="주간 숙제 초기화" isDanger isDisabled={isLoadingReset} onPress={() => void handleResetChecklist(checklist, checklistForm.biweekly, dispatch, setLoadingReset)}/>
+            </div>
+        </>
+    ) : (
         <>
             <ChecklistMenuSection title="화면 설정">
                 <ChecklistMenuRow icon="view" label="화면 스타일">
@@ -186,8 +234,8 @@ export default function ChecklistClient() {
             <ChecklistMenuSection title="바로가기">
                 <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="raid"/>} isLoading={isAutoRegisteringRaids} isDisabled={checklistForm.isLoading || checklist.length === 0} onPress={() => handleRaidAutoRegistration()}>전체 자동 등록</Button>
                 <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="info"/>} onPress={() => { onClose?.(); setOpenBosses(true); }}>콘텐츠 정보</Button>
-                <Button variant="light" size="sm" className={clsx(menuActionClass, checklistForm.isShowList && "bg-primary-50 text-primary-700 dark:bg-primary-500/15 dark:text-white")} startContent={<ChecklistMenuIcon name="remaining"/>} aria-pressed={checklistForm.isShowList} onPress={() => { checklistForm.setShowList(!checklistForm.isShowList); onClose?.(); }}>남은 숙제</Button>
-                <Button variant="light" size="sm" className={clsx(menuActionClass, checklistForm.isShowCubeDetail && "bg-primary-50 text-primary-700 dark:bg-primary-500/15 dark:text-white")} startContent={<ChecklistMenuIcon name="cube"/>} aria-pressed={checklistForm.isShowCubeDetail} onPress={() => { checklistForm.setShowCubeDetail(!checklistForm.isShowCubeDetail); onClose?.(); }}>큐브 현황</Button>
+                <Button variant="light" size="sm" className={clsx(menuActionClass, checklistForm.isShowList && "bg-primary-50 text-primary-700 dark:bg-primary-500/15 dark:text-white")} startContent={<ChecklistMenuIcon name="remaining"/>} aria-pressed={checklistForm.isShowList} onPress={() => { onClose?.(); openRemainChecklist(); }}>남은 숙제</Button>
+                <Button variant="light" size="sm" className={clsx(menuActionClass, checklistForm.isShowCubeDetail && "bg-primary-50 text-primary-700 dark:bg-primary-500/15 dark:text-white")} startContent={<ChecklistMenuIcon name="cube"/>} aria-pressed={checklistForm.isShowCubeDetail} onPress={() => { onClose?.(); openCubeDetail(); }}>큐브 현황</Button>
             </ChecklistMenuSection>
             <FilterComponent
                 server={checklistForm.server}
@@ -382,7 +430,7 @@ export default function ChecklistClient() {
                     radius="none"
                     className={clsx(
                         "fixed left-0 top-[330px] z-[60] h-16 w-11 min-w-0 cursor-pointer rounded-r-2xl border border-primary-300/70 bg-gradient-to-b from-primary-500 to-primary-600 text-white shadow-[0_8px_24px_rgba(0,111,238,0.3)] transition-all hover:w-12 hover:shadow-[0_10px_28px_rgba(0,111,238,0.4)] dark:border-primary-400/40 dark:from-primary-500 dark:to-primary-700",
-                        showDesktopLookup && "hidden",
+                        "min-[769px]:hidden",
                         isOpenLookupDrawer && "pointer-events-none -translate-x-full opacity-0"
                     )}
                     onPress={() => setOpenLookupDrawer(true)}>
@@ -420,19 +468,34 @@ export default function ChecklistClient() {
                     )}
                 </DrawerContent>
             </Drawer>
-            <div className={clsx(showDesktopLookup && "grid grid-cols-[270px_minmax(0,1fr)] items-start gap-4")}>
-            {showDesktopLookup ? (
-                <aside aria-label="숙제 조회 설정" className="scrollbar-none sticky top-0 h-[calc(100vh-80px)] overflow-y-auto rounded-xl border border-default-200 bg-default-50/50 px-2 py-2 dark:border-white/10 dark:bg-[#171717]">
+            <div
+                className={clsx(showLookupSidebar && "grid items-start gap-4 transition-[grid-template-columns] duration-300 ease-in-out motion-reduce:transition-none")}
+                style={showLookupSidebar ? { gridTemplateColumns: `${isLookupCollapsed ? 56 : 270}px minmax(0,1fr)` } : undefined}>
+            {showLookupSidebar ? (
+                <aside aria-label="숙제 조회 설정" className="scrollbar-none sticky top-0 h-[calc(100vh-80px)] overflow-x-hidden overflow-y-auto rounded-xl border border-default-200 bg-default-50/50 px-2 py-2 dark:border-white/10 dark:bg-[#171717]">
+                    {showCompactLookup ? (
+                        <Button
+                            variant="light"
+                            size="sm"
+                            aria-label={isLookupCollapsed ? "메뉴 펼치기" : "메뉴 접기"}
+                            className={clsx("mb-1 h-9 min-h-9 w-full gap-2 rounded-lg text-xs font-semibold text-primary dark:!text-[#bfdbfe] dark:data-[hover=true]:bg-white/[0.08]", isLookupCollapsed ? "min-w-0 justify-center px-0" : "justify-start px-2")}
+                            onPress={() => setLookupExpanded(!isLookupExpanded)}>
+                            <span aria-hidden="true" className="inline-flex w-4 shrink-0 items-center justify-center text-base leading-none">{isLookupCollapsed ? ">" : "<"}</span>
+                            {!isLookupCollapsed && <span>메뉴 접기</span>}
+                        </Button>
+                    ) : null}
                     <div ref={setStatusSidebarContainer}/>
                     {renderLookupMenu()}
                 </aside>
             ) : null}
             <main className="min-w-0">
-            <div className={clsx("w-full mx-auto", !isTableView && !showDesktopLookup && "max-w-[1280px]")}>
+            <div className={clsx("w-full mx-auto", !isTableView && !showLookupSidebar && "max-w-[1280px]")}>
                 <ChecklistStatue 
                     isTableView={isTableView}
                     isTableViewWide={isTableView && viewportWidth >= 1500}
-                    isSidebarVisible={showDesktopLookup}
+                    isSidebarVisible={showLookupSidebar}
+                    isCompactSidebar={showCompactLookup}
+                    isSidebarExpanded={!isLookupCollapsed}
                     sidebarContainer={statusSidebarContainer}
                     server={checklistForm.server}
                     filterContent={checklistForm.filterContent}
@@ -456,13 +519,13 @@ export default function ChecklistClient() {
                     setAutoChecklistSharing={setAutoChecklistSharing}/>
             </div>
             {showChecklistAds && !checklistForm.isLoading && checklist.length > 0 ? isMobile ? (
-                <div className={clsx("w-full flex justify-center overflow-hidden", isTableView || showDesktopLookup ? "pt-5" : "md960:pt-[110px]")}>
+                <div className={clsx("w-full flex justify-center overflow-hidden", isTableView || showLookupSidebar ? "pt-5" : "md960:pt-[110px]")}>
                     <div className="w-full max-w-[970px] min-h-[60px] max-h-[80px] mt-8">
                         <LineAd isLoaded={!checklistForm.isLoading}/>
                     </div>
                 </div>
             ) : (
-                <div className={clsx("w-full flex justify-center overflow-hidden", isTableView || showDesktopLookup ? "mt-5" : "md960:mt-[220px]")}>
+                <div className={clsx("w-full flex justify-center overflow-hidden", isTableView || showLookupSidebar ? "mt-5" : "md960:mt-[220px]")}>
                     <div className="w-full max-w-[1240px] flex justify-center rounded-2xl bg-[#eeeeee] dark:bg-[#222222] p-4">
                         <FixedLineAd isLoaded={!checklistForm.isLoading}/>
                     </div>
@@ -473,16 +536,6 @@ export default function ChecklistClient() {
                         <ChecklistLoadingSkeleton/>
                     ) : (
                         <>
-                            <div className={clsx(
-                                checklistForm.isShowList ? 'block' : 'hidden'
-                            )}>
-                                <RemainChecklistComponent checklist={checklist} bosses={checklistForm.bosses}/>
-                            </div>
-                            <div className={clsx(
-                                checklistForm.isShowCubeDetail ? 'block' : 'hidden'
-                            )}>
-                                <CubeDetailComponent checklist={checklist} cubes={checklistForm.cubes}/>
-                            </div>
                             {isTableView ? (
                                 <ChecklistTableView
                                     checklist={checklist}
@@ -516,6 +569,7 @@ export default function ChecklistClient() {
                                         checklistForm.onOpen();
                                     }}/>
                             ) : <ChecklistComponent
+                                fluidCards={showCompactLookup}
                                 checklist={checklist}
                                 server={checklistForm.server}
                                 bosses={checklistForm.bosses}
@@ -551,6 +605,22 @@ export default function ChecklistClient() {
                                 isOpenBosses={isOpenBosses}
                                 onOpenBosses={onOpenChangeBosses}
                                 bosses={checklistForm.bosses}/>
+                            <Modal isOpen={checklistForm.isShowList} onOpenChange={checklistForm.setShowList} placement="center" scrollBehavior="inside" classNames={{ base: "max-h-[calc(100dvh-24px)] max-w-[min(900px,calc(100vw-24px))] border border-default-200 bg-white dark:border-white/10 dark:bg-[#171717]" }}>
+                                <ModalContent>
+                                    <ModalHeader className="sr-only">남은 숙제 현황</ModalHeader>
+                                    <ModalBody className="p-0">
+                                        <RemainChecklistComponent checklist={checklist} bosses={checklistForm.bosses} inModal/>
+                                    </ModalBody>
+                                </ModalContent>
+                            </Modal>
+                            <Modal isOpen={checklistForm.isShowCubeDetail} onOpenChange={checklistForm.setShowCubeDetail} placement="center" scrollBehavior="inside" classNames={{ base: "max-h-[calc(100dvh-24px)] max-w-[min(1180px,calc(100vw-24px))] border border-default-200 bg-white dark:border-white/10 dark:bg-[#171717]" }}>
+                                <ModalContent>
+                                    <ModalHeader className="sr-only">큐브 전체 현황</ModalHeader>
+                                    <ModalBody className="p-0">
+                                        <CubeDetailComponent checklist={checklist} cubes={checklistForm.cubes} inModal/>
+                                    </ModalBody>
+                                </ModalContent>
+                            </Modal>
                         </>
                     )}
                 </div>

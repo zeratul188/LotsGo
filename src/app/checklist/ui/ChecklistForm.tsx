@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { ChecklistMenuIcon, ChecklistMenuRow, ChecklistMenuSection, menuActionClass, menuSelectClassNames, menuSwitchClass } from "./ChecklistMenu";
+import { ChecklistMenuIcon, ChecklistMenuRow, ChecklistMenuSection, CompactMenuButton, CompactMenuSelect, CompactPopoverTooltip, menuActionClass, menuSelectClassNames, menuSwitchClass } from "./ChecklistMenu";
 import dynamic from "next/dynamic";
 import { Boss } from "../../api/checklist/boss/route";
 import { CheckCharacter, Checklist, ChecklistItem, FixedContentType, OtherList } from "../../store/checklistSlice";
@@ -475,6 +475,8 @@ type ChecklistStatueProps = {
     isTableView?: boolean,
     isTableViewWide?: boolean,
     isSidebarVisible?: boolean,
+    isCompactSidebar?: boolean,
+    isSidebarExpanded?: boolean,
     sidebarContainer?: HTMLDivElement | null,
     server: string,
     filterContent: Selection,
@@ -501,6 +503,8 @@ export function ChecklistStatue({
     isTableView = false,
     isTableViewWide = false,
     isSidebarVisible = false,
+    isCompactSidebar = false,
+    isSidebarExpanded = true,
     sidebarContainer,
     server,
     filterContent,
@@ -534,6 +538,10 @@ export function ChecklistStatue({
     const [isGold, setGold] = useState(false);
     const [newLife, setNewLife] = useState(0);
     const [newMax, setNewMax] = useState(0);
+    const [isCompactLifeEditorOpen, setCompactLifeEditorOpen] = useState(false);
+    const [isStatusPopoverOpen, setStatusPopoverOpen] = useState(false);
+    const [isStatusTooltipOpen, setStatusTooltipOpen] = useState(false);
+    const statusAnchorRef = React.useRef<HTMLSpanElement>(null!);
     const [isDisableUpdate, setDisableUpdate] = useState(true);
     const [remainingTime, setRemainingTime] = useState(0);
     const [sharingStatusContainer, setSharingStatusContainer] = useState<HTMLDivElement | null>(null);
@@ -604,11 +612,61 @@ export function ChecklistStatue({
         0
     );
     const availableSharedGold = Math.max(availableGold - availableBoundGold, 0);
+    const isCollapsedSidebar = isCompactSidebar && !isSidebarExpanded;
 
     return (
         <>
             {isSidebarVisible && sidebarContainer ? createPortal(
                 <>
+                    {isCollapsedSidebar ? (
+                        <>
+                            <span ref={statusAnchorRef} className="mx-auto my-2 flex w-9">
+                                <Button isIconOnly variant="light" aria-label="이번 주 현황" aria-haspopup="dialog" aria-expanded={isStatusPopoverOpen} onPress={() => {
+                                    setStatusTooltipOpen(false);
+                                    setStatusPopoverOpen(!isStatusPopoverOpen);
+                                }} onMouseEnter={() => setStatusTooltipOpen(true)} onMouseLeave={() => setStatusTooltipOpen(false)} onFocus={() => setStatusTooltipOpen(true)} onBlur={() => setStatusTooltipOpen(false)} className="h-9 min-h-9 w-9 min-w-9 border border-transparent p-0 text-default-700 dark:text-white">
+                                    <ChecklistMenuIcon name="gold"/>
+                                </Button>
+                            </span>
+                            <CompactPopoverTooltip anchorRef={statusAnchorRef} label="이번 주 현황" isOpen={isStatusTooltipOpen && !isStatusPopoverOpen}/>
+                            <Popover showArrow placement="right-start" offset={12} triggerRef={statusAnchorRef} isOpen={isStatusPopoverOpen} onOpenChange={(open) => {
+                                setStatusPopoverOpen(open);
+                                if (open) setStatusTooltipOpen(false);
+                            }}>
+                            <span className="hidden" aria-hidden="true"/>
+                            <PopoverContent className="border border-default-200 bg-white p-4 shadow-xl dark:border-white/10 dark:bg-[#171717] dark:text-white">
+                                <div className="w-[240px] space-y-3 text-xs">
+                                    <p className="font-semibold text-foreground dark:text-white">이번 주 현황</p>
+                                    <div>
+                                        <div className="flex justify-between gap-2"><span>주간 골드량</span><strong>{haveGold.toLocaleString()} / {totalGold.toLocaleString()}</strong></div>
+                                        <Progress aria-label="주간 골드 획득률" size="sm" color="warning" value={haveGold} maxValue={totalGold || 1} className="mt-1"/>
+                                        <div className="mt-1 flex justify-between gap-2 text-default-500 dark:text-white/70"><span>획득 가능 {availableGold.toLocaleString()} 골드</span><button type="button" className="text-primary dark:text-primary-200" onClick={onGoldDetailOpen}>자세히 ›</button></div>
+                                    </div>
+                                    <div className="border-t border-default-200/80 pt-2 dark:border-white/10">
+                                        <div className="flex justify-between gap-2"><span>숙제 진행 상황</span><strong>{getCompleteChecklist(checklist)} / {getAllCountChecklist(checklist)}</strong></div>
+                                        <Progress aria-label="숙제 관문 완료율" size="sm" color="secondary" value={getCompleteChecklistByStage(checklist)} maxValue={getAllCountChecklistByStage(checklist) || 1} className="mt-1"/>
+                                    </div>
+                                    <div className="border-t border-default-200/80 pt-2 dark:border-white/10">
+                                        <div className="flex justify-between gap-2"><span>생명의 기운</span><strong>{Math.floor(life).toLocaleString()} / {max.toLocaleString()}</strong></div>
+                                        <Progress aria-label="생명의 기운 충전량" size="sm" color="success" value={life} maxValue={max || 1} className="mt-1"/>
+                                        <div className="mt-1 flex items-center justify-between text-default-500 dark:text-white/70">
+                                            <span>10분마다 {isBlessing ? 33 : 30} 증가</span>
+                                            <button type="button" className="text-primary dark:text-primary-200" onClick={() => setCompactLifeEditorOpen(!isCompactLifeEditorOpen)}>{isCompactLifeEditorOpen ? "닫기" : "수정"}</button>
+                                        </div>
+                                        {isCompactLifeEditorOpen && (
+                                            <div className="mt-2 space-y-2">
+                                                <NumberInput aria-label="생명의 기운" label="생명의 기운" size="sm" variant="bordered" maxValue={newMax} value={newLife} onValueChange={setNewLife}/>
+                                                <NumberInput aria-label="최대치" label="최대치" size="sm" variant="bordered" maxValue={99999} value={newMax} onValueChange={setNewMax}/>
+                                                <Button fullWidth size="sm" color="primary" isDisabled={isLoadingData} onPress={onClickLife}>저장</Button>
+                                            </div>
+                                        )}
+                                        <Checkbox size="sm" color="primary" isSelected={isBlessing} onValueChange={onChangeBlessing} className="mt-2" classNames={{label: "text-xs dark:text-white"}}>베아트리스의 축복</Checkbox>
+                                    </div>
+                                </div>
+                            </PopoverContent>
+                            </Popover>
+                        </>
+                    ) : (
                     <ChecklistMenuSection title="이번 주 현황">
                         <div className="space-y-3 px-2 py-1 text-xs">
                             <div>
@@ -693,13 +751,24 @@ export function ChecklistStatue({
                             </div>
                         </div>
                     </ChecklistMenuSection>
-                    <ChecklistMenuSection title="캐릭터 관리">
-                        <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="order"/>} isDisabled={isLoadingData} onPress={() => onOpenChangePosition(true)}>순서 변경</Button>
-                        <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="add"/>} isDisabled={isLoadingData} onPress={onOpen}>캐릭터 추가</Button>
-                        <Tooltip content="캐릭터 정보만 수정되며, 체크리스트는 영향을 주지 않습니다.">
-                            <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="refresh"/>} isDisabled={isDisableUpdate || isLoadingData} isLoading={isLoading} onPress={onClickUpdatedCharacters}>캐릭터 갱신</Button>
-                        </Tooltip>
-                        <AutoChecklistControl checklist={checklist} bosses={bosses} dispatch={dispatch} isDisabled={isLoadingData} selectedNickname={autoChecklistNickname} setSelectedNickname={setAutoChecklistNickname} onSharingStateChange={setAutoChecklistSharing} statusContainer={isTableView ? sharingStatusContainer : undefined} menuMode/>
+                    )}
+                    <ChecklistMenuSection title="캐릭터 관리" compact={isCollapsedSidebar}>
+                        {isCollapsedSidebar ? (
+                            <>
+                                <CompactMenuButton icon="order" label="순서 변경" isDisabled={isLoadingData} onPress={() => onOpenChangePosition(true)}/>
+                                <CompactMenuButton icon="add" label="캐릭터 추가" isDisabled={isLoadingData} onPress={onOpen}/>
+                                <CompactMenuButton icon="refresh" label="캐릭터 갱신" isDisabled={isDisableUpdate || isLoadingData || isLoading} onPress={onClickUpdatedCharacters}/>
+                            </>
+                        ) : (
+                            <>
+                                <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="order"/>} isDisabled={isLoadingData} onPress={() => onOpenChangePosition(true)}>순서 변경</Button>
+                                <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="add"/>} isDisabled={isLoadingData} onPress={onOpen}>캐릭터 추가</Button>
+                                <Tooltip content="캐릭터 정보만 수정되며, 체크리스트는 영향을 주지 않습니다.">
+                                    <Button variant="light" size="sm" className={menuActionClass} startContent={<ChecklistMenuIcon name="refresh"/>} isDisabled={isDisableUpdate || isLoadingData} isLoading={isLoading} onPress={onClickUpdatedCharacters}>캐릭터 갱신</Button>
+                                </Tooltip>
+                            </>
+                        )}
+                        <AutoChecklistControl checklist={checklist} bosses={bosses} dispatch={dispatch} isDisabled={isLoadingData} selectedNickname={autoChecklistNickname} setSelectedNickname={setAutoChecklistNickname} onSharingStateChange={setAutoChecklistSharing} statusContainer={isTableView ? sharingStatusContainer : undefined} menuMode compactMenu={isCollapsedSidebar}/>
                     </ChecklistMenuSection>
                 </>, sidebarContainer) : null}
             <Card 
@@ -1022,7 +1091,7 @@ export function ChecklistStatue({
                         </div>
                     </div>
                 </CardBody>
-                <CardFooter className={clsx("border-t border-default-200/80 bg-default-50/50 p-3 dark:border-white/10 dark:bg-white/[0.02]", isTableView && "md960:p-2", isTableViewWide && "w-[200px] shrink-0 border-l border-t-0 min-[1800px]:w-[240px]")}>
+                {!isCompactSidebar ? <CardFooter className={clsx("border-t border-default-200/80 bg-default-50/50 p-3 dark:border-white/10 dark:bg-white/[0.02]", isTableView && "md960:p-2", isTableViewWide && "w-[200px] shrink-0 border-l border-t-0 min-[1800px]:w-[240px]")}>
                     {isTableView ? <div className="grid w-full grid-cols-3 gap-2 md960:gap-1">
                         <Tooltip content="순서 변경"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="순서 변경" className="h-9 w-full border border-gray-200/80 bg-white text-default-600 md960:h-8 dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isLoadingData} onPress={() => onOpenChangePosition(true)}><ListTurnBackIcon size={17}/></Button></Tooltip>
                         <Tooltip content="캐릭터 추가"><Button isIconOnly fullWidth radius="sm" variant="flat" aria-label="캐릭터 추가" className="h-9 w-full border border-gray-200/80 bg-white text-success md960:h-8 dark:border-white/10 dark:bg-white/[0.04]" isDisabled={isLoadingData} onPress={onOpen}><AddIcon size={18}/></Button></Tooltip>
@@ -1081,7 +1150,7 @@ export function ChecklistStatue({
                             setSelectedNickname={setAutoChecklistNickname}
                             onSharingStateChange={setAutoChecklistSharing}/> : null}
                     </div>}
-                </CardFooter>
+                </CardFooter> : null}
             </Card>
             {isTableView ? <div ref={setSharingStatusContainer} className="w-full"/> : null}
             <PositionModal
@@ -1332,6 +1401,7 @@ function CustomRadio(props: RadioProps) {
 
 // 체크리스트 컴포넌트
 type ChecklistProps = {
+    fluidCards?: boolean,
     checklist: CheckCharacter[],
     server: string,
     bosses: Boss[],
@@ -1358,6 +1428,7 @@ type ChecklistProps = {
     onRaidAutoRegistration: (nickname?: string) => Promise<void>
 }
 export function ChecklistComponent({ 
+    fluidCards = false,
     checklist, 
     server, 
     bosses, 
@@ -1389,14 +1460,14 @@ export function ChecklistComponent({
     const cardWidth = isHideDayContent ? 330 : 560;
 
     return (
-        <div className="mx-auto mt-5 grid w-full justify-center gap-4" style={{ gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, ${cardWidth}px), ${cardWidth}px))` }}>
+        <div className="mx-auto mt-5 grid w-full justify-center gap-4" style={{ gridTemplateColumns: fluidCards ? `repeat(auto-fit, minmax(min(100%, ${cardWidth}px), 1fr))` : `repeat(auto-fit, minmax(min(100%, ${cardWidth}px), ${cardWidth}px))` }}>
             {checklist
                 .filter((character) => (character.server === server || server === '전체') && filterChecklist(character, filterContent, bosses, checklist, isRemainHomework, isShowGoldCharacter, filterAccount)).length > 0 ? checklist
                 .filter((character) => (character.server === server || server === '전체') && filterChecklist(character, filterContent, bosses, checklist, isRemainHomework, isShowGoldCharacter, filterAccount))
                 .map((character, index) => (
                     <Card key={index} fullWidth radius="lg" shadow="none" className={clsx(
                         "w-full overflow-hidden border border-gray-200/80 bg-white shadow-sm dark:border-white/10 dark:bg-[#171717]",
-                        isHideDayContent ? isMobile ? "" : "min-[331px]:w-[330px]" : "min-[561px]:w-[560px]"
+                        fluidCards ? "" : isHideDayContent ? isMobile ? "" : "min-[331px]:w-[330px]" : "min-[561px]:w-[560px]"
                     )}>
                         <CardHeader className="flex-col items-stretch p-4 pb-3">
                             <div className={clsx(
@@ -4279,6 +4350,7 @@ export function NotLoginedComponent() {
 
 // 캐릭터 필터 컴포넌트
 type FilterComponentProps = {
+    compactMenu?: boolean,
     server: string,
     setServer: SetStateFn<string>,
     filterContent: Selection,
@@ -4297,6 +4369,7 @@ type FilterComponentProps = {
     setHideDayContent: SetStateFn<boolean>
 }
 export function FilterComponent({ 
+    compactMenu = false,
     server,
     setServer,
     filterContent, 
@@ -4314,6 +4387,52 @@ export function FilterComponent({
     isHideDayContent,
     setHideDayContent
 }: FilterComponentProps) {
+
+    if (compactMenu) {
+        return (
+            <>
+                <div className="flex flex-col items-center gap-1 border-b border-default-200/80 py-2 dark:border-white/10" aria-label="검색 필터">
+                    <CompactMenuSelect icon="account" label="계정 검색" isSelected={filterAccount === 'all' || filterAccount.size > 0}>
+                        <Select aria-label="계정 검색" placeholder="계정 선택" selectedKeys={filterAccount} radius="sm" variant="flat" size="sm" onSelectionChange={setFilterAccount} className="w-full" classNames={menuSelectClassNames}>
+                            {getAccounts(checklist).map((account, index) => <SelectItem key={index}>{account}</SelectItem>)}
+                        </Select>
+                    </CompactMenuSelect>
+                    <CompactMenuSelect icon="server" label="서버 선택" isSelected={server !== '전체'}>
+                        <SelectServer checklist={checklist} server={server} setServer={setServer} compact menu/>
+                    </CompactMenuSelect>
+                    <CompactMenuSelect icon="content" label="콘텐츠 검색" isSelected={filterContent === 'all' || filterContent.size > 0}>
+                        <Select aria-label="콘텐츠로 검색" placeholder="콘텐츠 선택" selectedKeys={filterContent} radius="sm" variant="flat" size="sm" onSelectionChange={setFilterContent} className="w-full" classNames={menuSelectClassNames}>
+                            {getBossesByHaveContent(checklist, bosses).map((boss, index) => <SelectItem key={index}>{getSimpleBossName(bosses, boss)}</SelectItem>)}
+                        </Select>
+                    </CompactMenuSelect>
+                    <CompactMenuButton icon="daily" label="일일 콘텐츠 숨기기" isSelected={isHideDayContent} onPress={() => setHideDayContent(!isHideDayContent)}/>
+                </div>
+                <div className="flex flex-col items-center gap-1 border-b border-default-200/80 py-2 dark:border-white/10" aria-label="추가 필터">
+                    <CompactMenuButton icon="filter" label="완료 캐릭터 숨기기" isSelected={isRemainHomework} onPress={() => {
+                        localStorage.setItem('isRemainHomework', String(!isRemainHomework));
+                        setRemainHomework(!isRemainHomework);
+                    }}/>
+                    <CompactMenuButton icon="gold" label="골드 캐릭터만 보기" isSelected={isShowGoldCharacter} onPress={() => {
+                        localStorage.setItem('isShowGoldCharacter', String(!isShowGoldCharacter));
+                        setShowGoldCharacter(!isShowGoldCharacter);
+                    }}/>
+                    <CompactMenuButton icon="complete" label="완료 콘텐츠 숨기기" isSelected={isHideCompleteContent} onPress={() => {
+                        localStorage.setItem('isHideCompleteContent', String(!isHideCompleteContent));
+                        setHideCompleteContent(!isHideCompleteContent);
+                    }}/>
+                    <CompactMenuButton icon="clear" label="필터 해제" onPress={() => {
+                        setFilterAccount(new Set([]));
+                        setFilterContent(new Set([]));
+                        localStorage.removeItem('isRemainHomework');
+                        setRemainHomework(false);
+                        localStorage.removeItem('isShowGoldCharacter');
+                        setShowGoldCharacter(false);
+                        addToast({ title: "필터 해제", description: "모든 필터를 제거하였습니다.", color: "success" });
+                    }}/>
+                </div>
+            </>
+        );
+    }
 
     return (
         <>
@@ -4426,9 +4545,10 @@ export function FilterComponent({
 // 남은 숙제 현황 컴포넌트
 type RemainChecklistComponentProps = {
     checklist: CheckCharacter[],
-    bosses: Boss[]
+    bosses: Boss[],
+    inModal?: boolean
 }
-export function RemainChecklistComponent({ checklist, bosses }: RemainChecklistComponentProps) {
+export function RemainChecklistComponent({ checklist, bosses, inModal = false }: RemainChecklistComponentProps) {
     const [datas, setDatas] = useState<ChecklistData[]>([]);
     const [results, setResults] = useState<ChecklistData[]>([]);
     const [selectedKey, setSelectedKey] = useState('');
@@ -4466,8 +4586,8 @@ export function RemainChecklistComponent({ checklist, bosses }: RemainChecklistC
     }, [selectedKey, datas]);
 
     return (
-        <section className="mt-4 w-full overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950/60">
-            <div className="flex flex-col gap-1 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-gray-800">
+        <section className={clsx("w-full overflow-hidden", inModal ? "bg-transparent" : "mt-4 rounded-2xl border border-gray-200/80 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-950/60")}>
+            <div className={clsx("flex flex-col gap-1 border-b border-gray-200/80 px-4 py-4 sm:px-5 dark:border-gray-800", inModal && "pr-12 sm:pr-12")}>
                 <div className="flex items-center justify-between gap-3">
                     <h2 className="text-lg font-semibold">남은 숙제 현황</h2>
                     <Chip size="sm" variant="flat" color={results.length > 0 ? "warning" : "success"}>{results.length}개</Chip>
