@@ -41,6 +41,7 @@ import {
     DayValue, 
     filterChecklist, 
     getAccounts, 
+    getAssignedOnceStagesForAccount,
     getAllBoundGold, 
     getAllContentGold, 
     getAllContentOtherGold, 
@@ -3635,6 +3636,7 @@ type WeekStageEditorProps = {
     bosses: Boss[],
     contentKey: string,
     characterLevel: number,
+    assignedOnceStages: ReadonlySet<number>,
     stages: ControlStage[],
     setStages: SetStateFn<ControlStage[]>
 }
@@ -3644,7 +3646,7 @@ function isWeekStageAboveCharacterLevel(boss: Boss | undefined, stage: number, d
     return requiredLevel !== undefined && requiredLevel > characterLevel;
 }
 
-function WeekStageEditor({ bosses, contentKey, characterLevel, stages, setStages }: WeekStageEditorProps) {
+function WeekStageEditor({ bosses, contentKey, characterLevel, assignedOnceStages, stages, setStages }: WeekStageEditorProps) {
     if (!contentKey) return <></>;
     const boss = getBossesById(bosses, contentKey);
 
@@ -3659,9 +3661,13 @@ function WeekStageEditor({ bosses, contentKey, characterLevel, stages, setStages
                         size="sm"
                         color="primary"
                         variant="light"
+                        classNames={{
+                            tab: "min-h-10 data-[disabled=true]:cursor-not-allowed data-[disabled=true]:bg-default-100 data-[disabled=true]:opacity-100 dark:data-[disabled=true]:bg-white/[0.06]"
+                        }}
                         selectedKey={stages.length > idx ? stages[idx].difficulty : EMPTY_STAGE_DIFFICULTY}
                         onSelectionChange={(key) => {
                             const diff = key.toString();
+                            if (diff !== EMPTY_STAGE_DIFFICULTY && assignedOnceStages.has(stage)) return;
                             if (isWeekStageAboveCharacterLevel(boss, stage, diff, characterLevel)) return;
                             if (stages.length > idx) {
                                 const cloneStages = structuredClone(stages);
@@ -3679,15 +3685,16 @@ function WeekStageEditor({ bosses, contentKey, characterLevel, stages, setStages
                         }}>
                         {getDifficultyByStage(bosses, contentKey, stage).map((diff) => {
                             const requiredLevel = boss?.difficulty.find((item) => item.stage === stage && item.difficulty === diff)?.level;
+                            const isAlreadyAssigned = diff !== EMPTY_STAGE_DIFFICULTY && assignedOnceStages.has(stage);
                             const isLevelLocked = isWeekStageAboveCharacterLevel(boss, stage, diff, characterLevel);
                             return (
                                 <Tab
                                     key={diff}
-                                    isDisabled={isLevelLocked}
-                                    title={isLevelLocked ? (
-                                        <span className="flex flex-col items-center text-default-400 dark:text-default-500">
+                                    isDisabled={isAlreadyAssigned || isLevelLocked}
+                                    title={isAlreadyAssigned || isLevelLocked ? (
+                                        <span className="flex flex-col items-center text-default-600 dark:text-default-300">
                                             <span>{diff} · 선택 불가</span>
-                                            <span className="text-[10px]">입장 Lv.{requiredLevel?.toLocaleString()} 필요</span>
+                                            <span className="text-[10px] text-default-500 dark:text-default-400">{isAlreadyAssigned ? '원정대에 이미 있음' : `입장 Lv.${requiredLevel?.toLocaleString()} 필요`}</span>
                                         </span>
                                     ) : diff}/>
                             );
@@ -3722,7 +3729,15 @@ function WeekContentComponent({
     const [editStages, setEditStages] = useState<ControlStage[]>([]);
     const isOrderLocked = isOrderDirty || isSavingOrder;
     const characterLevel = checklist[index]?.level ?? 0;
-    const selectedBoss = getBossesById(bosses, Array.from(content)[0]?.toString() ?? '');
+    const availableWeekContents = getWeekContents(bosses, checklist, index);
+    const selectedContentKey = Array.from(content)[0]?.toString() ?? '';
+    const isSelectedContentAvailable = availableWeekContents.some((item) => item.key === selectedContentKey);
+    const selectedBoss = getBossesById(bosses, selectedContentKey);
+    const assignedOnceStages = getAssignedOnceStagesForAccount(checklist, index, selectedBoss);
+
+    useEffect(() => {
+        if (selectedContentKey && !isSelectedContentAvailable) setContent(new Set());
+    }, [selectedContentKey, isSelectedContentAvailable, setContent]);
 
     useEffect(() => {
         onOrderDirtyChange(isOrderDirty);
@@ -3912,6 +3927,7 @@ function WeekContentComponent({
                     {() => {
                         const editingChecklist = editingIndex > -1 ? checklist[index].checklist[editingIndex] : null;
                         const editingBoss = editingChecklist ? bosses.find((boss) => boss.name === editingChecklist.name) : null;
+                        const editingAssignedOnceStages = getAssignedOnceStagesForAccount(checklist, index, editingBoss ?? undefined);
 
                         return (
                             <>
@@ -3929,6 +3945,7 @@ function WeekContentComponent({
                                                 bosses={bosses}
                                                 contentKey={editingBoss.id}
                                                 characterLevel={characterLevel}
+                                                assignedOnceStages={editingAssignedOnceStages}
                                                 stages={editStages}
                                                 setStages={setEditStages}/>
                                         </div>
@@ -3947,7 +3964,7 @@ function WeekContentComponent({
                                         color="primary"
                                         isLoading={isLoadingEdit}
                                         radius="md"
-                                        isDisabled={editStages.length === 0 || editStages[0]?.difficulty === EMPTY_STAGE_DIFFICULTY || editStages.some((stage) => isWeekStageAboveCharacterLevel(editingBoss ?? undefined, stage.stage, stage.difficulty, characterLevel))}
+                                        isDisabled={editStages.length === 0 || editStages[0]?.difficulty === EMPTY_STAGE_DIFFICULTY || editStages.some((stage) => (stage.difficulty !== EMPTY_STAGE_DIFFICULTY && editingAssignedOnceStages.has(stage.stage)) || isWeekStageAboveCharacterLevel(editingBoss ?? undefined, stage.stage, stage.difficulty, characterLevel))}
                                         onPress={async () => {
                                             if (editingIndex < 0) {
                                                 return;
@@ -4008,14 +4025,15 @@ function WeekContentComponent({
                     onSelectionChange={setContent}
                     isDisabled={isOrderLocked}
                     className="mt-4">
-                    {getWeekContents(bosses, checklist, index).map((item) => (
+                    {availableWeekContents.map((item) => (
                         <SelectItem key={item.key}>{item.name}</SelectItem>
                     ))}
                 </Select>
                 <WeekStageEditor
                     bosses={bosses}
-                    contentKey={Array.from(content)[0]?.toString() ?? ''}
+                    contentKey={isSelectedContentAvailable ? selectedContentKey : ''}
                     characterLevel={characterLevel}
+                    assignedOnceStages={assignedOnceStages}
                     stages={stages}
                     setStages={setStages}/>
                 <div className={clsx(
@@ -4034,7 +4052,7 @@ function WeekContentComponent({
                     radius="md"
                     color="primary"
                     isLoading={isLoadingAdd}
-                    isDisabled={isOrderLocked || stages.length === 0 || stages[0].difficulty === EMPTY_STAGE_DIFFICULTY || stages.some((stage) => isWeekStageAboveCharacterLevel(selectedBoss, stage.stage, stage.difficulty, characterLevel))}
+                    isDisabled={isOrderLocked || !isSelectedContentAvailable || stages.length === 0 || stages[0].difficulty === EMPTY_STAGE_DIFFICULTY || stages.some((stage) => (stage.difficulty !== EMPTY_STAGE_DIFFICULTY && assignedOnceStages.has(stage.stage)) || isWeekStageAboveCharacterLevel(selectedBoss, stage.stage, stage.difficulty, characterLevel))}
                     onPress={async () => {
                         if (Array.from(content)[0]) {
                             setLoadingAdd(true);

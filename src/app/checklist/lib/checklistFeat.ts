@@ -1699,7 +1699,17 @@ export function getWeekContents(bosses: Boss[], checklist: CheckCharacter[], ind
             aValue = Math.min(...aDiff.difficulty.map(diff => diff.level));
         }
         return bValue - aValue;
-    }).filter((content) => index > -1 ? !checklist[index].checklist.some((item) => item.name === content.name) : true);
+    }).filter((content) => {
+        if (index < 0) return true;
+        const character = checklist[index];
+        if (!character || character.checklist.some((item) => item.name === content.name)) return false;
+
+        const boss = bosses.find((item) => item.id === content.key);
+        if (!boss) return false;
+        const assignedOnceStages = getAssignedOnceStagesForAccount(checklist, index, boss);
+        return boss.difficulty.some((difficulty) => character.level >= difficulty.level
+            && !assignedOnceStages.has(difficulty.stage));
+    });
     return results;
 }
 
@@ -1731,6 +1741,18 @@ export function createWeekStagesFromChecklist(bosses: Boss[], contentKey: string
             difficulty: selectedItem?.difficulty ?? EMPTY_STAGE_DIFFICULTY
         };
     });
+}
+
+// 같은 계정의 다른 캐릭터에 이미 등록된 원정대 1회 관문을 반환합니다.
+export function getAssignedOnceStagesForAccount(checklist: CheckCharacter[], characterIndex: number, boss: Boss | undefined): Set<number> {
+    const character = checklist[characterIndex];
+    if (!character?.account || !boss) return new Set();
+
+    const onceStages = new Set(boss.difficulty.filter((difficulty) => difficulty.isOnce).map((difficulty) => difficulty.stage));
+    return new Set([...onceStages].filter((stage) => checklist.some((other, index) => index !== characterIndex
+        && other.account === character.account
+        && other.checklist.some((content) => content.name === boss.name
+            && content.items.some((item) => item.stage === stage)))));
 }
 
 // 관문 선택 상태를 실제 저장용 ChecklistItem 배열로 변환합니다.
