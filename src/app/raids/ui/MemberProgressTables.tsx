@@ -5,6 +5,7 @@ import CheckIcon from "@/Icons/CheckIcon";
 import { getBackgroundByStage, getSimpleBossName } from "@/app/checklist/lib/checklistFeat";
 import JobAvatar from "@/Icons/JobAvatar";
 import clsx from "clsx";
+import { getContentNames, sortContentNames } from "../lib/contentOrderFeat";
 import {
     getAllGoldByMemberCharacter,
     getCompleteBoundGoldByMember,
@@ -15,6 +16,7 @@ import {
 type MemberProgressTablesProps = {
     characters: Checklist[];
     bosses: Boss[];
+    contentOrder?: string[];
 };
 
 const headingClass = "border-b border-r border-gray-200/80 bg-gray-50 px-3 py-3 text-left text-xs font-semibold text-gray-600 last:border-r-0 dark:border-white/10 dark:bg-[#222227] dark:text-gray-300";
@@ -35,8 +37,8 @@ function CharacterCell({ character }: { character: Checklist }) {
     );
 }
 
-export function MemberHomeworkTable({ characters, bosses }: MemberProgressTablesProps) {
-    const contentNames = [...new Set(characters.flatMap(character => character.contents.map(content => content.name)))];
+export function MemberHomeworkTable({ characters, bosses, contentOrder = [] }: MemberProgressTablesProps) {
+    const contentNames = sortContentNames(getContentNames(characters), contentOrder);
 
     return (
         <div className="w-full overflow-x-auto rounded-xl border border-gray-200/80 dark:border-white/10">
