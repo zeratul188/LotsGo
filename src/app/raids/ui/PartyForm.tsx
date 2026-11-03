@@ -1,6 +1,7 @@
 import { 
     Accordion,
     AccordionItem,
+    Button,
     Card, CardBody, CardFooter, CardHeader, 
     Chip, 
     Input, 
@@ -44,6 +45,8 @@ import JobAvatar from "@/Icons/JobAvatar";
 import dynamic from "next/dynamic";
 import { CalendarComponent } from "./CalendarForm";
 import { MemberGoldTable, MemberHomeworkTable } from "./MemberProgressTables";
+import { ContentOrderModal } from "./ContentOrderModal";
+import { CONTENT_ORDER_STORAGE_KEY, getContentNames, readContentOrder, sortContentNames } from "../lib/contentOrderFeat";
 const FixedLineAd = dynamic(() => import("@/app/ad/FixedLineAd"), { ssr: false });
 
 const PAGE_SIZE = 10;
@@ -65,6 +68,19 @@ function ChecklistComponent({ members, bosses, party }: ChecklistComponentProps)
     const isMobile = useMobileQuery();
     const [results, setResults] = useState<RaidMember[]>([]);
     const [search, setSearch] = useState('');
+    const [contentOrder, setContentOrder] = useState<string[]>([]);
+    const [isOrderOpen, setOrderOpen] = useState(false);
+    const availableContents = useMemo(() => getContentNames(members.flatMap(member => member.checklist)), [members]);
+    const orderedContents = useMemo(() => sortContentNames(availableContents, contentOrder), [availableContents, contentOrder]);
+
+    useEffect(() => setContentOrder(readContentOrder()), []);
+
+    const saveContentOrder = (names: string[]) => {
+        const next = [...names, ...contentOrder.filter(name => !names.includes(name))];
+        localStorage.setItem(CONTENT_ORDER_STORAGE_KEY, JSON.stringify(next));
+        setContentOrder(next);
+        setOrderOpen(false);
+    };
 
     useEffect(() => {
         const list: RaidMember[] = [];
@@ -105,10 +121,12 @@ function ChecklistComponent({ members, bosses, party }: ChecklistComponentProps)
                     <p className="text-[10pt] fadedtext">검색 결과</p>
                     <p className="text-lg font-bold tabular-nums">{results.length}</p>
                 </div>
+                <Button variant="flat" radius="lg" className="w-full font-semibold sm:ml-auto sm:w-auto" onPress={() => setOrderOpen(true)}>순서변경</Button>
             </div>
             <div className="mt-4 flex w-full flex-col">
-                {results.map((member, index) => <MemberComponent key={index} index={index} member={member} bosses={bosses} party={party}/>)}
+                {results.map((member, index) => <MemberComponent key={member.id} index={index} member={member} bosses={bosses} party={party} contentOrder={contentOrder}/>)}
             </div>
+            <ContentOrderModal isOpen={isOrderOpen} onClose={() => setOrderOpen(false)} names={orderedContents} bosses={bosses} onSave={saveContentOrder}/>
         </div>
     )
 }
@@ -118,9 +136,10 @@ type MemberComponentProps = {
     index: number,
     member: RaidMember,
     bosses: Boss[],
-    party: Raid
+    party: Raid,
+    contentOrder: string[]
 }
-function MemberComponent({ index, member, bosses, party }: MemberComponentProps) {
+function MemberComponent({ index, member, bosses, party, contentOrder }: MemberComponentProps) {
     const [page, setPage] = useState(1);
     const [tabKey, setTabKey] = useState<Key>('homework');
     const isMobile = useMobileQuery();
@@ -232,7 +251,10 @@ function MemberComponent({ index, member, bosses, party }: MemberComponentProps)
                                     </div>
                                     {tabKey === 'homework' ? (
                                         <div className="flex w-full grow flex-col gap-2 sm:flex-row sm:overflow-x-auto scrollbar-hide">
-                                            {item.contents.map((content, contentIndex) => <ContentChip key={contentIndex} bosses={bosses} content={content} isMemberGold={item.isGold}/>)}
+                                            {sortContentNames(item.contents.map(content => content.name), contentOrder).map(name => {
+                                                const content = item.contents.find(content => content.name === name)!;
+                                                return <ContentChip key={name} bosses={bosses} content={content} isMemberGold={item.isGold}/>;
+                                            })}
                                         </div>
                                     ) : (
                                         <div className="flex w-full flex-col items-center gap-3 min-[860px]:ml-auto min-[860px]:w-fit min-[860px]:flex-row">
@@ -285,7 +307,7 @@ function MemberComponent({ index, member, bosses, party }: MemberComponentProps)
                         </div>
                         <div className="hidden min-[769px]:block">
                             {tabKey === 'homework'
-                                ? <MemberHomeworkTable characters={pageCharacters} bosses={bosses}/>
+                                ? <MemberHomeworkTable characters={pageCharacters} bosses={bosses} contentOrder={contentOrder}/>
                                 : <MemberGoldTable characters={pageCharacters} bosses={bosses}/>}
                         </div>
                         <div className="flex w-full flex-col items-end justify-center gap-3 pt-2 sm:flex-row sm:justify-start">

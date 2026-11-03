@@ -47,6 +47,10 @@ import AnimatedNumber from "./AnimatedNumber";
 import { CharacterMemo, CharacterParadisePower } from "./ChecklistForm";
 import { SettingIcon } from "../../icons/SettingIcon";
 import type { ReactNode } from "react";
+import { ContentOrderModal } from "@/app/raids/ui/ContentOrderModal";
+import { sortContentNames } from "@/app/raids/lib/contentOrderFeat";
+
+const CHECKLIST_CONTENT_ORDER_KEY = "checklistContentOrder";
 
 type ChecklistTableViewProps = {
     checklist: CheckCharacter[];
@@ -288,8 +292,8 @@ function WeeklyContentCell({
     dispatch: AppDispatch;
     isBonusModeEnabled: boolean;
 }) {
-    if (!content || checklistIndex < 0) {
-        return <div className="flex h-full min-h-20 items-center justify-center bg-default-100/70 px-2 text-center text-[11px] text-default-400 dark:bg-white/[0.06]">콘텐츠 없음</div>;
+    if (!content || checklistIndex < 0 || content.items.length === 0) {
+        return <div className="flex h-full min-h-20 items-center justify-center bg-default-200/70 px-2 text-center text-[11px] text-default-400 dark:bg-white/[0.10]">콘텐츠 없음</div>;
     }
 
     const character = checklist[characterIndex];
@@ -463,6 +467,17 @@ export default function ChecklistTableView({
     const contentViewportRef = useRef<HTMLDivElement>(null);
     const sectionRef = useRef<HTMLElement>(null);
     const [sectionHeight, setSectionHeight] = useState<number | null>(null);
+    const [contentOrder, setContentOrder] = useState<string[]>([]);
+    const [isContentOrderOpen, setContentOrderOpen] = useState(false);
+
+    useEffect(() => {
+        try {
+            const saved: unknown = JSON.parse(localStorage.getItem(CHECKLIST_CONTENT_ORDER_KEY) ?? "[]");
+            if (Array.isArray(saved)) setContentOrder(saved.filter((name): name is string => typeof name === "string"));
+        } catch {
+            setContentOrder([]);
+        }
+    }, []);
 
     useLayoutEffect(() => {
         let frame = 0;
@@ -500,13 +515,20 @@ export default function ChecklistTableView({
         setEditorOpen(true);
     };
 
-    const contentNames = useMemo(() => getBossesByHaveContent(visibleCharacters, bosses).filter(name => {
+    const contentNames = useMemo(() => sortContentNames(getBossesByHaveContent(visibleCharacters, bosses).filter(name => {
         if (!isHideCompleteContent) return true;
         return visibleCharacters.some(character => {
             const content = character.checklist.find(item => item.name === name);
             return content && !isCheckHomework(content);
         });
-    }), [bosses, isHideCompleteContent, visibleCharacters]);
+    }), contentOrder), [bosses, contentOrder, isHideCompleteContent, visibleCharacters]);
+
+    const saveContentOrder = (names: string[]) => {
+        const next = [...names, ...contentOrder.filter(name => !names.includes(name))];
+        localStorage.setItem(CHECKLIST_CONTENT_ORDER_KEY, JSON.stringify(next));
+        setContentOrder(next);
+        setContentOrderOpen(false);
+    };
 
     const dailyColumnWidth = 172;
     const weeklyColumnWidth = 168;
@@ -550,7 +572,13 @@ export default function ChecklistTableView({
                     </div>
                     <div className="grid grid-cols-[132px_52px] divide-x divide-secondary-200 border-l border-secondary-200 bg-secondary-50/95 text-secondary-700 dark:divide-secondary-900/60 dark:border-secondary-900/60 dark:bg-secondary-950/25 dark:text-secondary-300">
                         <div className="flex h-16 items-center justify-center px-2 text-center text-xs font-semibold">기타 주간</div>
-                        <div className="flex h-16 items-center justify-center"><SettingIcon size={18}/></div>
+                        <Tooltip content="콘텐츠 순서 변경">
+                            <button type="button" aria-label="콘텐츠 순서 변경" onClick={() => setContentOrderOpen(true)} className="flex h-16 items-center justify-center text-secondary-700 transition-colors hover:bg-secondary-100 dark:text-secondary-300 dark:hover:bg-secondary-900/30">
+                                <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M4 7h12M4 12h9M4 17h12M19 5v14m-3-3 3 3 3-3m-6-8 3-3 3 3"/>
+                                </svg>
+                            </button>
+                        </Tooltip>
                     </div>
                 </div>
                 {visibleCharacters.map(character => {
@@ -642,10 +670,10 @@ export default function ChecklistTableView({
                                     </button>
                                 </div>
                                 </div>
-                                 <div className="min-w-0 overflow-hidden" onWheel={handleContentWheel}>
+                                 <div className="min-w-0 overflow-hidden bg-default-200/70 dark:bg-white/[0.10]" onWheel={handleContentWheel}>
                                     <div className="flex h-full transition-transform duration-150" style={contentTransform}>
                                         {!isHideDayContent ? (
-                                            <div className="shrink-0 border-r border-default-200 dark:border-white/10" style={{ width: dailyColumnWidth }}>
+                                            <div className="shrink-0 border-r border-default-200 bg-white dark:border-white/10 dark:bg-[#171717]" style={{ width: dailyColumnWidth }}>
                                                 <DailyContentCell
                                                     character={character}
                                                     checklist={checklist}
@@ -656,7 +684,8 @@ export default function ChecklistTableView({
                                         ) : null}
                                         {contentNames.map(name => {
                                             const checklistIndex = character.checklist.findIndex(item => item.name === name);
-                                            return <div key={name} className="shrink-0 border-r border-default-200 dark:border-white/10" style={{ width: weeklyColumnWidth }}><WeeklyContentCell content={character.checklist[checklistIndex]} bosses={bosses} checklist={checklist} characterIndex={characterIndex} checklistIndex={checklistIndex} dispatch={dispatch} isBonusModeEnabled={isBonusModeEnabled}/></div>;
+                                            const content = checklistIndex < 0 ? undefined : character.checklist[checklistIndex];
+                                            return <div key={name} className="shrink-0 border-r border-default-200 bg-white dark:border-white/10 dark:bg-[#171717]" style={{ width: weeklyColumnWidth }}><WeeklyContentCell content={content} bosses={bosses} checklist={checklist} characterIndex={characterIndex} checklistIndex={checklistIndex} dispatch={dispatch} isBonusModeEnabled={isBonusModeEnabled}/></div>;
                                         })}
                                     </div>
                                 </div>
@@ -693,6 +722,7 @@ export default function ChecklistTableView({
                 </div>
                 <div className="border-l border-secondary-200 dark:border-secondary-900/60"/>
             </div> : null}
+            <ContentOrderModal isOpen={isContentOrderOpen} onClose={() => setContentOrderOpen(false)} names={contentNames} bosses={bosses} onSave={saveContentOrder} description="숙제 표의 모든 캐릭터에 적용됩니다."/>
         </section>
     );
 }

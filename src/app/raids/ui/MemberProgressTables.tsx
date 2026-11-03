@@ -5,6 +5,7 @@ import CheckIcon from "@/Icons/CheckIcon";
 import { getBackgroundByStage, getSimpleBossName } from "@/app/checklist/lib/checklistFeat";
 import JobAvatar from "@/Icons/JobAvatar";
 import clsx from "clsx";
+import { getContentNames, sortContentNames } from "../lib/contentOrderFeat";
 import {
     getAllGoldByMemberCharacter,
     getCompleteBoundGoldByMember,
@@ -15,6 +16,7 @@ import {
 type MemberProgressTablesProps = {
     characters: Checklist[];
     bosses: Boss[];
+    contentOrder?: string[];
 };
 
 const headingClass = "border-b border-r border-gray-200/80 bg-gray-50 px-3 py-3 text-left text-xs font-semibold text-gray-600 last:border-r-0 dark:border-white/10 dark:bg-[#222227] dark:text-gray-300";
@@ -35,8 +37,8 @@ function CharacterCell({ character }: { character: Checklist }) {
     );
 }
 
-export function MemberHomeworkTable({ characters, bosses }: MemberProgressTablesProps) {
-    const contentNames = [...new Set(characters.flatMap(character => character.contents.map(content => content.name)))];
+export function MemberHomeworkTable({ characters, bosses, contentOrder = [] }: MemberProgressTablesProps) {
+    const contentNames = sortContentNames(getContentNames(characters), contentOrder);
 
     return (
         <div className="w-full overflow-x-auto rounded-xl border border-gray-200/80 dark:border-white/10">
@@ -59,7 +61,7 @@ export function MemberHomeworkTable({ characters, bosses }: MemberProgressTables
                                 const content = character.contents.find(item => item.name === name);
                                 const isComplete = content && content.items.length > 0 && content.items.every(item => item.isCheck || item.isDisable);
                                 return (
-                                    <td key={name} className={clsx(cellClass, "min-w-[160px] align-middle", isComplete ? "bg-success-50/60 dark:bg-success-500/[0.07]" : "bg-white group-hover:bg-gray-50/70 dark:bg-[#171717] dark:group-hover:bg-white/[0.025]")}>
+                                    <td key={name} className={clsx(cellClass, "min-w-[160px] align-middle", !content ? "bg-gray-100 text-default-500 dark:bg-[#25252b] dark:text-default-500" : isComplete ? "bg-success-50/60 dark:bg-success-500/[0.07]" : "bg-white group-hover:bg-gray-50/70 dark:bg-[#171717] dark:group-hover:bg-white/[0.025]")}>
                                         {content ? (
                                             <div className="flex flex-col gap-1.5">
                                                 {content.isGold && character.isGold ? <span className="flex items-center gap-1 text-[10px] font-semibold text-warning-700 dark:text-warning-400"><img src="/icons/gold.png" alt="" className="h-3 w-3"/>골드 지정</span> : null}
