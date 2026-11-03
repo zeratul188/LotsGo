@@ -10,9 +10,10 @@ type ContentOrderModalProps = {
     names: string[];
     bosses: Boss[];
     onSave: (names: string[]) => void;
+    description?: string;
 };
 
-export function ContentOrderModal({ isOpen, onClose, names, bosses, onSave }: ContentOrderModalProps) {
+export function ContentOrderModal({ isOpen, onClose, names, bosses, onSave, description = "모든 멤버의 숙제 표에 적용됩니다." }: ContentOrderModalProps) {
     const [draft, setDraft] = useState(names);
 
     useEffect(() => {
@@ -41,7 +42,7 @@ export function ContentOrderModal({ isOpen, onClose, names, bosses, onSave }: Co
                 <>
                     <ModalHeader className="flex flex-col gap-1">
                         <span>콘텐츠 순서변경</span>
-                        <span className="text-sm font-normal text-default-500">콘텐츠를 끌어 원하는 순서로 옮겨주세요. 모든 멤버의 숙제 표에 적용됩니다.</span>
+                        <span className="text-sm font-normal text-default-500">콘텐츠를 끌어 원하는 순서로 옮겨주세요. {description}</span>
                     </ModalHeader>
                     <ModalBody>
                         <DragDropContext onDragEnd={handleDragEnd}>
