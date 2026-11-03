@@ -292,8 +292,8 @@ function WeeklyContentCell({
     dispatch: AppDispatch;
     isBonusModeEnabled: boolean;
 }) {
-    if (!content || checklistIndex < 0) {
-        return <div className="flex h-full min-h-20 items-center justify-center bg-default-100/70 px-2 text-center text-[11px] text-default-400 dark:bg-white/[0.06]">콘텐츠 없음</div>;
+    if (!content || checklistIndex < 0 || content.items.length === 0) {
+        return <div className="flex h-full min-h-20 items-center justify-center bg-default-200/70 px-2 text-center text-[11px] text-default-400 dark:bg-white/[0.10]">콘텐츠 없음</div>;
     }
 
     const character = checklist[characterIndex];
@@ -670,10 +670,10 @@ export default function ChecklistTableView({
                                     </button>
                                 </div>
                                 </div>
-                                 <div className="min-w-0 overflow-hidden" onWheel={handleContentWheel}>
+                                 <div className="min-w-0 overflow-hidden bg-default-200/70 dark:bg-white/[0.10]" onWheel={handleContentWheel}>
                                     <div className="flex h-full transition-transform duration-150" style={contentTransform}>
                                         {!isHideDayContent ? (
-                                            <div className="shrink-0 border-r border-default-200 dark:border-white/10" style={{ width: dailyColumnWidth }}>
+                                            <div className="shrink-0 border-r border-default-200 bg-white dark:border-white/10 dark:bg-[#171717]" style={{ width: dailyColumnWidth }}>
                                                 <DailyContentCell
                                                     character={character}
                                                     checklist={checklist}
@@ -684,7 +684,8 @@ export default function ChecklistTableView({
                                         ) : null}
                                         {contentNames.map(name => {
                                             const checklistIndex = character.checklist.findIndex(item => item.name === name);
-                                            return <div key={name} className="shrink-0 border-r border-default-200 dark:border-white/10" style={{ width: weeklyColumnWidth }}><WeeklyContentCell content={character.checklist[checklistIndex]} bosses={bosses} checklist={checklist} characterIndex={characterIndex} checklistIndex={checklistIndex} dispatch={dispatch} isBonusModeEnabled={isBonusModeEnabled}/></div>;
+                                            const content = checklistIndex < 0 ? undefined : character.checklist[checklistIndex];
+                                            return <div key={name} className="shrink-0 border-r border-default-200 bg-white dark:border-white/10 dark:bg-[#171717]" style={{ width: weeklyColumnWidth }}><WeeklyContentCell content={content} bosses={bosses} checklist={checklist} characterIndex={characterIndex} checklistIndex={checklistIndex} dispatch={dispatch} isBonusModeEnabled={isBonusModeEnabled}/></div>;
                                         })}
                                     </div>
                                 </div>
