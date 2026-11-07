@@ -48,6 +48,26 @@ body * {
   }
 }
 
+@property --checklist-sidebar-detail-opacity {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 1;
+}
+
+@keyframes revealChecklistSidebarDetails {
+  from { --checklist-sidebar-detail-opacity: 0; }
+  to { --checklist-sidebar-detail-opacity: 1; }
+}
+
+.checklist-sidebar-reveal {
+  animation: revealChecklistSidebarDetails 250ms ease-out both;
+  mask-image: linear-gradient(to right, #000 0 36px, rgba(0, 0, 0, var(--checklist-sidebar-detail-opacity)) 36px 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .checklist-sidebar-reveal { animation: none; }
+}
+
 .scrollbar-none {
   -ms-overflow-style: none;  /* IE & Edge */
   scrollbar-width: none;     /* Firefox */

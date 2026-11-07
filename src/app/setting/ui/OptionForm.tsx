@@ -8,6 +8,7 @@ import {
     handleHideDayContent,
     handleHideParadisePower,
     handleChecklistViewStyle,
+    handleCompletionSetting,
     loadSettings,
     useAllLogout
 } from "../lib/optionFeat";
@@ -81,6 +82,16 @@ export default function OptionComponent() {
                             <div className="grow"><h3 className="text-sm font-semibold">메모 숨기기</h3><p className="mt-1 text-xs text-default-500">캐릭터 카드에서 메모 영역을 숨깁니다.</p></div>
                             <Switch size="sm" aria-label="메모 숨기기" isSelected={settings.isHideCharacterMemo} onValueChange={async () => await handleHideCharacterMemo(settings, setSettings)}/>
                         </div>
+                        {([
+                            ['includeNonGoldRaidsForCompletion', '골드 비지정 레이드 포함', '캐릭터 완료 판정에 모든 주간 레이드를 포함합니다.'],
+                            ['includeHourglassForCompletion', '할의 모래시계 포함', '캐릭터 완료 판정에 할의 모래시계를 포함합니다.'],
+                            ['includeParadiseForCompletion', '낙원 포함', '캐릭터 완료 판정에 낙원을 포함합니다.']
+                        ] as const).map(([key, label, description]) => (
+                            <div key={key} className="flex items-center gap-4 px-4 py-4">
+                                <div className="grow"><h3 className="text-sm font-semibold">{label}</h3><p className="mt-1 text-xs text-default-500">{description}</p></div>
+                                <Switch size="sm" aria-label={label} isSelected={!!settings[key]} onValueChange={() => void handleCompletionSetting(settings, setSettings, key)}/>
+                            </div>
+                        ))}
                         <div className="flex items-center gap-4 px-4 py-4">
                             <div className="grow">
                                 <h3 className="text-sm font-semibold">자동 등록 제외 레이드 삭제</h3>

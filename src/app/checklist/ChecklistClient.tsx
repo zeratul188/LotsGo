@@ -38,7 +38,10 @@ export const defaultSettings: Settings = {
     isHideBonusMode: false,
     isAutoDeleteUnselectedRaids: false,
     isHideParadisePower: false,
-    isHideCharacterMemo: false
+    isHideCharacterMemo: false,
+    includeNonGoldRaidsForCompletion: false,
+    includeHourglassForCompletion: false,
+    includeParadiseForCompletion: false
 }
 
 
@@ -84,6 +87,8 @@ export default function ChecklistClient() {
     const [isOpenBosses, setOpenBosses] = useState(false);
     const [isOpenLookupDrawer, setOpenLookupDrawer] = useState(false);
     const [isLookupExpanded, setLookupExpanded] = useState(false);
+    const [isLookupContentExpanded, setLookupContentExpanded] = useState(false);
+    const [completionSettings, setCompletionSettings] = useState({ includeNonGoldRaidsForCompletion: false, includeHourglassForCompletion: false, includeParadiseForCompletion: false });
     const onOpenChangeBosses = (isOpen: boolean) => setOpenBosses(isOpen);
     useLoadingTask("레이드를 자동 등록하고 있어요", isAutoRegisteringRaids);
     const isTableView = checklistViewStyle === 'table' && viewportWidth > 720;
@@ -91,6 +96,7 @@ export default function ChecklistClient() {
     const showCompactLookup = viewportWidth > 768 && !showDesktopLookup;
     const showLookupSidebar = showDesktopLookup || showCompactLookup;
     const isLookupCollapsed = showCompactLookup && !isLookupExpanded;
+    const isLookupContentCollapsed = showCompactLookup && !isLookupContentExpanded;
     const openRemainChecklist = () => {
         checklistForm.setShowCubeDetail(false);
         checklistForm.setShowList(true);
@@ -183,7 +189,7 @@ export default function ChecklistClient() {
         }
     };
 
-    const renderLookupMenu = (onClose?: () => void) => isLookupCollapsed ? (
+    const renderLookupMenu = (onClose?: () => void) => isLookupContentCollapsed ? (
         <>
             <div className="flex flex-col items-center gap-1 border-b border-default-200/80 py-2 dark:border-white/10" aria-label="화면 설정">
                 <CompactMenuSelect icon="view" label="화면 스타일">
@@ -361,6 +367,7 @@ export default function ChecklistClient() {
             if (settingLocal) {
                 const localSetting: Settings = JSON.parse(settingLocal);
                 const settings: Settings = { ...defaultSettings, ...localSetting};
+                setCompletionSettings({ includeNonGoldRaidsForCompletion: !!settings.includeNonGoldRaidsForCompletion, includeHourglassForCompletion: !!settings.includeHourglassForCompletion, includeParadiseForCompletion: !!settings.includeParadiseForCompletion });
                 setChecklistViewStyle(settings.checklistViewStyle);
                 setTableBonusMode(settings.isTableBonusMode);
                 checklistForm.setHideDayContent(settings.isHideDayContent);
@@ -377,6 +384,7 @@ export default function ChecklistClient() {
                 const res = await fetch(`/api/setting?id=${id}`);
                 if (res.ok) {
                     const settings: Settings = await res.json();
+                    setCompletionSettings({ includeNonGoldRaidsForCompletion: !!settings.includeNonGoldRaidsForCompletion, includeHourglassForCompletion: !!settings.includeHourglassForCompletion, includeParadiseForCompletion: !!settings.includeParadiseForCompletion });
                     localStorage.setItem('userSettings', JSON.stringify(settings));
                     setChecklistViewStyle(settings.checklistViewStyle);
                     setTableBonusMode(settings.isTableBonusMode);
@@ -470,7 +478,12 @@ export default function ChecklistClient() {
             </Drawer>
             <div
                 className={clsx(showLookupSidebar && "grid items-start gap-4 transition-[grid-template-columns] duration-300 ease-in-out motion-reduce:transition-none")}
-                style={showLookupSidebar ? { gridTemplateColumns: `${isLookupCollapsed ? 56 : 270}px minmax(0,1fr)` } : undefined}>
+                style={showLookupSidebar ? { gridTemplateColumns: `${isLookupCollapsed ? 56 : 270}px minmax(0,1fr)` } : undefined}
+                onTransitionEnd={(event) => {
+                    if (event.target === event.currentTarget && event.propertyName === "grid-template-columns" && showCompactLookup && isLookupExpanded) {
+                        setLookupContentExpanded(true);
+                    }
+                }}>
             {showLookupSidebar ? (
                 <aside aria-label="숙제 조회 설정" className="scrollbar-none sticky top-0 h-[calc(100vh-80px)] overflow-x-hidden overflow-y-auto rounded-xl border border-default-200 bg-default-50/50 px-2 py-2 dark:border-white/10 dark:bg-[#171717]">
                     {showCompactLookup ? (
@@ -478,14 +491,24 @@ export default function ChecklistClient() {
                             variant="light"
                             size="sm"
                             aria-label={isLookupCollapsed ? "메뉴 펼치기" : "메뉴 접기"}
-                            className={clsx("mb-1 h-9 min-h-9 w-full gap-2 rounded-lg text-xs font-semibold text-primary dark:!text-[#bfdbfe] dark:data-[hover=true]:bg-white/[0.08]", isLookupCollapsed ? "min-w-0 justify-center px-0" : "justify-start px-2")}
-                            onPress={() => setLookupExpanded(!isLookupExpanded)}>
+                            className={clsx("mb-1 h-9 min-h-9 gap-2 rounded-lg text-xs font-semibold text-primary dark:!text-[#bfdbfe] dark:data-[hover=true]:bg-white/[0.08]", isLookupContentCollapsed ? "w-9 min-w-0 justify-center px-0" : "w-full justify-start px-2")}
+                            onPress={() => {
+                                if (isLookupCollapsed) {
+                                    setLookupExpanded(true);
+                                    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) setLookupContentExpanded(true);
+                                } else {
+                                    setLookupContentExpanded(false);
+                                    setLookupExpanded(false);
+                                }
+                            }}>
                             <span aria-hidden="true" className="inline-flex w-4 shrink-0 items-center justify-center text-base leading-none">{isLookupCollapsed ? ">" : "<"}</span>
-                            {!isLookupCollapsed && <span>메뉴 접기</span>}
+                            {!isLookupContentCollapsed && <span className={clsx(showCompactLookup && "animate-[fadeInUp_250ms_ease-out]")}>메뉴 접기</span>}
                         </Button>
                     ) : null}
-                    <div ref={setStatusSidebarContainer}/>
-                    {renderLookupMenu()}
+                    <div className={clsx(isLookupContentCollapsed ? "w-9" : showCompactLookup && "checklist-sidebar-reveal")}>
+                        <div ref={setStatusSidebarContainer}/>
+                        {renderLookupMenu()}
+                    </div>
                 </aside>
             ) : null}
             <main className="min-w-0">
@@ -495,7 +518,7 @@ export default function ChecklistClient() {
                     isTableViewWide={isTableView && viewportWidth >= 1500}
                     isSidebarVisible={showLookupSidebar}
                     isCompactSidebar={showCompactLookup}
-                    isSidebarExpanded={!isLookupCollapsed}
+                    isSidebarExpanded={!isLookupContentCollapsed}
                     sidebarContainer={statusSidebarContainer}
                     server={checklistForm.server}
                     filterContent={checklistForm.filterContent}
@@ -551,6 +574,7 @@ export default function ChecklistClient() {
                                     isBonusModeEnabled={isTableBonusMode}
                                     isHideParadisePower={checklistForm.isHideParadisePower}
                                     isHideCharacterMemo={checklistForm.isHideCharacterMemo}
+                                    completionSettings={completionSettings}
                                     autoChecklistNickname={autoChecklistNickname}
                                     isAutoChecklistSharing={isAutoChecklistSharing}
                                     onSelectAutoChecklistCharacter={setAutoChecklistNickname}
@@ -563,7 +587,11 @@ export default function ChecklistClient() {
                                         accounts={checklistForm.accounts}
                                         setAccounts={checklistForm.setAccounts}
                                         isAutoRegisteringRaids={isAutoRegisteringRaids}
-                                        onRaidAutoRegistration={handleRaidAutoRegistration}/>}
+                                        onRaidAutoRegistration={handleRaidAutoRegistration}
+                                        onOpenDailyContentManager={() => {
+                                            checklistForm.setModalData({ characterIndex, type: 'day' });
+                                            checklistForm.onOpen();
+                                        }}/>}
                                     onOpenContentManager={(characterIndex, type) => {
                                         checklistForm.setModalData({ characterIndex, type });
                                         checklistForm.onOpen();

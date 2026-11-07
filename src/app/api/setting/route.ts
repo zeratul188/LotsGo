@@ -9,7 +9,10 @@ export type Settings = {
     isHideBonusMode: boolean,
     isAutoDeleteUnselectedRaids: boolean,
     isHideParadisePower: boolean,
-    isHideCharacterMemo: boolean
+    isHideCharacterMemo: boolean,
+    includeNonGoldRaidsForCompletion?: boolean,
+    includeHourglassForCompletion?: boolean,
+    includeParadiseForCompletion?: boolean
 }
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
@@ -33,7 +36,10 @@ export async function GET(req: NextRequest) {
             isHideBonusMode: false,
             isAutoDeleteUnselectedRaids: false,
             isHideParadisePower: false,
-            isHideCharacterMemo: false
+            isHideCharacterMemo: false,
+            includeNonGoldRaidsForCompletion: false,
+            includeHourglassForCompletion: false,
+            includeParadiseForCompletion: false
         }
         const settings: Settings = {
             ...defaultSettings,

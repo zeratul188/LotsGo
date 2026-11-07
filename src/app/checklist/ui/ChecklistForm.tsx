@@ -602,6 +602,10 @@ export function ChecklistStatue({
     const filteredChecklist = checklist.filter((character) => (character.server === server || server === '전체') && filterChecklist(character, filterContent, bosses, checklist, isRemainHomework, isShowGoldCharacter, filterAccount));
     const totalGold = getAllGolds(bosses, filteredChecklist);
     const haveGold = getHaveGolds(bosses, filteredChecklist);
+    const goldProgress = totalGold > 0 ? Math.round(Math.min(100, Math.max(0, haveGold / totalGold * 100))) : 0;
+    const completedHomeworkStages = getCompleteChecklistByStage(checklist);
+    const totalHomeworkStages = getAllCountChecklistByStage(checklist);
+    const homeworkProgress = totalHomeworkStages > 0 ? Math.round(Math.min(100, Math.max(0, completedHomeworkStages / totalHomeworkStages * 100))) : 0;
     const availableGold = Math.max(totalGold - haveGold, 0);
     const availableBoundGold = Math.max(
         filteredChecklist
@@ -641,11 +645,36 @@ export function ChecklistStatue({
                                     <div>
                                         <div className="flex justify-between gap-2"><span>주간 골드량</span><strong>{haveGold.toLocaleString()} / {totalGold.toLocaleString()}</strong></div>
                                         <Progress aria-label="주간 골드 획득률" size="sm" color="warning" value={haveGold} maxValue={totalGold || 1} className="mt-1"/>
-                                        <div className="mt-1 flex justify-between gap-2 text-default-500 dark:text-white/70"><span>획득 가능 {availableGold.toLocaleString()} 골드</span><button type="button" className="text-primary dark:text-primary-200" onClick={onGoldDetailOpen}>자세히 ›</button></div>
+                                        <div className="mt-1 flex items-center gap-2 text-default-500 dark:text-white/70">
+                                            <Popover showArrow placement="right-start">
+                                                <PopoverTrigger>
+                                                    <button type="button" className="min-w-0 cursor-pointer text-left hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">획득 가능 {availableGold.toLocaleString()} 골드</button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="border border-warning-200/80 bg-white/95 p-0 shadow-xl backdrop-blur-xl dark:border-warning-900/50 dark:bg-[#171717]/95">
+                                                    <div className="w-[240px] p-4">
+                                                        <p className="text-sm font-semibold">획득 가능한 골드</p>
+                                                        <p className="mt-1 text-xs leading-5 fadedtext">남은 주간 골드를 거래가능 골드와 귀속 골드로 나누어 보여줍니다.</p>
+                                                        <div className="mt-3 space-y-2 rounded-xl bg-warning-50/70 p-3 text-sm dark:bg-warning-950/20">
+                                                            <div className="flex items-center justify-between gap-3">
+                                                                <span className="text-default-500">거래가능 골드</span>
+                                                                <span className="flex items-center gap-1 font-semibold"><img src="/icons/gold.png" alt="거래가능 골드" className="h-[14px] w-[14px]"/><strong>{availableSharedGold.toLocaleString()}</strong></span>
+                                                            </div>
+                                                            <div className="flex items-center justify-between gap-3">
+                                                                <span className="text-default-500">귀속 골드</span>
+                                                                <span className="flex items-center gap-1 font-semibold"><img src="/icons/gold.png" alt="귀속 골드" className="h-[14px] w-[14px]"/><strong>{availableBoundGold.toLocaleString()}</strong></span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </PopoverContent>
+                                            </Popover>
+                                            <span className="ml-auto shrink-0 font-semibold tabular-nums text-warning-600 dark:text-warning-400">{goldProgress}%</span>
+                                            <button type="button" className="shrink-0 text-primary dark:text-primary-200" onClick={onGoldDetailOpen}>자세히 ›</button>
+                                        </div>
                                     </div>
                                     <div className="border-t border-default-200/80 pt-2 dark:border-white/10">
                                         <div className="flex justify-between gap-2"><span>숙제 진행 상황</span><strong>{getCompleteChecklist(checklist)} / {getAllCountChecklist(checklist)}</strong></div>
                                         <Progress aria-label="숙제 관문 완료율" size="sm" color="secondary" value={getCompleteChecklistByStage(checklist)} maxValue={getAllCountChecklistByStage(checklist) || 1} className="mt-1"/>
+                                        <p className="mt-1 text-right font-semibold tabular-nums text-secondary-600 dark:text-secondary-400">{homeworkProgress}%</p>
                                     </div>
                                     <div className="border-t border-default-200/80 pt-2 dark:border-white/10">
                                         <div className="flex justify-between gap-2"><span>생명의 기운</span><strong>{Math.floor(life).toLocaleString()} / {max.toLocaleString()}</strong></div>
@@ -706,6 +735,7 @@ export function ChecklistStatue({
                                             </div>
                                         </PopoverContent>
                                     </Popover>
+                                    <span className="ml-auto shrink-0 font-semibold tabular-nums text-warning-600 dark:text-warning-400">{goldProgress}%</span>
                                     <button type="button" onClick={onGoldDetailOpen} className="shrink-0 cursor-pointer hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">자세히 ›</button>
                                 </div>
                             </div>
@@ -715,7 +745,10 @@ export function ChecklistStatue({
                                     <strong className="tabular-nums text-foreground">{getCompleteChecklist(checklist)} <span className="font-normal text-default-400">/ {getAllCountChecklist(checklist)}</span></strong>
                                 </div>
                                 <Progress aria-label="숙제 관문 완료율" size="sm" color="secondary" value={getCompleteChecklistByStage(checklist)} maxValue={getAllCountChecklistByStage(checklist) || 1} className="mt-1.5" classNames={{ track: "h-1 bg-default-200/80", indicator: "h-1" }}/>
-                                <p className="mt-1.5 text-[11px] text-default-500">골드 받는 숙제 {getAllCountChecklistByGold(checklist) - getCompleteChecklistByGold(checklist)}개 남음</p>
+                                <div className="mt-1.5 flex items-center justify-between gap-2 text-[11px]">
+                                    <p className="text-default-500">골드 받는 숙제 {getAllCountChecklistByGold(checklist) - getCompleteChecklistByGold(checklist)}개 남음</p>
+                                    <span className="shrink-0 font-semibold tabular-nums text-secondary-600 dark:text-secondary-400">{homeworkProgress}%</span>
+                                </div>
                             </div>
                             <div className="border-t border-default-200/70 pt-3 dark:border-white/10">
                                 <div className="flex items-center justify-between gap-2">
@@ -2536,7 +2569,8 @@ export type SettingButtonProps = {
     setAccounts: SetStateFn<string[]>,
     compact?: boolean,
     isAutoRegisteringRaids: boolean,
-    onRaidAutoRegistration: (nickname?: string) => Promise<void>
+    onRaidAutoRegistration: (nickname?: string) => Promise<void>,
+    onOpenDailyContentManager?: () => void
 }
 export function SettingButton({
     size,
@@ -2547,7 +2581,8 @@ export function SettingButton({
     setAccounts,
     compact = false,
     isAutoRegisteringRaids,
-    onRaidAutoRegistration
+    onRaidAutoRegistration,
+    onOpenDailyContentManager
 }: SettingButtonProps) {
     const [isOpenAccount, setOpenAccount] = useState(false);
     const onOpenChangeAccount = (isOpen: boolean) => setOpenAccount(isOpen);
@@ -2566,6 +2601,7 @@ export function SettingButton({
                     </Button>
                 </DropdownTrigger>
                 <DropdownMenu aria-label="캐릭터 설정 메뉴" variant="flat" className="min-w-[190px] p-1">
+                    {onOpenDailyContentManager ? <DropdownItem key="daily-content" startContent={<SettingIcon size={16}/>} onPress={onOpenDailyContentManager}>일일 콘텐츠 설정</DropdownItem> : null}
                     <DropdownItem 
                         key="gold"
                         startContent={
