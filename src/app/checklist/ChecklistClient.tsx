@@ -38,7 +38,10 @@ export const defaultSettings: Settings = {
     isHideBonusMode: false,
     isAutoDeleteUnselectedRaids: false,
     isHideParadisePower: false,
-    isHideCharacterMemo: false
+    isHideCharacterMemo: false,
+    includeNonGoldRaidsForCompletion: false,
+    includeHourglassForCompletion: false,
+    includeParadiseForCompletion: false
 }
 
 
@@ -85,6 +88,7 @@ export default function ChecklistClient() {
     const [isOpenLookupDrawer, setOpenLookupDrawer] = useState(false);
     const [isLookupExpanded, setLookupExpanded] = useState(false);
     const [isLookupContentExpanded, setLookupContentExpanded] = useState(false);
+    const [completionSettings, setCompletionSettings] = useState({ includeNonGoldRaidsForCompletion: false, includeHourglassForCompletion: false, includeParadiseForCompletion: false });
     const onOpenChangeBosses = (isOpen: boolean) => setOpenBosses(isOpen);
     useLoadingTask("레이드를 자동 등록하고 있어요", isAutoRegisteringRaids);
     const isTableView = checklistViewStyle === 'table' && viewportWidth > 720;
@@ -363,6 +367,7 @@ export default function ChecklistClient() {
             if (settingLocal) {
                 const localSetting: Settings = JSON.parse(settingLocal);
                 const settings: Settings = { ...defaultSettings, ...localSetting};
+                setCompletionSettings({ includeNonGoldRaidsForCompletion: !!settings.includeNonGoldRaidsForCompletion, includeHourglassForCompletion: !!settings.includeHourglassForCompletion, includeParadiseForCompletion: !!settings.includeParadiseForCompletion });
                 setChecklistViewStyle(settings.checklistViewStyle);
                 setTableBonusMode(settings.isTableBonusMode);
                 checklistForm.setHideDayContent(settings.isHideDayContent);
@@ -379,6 +384,7 @@ export default function ChecklistClient() {
                 const res = await fetch(`/api/setting?id=${id}`);
                 if (res.ok) {
                     const settings: Settings = await res.json();
+                    setCompletionSettings({ includeNonGoldRaidsForCompletion: !!settings.includeNonGoldRaidsForCompletion, includeHourglassForCompletion: !!settings.includeHourglassForCompletion, includeParadiseForCompletion: !!settings.includeParadiseForCompletion });
                     localStorage.setItem('userSettings', JSON.stringify(settings));
                     setChecklistViewStyle(settings.checklistViewStyle);
                     setTableBonusMode(settings.isTableBonusMode);
@@ -568,6 +574,7 @@ export default function ChecklistClient() {
                                     isBonusModeEnabled={isTableBonusMode}
                                     isHideParadisePower={checklistForm.isHideParadisePower}
                                     isHideCharacterMemo={checklistForm.isHideCharacterMemo}
+                                    completionSettings={completionSettings}
                                     autoChecklistNickname={autoChecklistNickname}
                                     isAutoChecklistSharing={isAutoChecklistSharing}
                                     onSelectAutoChecklistCharacter={setAutoChecklistNickname}

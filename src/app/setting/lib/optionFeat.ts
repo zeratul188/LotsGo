@@ -138,7 +138,7 @@ export async function handleHideCharacterMemo(
 async function updateSetting(
     settings: Settings | null,
     setSettings: SetStateFn<Settings | null>,
-    key: 'isHideParadisePower' | 'isHideCharacterMemo'
+    key: 'isHideParadisePower' | 'isHideCharacterMemo' | 'includeNonGoldRaidsForCompletion' | 'includeHourglassForCompletion' | 'includeParadiseForCompletion'
 ) {
     const userStr = sessionStorage.getItem('user');
     const storedUser: LoginUser = userStr ? JSON.parse(userStr) : null;
@@ -161,6 +161,10 @@ async function updateSetting(
             color: 'danger'
         });
     }
+}
+
+export async function handleCompletionSetting(settings: Settings | null, setSettings: SetStateFn<Settings | null>, key: 'includeNonGoldRaidsForCompletion' | 'includeHourglassForCompletion' | 'includeParadiseForCompletion') {
+    await updateSetting(settings, setSettings, key);
 }
 
 export async function handleAutoDeleteUnselectedRaids(

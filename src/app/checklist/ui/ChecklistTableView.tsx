@@ -66,6 +66,7 @@ type ChecklistTableViewProps = {
     isBonusModeEnabled: boolean;
     isHideParadisePower: boolean;
     isHideCharacterMemo: boolean;
+    completionSettings: { includeNonGoldRaidsForCompletion: boolean; includeHourglassForCompletion: boolean; includeParadiseForCompletion: boolean };
     onOpenContentManager: (characterIndex: number, type: 'day' | 'week') => void;
     autoChecklistNickname: string;
     isAutoChecklistSharing: boolean;
@@ -449,6 +450,7 @@ export default function ChecklistTableView({
     isBonusModeEnabled,
     isHideParadisePower,
     isHideCharacterMemo,
+    completionSettings,
     onOpenContentManager,
     autoChecklistNickname,
     isAutoChecklistSharing,
@@ -582,26 +584,36 @@ export default function ChecklistTableView({
                 {visibleCharacters.map(character => {
                     const characterIndex = getIndexByNickname(checklist, character.nickname);
                     const isSharingCharacter = isAutoChecklistSharing && autoChecklistNickname === character.nickname;
+                    const eligibleRaids = character.checklist.filter(content => content.items.some(stage => !stage.isDisable));
+                    const remainingRaids = eligibleRaids.filter(content => content.items.some(stage => !stage.isDisable && !stage.isCheck));
+                    const goldRaids = eligibleRaids.filter(content => content.isGold);
+                    const requiredRaids = completionSettings.includeNonGoldRaidsForCompletion || goldRaids.length === 0 ? eligibleRaids : goldRaids;
+                    const completionTargets = requiredRaids.length + Number(!!completionSettings.includeHourglassForCompletion && character.level >= 1730 && character.hallsHourglassVisible !== false) + Number(!!completionSettings.includeParadiseForCompletion && character.level >= 1640 && character.paradiseVisible !== false);
+                    const isCharacterComplete = completionTargets > 0 && requiredRaids.every(content => !content.items.some(stage => !stage.isDisable && !stage.isCheck)) && (!completionSettings.includeHourglassForCompletion || character.level < 1730 || character.hallsHourglassVisible === false || !!character.hallsHourglassCheck) && (!completionSettings.includeParadiseForCompletion || character.level < 1640 || character.paradiseVisible === false || !!character.paradiseCheck);
                     return (
                         <div key={character.nickname} className="border-b border-default-200 dark:border-white/10">
                             <div className="grid grid-cols-[280px_minmax(0,1fr)_148px]">
-                                <div className={clsx("flex min-h-20 w-[280px] items-stretch border-r border-default-200 dark:border-white/10", isSharingCharacter ? "bg-primary-50 dark:bg-primary-950/30" : "bg-white dark:bg-[#171717]")}>
+                                <div className={clsx("flex min-h-20 w-[280px] items-stretch border-r border-default-200 dark:border-white/10", isCharacterComplete ? "bg-emerald-100/80 dark:bg-emerald-900/55" : isSharingCharacter ? "bg-primary-50 dark:bg-primary-950/30" : "bg-white dark:bg-[#171717]")}>
                                 <Popover placement="right-start" offset={8} isOpen={openInfoNickname === character.nickname} onOpenChange={open => setOpenInfoNickname(open ? character.nickname : null)}>
                                     <PopoverTrigger>
                                         <button
                                             type="button"
                                             aria-label={`${character.nickname} 캐릭터 정보`}
-                                            className={clsx("flex min-w-0 grow cursor-pointer items-center gap-2 px-3 py-3 text-left transition-colors hover:bg-default-50 aria-expanded:bg-warning-50 dark:hover:bg-white/[0.04] dark:aria-expanded:bg-warning-950/20", isSharingCharacter && "bg-primary-50 dark:bg-primary-950/30")}>
+                                            className={clsx("flex min-w-0 grow cursor-pointer items-center gap-2 px-3 py-3 text-left transition-colors hover:bg-default-50 aria-expanded:bg-warning-50 dark:hover:bg-white/[0.04] dark:aria-expanded:bg-warning-950/20", isCharacterComplete ? "bg-emerald-100/80 dark:bg-emerald-900/55" : isSharingCharacter && "bg-primary-50 dark:bg-primary-950/30")}>
                                             <JobEmblemIcon job={character.job} size={38} className="shrink-0"/>
                                             <div className="min-w-0 grow">
                                                 <p className="truncate text-sm font-semibold">{character.nickname}</p>
                                                 <p className="mt-0.5 truncate text-[11px] text-default-500">Lv.{character.level} · {character.job}</p>
-                                                <div className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-warning-700 dark:text-warning-400">
+                                                <div className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-warning-700 dark:text-warning-400">
                                                     <img src="/icons/gold.png" alt="" className="h-3.5 w-3.5"/>
                                                     <AnimatedNumber value={getCompleteGoldCharacter(bosses, character) + getOtherGoldTotal(character)}/>
                                                     <span>/</span>
                                                     <AnimatedNumber value={getAllGoldCharacter(bosses, character) + getOtherGoldTotal(character)}/>
                                                 </div>
+                                                {remainingRaids.length > 0 && <div className="mt-1 flex h-[8px] items-center gap-1" aria-label={`미완료 주간 콘텐츠 ${remainingRaids.length}개`}>
+                                                    {remainingRaids.slice(0, 10).map(content => <span key={content.name} title={content.name} className={clsx("h-[8px] w-[8px] shrink-0 rounded-full", content.isGold ? "bg-warning-400 dark:bg-warning-500" : "bg-primary-400 dark:bg-primary-500")}/>)}
+                                                    {remainingRaids.length > 10 && <span className="text-[10px] leading-none text-default-500">+</span>}
+                                                </div>}
                                             </div>
                                         </button>
                                     </PopoverTrigger>
