@@ -2569,7 +2569,8 @@ export type SettingButtonProps = {
     setAccounts: SetStateFn<string[]>,
     compact?: boolean,
     isAutoRegisteringRaids: boolean,
-    onRaidAutoRegistration: (nickname?: string) => Promise<void>
+    onRaidAutoRegistration: (nickname?: string) => Promise<void>,
+    onOpenDailyContentManager?: () => void
 }
 export function SettingButton({
     size,
@@ -2580,7 +2581,8 @@ export function SettingButton({
     setAccounts,
     compact = false,
     isAutoRegisteringRaids,
-    onRaidAutoRegistration
+    onRaidAutoRegistration,
+    onOpenDailyContentManager
 }: SettingButtonProps) {
     const [isOpenAccount, setOpenAccount] = useState(false);
     const onOpenChangeAccount = (isOpen: boolean) => setOpenAccount(isOpen);
@@ -2599,6 +2601,7 @@ export function SettingButton({
                     </Button>
                 </DropdownTrigger>
                 <DropdownMenu aria-label="캐릭터 설정 메뉴" variant="flat" className="min-w-[190px] p-1">
+                    {onOpenDailyContentManager ? <DropdownItem key="daily-content" startContent={<SettingIcon size={16}/>} onPress={onOpenDailyContentManager}>일일 콘텐츠 설정</DropdownItem> : null}
                     <DropdownItem 
                         key="gold"
                         startContent={

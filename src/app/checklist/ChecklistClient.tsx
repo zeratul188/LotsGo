@@ -580,7 +580,11 @@ export default function ChecklistClient() {
                                         accounts={checklistForm.accounts}
                                         setAccounts={checklistForm.setAccounts}
                                         isAutoRegisteringRaids={isAutoRegisteringRaids}
-                                        onRaidAutoRegistration={handleRaidAutoRegistration}/>}
+                                        onRaidAutoRegistration={handleRaidAutoRegistration}
+                                        onOpenDailyContentManager={() => {
+                                            checklistForm.setModalData({ characterIndex, type: 'day' });
+                                            checklistForm.onOpen();
+                                        }}/>}
                                     onOpenContentManager={(characterIndex, type) => {
                                         checklistForm.setModalData({ characterIndex, type });
                                         checklistForm.onOpen();
