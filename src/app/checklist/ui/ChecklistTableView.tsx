@@ -605,7 +605,7 @@ export default function ChecklistTableView({
                                                 <p className="truncate text-sm font-semibold">{character.nickname}</p>
                                                 <p className="mt-0.5 truncate text-[11px] text-default-500">Lv.{character.level} · {character.job}</p>
                                                 <div className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-warning-700 dark:text-warning-400">
-                                                    <img src="/icons/gold.png" alt="" className="h-3.5 w-3.5"/>
+                                                    {character.isGold && <img src="/icons/gold.png" alt="" className="h-3.5 w-3.5"/>}
                                                     <AnimatedNumber value={getCompleteGoldCharacter(bosses, character) + getOtherGoldTotal(character)}/>
                                                     <span>/</span>
                                                     <AnimatedNumber value={getAllGoldCharacter(bosses, character) + getOtherGoldTotal(character)}/>
