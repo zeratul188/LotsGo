@@ -308,22 +308,23 @@ function WeeklyContentCell({
             aria-label={`${content.name} ${isBonusModeEnabled ? '더보기' : '관문'} 전체 ${isComplete ? '해제' : '체크'}`}
             onClick={() => void handleWeekCheckAll(checklist, characterIndex, checklistIndex, dispatch, isBonusModeEnabled)}
             onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); void handleWeekCheckAll(checklist, characterIndex, checklistIndex, dispatch, isBonusModeEnabled); } }}
-            className={clsx("flex h-full min-h-20 cursor-pointer flex-col justify-center gap-1.5 p-2.5 transition-colors", isComplete && "bg-emerald-100/80 dark:bg-emerald-900/55")}>
-            <div className="flex min-w-0 items-center justify-start gap-1.5 text-left text-[10px]">
+            className={clsx("flex h-full min-h-20 cursor-pointer flex-col justify-center gap-1.5 px-2.5 py-1.5 transition-colors", isComplete && "bg-emerald-100/80 dark:bg-emerald-900/55")}>
+            <div className="flex min-w-0 items-center justify-start text-left text-[10px]">
                 {hasSharedGold || hasBoundGold ? (
-                    <>
-                        <img src="/icons/gold.png" alt="" className="h-3.5 w-3.5 shrink-0"/>
-                        {hasSharedGold && hasBoundGold ? (
-                            <div className="flex min-w-0 flex-col leading-tight">
-                                <span className="whitespace-nowrap font-semibold text-blue-600 dark:text-blue-400">거래 가능 {summary.gold.toLocaleString()}</span>
-                                <span className="whitespace-nowrap font-semibold text-amber-600 dark:text-amber-400">귀속 {summary.boundGold.toLocaleString()}</span>
+                    <div className="flex w-full min-w-0 flex-col gap-0.5 tabular-nums">
+                        {hasSharedGold && (
+                            <div className="flex h-[15px] items-center justify-between gap-1 rounded border border-blue-200/70 bg-blue-50/80 px-1.5 text-blue-700 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-300">
+                                <span className="whitespace-nowrap text-[9px]">거래 가능</span>
+                                <span className="whitespace-nowrap text-[10px] font-bold">{summary.gold.toLocaleString()}</span>
                             </div>
-                        ) : hasSharedGold ? (
-                            <span className="whitespace-nowrap font-semibold text-blue-600 dark:text-blue-400">거래 가능 {summary.gold.toLocaleString()}</span>
-                        ) : (
-                            <span className="whitespace-nowrap font-semibold text-amber-600 dark:text-amber-400">귀속 {summary.boundGold.toLocaleString()}</span>
                         )}
-                    </>
+                        {hasBoundGold && (
+                            <div className="flex h-[15px] items-center justify-between gap-1 rounded border border-amber-200/70 bg-amber-50/80 px-1.5 text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-300">
+                                <span className="whitespace-nowrap text-[9px]">귀속</span>
+                                <span className="whitespace-nowrap text-[10px] font-bold">{summary.boundGold.toLocaleString()}</span>
+                            </div>
+                        )}
+                    </div>
                 ) : <span className="text-default-400">획득 가능한 골드 없음</span>}
             </div>
             <div className="flex w-full gap-1.5">
@@ -599,10 +600,10 @@ export default function ChecklistTableView({
                                         <button
                                             type="button"
                                             aria-label={`${character.nickname} 캐릭터 정보`}
-                                            className={clsx("flex min-w-0 grow cursor-pointer items-center gap-2 px-3 py-3 text-left transition-colors hover:bg-default-50 aria-expanded:bg-warning-50 dark:hover:bg-white/[0.04] dark:aria-expanded:bg-warning-950/20", isCharacterComplete ? "bg-emerald-100/80 dark:bg-emerald-900/55" : isSharingCharacter && "bg-primary-50 dark:bg-primary-950/30")}>
+                                            className={clsx("flex min-w-0 grow cursor-pointer items-center gap-1 px-3 py-2.5 text-left transition-colors hover:bg-default-50 aria-expanded:bg-warning-50 dark:hover:bg-white/[0.04] dark:aria-expanded:bg-warning-950/20", isCharacterComplete ? "bg-emerald-100/80 dark:bg-emerald-900/55" : isSharingCharacter && "bg-primary-50 dark:bg-primary-950/30")}>
                                             <JobEmblemIcon job={character.job} size={38} className="shrink-0"/>
                                             <div className="min-w-0 grow">
-                                                <p className="truncate text-sm font-semibold">{character.nickname}</p>
+                                                <p className={clsx("truncate font-semibold", character.nickname.length >= 12 ? "text-[15px]" : "text-sm")}>{character.nickname}</p>
                                                 <p className="mt-0.5 truncate text-[11px] text-default-500">Lv.{character.level} · {character.job}</p>
                                                 <div className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-warning-700 dark:text-warning-400">
                                                     {character.isGold && <img src="/icons/gold.png" alt="" className="h-3.5 w-3.5"/>}
@@ -610,11 +611,13 @@ export default function ChecklistTableView({
                                                     <span>/</span>
                                                     <AnimatedNumber value={getAllGoldCharacter(bosses, character) + getOtherGoldTotal(character)}/>
                                                 </div>
-                                                {remainingRaids.length > 0 && <div className="mt-1 flex h-[8px] items-center gap-1" aria-label={`미완료 주간 콘텐츠 ${remainingRaids.length}개`}>
-                                                    {remainingRaids.slice(0, 10).map(content => <span key={content.name} title={content.name} className={clsx("h-[8px] w-[8px] shrink-0 rounded-full", content.isGold ? "bg-warning-400 dark:bg-warning-500" : "bg-primary-400 dark:bg-primary-500")}/>)}
-                                                    {remainingRaids.length > 10 && <span className="text-[10px] leading-none text-default-500">+</span>}
-                                                </div>}
                                             </div>
+                                            {remainingRaids.length > 0 && <div className={clsx("flex shrink-0 flex-col items-center gap-0.5", remainingRaids.length <= 5 ? "w-1.5" : "w-4")} aria-label={`미완료 주간 콘텐츠 ${remainingRaids.length}개`}>
+                                                <div className={clsx(remainingRaids.length <= 5 ? "flex flex-col gap-0.5" : "grid grid-flow-col grid-cols-2 grid-rows-5 gap-x-1 gap-y-0.5")}>
+                                                    {remainingRaids.slice(0, 10).map(content => <span key={content.name} title={content.name} className={clsx("h-1.5 w-1.5 rounded-full", content.isGold ? "bg-warning-400 dark:bg-warning-500" : "bg-primary-400 dark:bg-primary-500")}/>)}
+                                                </div>
+                                                {remainingRaids.length > 10 && <span className="text-[10px] leading-none text-default-500">+</span>}
+                                            </div>}
                                         </button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-[420px] max-w-[calc(100vw-24px)] overflow-hidden rounded-xl border border-default-200 bg-white p-0 shadow-xl dark:border-white/10 dark:bg-[#1b1b1b]">
