@@ -143,7 +143,7 @@ function OtherTasksPopover({
                     aria-label={`${label} ${completedCount}/${items.length} 완료`}
                     className={clsx(
                         isFixedCell
-                            ? "flex min-h-0 w-full flex-1 cursor-pointer items-center justify-center rounded-md px-1 text-[11px] font-semibold leading-none tabular-nums transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+                            ? "flex min-h-0 w-full flex-1 cursor-pointer items-center justify-center px-1 text-[11px] font-semibold leading-none tabular-nums transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
                             : "flex h-9 w-9 min-w-9 cursor-pointer items-center justify-center rounded-lg border-2 px-0.5 text-[10px] font-semibold tabular-nums transition-colors",
                         isFixedCell
                             ? isComplete
@@ -198,7 +198,7 @@ function DailyContentCell({
     dispatch: AppDispatch;
 }) {
     return (
-        <div className="flex h-full min-h-20 flex-col gap-0.5 p-1">
+        <div className="flex h-full min-h-20 flex-col divide-y divide-default-200 dark:divide-white/10">
             {(['전선', '가디언'] as const).map(type => {
                 const dayValue = getTypeDayValue(character, type);
                 const isChecked = dayValue.value > 0;
@@ -206,22 +206,21 @@ function DailyContentCell({
                 const restDots = Math.min(5, Math.max(0, Math.floor(dayValue.restValue / restStep)));
                 const label = getDayName(type, character.level);
                 return (
-                    <Tooltip key={type} content={label}>
-                        <button
-                                type="button"
-                                onClick={useOnClickDayCheck(checklist, character.nickname, type, character.day, dispatch)}
-                                aria-label={`${character.nickname} ${label} ${isChecked ? '완료 해제' : '완료'} · 휴식 게이지 ${dayValue.restValue}`}
-                                aria-pressed={isChecked}
-                                className={clsx(
-                                    "flex min-h-0 w-full flex-1 cursor-pointer items-center justify-between gap-1 rounded-md px-1 text-[10px] font-semibold leading-none transition-colors",
-                                    type === '전선'
-                                        ? isChecked ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-purple-50 text-purple-700 hover:bg-purple-100 dark:bg-purple-950/50 dark:text-purple-300 dark:hover:bg-purple-900/60"
-                                        : isChecked ? "bg-red-600 text-white hover:bg-red-700" : "bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-950/50 dark:text-red-300 dark:hover:bg-red-900/60"
-                                )}>
-                            <span className="flex min-w-0 items-center gap-1"><span className="shrink-0 [&>span]:h-3 [&>span]:w-3"><DailyContentIcon type={type}/></span><span className="truncate">{label}</span></span>
-                            {restDots > 0 && <span aria-label={`휴식 ${restDots}개`} className="flex shrink-0 items-center gap-0.5">{Array.from({ length: restDots }, (_, index) => <span key={index} className="h-1 w-1 rounded-full bg-green-500"/>)}</span>}
-                        </button>
-                    </Tooltip>
+                    <button
+                        key={type}
+                        type="button"
+                        onClick={useOnClickDayCheck(checklist, character.nickname, type, character.day, dispatch)}
+                        aria-label={`${character.nickname} ${label} ${isChecked ? '완료 해제' : '완료'} · 휴식 게이지 ${dayValue.restValue}`}
+                        aria-pressed={isChecked}
+                        className={clsx(
+                            "flex min-h-0 w-full flex-1 cursor-pointer items-center justify-between gap-1 px-2 text-[10px] font-semibold leading-none transition-colors",
+                            type === '전선'
+                                ? isChecked ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-purple-50 text-purple-700 hover:bg-purple-100 dark:bg-purple-950/50 dark:text-purple-300 dark:hover:bg-purple-900/60"
+                                : isChecked ? "bg-red-600 text-white hover:bg-red-700" : "bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-950/50 dark:text-red-300 dark:hover:bg-red-900/60"
+                        )}>
+                        <span className="flex min-w-0 items-center gap-1"><span className="shrink-0 [&>span]:h-3 [&>span]:w-3"><DailyContentIcon type={type}/></span><span className="truncate">{label}</span></span>
+                        {restDots > 0 && <span aria-label={`휴식 ${restDots}개`} className="flex shrink-0 items-center gap-0.5">{Array.from({ length: restDots }, (_, index) => <span key={index} className="h-1 w-1 rounded-full bg-green-500"/>)}</span>}
+                    </button>
                 );
             })}
             {character.daylist.length > 0 && (
@@ -410,27 +409,23 @@ function FixedWeeklyCell({ character, checklist, characterIndex, dispatch }: { c
     const showHourglass = character.level >= 1730 && character.hallsHourglassVisible !== false;
     const showParadise = character.level >= 1640 && character.paradiseVisible !== false;
     return (
-        <div className="flex h-full min-h-20 flex-col gap-1 p-1">
+        <div className="flex h-full min-h-20 flex-col divide-y divide-default-200 dark:divide-white/10">
             {character.weeklist.length > 0 && <OtherTasksPopover label="주간 기타 숙제" items={character.weeklist} onCheck={index => handleWeekListCheck(checklist, characterIndex, index, dispatch)} isFixedCell/>}
             {showHourglass ? (
-                <Tooltip content="할의 모래시계">
                     <button
                         type="button"
                         onClick={() => void handleHallsHourglassCheck(checklist, character.nickname, !(character.hallsHourglassCheck ?? false), dispatch)}
-                        className={clsx("flex min-h-0 w-full flex-1 cursor-pointer items-center justify-center gap-1 rounded-md px-1 text-[11px] font-semibold leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500", character.hallsHourglassCheck ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400" : "bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/50 dark:text-blue-300 dark:hover:bg-blue-900/60")}
+                        className={clsx("flex min-h-0 w-full flex-1 cursor-pointer items-center justify-center gap-1 px-1 text-[11px] font-semibold leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500", character.hallsHourglassCheck ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400" : "bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/50 dark:text-blue-300 dark:hover:bg-blue-900/60")}
                         aria-pressed={character.hallsHourglassCheck ?? false}
                         aria-label={`${character.nickname} 할의 모래시계`}><span className="shrink-0 [&_svg]:h-4 [&_svg]:w-4"><HourglassIcon/></span>모래시계</button>
-                </Tooltip>
             ) : null}
             {showParadise ? (
-                <Tooltip content="낙원">
                     <button
                         type="button"
                         onClick={() => void handleParadiseCheck(checklist, character.nickname, !(character.paradiseCheck ?? false), dispatch)}
-                        className={clsx("flex min-h-0 w-full flex-1 cursor-pointer items-center justify-center gap-1 rounded-md px-1 text-[11px] font-semibold leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-500", character.paradiseCheck ? "bg-yellow-600 text-white hover:bg-yellow-700 dark:bg-yellow-500 dark:hover:bg-yellow-400" : "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-950/40 dark:text-yellow-300 dark:hover:bg-yellow-900/40")}
+                        className={clsx("flex min-h-0 w-full flex-1 cursor-pointer items-center justify-center gap-1 px-1 text-[11px] font-semibold leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-500", character.paradiseCheck ? "bg-yellow-600 text-white hover:bg-yellow-700 dark:bg-yellow-500 dark:hover:bg-yellow-400" : "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-950/40 dark:text-yellow-300 dark:hover:bg-yellow-900/40")}
                         aria-pressed={character.paradiseCheck ?? false}
                         aria-label={`${character.nickname} 낙원`}><ParadiseIcon className="h-4 w-4"/>낙원</button>
-                </Tooltip>
             ) : null}
             {character.weeklist.length === 0 && !showHourglass && !showParadise ? <span className="flex flex-1 items-center justify-center text-[10px] text-default-400">콘텐츠 없음</span> : null}
         </div>
@@ -463,6 +458,7 @@ export default function ChecklistTableView({
     const [editorOpen, setEditorOpen] = useState(false);
     const [historyNickname, setHistoryNickname] = useState<string | null>(null);
     const [historyOpen, setHistoryOpen] = useState(false);
+    const [hoveredContentNickname, setHoveredContentNickname] = useState<string | null>(null);
     const [scrollLeft, setScrollLeft] = useState(0);
     const [contentViewportWidth, setContentViewportWidth] = useState(0);
     const contentViewportRef = useRef<HTMLDivElement>(null);
@@ -593,7 +589,7 @@ export default function ChecklistTableView({
                     const isCharacterComplete = completionTargets > 0 && requiredRaids.every(content => !content.items.some(stage => !stage.isDisable && !stage.isCheck)) && (!completionSettings.includeHourglassForCompletion || character.level < 1730 || character.hallsHourglassVisible === false || !!character.hallsHourglassCheck) && (!completionSettings.includeParadiseForCompletion || character.level < 1640 || character.paradiseVisible === false || !!character.paradiseCheck);
                     return (
                         <div key={character.nickname} className="border-b border-default-200 dark:border-white/10">
-                            <div className="grid grid-cols-[280px_minmax(0,1fr)_148px]">
+                            <div className="relative grid grid-cols-[280px_minmax(0,1fr)_148px]">
                                 <div className={clsx("flex min-h-20 w-[280px] items-stretch border-r border-default-200 dark:border-white/10", isCharacterComplete ? "bg-emerald-100/80 dark:bg-emerald-900/55" : isSharingCharacter ? "bg-primary-50 dark:bg-primary-950/30" : "bg-white dark:bg-[#171717]")}>
                                 <Popover placement="right-start" offset={8} isOpen={openInfoNickname === character.nickname} onOpenChange={open => setOpenInfoNickname(open ? character.nickname : null)}>
                                     <PopoverTrigger>
@@ -683,7 +679,7 @@ export default function ChecklistTableView({
                                     </button>
                                 </div>
                                 </div>
-                                 <div className="min-w-0 overflow-hidden bg-default-200/70 dark:bg-white/[0.10]" onWheel={handleContentWheel}>
+                                <div className="min-w-0 overflow-hidden bg-default-200/70 dark:bg-white/[0.10]" onWheel={handleContentWheel} onMouseEnter={() => setHoveredContentNickname(character.nickname)} onMouseLeave={() => setHoveredContentNickname(null)}>
                                     <div className="flex h-full transition-transform duration-150" style={contentTransform}>
                                         {!isHideDayContent ? (
                                             <div className="shrink-0 border-r border-default-200 bg-white dark:border-white/10 dark:bg-[#171717]" style={{ width: dailyColumnWidth }}>
@@ -701,10 +697,11 @@ export default function ChecklistTableView({
                                         })}
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-[96px_52px] divide-x divide-secondary-100 border-l border-secondary-200 bg-secondary-50/15 dark:divide-secondary-900/40 dark:border-secondary-900/60 dark:bg-secondary-950/5">
+                                <div className="grid grid-cols-[96px_52px] divide-x divide-secondary-100 border-l border-secondary-200 bg-secondary-50/15 dark:divide-secondary-900/40 dark:border-secondary-900/60 dark:bg-secondary-950/5" onMouseEnter={() => setHoveredContentNickname(character.nickname)} onMouseLeave={() => setHoveredContentNickname(null)}>
                                     <FixedWeeklyCell character={character} checklist={checklist} characterIndex={characterIndex} dispatch={dispatch}/>
                                     <button type="button" onClick={() => onOpenContentManager(characterIndex, 'week')} className="flex min-h-20 cursor-pointer items-center justify-center text-secondary-600 transition-colors hover:bg-secondary-50 dark:text-secondary-300 dark:hover:bg-secondary-950/25" aria-label={`${character.nickname} 주간 콘텐츠 관리`}><SettingIcon size={19}/></button>
                                 </div>
+                                {hoveredContentNickname === character.nickname && <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-20 bg-black/5 dark:bg-white/10"/>}
                             </div>
                         </div>
                     );
