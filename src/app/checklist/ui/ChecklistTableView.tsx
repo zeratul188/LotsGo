@@ -76,22 +76,31 @@ type ChecklistTableViewProps = {
 
 function getStageButtonClass(difficulty: string, disabled: boolean, active: boolean, bonusMode: boolean) {
     if (disabled) return 'border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-500';
-    if (bonusMode && active) return 'border-amber-400 bg-amber-200 text-amber-900 hover:bg-amber-300/80 dark:border-amber-400/70 dark:bg-amber-900/80 dark:text-amber-100 dark:hover:bg-amber-800/80';
+    if (bonusMode && active) return 'border-transparent bg-amber-200 text-amber-900 hover:bg-amber-300/80 dark:bg-amber-900/80 dark:text-amber-100 dark:hover:bg-amber-800/80';
     if (difficulty.includes('싱글') || difficulty.includes('매칭')) return active
-        ? 'border-blue-400 bg-blue-200 text-blue-900 hover:bg-blue-300/80 dark:border-blue-400/70 dark:bg-blue-900/80 dark:text-blue-100 dark:hover:bg-blue-800/80'
+        ? 'border-transparent bg-blue-200 text-blue-900 hover:bg-blue-300/80 dark:bg-blue-900/80 dark:text-blue-100 dark:hover:bg-blue-800/80'
         : 'border-slate-200 bg-white text-blue-600 hover:border-blue-300 hover:bg-blue-50 dark:border-slate-700 dark:bg-[#202025] dark:text-blue-300 dark:hover:border-blue-500/60 dark:hover:bg-blue-950/50';
     if (difficulty.includes('노말') || difficulty.includes('1단계')) return active
-        ? 'border-green-400 bg-green-200 text-green-900 hover:bg-green-300/80 dark:border-green-400/70 dark:bg-green-900/80 dark:text-green-100 dark:hover:bg-green-800/80'
+        ? 'border-transparent bg-green-200 text-green-900 hover:bg-green-300/80 dark:bg-green-900/80 dark:text-green-100 dark:hover:bg-green-800/80'
         : 'border-slate-200 bg-white text-green-700 hover:border-green-300 hover:bg-green-50 dark:border-slate-700 dark:bg-[#202025] dark:text-green-300 dark:hover:border-green-500/60 dark:hover:bg-green-950/50';
     if (difficulty.includes('하드') || difficulty.includes('2단계')) return active
-        ? 'border-red-400 bg-red-200 text-red-900 hover:bg-red-300/80 dark:border-red-400/70 dark:bg-red-900/80 dark:text-red-100 dark:hover:bg-red-800/80'
+        ? 'border-transparent bg-red-200 text-red-900 hover:bg-red-300/80 dark:bg-red-900/80 dark:text-red-100 dark:hover:bg-red-800/80'
         : 'border-slate-200 bg-white text-red-600 hover:border-red-300 hover:bg-red-50 dark:border-slate-700 dark:bg-[#202025] dark:text-red-300 dark:hover:border-red-500/60 dark:hover:bg-red-950/50';
     if (difficulty.includes('더퍼스트') || difficulty.includes('나이트메어') || difficulty.includes('3단계')) return active
-        ? 'border-purple-400 bg-purple-200 text-purple-900 hover:bg-purple-300/80 dark:border-purple-400/70 dark:bg-purple-900/80 dark:text-purple-100 dark:hover:bg-purple-800/80'
+        ? 'border-transparent bg-purple-200 text-purple-900 hover:bg-purple-300/80 dark:bg-purple-900/80 dark:text-purple-100 dark:hover:bg-purple-800/80'
         : 'border-slate-200 bg-white text-purple-600 hover:border-purple-300 hover:bg-purple-50 dark:border-slate-700 dark:bg-[#202025] dark:text-purple-300 dark:hover:border-purple-500/60 dark:hover:bg-purple-950/50';
     return active
-        ? 'border-gray-400 bg-gray-200 text-gray-900 hover:bg-gray-300/80 dark:border-gray-400/70 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600'
+        ? 'border-transparent bg-gray-200 text-gray-900 hover:bg-gray-300/80 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600'
         : 'border-gray-300 bg-gray-50 text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300';
+}
+
+function getStageFrameClass(difficulty: string, bonusMode: boolean) {
+    if (bonusMode) return 'border-amber-400 dark:border-amber-400/70';
+    if (difficulty.includes('싱글') || difficulty.includes('매칭')) return 'border-blue-400 dark:border-blue-400/70';
+    if (difficulty.includes('노말') || difficulty.includes('1단계')) return 'border-green-400 dark:border-green-400/70';
+    if (difficulty.includes('하드') || difficulty.includes('2단계')) return 'border-red-400 dark:border-red-400/70';
+    if (difficulty.includes('더퍼스트') || difficulty.includes('나이트메어') || difficulty.includes('3단계')) return 'border-purple-400 dark:border-purple-400/70';
+    return 'border-gray-400 dark:border-gray-400/70';
 }
 
 function HourglassIcon() {
@@ -143,7 +152,7 @@ function OtherTasksPopover({
                     aria-label={`${label} ${completedCount}/${items.length} 완료`}
                     className={clsx(
                         isFixedCell
-                            ? "flex min-h-0 w-full flex-1 cursor-pointer items-center justify-center rounded-md px-1 text-[11px] font-semibold leading-none tabular-nums transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
+                            ? "flex min-h-0 w-full flex-1 cursor-pointer items-center justify-center px-1 text-[11px] font-semibold leading-none tabular-nums transition-colors duration-[400ms] ease-out motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-secondary"
                             : "flex h-9 w-9 min-w-9 cursor-pointer items-center justify-center rounded-lg border-2 px-0.5 text-[10px] font-semibold tabular-nums transition-colors",
                         isFixedCell
                             ? isComplete
@@ -198,7 +207,7 @@ function DailyContentCell({
     dispatch: AppDispatch;
 }) {
     return (
-        <div className="flex h-full min-h-20 flex-col gap-0.5 p-1">
+        <div className="flex h-full min-h-20 flex-col divide-y divide-default-200 dark:divide-white/10">
             {(['전선', '가디언'] as const).map(type => {
                 const dayValue = getTypeDayValue(character, type);
                 const isChecked = dayValue.value > 0;
@@ -206,22 +215,21 @@ function DailyContentCell({
                 const restDots = Math.min(5, Math.max(0, Math.floor(dayValue.restValue / restStep)));
                 const label = getDayName(type, character.level);
                 return (
-                    <Tooltip key={type} content={label}>
-                        <button
-                                type="button"
-                                onClick={useOnClickDayCheck(checklist, character.nickname, type, character.day, dispatch)}
-                                aria-label={`${character.nickname} ${label} ${isChecked ? '완료 해제' : '완료'} · 휴식 게이지 ${dayValue.restValue}`}
-                                aria-pressed={isChecked}
-                                className={clsx(
-                                    "flex min-h-0 w-full flex-1 cursor-pointer items-center justify-between gap-1 rounded-md px-1 text-[10px] font-semibold leading-none transition-colors",
-                                    type === '전선'
-                                        ? isChecked ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-purple-50 text-purple-700 hover:bg-purple-100 dark:bg-purple-950/50 dark:text-purple-300 dark:hover:bg-purple-900/60"
-                                        : isChecked ? "bg-red-600 text-white hover:bg-red-700" : "bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-950/50 dark:text-red-300 dark:hover:bg-red-900/60"
-                                )}>
-                            <span className="flex min-w-0 items-center gap-1"><span className="shrink-0 [&>span]:h-3 [&>span]:w-3"><DailyContentIcon type={type}/></span><span className="truncate">{label}</span></span>
-                            {restDots > 0 && <span aria-label={`휴식 ${restDots}개`} className="flex shrink-0 items-center gap-0.5">{Array.from({ length: restDots }, (_, index) => <span key={index} className="h-1 w-1 rounded-full bg-green-500"/>)}</span>}
-                        </button>
-                    </Tooltip>
+                    <button
+                        key={type}
+                        type="button"
+                        onClick={useOnClickDayCheck(checklist, character.nickname, type, character.day, dispatch)}
+                        aria-label={`${character.nickname} ${label} ${isChecked ? '완료 해제' : '완료'} · 휴식 게이지 ${dayValue.restValue}`}
+                        aria-pressed={isChecked}
+                        className={clsx(
+                            "flex min-h-0 w-full flex-1 cursor-pointer items-center justify-between gap-1 px-2 text-[10px] font-semibold leading-none transition-colors duration-[400ms] ease-out motion-reduce:transition-none",
+                            type === '전선'
+                                ? isChecked ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-purple-50 text-purple-700 hover:bg-purple-100 dark:bg-purple-950/50 dark:text-purple-300 dark:hover:bg-purple-900/60"
+                                : isChecked ? "bg-red-600 text-white hover:bg-red-700" : "bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-950/50 dark:text-red-300 dark:hover:bg-red-900/60"
+                        )}>
+                        <span className="flex min-w-0 items-center gap-1"><span className="shrink-0 [&>span]:h-3 [&>span]:w-3"><DailyContentIcon type={type}/></span><span className="truncate">{label}</span></span>
+                        {restDots > 0 && <span aria-label={`휴식 ${restDots}개`} className="flex shrink-0 items-center gap-0.5">{Array.from({ length: restDots }, (_, index) => <span key={index} className="h-1 w-1 rounded-full bg-green-500"/>)}</span>}
+                    </button>
                 );
             })}
             {character.daylist.length > 0 && (
@@ -281,7 +289,8 @@ function WeeklyContentCell({
     characterIndex,
     checklistIndex,
     dispatch,
-    isBonusModeEnabled
+    isBonusModeEnabled,
+    compactGold
 }: {
     content?: Checklist;
     bosses: Boss[];
@@ -290,6 +299,7 @@ function WeeklyContentCell({
     checklistIndex: number;
     dispatch: AppDispatch;
     isBonusModeEnabled: boolean;
+    compactGold: boolean;
 }) {
     if (!content || checklistIndex < 0 || content.items.length === 0) {
         return <div className="flex h-full min-h-20 items-center justify-center bg-default-200/70 px-2 text-center text-[11px] text-default-400 dark:bg-white/[0.10]">콘텐츠 없음</div>;
@@ -308,22 +318,23 @@ function WeeklyContentCell({
             aria-label={`${content.name} ${isBonusModeEnabled ? '더보기' : '관문'} 전체 ${isComplete ? '해제' : '체크'}`}
             onClick={() => void handleWeekCheckAll(checklist, characterIndex, checklistIndex, dispatch, isBonusModeEnabled)}
             onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); void handleWeekCheckAll(checklist, characterIndex, checklistIndex, dispatch, isBonusModeEnabled); } }}
-            className={clsx("flex h-full min-h-20 cursor-pointer flex-col justify-center gap-1.5 p-2.5 transition-colors", isComplete && "bg-emerald-100/80 dark:bg-emerald-900/55")}>
-            <div className="flex min-w-0 items-center justify-start gap-1.5 text-left text-[10px]">
+            className={clsx("flex h-full min-h-20 cursor-pointer flex-col justify-center gap-1.5 px-2.5 py-1.5 transition-colors duration-[400ms] ease-out motion-reduce:transition-none", isComplete && "bg-emerald-100/80 dark:bg-emerald-900/55")}>
+            <div className="flex min-w-0 items-center justify-start text-left text-[10px]">
                 {hasSharedGold || hasBoundGold ? (
-                    <>
-                        <img src="/icons/gold.png" alt="" className="h-3.5 w-3.5 shrink-0"/>
-                        {hasSharedGold && hasBoundGold ? (
-                            <div className="flex min-w-0 flex-col leading-tight">
-                                <span className="whitespace-nowrap font-semibold text-blue-600 dark:text-blue-400">거래 가능 {summary.gold.toLocaleString()}</span>
-                                <span className="whitespace-nowrap font-semibold text-amber-600 dark:text-amber-400">귀속 {summary.boundGold.toLocaleString()}</span>
+                    <div className="flex w-full min-w-0 flex-col gap-0.5 tabular-nums">
+                        {hasSharedGold && (
+                            <div className={clsx("flex h-[15px] items-center justify-between gap-1 rounded border", summary.gold < 0 ? "border-red-200/70 bg-red-50/80 text-red-700 dark:border-red-400/20 dark:bg-red-400/10 dark:text-red-300" : "border-blue-200/70 bg-blue-50/80 text-blue-700 dark:border-blue-400/20 dark:bg-blue-400/10 dark:text-blue-300", compactGold ? "justify-center px-0.5" : "px-1.5")} title={`거래 가능 ${summary.gold.toLocaleString()}`}>
+                                <span className={clsx("whitespace-nowrap text-[9px]", compactGold && "sr-only")}>거래 가능</span>
+                                <span className={clsx("whitespace-nowrap font-bold", compactGold ? "text-[9px]" : "text-[10px]")}>{summary.gold.toLocaleString()}</span>
                             </div>
-                        ) : hasSharedGold ? (
-                            <span className="whitespace-nowrap font-semibold text-blue-600 dark:text-blue-400">거래 가능 {summary.gold.toLocaleString()}</span>
-                        ) : (
-                            <span className="whitespace-nowrap font-semibold text-amber-600 dark:text-amber-400">귀속 {summary.boundGold.toLocaleString()}</span>
                         )}
-                    </>
+                        {hasBoundGold && (
+                            <div className={clsx("flex h-[15px] items-center justify-between gap-1 rounded border border-amber-200/70 bg-amber-50/80 text-amber-700 dark:border-amber-400/20 dark:bg-amber-400/10 dark:text-amber-300", compactGold ? "justify-center px-0.5" : "px-1.5")} title={`귀속 ${summary.boundGold.toLocaleString()}`}>
+                                <span className={clsx("whitespace-nowrap text-[9px]", compactGold && "sr-only")}>귀속</span>
+                                <span className={clsx("whitespace-nowrap font-bold", compactGold ? "text-[9px]" : "text-[10px]")}>{summary.boundGold.toLocaleString()}</span>
+                            </div>
+                        )}
+                    </div>
                 ) : <span className="text-default-400">획득 가능한 골드 없음</span>}
             </div>
             <div className="flex w-full gap-1.5">
@@ -386,11 +397,12 @@ function WeeklyContentCell({
                                     ? handleWeekBonusCheckStage(checklist, characterIndex, checklistIndex, dispatch, item.stage)
                                     : handleWeekCheckStage(checklist, characterIndex, checklistIndex, dispatch, item.stage, item.isDisable)); }}
                                 className={clsx(
-                                    "relative flex h-8 w-full min-w-0 cursor-pointer items-center justify-center gap-1 rounded-md border text-xs font-semibold tabular-nums shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed dark:shadow-none",
+                                    "relative flex h-8 w-full min-w-[45px] cursor-pointer items-center justify-center gap-1 rounded-md border text-xs font-semibold tabular-nums shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors duration-[400ms] ease-out motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 disabled:cursor-not-allowed dark:shadow-none",
                                     getStageButtonClass(item.difficulty, item.isDisable, isActive, isBonusModeEnabled)
                                 )}
                                 aria-pressed={isActive}
                                 aria-label={`${content.name} ${item.stage} ${isBonusModeEnabled ? (item.isBonus ? '더보기 해제' : '더보기') : (item.isCheck ? '완료 해제' : '완료')}`}>
+                                <span aria-hidden="true" className={clsx("pointer-events-none absolute -inset-px z-10 rounded-md border transition-[clip-path] duration-[400ms] ease-out motion-reduce:transition-none", getStageFrameClass(item.difficulty, isBonusModeEnabled))} style={{ clipPath: isActive && !item.isDisable ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)' }}/>
                                 <span aria-hidden="true" className="flex h-3 w-3 shrink-0 items-center justify-center">
                                     {isActive ? <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8 3 3 7-7"/></svg> : <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60"/>}
                                 </span>
@@ -409,27 +421,23 @@ function FixedWeeklyCell({ character, checklist, characterIndex, dispatch }: { c
     const showHourglass = character.level >= 1730 && character.hallsHourglassVisible !== false;
     const showParadise = character.level >= 1640 && character.paradiseVisible !== false;
     return (
-        <div className="flex h-full min-h-20 flex-col gap-1 p-1">
+        <div className="flex h-full min-h-20 flex-col divide-y divide-default-200 dark:divide-white/10">
             {character.weeklist.length > 0 && <OtherTasksPopover label="주간 기타 숙제" items={character.weeklist} onCheck={index => handleWeekListCheck(checklist, characterIndex, index, dispatch)} isFixedCell/>}
             {showHourglass ? (
-                <Tooltip content="할의 모래시계">
                     <button
                         type="button"
                         onClick={() => void handleHallsHourglassCheck(checklist, character.nickname, !(character.hallsHourglassCheck ?? false), dispatch)}
-                        className={clsx("flex min-h-0 w-full flex-1 cursor-pointer items-center justify-center gap-1 rounded-md px-1 text-[11px] font-semibold leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500", character.hallsHourglassCheck ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400" : "bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/50 dark:text-blue-300 dark:hover:bg-blue-900/60")}
+                        className={clsx("flex min-h-0 w-full flex-1 cursor-pointer items-center justify-center gap-1 px-1 text-[11px] font-semibold leading-none transition-colors duration-[400ms] ease-out motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500", character.hallsHourglassCheck ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400" : "bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/50 dark:text-blue-300 dark:hover:bg-blue-900/60")}
                         aria-pressed={character.hallsHourglassCheck ?? false}
                         aria-label={`${character.nickname} 할의 모래시계`}><span className="shrink-0 [&_svg]:h-4 [&_svg]:w-4"><HourglassIcon/></span>모래시계</button>
-                </Tooltip>
             ) : null}
             {showParadise ? (
-                <Tooltip content="낙원">
                     <button
                         type="button"
                         onClick={() => void handleParadiseCheck(checklist, character.nickname, !(character.paradiseCheck ?? false), dispatch)}
-                        className={clsx("flex min-h-0 w-full flex-1 cursor-pointer items-center justify-center gap-1 rounded-md px-1 text-[11px] font-semibold leading-none transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-500", character.paradiseCheck ? "bg-yellow-600 text-white hover:bg-yellow-700 dark:bg-yellow-500 dark:hover:bg-yellow-400" : "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-950/40 dark:text-yellow-300 dark:hover:bg-yellow-900/40")}
+                        className={clsx("flex min-h-0 w-full flex-1 cursor-pointer items-center justify-center gap-1 px-1 text-[11px] font-semibold leading-none transition-colors duration-[400ms] ease-out motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-500", character.paradiseCheck ? "bg-yellow-600 text-white hover:bg-yellow-700 dark:bg-yellow-500 dark:hover:bg-yellow-400" : "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 dark:bg-yellow-950/40 dark:text-yellow-300 dark:hover:bg-yellow-900/40")}
                         aria-pressed={character.paradiseCheck ?? false}
                         aria-label={`${character.nickname} 낙원`}><ParadiseIcon className="h-4 w-4"/>낙원</button>
-                </Tooltip>
             ) : null}
             {character.weeklist.length === 0 && !showHourglass && !showParadise ? <span className="flex flex-1 items-center justify-center text-[10px] text-default-400">콘텐츠 없음</span> : null}
         </div>
@@ -462,6 +470,7 @@ export default function ChecklistTableView({
     const [editorOpen, setEditorOpen] = useState(false);
     const [historyNickname, setHistoryNickname] = useState<string | null>(null);
     const [historyOpen, setHistoryOpen] = useState(false);
+    const [hoveredContentNickname, setHoveredContentNickname] = useState<string | null>(null);
     const [scrollLeft, setScrollLeft] = useState(0);
     const [contentViewportWidth, setContentViewportWidth] = useState(0);
     const contentViewportRef = useRef<HTMLDivElement>(null);
@@ -531,8 +540,11 @@ export default function ChecklistTableView({
     };
 
     const dailyColumnWidth = 128;
-    const weeklyColumnWidth = 168;
-    const contentStripWidth = (isHideDayContent ? 0 : dailyColumnWidth) + contentNames.length * weeklyColumnWidth;
+    const weeklyColumnWidths = contentNames.map(name => {
+        const stageCount = Math.max(0, ...visibleCharacters.map(character => character.checklist.find(content => content.name === name)?.items.length ?? 0));
+        return Math.max(135, 21 + stageCount * 45 + Math.max(0, stageCount - 1) * 6);
+    });
+    const contentStripWidth = (isHideDayContent ? 0 : dailyColumnWidth) + weeklyColumnWidths.reduce((sum, width) => sum + width, 0);
     const maxScrollLeft = Math.max(0, contentStripWidth - contentViewportWidth);
     const contentTransform = { width: contentStripWidth, transform: `translateX(-${scrollLeft}px)` };
     const handleContentWheel = (event: WheelEvent<HTMLDivElement>) => {
@@ -567,7 +579,7 @@ export default function ChecklistTableView({
                     <div ref={contentViewportRef} className="min-w-0 overflow-hidden" onWheel={handleContentWheel}>
                         <div className="flex h-16 transition-transform duration-150" style={contentTransform}>
                             {!isHideDayContent ? <div className="flex shrink-0 items-center justify-center border-r border-default-200 bg-success-50/80 text-xs font-semibold text-success-700 dark:border-white/10 dark:bg-success-950/30 dark:text-success-300" style={{ width: dailyColumnWidth }}>일일 콘텐츠</div> : null}
-                            {contentNames.map(name => <div key={name} className="flex shrink-0 items-center justify-center border-r border-default-200 px-3 text-center text-sm font-semibold dark:border-white/10" style={{ width: weeklyColumnWidth }}>{getSimpleBossName(bosses, name)}</div>)}
+                            {contentNames.map((name, index) => <div key={name} className="flex shrink-0 items-center justify-center border-r border-default-200 px-3 text-center text-sm font-semibold dark:border-white/10" style={{ width: weeklyColumnWidths[index] }}>{getSimpleBossName(bosses, name)}</div>)}
                         </div>
                     </div>
                     <div className="grid grid-cols-[96px_52px] divide-x divide-secondary-200 border-l border-secondary-200 bg-secondary-50/95 text-secondary-700 dark:divide-secondary-900/60 dark:border-secondary-900/60 dark:bg-secondary-950/25 dark:text-secondary-300">
@@ -592,17 +604,17 @@ export default function ChecklistTableView({
                     const isCharacterComplete = completionTargets > 0 && requiredRaids.every(content => !content.items.some(stage => !stage.isDisable && !stage.isCheck)) && (!completionSettings.includeHourglassForCompletion || character.level < 1730 || character.hallsHourglassVisible === false || !!character.hallsHourglassCheck) && (!completionSettings.includeParadiseForCompletion || character.level < 1640 || character.paradiseVisible === false || !!character.paradiseCheck);
                     return (
                         <div key={character.nickname} className="border-b border-default-200 dark:border-white/10">
-                            <div className="grid grid-cols-[280px_minmax(0,1fr)_148px]">
+                            <div className="relative grid grid-cols-[280px_minmax(0,1fr)_148px]">
                                 <div className={clsx("flex min-h-20 w-[280px] items-stretch border-r border-default-200 dark:border-white/10", isCharacterComplete ? "bg-emerald-100/80 dark:bg-emerald-900/55" : isSharingCharacter ? "bg-primary-50 dark:bg-primary-950/30" : "bg-white dark:bg-[#171717]")}>
                                 <Popover placement="right-start" offset={8} isOpen={openInfoNickname === character.nickname} onOpenChange={open => setOpenInfoNickname(open ? character.nickname : null)}>
                                     <PopoverTrigger>
                                         <button
                                             type="button"
                                             aria-label={`${character.nickname} 캐릭터 정보`}
-                                            className={clsx("flex min-w-0 grow cursor-pointer items-center gap-2 px-3 py-3 text-left transition-colors hover:bg-default-50 aria-expanded:bg-warning-50 dark:hover:bg-white/[0.04] dark:aria-expanded:bg-warning-950/20", isCharacterComplete ? "bg-emerald-100/80 dark:bg-emerald-900/55" : isSharingCharacter && "bg-primary-50 dark:bg-primary-950/30")}>
+                                            className={clsx("flex min-w-0 grow cursor-pointer items-center gap-1 px-3 py-2.5 text-left transition-colors hover:bg-default-50 aria-expanded:bg-warning-50 dark:hover:bg-white/[0.04] dark:aria-expanded:bg-warning-950/20", isCharacterComplete ? "bg-emerald-100/80 dark:bg-emerald-900/55" : isSharingCharacter && "bg-primary-50 dark:bg-primary-950/30")}>
                                             <JobEmblemIcon job={character.job} size={38} className="shrink-0"/>
                                             <div className="min-w-0 grow">
-                                                <p className="truncate text-sm font-semibold">{character.nickname}</p>
+                                                <p className={clsx("truncate font-semibold", character.nickname.length >= 12 ? "text-[15px]" : "text-sm")}>{character.nickname}</p>
                                                 <p className="mt-0.5 truncate text-[11px] text-default-500">Lv.{character.level} · {character.job}</p>
                                                 <div className="mt-0.5 flex items-center gap-1 text-[11px] font-semibold text-warning-700 dark:text-warning-400">
                                                     {character.isGold && <img src="/icons/gold.png" alt="" className="h-3.5 w-3.5"/>}
@@ -610,11 +622,13 @@ export default function ChecklistTableView({
                                                     <span>/</span>
                                                     <AnimatedNumber value={getAllGoldCharacter(bosses, character) + getOtherGoldTotal(character)}/>
                                                 </div>
-                                                {remainingRaids.length > 0 && <div className="mt-1 flex h-[8px] items-center gap-1" aria-label={`미완료 주간 콘텐츠 ${remainingRaids.length}개`}>
-                                                    {remainingRaids.slice(0, 10).map(content => <span key={content.name} title={content.name} className={clsx("h-[8px] w-[8px] shrink-0 rounded-full", content.isGold ? "bg-warning-400 dark:bg-warning-500" : "bg-primary-400 dark:bg-primary-500")}/>)}
-                                                    {remainingRaids.length > 10 && <span className="text-[10px] leading-none text-default-500">+</span>}
-                                                </div>}
                                             </div>
+                                            {remainingRaids.length > 0 && <div className={clsx("flex shrink-0 flex-col items-center gap-0.5", remainingRaids.length <= 5 ? "w-1.5" : "w-4")} aria-label={`미완료 주간 콘텐츠 ${remainingRaids.length}개`}>
+                                                <div className={clsx(remainingRaids.length <= 5 ? "flex flex-col gap-0.5" : "grid grid-flow-col grid-cols-2 grid-rows-5 gap-x-1 gap-y-0.5")}>
+                                                    {remainingRaids.slice(0, 10).map(content => <span key={content.name} title={content.name} className={clsx("h-1.5 w-1.5 rounded-full", content.isGold ? "bg-warning-400 dark:bg-warning-500" : "bg-primary-400 dark:bg-primary-500")}/>)}
+                                                </div>
+                                                {remainingRaids.length > 10 && <span className="text-[10px] leading-none text-default-500">+</span>}
+                                            </div>}
                                         </button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-[420px] max-w-[calc(100vw-24px)] overflow-hidden rounded-xl border border-default-200 bg-white p-0 shadow-xl dark:border-white/10 dark:bg-[#1b1b1b]">
@@ -680,7 +694,7 @@ export default function ChecklistTableView({
                                     </button>
                                 </div>
                                 </div>
-                                 <div className="min-w-0 overflow-hidden bg-default-200/70 dark:bg-white/[0.10]" onWheel={handleContentWheel}>
+                                <div className="min-w-0 overflow-hidden bg-default-200/70 dark:bg-white/[0.10]" onWheel={handleContentWheel} onMouseEnter={() => setHoveredContentNickname(character.nickname)} onMouseLeave={() => setHoveredContentNickname(null)}>
                                     <div className="flex h-full transition-transform duration-150" style={contentTransform}>
                                         {!isHideDayContent ? (
                                             <div className="shrink-0 border-r border-default-200 bg-white dark:border-white/10 dark:bg-[#171717]" style={{ width: dailyColumnWidth }}>
@@ -691,17 +705,18 @@ export default function ChecklistTableView({
                                                     dispatch={dispatch}/>
                                             </div>
                                         ) : null}
-                                        {contentNames.map(name => {
+                                        {contentNames.map((name, index) => {
                                             const checklistIndex = character.checklist.findIndex(item => item.name === name);
                                             const content = checklistIndex < 0 ? undefined : character.checklist[checklistIndex];
-                                            return <div key={name} className="shrink-0 border-r border-default-200 bg-white dark:border-white/10 dark:bg-[#171717]" style={{ width: weeklyColumnWidth }}><WeeklyContentCell content={content} bosses={bosses} checklist={checklist} characterIndex={characterIndex} checklistIndex={checklistIndex} dispatch={dispatch} isBonusModeEnabled={isBonusModeEnabled}/></div>;
+                                            return <div key={name} className="shrink-0 border-r border-default-200 bg-white dark:border-white/10 dark:bg-[#171717]" style={{ width: weeklyColumnWidths[index] }}><WeeklyContentCell content={content} bosses={bosses} checklist={checklist} characterIndex={characterIndex} checklistIndex={checklistIndex} dispatch={dispatch} isBonusModeEnabled={isBonusModeEnabled} compactGold={weeklyColumnWidths[index] < 120}/></div>;
                                         })}
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-[96px_52px] divide-x divide-secondary-100 border-l border-secondary-200 bg-secondary-50/15 dark:divide-secondary-900/40 dark:border-secondary-900/60 dark:bg-secondary-950/5">
+                                <div className="grid grid-cols-[96px_52px] divide-x divide-secondary-100 border-l border-secondary-200 bg-secondary-50/15 dark:divide-secondary-900/40 dark:border-secondary-900/60 dark:bg-secondary-950/5" onMouseEnter={() => setHoveredContentNickname(character.nickname)} onMouseLeave={() => setHoveredContentNickname(null)}>
                                     <FixedWeeklyCell character={character} checklist={checklist} characterIndex={characterIndex} dispatch={dispatch}/>
                                     <button type="button" onClick={() => onOpenContentManager(characterIndex, 'week')} className="flex min-h-20 cursor-pointer items-center justify-center text-secondary-600 transition-colors hover:bg-secondary-50 dark:text-secondary-300 dark:hover:bg-secondary-950/25" aria-label={`${character.nickname} 주간 콘텐츠 관리`}><SettingIcon size={19}/></button>
                                 </div>
+                                {hoveredContentNickname === character.nickname && <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-20 bg-black/5 dark:bg-white/10"/>}
                             </div>
                         </div>
                     );
